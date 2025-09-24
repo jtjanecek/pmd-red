@@ -68,6 +68,8 @@ bool8 CreateTestTracker(void)
     sPersonalityTestTracker = MemoryAlloc(sizeof(PersonalityTestTracker), 8);
     ResetTouchScreenMenuInput(&sPersonalityTestTracker->input);
     InitializeTestStats();
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
+    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
     sub_8099690(1);
     return TRUE;
 }
@@ -344,8 +346,9 @@ static void AdvanceToPartnerNicknameScreen(void)
 static void NicknamePartner(void)
 {
     CopyStringtoBuffer(sPersonalityTestTracker->unk4.PartnerNick, GetMonSpecies(sPersonalityTestTracker->unk4.PartnerID));
-    CreateConfirmNameMenu(3, sPersonalityTestTracker->unk4.PartnerNick);
-    sPersonalityTestTracker->TestState = PERSONALITY_END_INTRO;
+    // Skip nickname UI; accept default and continue
+    CreateDialogueBoxAndPortrait(gEndIntroText, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_TEST_END;
 }
 
 static void PrintEndIntroText(void)

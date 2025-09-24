@@ -1346,13 +1346,9 @@ bool8 sub_809B648(void)
         case 4:
              if (sTextbox->unk420 == 1) {
                 ResetTextbox();
-                if (sTextbox->unk424 == 0) {
-                    CreateConfirmNameMenu(0, sTextbox->unk42C);
-                }
-                else {
-                    CreateConfirmNameMenu(2, sTextbox->unk42C);
-                }
-                return 1;
+                // Auto-accept default name (no menu)
+                sTextbox->unk430 = 1;
+                return 0;
              }
              else {
                 s32 var = sub_8016080();
@@ -1376,7 +1372,9 @@ bool8 sub_809B648(void)
           case 5:
             if (sTextbox->unk420 == 1) {
                 ResetTextbox();
-                CreateConfirmNameMenu(1, sTextbox->unk42C);
+                // Auto-accept team name (or similar) defaults
+                sTextbox->unk430 = 1;
+                return 0;
             }
             else {
                 s32 var = sub_8016080();
@@ -1398,7 +1396,9 @@ bool8 sub_809B648(void)
         case 6:
             if (sTextbox->unk420 == 1) {
                 ResetTextbox();
-                NamingScreen_Init(4,sTextbox->unk42C);
+                // Auto-accept password/name screen defaults
+                sTextbox->unk430 = 1;
+                return 0;
             }
             else {
                 s32 var = NamingScreen_HandleInput();

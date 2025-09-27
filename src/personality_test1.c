@@ -43,7 +43,7 @@ static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
 
 #include "data/personality_test1.h"
 
-static void AdvanceToPartnerNicknameScreen(void);
+static void AdvanceToPartnerNicknameScreen(void);   
 static void AdvanceToPartnerSelection(void);
 static void AdvanceToPickPartnerPrompt(void);
 static void AdvanceToTestEnd(void);
@@ -68,8 +68,8 @@ bool8 CreateTestTracker(void)
     sPersonalityTestTracker = MemoryAlloc(sizeof(PersonalityTestTracker), 8);
     ResetTouchScreenMenuInput(&sPersonalityTestTracker->input);
     InitializeTestStats();
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
-    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
+    // sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
+    // sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
     sub_8099690(1);
     return TRUE;
 }

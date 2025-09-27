@@ -3,26 +3,17 @@
         "pokemon": "Bulbasaur",
         "levelUpMoves": [
             {
-                "move": "MOVE_ATTRACT",
-                "level": 1
-            },
-            {
-                "move": "MOVE_HEAT_WAVE",
-                "level": 1
-            },
-            {
-                "move": "MOVE_SILVER_WIND",
-                "level": 1
-            },
-            {
-                "move": "MOVE_POWDER_SNOW",
+                "move": "MOVE_TACKLE",
                 "level": 1
             },
             {
                 "move": "MOVE_GROWL",
                 "level": 4
             },
-
+            {
+                "move": "MOVE_LEECH_SEED",
+                "level": 7
+            },
             {
                 "move": "MOVE_VINE_WHIP",
                 "level": 10
@@ -40,8 +31,16 @@
                 "level": 20
             },
             {
+                "move": "MOVE_SWEET_SCENT",
+                "level": 25
+            },
+            {
                 "move": "MOVE_GROWTH",
                 "level": 32
+            },
+            {
+                "move": "MOVE_SYNTHESIS",
+                "level": 39
             },
             {
                 "move": "MOVE_SOLARBEAM",
@@ -3343,12 +3342,12 @@
                 "level": 1
             },
             {
-                "move": "MOVE_MAGNITUDE",
-                "level": 1
-            },
-            {
                 "move": "MOVE_GROWL",
                 "level": 5
+            },
+            {
+                "move": "MOVE_MAGNITUDE",
+                "level": 9
             },
             {
                 "move": "MOVE_DIG",

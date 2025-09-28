@@ -183,11 +183,8 @@ static void PersonalityTest_DisplayPartnerSprite(void)
 
 static s32 GetValidPartners(void)
 {
-    u8 PlayerType[2];
-    u8 currentPartnerTypes[2];
     s32 i;
     s32 ValidPartnerCounter;
-    s32 CurrentPartnerID;
 
     if (gUnknown_203B404->selectingStarter) {
         for (i = 0; i < NUM_PARTNERS; i++)
@@ -196,19 +193,10 @@ static s32 GetValidPartners(void)
     }
 
     ValidPartnerCounter = 0;
-    PlayerType[0] = GetPokemonType(gUnknown_203B404->StarterID, 0);
-    PlayerType[1] = GetPokemonType(gUnknown_203B404->StarterID, 1);
 
     for (i = 0; i < NUM_PARTNERS; i++) {
-        CurrentPartnerID = gPartners[i];
-        currentPartnerTypes[0] = GetPokemonType(CurrentPartnerID, 0);
-        currentPartnerTypes[1] = GetPokemonType(CurrentPartnerID, 1);
-
-        if ((currentPartnerTypes[0] == TYPE_NONE || (currentPartnerTypes[0] != PlayerType[0] && currentPartnerTypes[0] != PlayerType[1]))
-        && ((currentPartnerTypes[1] == TYPE_NONE || (currentPartnerTypes[1] != PlayerType[0] && currentPartnerTypes[1] != PlayerType[1])))) {
-            gUnknown_203B404->PartnerArray[ValidPartnerCounter] = CurrentPartnerID;
-            ValidPartnerCounter++;
-        }
+        gUnknown_203B404->PartnerArray[ValidPartnerCounter] = gPartners[i];
+        ValidPartnerCounter++;
     }
 
     return ValidPartnerCounter;

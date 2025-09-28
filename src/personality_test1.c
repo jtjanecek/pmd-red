@@ -26,6 +26,7 @@ enum
     PERSONALITY_ASK_QUESTION,
     PERSONALITY_UPDATE_TOTALS,
     PERSONALITY_PLAYER_GENDER,
+    PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
     PERSONALITY_REVEAL,
     PERSONALITY_STARTER_REVEAL,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1,
@@ -43,7 +44,7 @@ enum
     PERSONALITY_SEED_CUSTOM_MESSAGE,
     PERSONALITY_SEED_BEGIN_INPUT,
     PERSONALITY_SEED_CUSTOM_INPUT,
-    PERSONALITY_SEED_INPUT_ERROR,
+    PERSONALITY_PLAYER_STARTER_SELECTION,
 };
 
 static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
@@ -80,7 +81,9 @@ static void HandleSeedSelection(void);
 static void WaitForSeedPromptAcknowledge(void);
 static void StartCustomSeedInput(void);
 static void HandleCustomSeedInput(void);
-static void HandleSeedErrorAcknowledge(void);
+static void StartGenderSelection(void);
+static void AdvanceToStarterSelection(void);
+static void HandleStarterSelection(void);
 static s32 GenerateRandomSeed(void);
 static bool32 TryStoreCustomSeed(void);
 static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
@@ -145,8 +148,11 @@ u32 HandleTestTrackerState(void)
         case PERSONALITY_SEED_CUSTOM_INPUT:
             HandleCustomSeedInput();
             break;
-        case PERSONALITY_SEED_INPUT_ERROR:
-            HandleSeedErrorAcknowledge();
+        case PERSONALITY_PLAYER_STARTER_SELECTION:
+            HandleStarterSelection();
+            break;
+        case PERSONALITY_ADVANCE_TO_STARTER_SELECTION:
+            AdvanceToStarterSelection();
             break;
         case PERSONALITY_GENERATE_NEW_QUESTION:
             GenerateNewQuestionOrGender();
@@ -243,7 +249,7 @@ static void HandleSeedSelection(void)
             sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
-            sPersonalityTestTracker->TestState = PERSONALITY_GENERATE_NEW_QUESTION;
+            StartGenderSelection();
             break;
         case SEED_MENU_CUSTOM:
             sPersonalityTestTracker->usingCustomSeed = TRUE;
@@ -294,7 +300,7 @@ static void HandleCustomSeedInput(void)
         case 3:
             if (TryStoreCustomSeed()) {
                 CleanupSeedNamingScreen();
-                sPersonalityTestTracker->TestState = PERSONALITY_GENERATE_NEW_QUESTION;
+                StartGenderSelection();
             }
             break;
     }
@@ -307,14 +313,36 @@ static void CleanupSeedNamingScreen(void)
     ShowWindows(NULL, TRUE, TRUE);
 }
 
-static void HandleSeedErrorAcknowledge(void)
+static void StartGenderSelection(void)
 {
-    s32 unused;
+    CreateMenuDialogueBoxAndPortrait(sGender0, 0, 0, gGenderMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_GENDER;
+}
 
-    if (sub_80144A4(&unused))
+static void AdvanceToStarterSelection(void)
+{
+    s32 temp;
+
+    if (sub_80144A4(&temp) != 0)
         return;
 
-    sPersonalityTestTracker->TestState = PERSONALITY_SEED_PROMPT;
+    CreateStarterSelectionMenu();
+    sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_STARTER_SELECTION;
+}
+
+static void HandleStarterSelection(void)
+{
+    u16 chosen;
+
+    chosen = HandlePartnerSelectionInput();
+
+    if (chosen == 0xFFFF || chosen == 0xFFFE)
+        return;
+
+    sub_803CE6C();
+    sPersonalityTestTracker->unk4.StarterID = chosen;
+    CopyMonsterNameToBuffer(gFormatBuffer_Monsters[0], chosen);
+    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
 }
 
 static s32 GenerateRandomSeed(void)
@@ -469,7 +497,8 @@ static void SetPlayerGender(void)
     }
 
     sub_8099690(0);
-    sPersonalityTestTracker->TestState = PERSONALITY_REVEAL;
+    CreateDialogueBoxAndPortrait(gStarterPrompt, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
 }
 
 static void RevealPersonality(void)

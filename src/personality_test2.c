@@ -25,13 +25,14 @@ static void RedrawPartnerSelectionMenu(void);
 
 static void sub_803CEAC(void);
 static void sub_803CECC(void);
+static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter);
 
-void CreatePartnerSelectionMenu(s16 starterID)
+static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter)
 {
-    s32 starterID_s32;
-    starterID_s32 = starterID; // force an asr shift.. does lsr without it
+    s32 starterID_s32 = starterID;
 
     sub_803CEAC();
+    gUnknown_203B404->selectingStarter = selectingStarter;
     gUnknown_203B404->StarterID = starterID_s32;
     gUnknown_203B404->s18.m.menuWinId = 0;
     gUnknown_203B404->s18.m.menuWindow = &gUnknown_203B404->s18.m.windows.id[0];
@@ -52,6 +53,16 @@ void CreatePartnerSelectionMenu(s16 starterID)
     CreateMenuOnWindow(&gUnknown_203B404->s18.m.input, GetValidPartners(), 10, gUnknown_203B404->s18.m.menuWinId);
     RedrawPartnerSelectionMenu();
     PersonalityTest_DisplayPartnerSprite();
+}
+
+void CreatePartnerSelectionMenu(s16 starterID)
+{
+    CreateSelectionMenuInternal(starterID, FALSE);
+}
+
+void CreateStarterSelectionMenu(void)
+{
+    CreateSelectionMenuInternal(MONSTER_NONE, TRUE);
 }
 
 u16 HandlePartnerSelectionInput(void)
@@ -94,6 +105,7 @@ void sub_803CE6C(void)
     gUnknown_203B404->s18.m.windows.id[gUnknown_203B404->s18.m.menuWinId] = gUnknown_80F4278;
     ResetUnusedInputStruct();
     ShowWindows(&gUnknown_203B404->s18.m.windows, TRUE, TRUE);
+    gUnknown_203B404->selectingStarter = FALSE;
     sub_803CECC();
 }
 
@@ -126,7 +138,10 @@ static void RedrawPartnerSelectionMenu(void)
 
     CallPrepareTextbox_8008C54(gUnknown_203B404->s18.m.menuWinId);
     sub_80073B8(gUnknown_203B404->s18.m.menuWinId);
-    PrintStringOnWindow(12, 0, gPartnerSelectionHeaderText, gUnknown_203B404->s18.m.menuWinId, 0);
+    if (gUnknown_203B404->selectingStarter)
+        PrintStringOnWindow(12, 0, gStarterSelectionHeaderText, gUnknown_203B404->s18.m.menuWinId, 0);
+    else
+        PrintStringOnWindow(12, 0, gPartnerSelectionHeaderText, gUnknown_203B404->s18.m.menuWinId, 0);
 
     monCounter = 0;
     while (monCounter < gUnknown_203B404->s18.m.input.currPageEntries) {
@@ -170,6 +185,12 @@ static s32 GetValidPartners(void)
     s32 i;
     s32 ValidPartnerCounter;
     s32 CurrentPartnerID;
+
+    if (gUnknown_203B404->selectingStarter) {
+        for (i = 0; i < NUM_PARTNERS; i++)
+            gUnknown_203B404->PartnerArray[i] = gPartners[i];
+        return NUM_PARTNERS;
+    }
 
     ValidPartnerCounter = 0;
     PlayerType[0] = GetPokemonType(gUnknown_203B404->StarterID, 0);

@@ -750,12 +750,6 @@
 #define GENDER_A0 (_("Boy."))
 #define GENDER_A1 (_("Girl."))
 
-#define SEED_MODE_PROMPT (_("{CENTER_ALIGN}Choose how to set the single-time dungeon randomization seed."))
-#define SEED_MODE_RANDOM (_("Random"))
-#define SEED_MODE_CUSTOM (_("Custom"))
-#define SEED_CUSTOM_PROMPT (_("{CENTER_ALIGN}Enter the exploration seed using the number pad."))
-#define SEED_INVALID_RANGE (_("{CENTER_ALIGN}That number can't be used.{EXTRA_MSG}{CENTER_ALIGN}Enter a value from -2147483648 to 2147483647, excluding -1."))
-
 #define STARTER_REVEAL (_( \
     "\n" \
     "{CENTER_ALIGN}The Pokémon {POKEMON_0}!"))

@@ -19,6 +19,7 @@ EWRAM_INIT struct PersonalityStruct_203B404 *gUnknown_203B404 = {NULL};
 #include "data/personality_test2.h"
 
 static s32 GetValidPartners(void);
+static s32 GetGlobalIndex(s32 localIndex);
 static void nullsub_135(void);
 static void PersonalityTest_DisplayPartnerSprite(void);
 static void RedrawPartnerSelectionMenu(void);
@@ -68,20 +69,22 @@ void CreateStarterSelectionMenu(void)
 u16 HandlePartnerSelectionInput(void)
 {
     s32 partnerID;
+    s32 keyPress;
 
     partnerID = gUnknown_203B404->s18.m.input.menuIndex;
     gUnknown_203B404->unk16 = 0;
-
-    if (GetKeyPress(&gUnknown_203B404->s18.m.input) == INPUT_A_BUTTON) {
-        PlayMenuSoundEffect(0);
-        return gUnknown_203B404->PartnerArray[gUnknown_203B404->s18.m.input.menuIndex];
-    }
 
     if (MenuCursorUpdate(&gUnknown_203B404->s18.m.input, TRUE))
         RedrawPartnerSelectionMenu();
 
     if (partnerID != gUnknown_203B404->s18.m.input.menuIndex)
         PersonalityTest_DisplayPartnerSprite();
+
+    keyPress = GetKeyPress(&gUnknown_203B404->s18.m.input);
+    if (keyPress == INPUT_A_BUTTON) {
+        PlayMenuSoundEffect(0);
+        return gUnknown_203B404->PartnerArray[GetGlobalIndex(gUnknown_203B404->s18.m.input.menuIndex)];
+    }
 
     if (gUnknown_203B404->unk16 != 0) {
         return -2;
@@ -146,7 +149,7 @@ static void RedrawPartnerSelectionMenu(void)
     monCounter = 0;
     while (monCounter < gUnknown_203B404->s18.m.input.currPageEntries) {
         yCoord = GetMenuEntryYCoord(&gUnknown_203B404->s18.m.input, monCounter);
-        monName = GetMonSpecies(gUnknown_203B404->PartnerArray[monCounter]);
+        monName = GetMonSpecies(gUnknown_203B404->PartnerArray[GetGlobalIndex(monCounter)]);
         PrintStringOnWindow(8, yCoord, monName, gUnknown_203B404->s18.m.menuWinId, 0);
         monCounter++;
     }
@@ -162,7 +165,7 @@ static void PersonalityTest_DisplayPartnerSprite(void)
     const u8 *gfx;
     s32 emotionId;
 
-    partnerID = gUnknown_203B404->PartnerArray[gUnknown_203B404->s18.m.input.menuIndex];
+    partnerID = gUnknown_203B404->PartnerArray[GetGlobalIndex(gUnknown_203B404->s18.m.input.menuIndex)];
     CallPrepareTextbox_8008C54(1);
     sub_80073B8(1);
     faceFile = GetDialogueSpriteDataPtr(partnerID);
@@ -209,4 +212,10 @@ static s32 GetValidPartners(void)
     }
 
     return ValidPartnerCounter;
+}
+
+static s32 GetGlobalIndex(s32 localIndex)
+{
+    MenuInputStruct *input = &gUnknown_203B404->s18.m.input;
+    return input->currPage * input->entriesPerPage + localIndex;
 }

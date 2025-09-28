@@ -677,8 +677,14 @@ void MoveMenuCursorDown(MenuInputStruct *menuInput)
     else {
         menuInput->menuIndex++;
 
-        if (menuInput->menuIndex >= menuInput->currPageEntries)
-            menuInput->menuIndex = 0;
+        if (menuInput->menuIndex >= menuInput->currPageEntries) {
+            if (menuInput->pagesCount > 1) {
+                MenuScrollRight(menuInput);
+                menuInput->menuIndex = 0;
+            }
+            else
+                menuInput->menuIndex = 0;
+        }
     }
 }
 
@@ -709,8 +715,14 @@ void MoveMenuCursorUp(MenuInputStruct *menuInput)
     else {
         menuInput->menuIndex--;
 
-        if (menuInput->menuIndex < 0)
-            menuInput->menuIndex = menuInput->currPageEntries - 1;
+        if (menuInput->menuIndex < 0) {
+            if (menuInput->pagesCount > 1) {
+                MenuScrollLeft(menuInput);
+                menuInput->menuIndex = menuInput->currPageEntries - 1;
+            }
+            else
+                menuInput->menuIndex = menuInput->currPageEntries - 1;
+        }
     }
 }
 

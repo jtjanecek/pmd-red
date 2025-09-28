@@ -24,24 +24,19 @@ typedef struct PersonalityRelated
     /* 0x1C */ u8 PartnerNick[20];
 } PersonalityRelated;
 
-// size: 0xD4
+// size: 0x64
 #define PERSONALITY_TEST_SEED_BUFFER_SIZE 12
 typedef struct PersonalityTestTracker
 {
     /* 0x0 */ s32 FrameCounter;
     /* 0x4 */ PersonalityRelated unk4;
     /* 0x34 */ u32 TestState;
-    /* 0x38 */ s32 QuestionCounter;
-    /* 0x3C */ u32 currQuestionIndex;
-    /* 0x40 */ u8 playerNature;
-    /* 0x44 */ s32 NatureTotals[NUM_PERSONALITIES];
-    /* 0x78 */ u8 QuestionTracker[NUM_QUIZ_QUESTIONS];
-    /* 0xB0 */ u32 playerGender; // 0 = Male, 1 = Female
-    /* 0xB4 */ TouchScreenMenuInput input;
-    /* 0xC0 */ s32 rngSeed;
-    /* 0xC4 */ bool8 seedChosen;
-    /* 0xC5 */ bool8 usingCustomSeed;
-    /* 0xC6 */ u8 seedBuffer[PERSONALITY_TEST_SEED_BUFFER_SIZE];
+    /* 0x38 */ u32 playerGender; // 0 = Male, 1 = Female
+    /* 0x3C */ TouchScreenMenuInput input;
+    /* 0x48 */ s32 rngSeed;
+    /* 0x4C */ bool8 seedChosen;
+    /* 0x4D */ bool8 usingCustomSeed;
+    /* 0x4E */ u8 seedBuffer[PERSONALITY_TEST_SEED_BUFFER_SIZE];
 } PersonalityTestTracker;
 
 bool8 CreateTestTracker(void);

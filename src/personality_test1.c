@@ -22,12 +22,14 @@
 
 enum
 {
-    PERSONALITY_GENERATE_NEW_QUESTION,
-    PERSONALITY_ASK_QUESTION,
-    PERSONALITY_UPDATE_TOTALS,
+    PERSONALITY_SEED_PROMPT,
+    PERSONALITY_SEED_HANDLE_SELECTION,
+    PERSONALITY_SEED_CUSTOM_MESSAGE,
+    PERSONALITY_SEED_BEGIN_INPUT,
+    PERSONALITY_SEED_CUSTOM_INPUT,
     PERSONALITY_PLAYER_GENDER,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
-    PERSONALITY_REVEAL,
+    PERSONALITY_PLAYER_STARTER_SELECTION,
     PERSONALITY_STARTER_REVEAL,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_2,
@@ -39,12 +41,6 @@ enum
     PERSONALITY_END_INTRO,
     PERSONALITY_ADVANCE_TO_TEST_END,
     PERSONALITY_TEST_END,
-    PERSONALITY_SEED_PROMPT,
-    PERSONALITY_SEED_HANDLE_SELECTION,
-    PERSONALITY_SEED_CUSTOM_MESSAGE,
-    PERSONALITY_SEED_BEGIN_INPUT,
-    PERSONALITY_SEED_CUSTOM_INPUT,
-    PERSONALITY_PLAYER_STARTER_SELECTION,
 };
 
 static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
@@ -62,20 +58,14 @@ static void AdvanceToPartnerSelection(void);
 static void AdvanceToPickPartnerPrompt(void);
 static void AdvanceToTestEnd(void);
 static void CallCreatePartnerSelectionMenu(void);
-static void CallPromptNewQuestion(void);
-static void GenerateNewQuestionOrGender(void);
 static void InitializeTestStats(void);
 static void NicknamePartner(void);
 static void PersonalityTest_DisplayStarterSprite(void);
 static void PrintEndIntroText(void);
-static void PrintPersonalityTypeDescription(void);
 static void PromptForPartnerNickname(void);
-static void PromptNewQuestion(void);
 static void PromptPickPartner(void);
-static void RevealPersonality(void);
 static void RevealStarter(void);
 static void SetPlayerGender(void);
-static void UpdateNatureTotals(void);
 static void PromptSeedSelection(void);
 static void HandleSeedSelection(void);
 static void WaitForSeedPromptAcknowledge(void);
@@ -102,22 +92,9 @@ bool8 CreateTestTracker(void)
 
 static void InitializeTestStats(void)
 {
-    s32 i;
-
     sub_8001024(&sPersonalityTestTracker->unk4);
     sPersonalityTestTracker->FrameCounter = 0;
     sPersonalityTestTracker->TestState = PERSONALITY_SEED_PROMPT;
-    sPersonalityTestTracker->QuestionCounter = 0;
-
-    for (i = 0; i < NUM_PERSONALITIES; i++)
-        sPersonalityTestTracker->NatureTotals[i] = 0;
-
-    sPersonalityTestTracker->currQuestionIndex = 0;
-
-    for (i = 0; i < NUM_QUIZ_QUESTIONS; i++)
-        sPersonalityTestTracker->QuestionTracker[i] = 0;
-
-    sPersonalityTestTracker->playerNature = 0;
     sPersonalityTestTracker->playerGender = 0;
     sPersonalityTestTracker->rngSeed = 0;
     sPersonalityTestTracker->seedChosen = FALSE;
@@ -127,8 +104,6 @@ static void InitializeTestStats(void)
 
 u32 HandleTestTrackerState(void)
 {
-    s32 counter;
-    s32 iVar1;
 
     sPersonalityTestTracker->FrameCounter++;
 
@@ -148,26 +123,14 @@ u32 HandleTestTrackerState(void)
         case PERSONALITY_SEED_CUSTOM_INPUT:
             HandleCustomSeedInput();
             break;
-        case PERSONALITY_PLAYER_STARTER_SELECTION:
-            HandleStarterSelection();
+        case PERSONALITY_PLAYER_GENDER:
+            SetPlayerGender();
             break;
         case PERSONALITY_ADVANCE_TO_STARTER_SELECTION:
             AdvanceToStarterSelection();
             break;
-        case PERSONALITY_GENERATE_NEW_QUESTION:
-            GenerateNewQuestionOrGender();
-            break;
-        case PERSONALITY_ASK_QUESTION:
-            CallPromptNewQuestion();
-            break;
-        case PERSONALITY_UPDATE_TOTALS:
-            UpdateNatureTotals();
-            break;
-        case PERSONALITY_PLAYER_GENDER:
-            SetPlayerGender();
-            break;
-        case PERSONALITY_REVEAL:
-            RevealPersonality();
+        case PERSONALITY_PLAYER_STARTER_SELECTION:
+            HandleStarterSelection();
             break;
         case PERSONALITY_STARTER_REVEAL:
             RevealStarter();
@@ -200,23 +163,11 @@ u32 HandleTestTrackerState(void)
             AdvanceToTestEnd();
             break;
         case PERSONALITY_TEST_END:
-            if (sPersonalityTestTracker->seedChosen) {
-                sub_8011C40(sPersonalityTestTracker->rngSeed);
-                return 3;
+            if (!sPersonalityTestTracker->seedChosen) {
+                sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
+                sPersonalityTestTracker->seedChosen = TRUE;
             }
-            iVar1 = Rand32Bit() * sPersonalityTestTracker->FrameCounter;
-            MersenneTwister_InitializeState(Rand32Bit());
-
-            for (counter = 0; counter < NUM_PERSONALITIES; counter++)
-                iVar1 *= sPersonalityTestTracker->NatureTotals[counter] + counter + 3;
-
-            iVar1 += Random32MersenneTwister();
-            while (iVar1 == -1)
-                iVar1 += Random32MersenneTwister();
-
-            sPersonalityTestTracker->rngSeed = iVar1;
-            sPersonalityTestTracker->seedChosen = TRUE;
-            sub_8011C40(iVar1);
+            sub_8011C40(sPersonalityTestTracker->rngSeed);
             return 3;
         default:
             break;
@@ -418,67 +369,6 @@ static bool32 ParseSeedString(const u8 *text, s32 *seedOut)
     return TRUE;
 }
 
-static void GenerateNewQuestionOrGender(void)
-{
-    u8 category;
-    s32 i;
-    s32 newQuestion;
-
-    sPersonalityTestTracker->QuestionCounter++;
-
-    if (sPersonalityTestTracker->QuestionCounter > MAX_ASKED_QUESTIONS) {
-        CreateMenuDialogueBoxAndPortrait(sGender0, 0, 0, gGenderMenu, 0, 3, 0, 0, 257);
-        sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_GENDER;
-    }
-    else {
-        do {
-            // Generate new question number and make sure we haven't done it
-            newQuestion = RandInt(NUM_QUIZ_QUESTIONS);
-            sPersonalityTestTracker->currQuestionIndex = newQuestion;
-        } while (sPersonalityTestTracker->QuestionTracker[newQuestion] == 1);
-
-        // Found one so let's get the category
-        category = gNatureQuestionTable[sPersonalityTestTracker->currQuestionIndex];
-
-        // Mark all of the questions in the category as used
-        for (i = 0; i < NUM_QUIZ_QUESTIONS; i++) {
-            if (gNatureQuestionTable[i] == category)
-                sPersonalityTestTracker->QuestionTracker[i] = 1;
-        }
-        sPersonalityTestTracker->TestState = PERSONALITY_ASK_QUESTION;
-    }
-}
-
-static void CallPromptNewQuestion(void)
-{
-    PromptNewQuestion();
-    sPersonalityTestTracker->TestState = PERSONALITY_UPDATE_TOTALS;
-}
-
-static void UpdateNatureTotals(void)
-{
-    s32 answerIndex;
-    s32 natureIndex;
-    const PersonalityEffects *pointArray;
-
-    if (sub_80144A4(&answerIndex))
-        return;
-
-    // This is for the second part of Brave 2 Question if you fight..
-    if (answerIndex == BRAVE_2B_TRIGGER) {
-        // Set question to BRAVE_2B and ask the question..
-        sPersonalityTestTracker->currQuestionIndex = NUM_QUIZ_QUESTIONS;
-        sPersonalityTestTracker->TestState = PERSONALITY_ASK_QUESTION;
-    }
-    else {
-        pointArray = gPersonalityQuestionPointerTable[sPersonalityTestTracker->currQuestionIndex]->effects;
-        pointArray += answerIndex;
-        for (natureIndex = 0; natureIndex < NUM_PERSONALITIES; natureIndex++)
-            sPersonalityTestTracker->NatureTotals[natureIndex] += (*pointArray)[natureIndex];
-
-        sPersonalityTestTracker->TestState = PERSONALITY_GENERATE_NEW_QUESTION;
-    }
-}
 
 static void SetPlayerGender(void)
 {
@@ -499,30 +389,6 @@ static void SetPlayerGender(void)
     sub_8099690(0);
     CreateDialogueBoxAndPortrait(gStarterPrompt, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
-}
-
-static void RevealPersonality(void)
-{
-    s32 currentNature;
-    s32 i;
-
-    sPersonalityTestTracker->playerNature = RandInt(NUM_PERSONALITIES);
-    currentNature = sPersonalityTestTracker->playerNature;
-
-    for (i = 0; i < NUM_PERSONALITIES - 1; i++) {
-        currentNature++;
-
-        // Wraparound check
-        if (currentNature > QUIRKY)
-            currentNature = HARDY;
-
-        if (sPersonalityTestTracker->NatureTotals[currentNature] > sPersonalityTestTracker->NatureTotals[sPersonalityTestTracker->playerNature])
-            sPersonalityTestTracker->playerNature = currentNature;
-    }
-
-    sPersonalityTestTracker->unk4.StarterID = gStarters[sPersonalityTestTracker->playerNature][sPersonalityTestTracker->playerGender];
-    PrintPersonalityTypeDescription();
-    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
 }
 
 static void RevealStarter(void)
@@ -611,20 +477,6 @@ static void AdvanceToTestEnd(void)
 
     if (sub_80144A4(&temp) == 0)
         sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
-}
-
-static void PromptNewQuestion(void)
-{
-    CreateMenuDialogueBoxAndPortrait(gPersonalityQuestionPointerTable[sPersonalityTestTracker->currQuestionIndex]->question,
-        0, 0,
-        gPersonalityQuestionPointerTable[sPersonalityTestTracker->currQuestionIndex]->answers,
-        0, 3, 0, 0, 0x101);
-}
-
-static void PrintPersonalityTypeDescription(void)
-{
-    CopyMonsterNameToBuffer(gFormatBuffer_Monsters[0], sPersonalityTestTracker->unk4.StarterID);
-    CreateDialogueBoxAndPortrait(sPersonalityTypeDescriptionTable[sPersonalityTestTracker->playerNature], 0, 0, 0x101);
 }
 
 static void PersonalityTest_DisplayStarterSprite(void)

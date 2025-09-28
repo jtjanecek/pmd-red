@@ -752,6 +752,15 @@ static const MenuItem gGenderMenu[] = {
     { NULL, -1 },
 };
 
+ALIGNED(4) static const u8 gSeedModePrompt[] = _("{CENTER_ALIGN}Choose how to set the exploration seed.");
+static const MenuItem gSeedModeMenu[] = {
+    { _("Random"), 0 },
+    { _("Custom"), 1 },
+    { NULL, -1 },
+};
+ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the exploration seed\n{CENTER_ALIGN}using the number pad.");
+ALIGNED(4) static const u8 gSeedInvalidText[] = _("{CENTER_ALIGN}That number can't be used.{EXTRA_MSG}{CENTER_ALIGN}Enter a value from -2147483648 to 2147483647, excluding -1.");
+
 
 
 UNUSED static const u8 sUnusedLUT[NUM_PERSONALITIES] = {

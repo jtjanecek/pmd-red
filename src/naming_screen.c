@@ -68,6 +68,7 @@ enum
     NAMING_PARTNER,
     NAMING_PASSWORD1,
     NAMING_PASSWORD2,
+    NAMING_NUMERIC,
 };
 
 #define NAMING_WINDOW_INPUT 0
@@ -266,6 +267,22 @@ static const struct LayoutInfo sLayoutInfo[][85] =
         {81, 83, 76, 4, 204, 47, 0, 133},
         {82, 78, 77, 5, 204, 58, 0, ' '},
         {0, 0, 0, 0, 8, 3, 2, NAMING_LETTER_TERMINATOR},
+    },
+    [1] = {
+        { 9,  3,  2,  1,  40, 12, 0, '1'},
+        {10,  4,  0,  2,  68, 12, 0, '2'},
+        {11,  5,  1,  0,  96, 12, 0, '3'},
+        { 0,  6,  5,  4,  40, 28, 0, '4'},
+        { 1,  7,  3,  5,  68, 28, 0, '5'},
+        { 2,  8,  4,  3,  96, 28, 0, '6'},
+        { 3,  9,  8,  7,  40, 44, 0, '7'},
+        { 4, 10,  6,  8,  68, 44, 0, '8'},
+        { 5, 11,  7,  6,  96, 44, 0, '9'},
+        { 6,  0, 12, 10,  40, 60, 0, '-'},
+        { 7,  1,  9, 11,  68, 60, 0, '0'},
+        { 8,  2, 10, 12,  96, 60, 3, NAMING_LETTER_DEL},
+        { 8,  0, 11,  9, 124, 60, 3, NAMING_LETTER_END},
+        {0, 0, 0, 0, 0, 0, 2, NAMING_LETTER_TERMINATOR},
     }
 };
 
@@ -285,7 +302,7 @@ static const WindowTemplate sWindowTemplateDummy = WIN_TEMPLATE_DUMMY;
 static const WindowTemplate sInputWindowTemplate = {
     .unk0 = 0,
     .type = WINDOW_TYPE_WITHOUT_BORDER,
-    .pos = {1, 10},
+    .pos = {1, 11},
     .width = 28,
     .height = 9,
     .unk10 = 9,
@@ -337,6 +354,11 @@ u32 NamingScreen_Init(u32 type, u8 *defaultText)
             sNamingScreen->inputCursorPosition = 9;
             sNamingScreen->isPassword = TRUE;
             sNamingScreen->maxLetters = 0x18;
+            break;
+        case NAMING_NUMERIC:
+            sNamingScreen->inputCursorPosition = 0;
+            sNamingScreen->maxLetters = 12;
+            sNamingScreen->inputCursorArrId = 1;
             break;
         case NAMING_TEAM:
             sNamingScreen->inputCursorPosition = 6;
@@ -758,6 +780,9 @@ static void UpdateNameWindow(void)
         case NAMING_PASSWORD2:
             PrintStringOnWindow(48, 4, _("Please enter the password."), NAMING_WINDOW_NAME, '\0');
             break;
+        case NAMING_NUMERIC:
+            PrintStringOnWindow(8, 5, _("Enter the value."), NAMING_WINDOW_NAME, '\0');
+            break;
     }
 
     switch (sNamingScreen->type) {
@@ -771,6 +796,7 @@ static void UpdateNameWindow(void)
         case NAMING_TEAM:
         case NAMING_POKEMON:
         case NAMING_PARTNER:
+        case NAMING_NUMERIC:
             AddDoubleUnderScoreHighlight(NAMING_WINDOW_NAME, 38, 33, GetMaxPokeNameWidth(), 4);
             if (GetStrWidth(sNamingScreen->textPtr, sNamingScreen->maxLetters) > GetMaxPokeNameWidth()) {
                 sprintfStatic(text, _("{COLOR RED}%s{RESET}"), sNamingScreen->textPtr);

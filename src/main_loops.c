@@ -71,6 +71,7 @@ static EWRAM_INIT PersonalityRelated sPersonalityRelated_203B040 = {
     .PartnerID = MONSTER_SQUIRTLE,
     .StarterName = {""},
     .PartnerNick = {""},
+    .TeamName = {""},
     .customSeed = 0,
 };
 
@@ -1016,6 +1017,10 @@ void sub_8001064(void)
         }
         else
             sub_808CE74(sPersonalityRelated_203B040.PartnerID, FALSE, sPersonalityRelated_203B040.PartnerNick);
+    }
+
+    if (sPersonalityRelated_203B040.TeamName[0] != '\0') {
+        SetRescueTeamName(sPersonalityRelated_203B040.TeamName);
     }
 
     if (sPersonalityRelated_203B040.StarterID != MONSTER_NONE) {

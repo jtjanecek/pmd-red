@@ -764,6 +764,8 @@
 
 #define PARTNER_NICK_PROMPT (_("{CENTER_ALIGN}What is your partner's nickname?"))
 
+#define TEAM_NAME_PROMPT (_("{CENTER_ALIGN}What is your rescue team's name?"))
+
 #define END_TEXT (_( \
     "{CENTER_ALIGN}OK! We're all set!{EXTRA_MSG}" \
     "{CENTER_ALIGN}Let's get you into the\n" \

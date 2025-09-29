@@ -13,6 +13,7 @@
 #include "naming_screen.h"
 #include "personality_test1.h"
 #include "personality_test2.h"
+#include "rescue_team_info.h"
 #include "random.h"
 #include "save.h"
 #include "string_format.h"
@@ -40,6 +41,8 @@ enum
     PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_1,
     PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_2,
     PERSONALITY_PARTNER_NICKNAME,
+    PERSONALITY_TEAM_NAME_PROMPT,
+    PERSONALITY_TEAM_NAME_ENTRY,
     PERSONALITY_END_INTRO,
     PERSONALITY_ADVANCE_TO_TEST_END,
     PERSONALITY_TEST_END,
@@ -53,6 +56,7 @@ static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
 #define SEED_MENU_CUSTOM 1
 #define NAMING_SCREEN_NUMERIC 6
 #define NAMING_SCREEN_PLAYER 0
+#define NAMING_SCREEN_TEAM 1
 #define NAMING_SCREEN_PARTNER 3
 
 #include "data/personality_test1.h"
@@ -64,6 +68,8 @@ static void AdvanceToTestEnd(void);
 static void CallCreatePartnerSelectionMenu(void);
 static void InitializeTestStats(void);
 static void NicknamePartner(void);
+static void PromptTeamName(void);
+static void HandleTeamNameEntry(void);
 static void PersonalityTest_DisplayStarterSprite(void);
 static void PrintEndIntroText(void);
 static void PromptForPartnerNickname(void);
@@ -167,6 +173,12 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_PARTNER_NICKNAME:
             NicknamePartner();
+            break;
+        case PERSONALITY_TEAM_NAME_PROMPT:
+            PromptTeamName();
+            break;
+        case PERSONALITY_TEAM_NAME_ENTRY:
+            HandleTeamNameEntry();
             break;
         case PERSONALITY_END_INTRO:
             PrintEndIntroText();
@@ -522,6 +534,41 @@ static void NicknamePartner(void)
     }
 
     CleanupNamingScreen();
+    CreateDialogueBoxAndPortrait(gTeamNamePrompt, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_TEAM_NAME_PROMPT;
+}
+
+static void PromptTeamName(void)
+{
+    s32 temp;
+
+    if (sub_80144A4(&temp) != 0)
+        return;
+
+    if (sPersonalityTestTracker->unk4.TeamName[0] == '\0') {
+        sub_80920D8(sPersonalityTestTracker->unk4.TeamName);
+    }
+
+    NamingScreen_Init(NAMING_SCREEN_TEAM, sPersonalityTestTracker->unk4.TeamName);
+    sPersonalityTestTracker->TestState = PERSONALITY_TEAM_NAME_ENTRY;
+}
+
+static void HandleTeamNameEntry(void)
+{
+    u32 result = NamingScreen_HandleInput();
+
+    if (result == 0)
+        return;
+
+    if (result == 2) {
+        sub_80920D8(sPersonalityTestTracker->unk4.TeamName);
+    }
+    else if (result == 3 && sPersonalityTestTracker->unk4.TeamName[0] == '\0') {
+        sub_80920D8(sPersonalityTestTracker->unk4.TeamName);
+    }
+
+    CleanupNamingScreen();
+    SetRescueTeamName(sPersonalityTestTracker->unk4.TeamName);
     CreateDialogueBoxAndPortrait(gEndIntroText, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_TEST_END;
 }

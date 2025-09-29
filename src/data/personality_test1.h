@@ -21,6 +21,7 @@ static const MenuItem gGenderMenu[] = {
 ALIGNED(4) static const u8 gStarterReveal[] = STARTER_REVEAL;
 ALIGNED(4) static const u8 gPartnerPrompt[] = PARTNER_PROMPT;
 ALIGNED(4) static const u8 gPartnerNickPrompt[] = PARTNER_NICK_PROMPT;
+ALIGNED(4) static const u8 gTeamNamePrompt[] = TEAM_NAME_PROMPT;
 ALIGNED(4) static const u8 gEndIntroText[] = END_TEXT;
 
 static const WindowTemplate sUnknown_80F4244 = {

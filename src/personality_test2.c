@@ -25,6 +25,8 @@ static void nullsub_135(void);
 static void PersonalityTest_DisplayPartnerSprite(void);
 static void RedrawPartnerSelectionMenu(void);
 static s16 ChooseRandomPartner(void);
+static bool8 UpdateSelectionMenuCursor(MenuInputStruct *menuInput);
+static void ScrollSelectionMenu(MenuInputStruct *menuInput, bool8 moveRight);
 
 static void sub_803CEAC(void);
 static void sub_803CECC(void);
@@ -72,14 +74,17 @@ u16 HandlePartnerSelectionInput(void)
 {
     s32 previousIndex;
     s32 keyPress;
+    bool8 pageChanged;
 
     previousIndex = gUnknown_203B404->s18.m.input.menuIndex;
     gUnknown_203B404->unk16 = 0;
 
-    if (MenuCursorUpdate(&gUnknown_203B404->s18.m.input, TRUE))
+    pageChanged = UpdateSelectionMenuCursor(&gUnknown_203B404->s18.m.input);
+
+    if (pageChanged)
         RedrawPartnerSelectionMenu();
 
-    if (previousIndex != gUnknown_203B404->s18.m.input.menuIndex)
+    if (pageChanged || previousIndex != gUnknown_203B404->s18.m.input.menuIndex)
         PersonalityTest_DisplayPartnerSprite();
 
     keyPress = GetKeyPress(&gUnknown_203B404->s18.m.input);
@@ -230,4 +235,77 @@ static s16 ChooseRandomPartner(void)
 
     selection = gUnknown_203B404->PartnerArray[RandInt(availableCount)];
     return selection;
+}
+
+static bool8 UpdateSelectionMenuCursor(MenuInputStruct *menuInput)
+{
+    s32 previousPage = menuInput->currPage;
+    s32 previousIndex = menuInput->menuIndex;
+    bool8 movedWithinPage = FALSE;
+    s32 key;
+
+    AddMenuCursorSprite(menuInput);
+
+    key = GetKeyPress(menuInput);
+    switch (key) {
+        case INPUT_DPAD_UP:
+            menuInput->unk24 = 0;
+            if (menuInput->currPageEntries > 0) {
+                if (menuInput->menuIndex <= 0)
+                    menuInput->menuIndex = menuInput->currPageEntries - 1;
+                else
+                    menuInput->menuIndex--;
+                movedWithinPage = TRUE;
+            }
+            break;
+        case INPUT_DPAD_DOWN:
+            menuInput->unk24 = 0;
+            if (menuInput->currPageEntries > 0) {
+                if (menuInput->menuIndex >= menuInput->currPageEntries - 1)
+                    menuInput->menuIndex = 0;
+                else
+                    menuInput->menuIndex++;
+                movedWithinPage = TRUE;
+            }
+            break;
+        case INPUT_DPAD_LEFT:
+            menuInput->unk24 = 0;
+            ScrollSelectionMenu(menuInput, FALSE);
+            break;
+        case INPUT_DPAD_RIGHT:
+            menuInput->unk24 = 0;
+            ScrollSelectionMenu(menuInput, TRUE);
+            break;
+    }
+
+    if (menuInput->currPage != previousPage) {
+        PlayMenuSoundEffect(4);
+        return TRUE;
+    }
+
+    if (movedWithinPage && menuInput->menuIndex != previousIndex)
+        PlayMenuSoundEffect(3);
+
+    return FALSE;
+}
+
+static void ScrollSelectionMenu(MenuInputStruct *menuInput, bool8 moveRight)
+{
+    if (menuInput->pagesCount <= 0)
+        return;
+
+    if (moveRight) {
+        if (menuInput->currPage < menuInput->pagesCount - 1)
+            menuInput->currPage++;
+        else
+            menuInput->currPage = 0;
+    }
+    else {
+        if (menuInput->currPage <= 0)
+            menuInput->currPage = menuInput->pagesCount - 1;
+        else
+            menuInput->currPage--;
+    }
+
+    MenuUpdatePagesData(menuInput);
 }

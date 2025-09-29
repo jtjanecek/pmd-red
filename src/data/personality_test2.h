@@ -69,4 +69,4 @@ const WindowTemplate gUnknown_80F42A8 =
 
 const char gMenuRandomSelectionText[] = _("Random");
 const char gPartnerSelectionHeaderText[] = _("Pokémon");
-const char gStarterSelectionHeaderText[] = _("Select Pokémon");
+const char gStarterSelectionHeaderText[] = _("Select");

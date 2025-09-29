@@ -9,6 +9,7 @@
 #include "items.h"
 #include "code_8094F88.h"
 #include "code_80958E8.h"
+#include "constants/difficulty.h"
 
 enum
 {
@@ -36,6 +37,7 @@ struct UnkStruct_sub_8011DAC
     u32 unk418;
     u32 unk41C;
     u32 RngState;
+    u32 difficulty;
     u32 savedRecruitedPokemon;
     u32 unk428;
     u8 fill42C[0x4];
@@ -45,10 +47,10 @@ struct UnkStruct_sub_8011DAC
     u32 unk43C;
     u32 unk440;
     u32 savedMailInfo;
-    u8 unk448[0x538C];
+    u8 unk448[0x5388];
 };
 
-// size: 0x5C
+// size: 0x60
 // This is most likely a debug savestate
 struct UnkStruct_203B184
 {
@@ -74,6 +76,7 @@ struct UnkStruct_203B184
     u8 *unk04C;
     u32 unk050;
     u32 unk054;
+    u32 difficulty;
     u32 RngState;
 };
 
@@ -82,6 +85,8 @@ u32 sub_8011C1C(void);
 void sub_8011C28(u32 in);
 s32 sub_8011C34(void);
 void sub_8011C40(s32 in);
+u32 GetGameDifficultySetting(void);
+void SetGameDifficultySetting(u32 in);
 void sub_8011CA8(u32 *out, s32 size);
 u32 ReadSaveFromPak(u32 *a);
 u32 WriteSavetoPak(s32 *param_1, u32 param_2);

@@ -8,6 +8,13 @@ static const MenuItem gSeedModeMenu[] = {
 };
 
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the exploration seed\n{CENTER_ALIGN}using the number pad.");
+ALIGNED(4) static const u8 gDifficultyPrompt[] = _("{CENTER_ALIGN}Select the difficulty.");
+static const MenuItem gDifficultyMenu[] = {
+    { _("Normal"), DIFFICULTY_NORMAL },
+    { _("Hard"), DIFFICULTY_HARD },
+    { _("Nightmare"), DIFFICULTY_NIGHTMARE },
+    { NULL, -1 },
+};
 ALIGNED(4) static const u8 gStarterPrompt[] = _("{CENTER_ALIGN}Select your character.");
 ALIGNED(4) static const u8 gStarterNickPrompt[] = STARTER_NICK_PROMPT;
 

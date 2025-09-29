@@ -2,6 +2,7 @@
 #define GUARD_PERSONALITY_TEST1_H
 
 #include "constants/personality_test.h"
+#include "constants/difficulty.h"
 #include "constants/global.h"
 #include "structs/menu.h"
 
@@ -15,7 +16,7 @@ typedef struct PersonalityQuestion
     /* 0x8 */ const PersonalityEffects *effects;
 } PersonalityQuestion;
 
-// size: 0x40
+// size: 0x44
 typedef struct PersonalityRelated
 {
     /* 0x0 */ u32 unk0;
@@ -25,6 +26,8 @@ typedef struct PersonalityRelated
     /* 0x1C */ u8 PartnerNick[20];
     /* 0x30 */ u8 TeamName[TEAM_NAME_LENGTH + 1];
     /* 0x3C */ s32 customSeed;
+    /* 0x40 */ u8 difficulty;
+    /* 0x41 */ u8 fill41[3];
 } PersonalityRelated;
 
 // size: 0x74

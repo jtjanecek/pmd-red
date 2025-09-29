@@ -19,6 +19,7 @@
 #include "play_time.h"
 #include "pokemon.h"
 #include "save.h"
+#include "constants/difficulty.h"
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
@@ -27,7 +28,7 @@
 
 struct LoadScreen
 {
-    // size: 0x2A0
+    // size: 0x2C4
     u32 currMenu;
     MenuStruct unk4[4];
     WindowTemplates unk144;
@@ -38,6 +39,7 @@ struct LoadScreen
     /* 0x234 */ u8 formattedAdventures[0x24];
     /* 0x258 */ u8 formattedHelperInfo[0x24];
     /* 0x27C */ u8 formattedCustomSeed[0x24];
+    /* 0x2A0 */ u8 formattedDifficulty[0x24];
 };
 
 EWRAM_INIT struct LoadScreen *gLoadScreen = {NULL};
@@ -151,6 +153,11 @@ ALIGNED(4) const char gAdventuresHeadingText[] = "Adventures:";
 ALIGNED(4) const char gHelperHeadingText[] = "Helper:";
 ALIGNED(4) const char gCustomSeedLabelFormat[] = "S: %d";
 ALIGNED(4) const char gCustomSeedUnsetText[] = "S: -----";
+ALIGNED(4) const char *const gDifficultyLabels[] = {
+    "Normal",
+    "Hard",
+    "Nightmare",
+};
 ALIGNED(4) const char gNoTeamNamePlaceholder[] = _("？？？？");
 ALIGNED(4) const char gUnknown_80E7804[] = "%s ";
 ALIGNED(4) const char gNoNamePlaceholder[] = "???";
@@ -305,6 +312,14 @@ void DrawLoadScreenText(void)
       }
 
       PrintStringOnWindow(seedX, 0, gLoadScreen->formattedCustomSeed, 0, 0);
+
+      {
+          u32 difficulty = GetGameDifficultySetting();
+          if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+              difficulty = DIFFICULTY_NORMAL;
+          InlineStrcpy(gLoadScreen->formattedDifficulty, gDifficultyLabels[difficulty]);
+          PrintStringOnWindow(seedX, 12, gLoadScreen->formattedDifficulty, 0, 0);
+      }
   }
 
   // Draw Team Name

@@ -28,6 +28,7 @@ enum
     PERSONALITY_SEED_CUSTOM_MESSAGE,
     PERSONALITY_SEED_BEGIN_INPUT,
     PERSONALITY_SEED_CUSTOM_INPUT,
+    PERSONALITY_DIFFICULTY_SELECTION,
     PERSONALITY_PLAYER_GENDER,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
     PERSONALITY_PLAYER_STARTER_SELECTION,
@@ -67,6 +68,7 @@ static void AdvanceToPickPartnerPrompt(void);
 static void AdvanceToTestEnd(void);
 static void CallCreatePartnerSelectionMenu(void);
 static void InitializeTestStats(void);
+static void StartDifficultySelection(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
 static void HandleTeamNameEntry(void);
@@ -90,6 +92,7 @@ static s32 GenerateRandomSeed(void);
 static bool32 TryStoreCustomSeed(void);
 static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
 static void CleanupNamingScreen(void);
+static void HandleDifficultySelection(void);
 
 bool8 CreateTestTracker(void)
 {
@@ -111,6 +114,8 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->rngSeed = 0;
     sPersonalityTestTracker->seedChosen = FALSE;
     sPersonalityTestTracker->usingCustomSeed = FALSE;
+    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
+    SetGameDifficultySetting(DIFFICULTY_NORMAL);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
 }
 
@@ -134,6 +139,9 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_SEED_CUSTOM_INPUT:
             HandleCustomSeedInput();
+            break;
+        case PERSONALITY_DIFFICULTY_SELECTION:
+            HandleDifficultySelection();
             break;
         case PERSONALITY_PLAYER_GENDER:
             SetPlayerGender();
@@ -192,6 +200,7 @@ u32 HandleTestTrackerState(void)
                 sPersonalityTestTracker->seedChosen = TRUE;
             }
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
+            SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
             return 3;
         default:
@@ -228,7 +237,7 @@ static void HandleSeedSelection(void)
             sPersonalityTestTracker->unk4.customSeed = generatedSeed;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
-            StartGenderSelection();
+            StartDifficultySelection();
             break;
         }
         case SEED_MENU_CUSTOM:
@@ -280,7 +289,7 @@ static void HandleCustomSeedInput(void)
         case 3:
             if (TryStoreCustomSeed()) {
                 CleanupNamingScreen();
-                StartGenderSelection();
+                StartDifficultySelection();
             }
             break;
     }
@@ -297,6 +306,12 @@ static void StartGenderSelection(void)
 {
     CreateMenuDialogueBoxAndPortrait(sGender0, 0, 0, gGenderMenu, 0, 3, 0, 0, 0x101);
     sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_GENDER;
+}
+
+static void StartDifficultySelection(void)
+{
+    CreateMenuDialogueBoxAndPortrait(gDifficultyPrompt, 0, 0, gDifficultyMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_DIFFICULTY_SELECTION;
 }
 
 static void AdvanceToStarterSelection(void)
@@ -450,6 +465,21 @@ static void SetPlayerGender(void)
     sub_8099690(0);
     CreateDialogueBoxAndPortrait(gStarterPrompt, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
+}
+
+static void HandleDifficultySelection(void)
+{
+    s32 selection;
+
+    if (sub_80144A4(&selection) != 0)
+        return;
+
+    if (selection < 0 || selection >= NUM_DIFFICULTY_SETTINGS)
+        selection = DIFFICULTY_NORMAL;
+
+    sPersonalityTestTracker->unk4.difficulty = selection;
+    SetGameDifficultySetting(selection);
+    StartGenderSelection();
 }
 
 static void RevealStarter(void)

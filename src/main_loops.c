@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "constants/bg_music.h"
+#include "constants/difficulty.h"
 #include "constants/main_menu.h"
 #include "structs/str_dungeon_setup.h"
 #include "bg_control.h"
@@ -39,6 +40,7 @@
 #include "random.h"
 #include "rescue_team_info.h"
 #include "save.h"
+#include "save.h"
 #include "save_read.h"
 #include "sprite.h"
 #include "string_format.h"
@@ -73,6 +75,7 @@ static EWRAM_INIT PersonalityRelated sPersonalityRelated_203B040 = {
     .PartnerNick = {""},
     .TeamName = {""},
     .customSeed = 0,
+    .difficulty = DIFFICULTY_NORMAL,
 };
 
 static void LoadTitleScreen(void);
@@ -983,6 +986,7 @@ static void LoadAndRunQuickSaveDungeon_Async(DungeonSetupStruct *setupStr)
 void sub_8001024(PersonalityRelated *dst)
 {
     sPersonalityRelated_203B040.customSeed = sub_8011C34();
+    sPersonalityRelated_203B040.difficulty = GetGameDifficultySetting();
     *dst = sPersonalityRelated_203B040;
 }
 
@@ -990,6 +994,9 @@ void sub_8001024(PersonalityRelated *dst)
 void sub_8001044(PersonalityRelated *src)
 {
     sPersonalityRelated_203B040 = *src;
+    if (sPersonalityRelated_203B040.difficulty >= NUM_DIFFICULTY_SETTINGS)
+        sPersonalityRelated_203B040.difficulty = DIFFICULTY_NORMAL;
+    SetGameDifficultySetting(sPersonalityRelated_203B040.difficulty);
 }
 
 // arm9.bin::0200CE48

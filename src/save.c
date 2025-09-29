@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "music_util.h"
+#include "constants/difficulty.h"
 #include "string_format.h"
 #include "code_8097670.h"
 #include "event_flag.h"
@@ -23,10 +24,12 @@ struct unk_struct
     DungeonLocation dungeonLocation;
     u32 unk20;
     s32 customSeed;
-    u32 padding[502];
+    u32 difficulty;
+    u32 padding[501];
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
+EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_NORMAL};
 
 EWRAM_INIT u32 gUnknown_203B17C = {0};
 EWRAM_INIT const char *gUnknown_203B180 = {"POKE_DUNGEON__05"};
@@ -65,6 +68,20 @@ s32 sub_8011C34(void)
 void sub_8011C40(s32 x)
 {
     gUnknown_202DE28 = x;
+}
+
+u32 GetGameDifficultySetting(void)
+{
+    if (gUnknown_202DE2C >= NUM_DIFFICULTY_SETTINGS)
+        gUnknown_202DE2C = DIFFICULTY_NORMAL;
+    return gUnknown_202DE2C;
+}
+
+void SetGameDifficultySetting(u32 value)
+{
+    if (value >= NUM_DIFFICULTY_SETTINGS)
+        value = DIFFICULTY_NORMAL;
+    gUnknown_202DE2C = value;
 }
 
 static const char *GetGameInternalName(void)
@@ -202,11 +219,14 @@ u32 ReadSaveFromPak(u32 *a)
             sub_8011C28(playerSave->unk41C);
             sub_8011C40(playerSave->unk418);
             SetRNGSeed(playerSave->RngState);
+            SetGameDifficultySetting(playerSave->difficulty);
         }
         else {
             gUnknown_203B184->unk054 = playerSave->unk41C;
             gUnknown_203B184->unk050 = playerSave->unk418;
+            gUnknown_203B184->difficulty = playerSave->difficulty;
             gUnknown_203B184->RngState = playerSave->RngState;
+            SetGameDifficultySetting(playerSave->difficulty);
         }
     }
     if (!saveStatus)
@@ -290,8 +310,10 @@ u32 sub_8011FA8(void)
     if(saveStatus == READ_SAVE_VALID)
     {
         temp3 = r5->unk18;
-        if (temp3 == 0xF1207)
+        if (temp3 == 0xF1207) {
             sub_8011C40(r5->customSeed);
+            SetGameDifficultySetting(r5->difficulty);
+        }
     }
     MemoryFree(r5);
     return temp3;
@@ -329,10 +351,12 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->unk41C = param_2;
     playerSave->unk418 = sub_8011C34();
     playerSave->RngState = GetRNGState();
+    playerSave->difficulty = GetGameDifficultySetting();
   }
   else {
     playerSave->unk41C = gUnknown_203B184->unk054;
     playerSave->unk418 = gUnknown_203B184->unk050;
+    playerSave->difficulty = gUnknown_203B184->difficulty;
     playerSave->RngState = gUnknown_203B184->RngState;
   }
    playerSave->checksum = 0x5071412;
@@ -390,6 +414,7 @@ u32 sub_80121E0(u32 r0)
     r4->dungeonLocation = *GetDungeonLocationInfo();
     r4->checksum = 0x5071412;
     r4->customSeed = sub_8011C34();
+    r4->difficulty = GetGameDifficultySetting();
 
     gameName = GetGameInternalName();
     strncpy(r4->gameInternalName, gameName, ARRAY_COUNT(r4->gameInternalName));

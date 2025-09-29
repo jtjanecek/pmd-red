@@ -1,6 +1,8 @@
 #ifndef GUARD_CONSTANTS_PERSONALITY_TEST_H
 #define GUARD_CONSTANTS_PERSONALITY_TEST_H
 
+#include "constants/monster.h"
+
 enum NaturePersonalities
 {
     HARDY,
@@ -19,7 +21,7 @@ enum NaturePersonalities
     MISC,
 };
 
-#define NUM_PARTNERS 16
+#define NUM_PARTNERS NUM_MONSTERS
 #define NUM_QUIZ_QUESTIONS 55
 #define MAX_ASKED_QUESTIONS 8
 #define NUM_PERSONALITIES MISC

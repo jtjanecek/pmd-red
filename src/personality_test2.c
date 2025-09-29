@@ -169,14 +169,15 @@ static void PersonalityTest_DisplayPartnerSprite(void)
     CallPrepareTextbox_8008C54(1);
     sub_80073B8(1);
     faceFile = GetDialogueSpriteDataPtr(partnerID);
-    gfx = ((PortraitGfx *)(faceFile->data))->sprites[EMOTION_NORMAL].gfx;
-    emotionId = EMOTION_NORMAL;
-    for (paletteIndex = 0; paletteIndex < 0x10; paletteIndex++) {
-        SetBGPaletteBufferColorArray(paletteIndex + 0xE0, &((PortraitGfx *)(faceFile->data))->sprites[emotionId].pal[paletteIndex]);
+    if (faceFile != NULL) {
+        emotionId = EMOTION_NORMAL;
+        gfx = ((PortraitGfx *)(faceFile->data))->sprites[emotionId].gfx;
+        for (paletteIndex = 0; paletteIndex < 0x10; paletteIndex++) {
+            SetBGPaletteBufferColorArray(paletteIndex + 0xE0, &((PortraitGfx *)(faceFile->data))->sprites[emotionId].pal[paletteIndex]);
+        }
+        DisplayMonPortraitSpriteFlipped(1, gfx, 14);
+        CloseFile(faceFile);
     }
-
-    DisplayMonPortraitSpriteFlipped(1, gfx, 14);
-    CloseFile(faceFile);
     sub_80073E0(1);
     gUnknown_203B404->unk16 = 1;
 }

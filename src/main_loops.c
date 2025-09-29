@@ -71,6 +71,7 @@ static EWRAM_INIT PersonalityRelated sPersonalityRelated_203B040 = {
     .PartnerID = MONSTER_SQUIRTLE,
     .StarterName = {""},
     .PartnerNick = {""},
+    .customSeed = 0,
 };
 
 static void LoadTitleScreen(void);
@@ -980,6 +981,7 @@ static void LoadAndRunQuickSaveDungeon_Async(DungeonSetupStruct *setupStr)
 // arm9.bin::0200CFF4
 void sub_8001024(PersonalityRelated *dst)
 {
+    sPersonalityRelated_203B040.customSeed = sub_8011C34();
     *dst = sPersonalityRelated_203B040;
 }
 

@@ -14,7 +14,7 @@ typedef struct PersonalityQuestion
     /* 0x8 */ const PersonalityEffects *effects;
 } PersonalityQuestion;
 
-// size: 0x30
+// size: 0x34
 typedef struct PersonalityRelated
 {
     /* 0x0 */ u32 unk0;
@@ -22,21 +22,22 @@ typedef struct PersonalityRelated
     /* 0x6 */ s16 PartnerID;
     /* 0x8 */ u8 StarterName[20];
     /* 0x1C */ u8 PartnerNick[20];
+    /* 0x30 */ s32 customSeed;
 } PersonalityRelated;
 
-// size: 0x64
+// size: 0x68
 #define PERSONALITY_TEST_SEED_BUFFER_SIZE 12
 typedef struct PersonalityTestTracker
 {
     /* 0x0 */ s32 FrameCounter;
     /* 0x4 */ PersonalityRelated unk4;
-    /* 0x34 */ u32 TestState;
-    /* 0x38 */ u32 playerGender; // 0 = Male, 1 = Female
-    /* 0x3C */ TouchScreenMenuInput input;
-    /* 0x48 */ s32 rngSeed;
-    /* 0x4C */ bool8 seedChosen;
-    /* 0x4D */ bool8 usingCustomSeed;
-    /* 0x4E */ u8 seedBuffer[PERSONALITY_TEST_SEED_BUFFER_SIZE];
+    /* 0x38 */ u32 TestState;
+    /* 0x3C */ u32 playerGender; // 0 = Male, 1 = Female
+    /* 0x40 */ TouchScreenMenuInput input;
+    /* 0x4C */ s32 rngSeed;
+    /* 0x50 */ bool8 seedChosen;
+    /* 0x51 */ bool8 usingCustomSeed;
+    /* 0x52 */ u8 seedBuffer[PERSONALITY_TEST_SEED_BUFFER_SIZE];
 } PersonalityTestTracker;
 
 bool8 CreateTestTracker(void);

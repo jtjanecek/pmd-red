@@ -27,7 +27,7 @@
 
 struct LoadScreen
 {
-    // size: 0x27c
+    // size: 0x2A0
     u32 currMenu;
     MenuStruct unk4[4];
     WindowTemplates unk144;
@@ -37,6 +37,7 @@ struct LoadScreen
     /* 0x210 */ u8 formattedPlayTime[0x24];
     /* 0x234 */ u8 formattedAdventures[0x24];
     /* 0x258 */ u8 formattedHelperInfo[0x24];
+    /* 0x27C */ u8 formattedCustomSeed[0x24];
 };
 
 EWRAM_INIT struct LoadScreen *gLoadScreen = {NULL};
@@ -148,6 +149,8 @@ ALIGNED(4) const char gLocationHeadingText[] = "Location:";
 ALIGNED(4) const char gPlayTimeHeadingText[] = "Play time:";
 ALIGNED(4) const char gAdventuresHeadingText[] = "Adventures:";
 ALIGNED(4) const char gHelperHeadingText[] = "Helper:";
+ALIGNED(4) const char gCustomSeedLabelFormat[] = "S: %d";
+ALIGNED(4) const char gCustomSeedUnsetText[] = "S: -----";
 ALIGNED(4) const char gNoTeamNamePlaceholder[] = _("？？？？");
 ALIGNED(4) const char gUnknown_80E7804[] = "%s ";
 ALIGNED(4) const char gNoNamePlaceholder[] = "???";
@@ -267,6 +270,7 @@ void DrawLoadScreenText(void)
   u32 seconds;
   Pokemon *playerInfo;
   unkStruct_203B484 *temp2;
+  s32 savedSeed;
 
   iVar2 = sub_8011FA8();
   CallPrepareTextbox_8008C54(0);
@@ -277,6 +281,14 @@ void DrawLoadScreenText(void)
   PrintStringOnWindow(8,36,gPlayTimeHeadingText,0,0); // Play time:
   PrintStringOnWindow(8,48,gAdventuresHeadingText,0,0); // Adventures:
   PrintStringOnWindow(8,60,gHelperHeadingText,0,0); // Helper:
+
+  // Draw Custom Seed in top-right corner
+  savedSeed = sub_8011C34();
+  if (savedSeed == -1)
+      sprintfStatic(gLoadScreen->formattedCustomSeed, gCustomSeedUnsetText);
+  else
+      sprintfStatic(gLoadScreen->formattedCustomSeed, gCustomSeedLabelFormat, savedSeed);
+  PrintStringOnWindow(136,0,gLoadScreen->formattedCustomSeed,0,0);
 
   // Draw Team Name
   if (sub_80023E4(0)) {

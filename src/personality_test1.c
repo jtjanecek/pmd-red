@@ -179,6 +179,7 @@ u32 HandleTestTrackerState(void)
                 sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
                 sPersonalityTestTracker->seedChosen = TRUE;
             }
+            sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             sub_8011C40(sPersonalityTestTracker->rngSeed);
             return 3;
         default:
@@ -209,11 +210,15 @@ static void HandleSeedSelection(void)
 
     switch (selection) {
         case SEED_MENU_RANDOM:
-            sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
+        {
+            s32 generatedSeed = GenerateRandomSeed();
+            sPersonalityTestTracker->rngSeed = generatedSeed;
+            sPersonalityTestTracker->unk4.customSeed = generatedSeed;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
             StartGenderSelection();
             break;
+        }
         case SEED_MENU_CUSTOM:
             sPersonalityTestTracker->usingCustomSeed = TRUE;
             CreateDialogueBoxAndPortrait(gSeedCustomPrompt, 0, 0, 0x101);
@@ -358,6 +363,7 @@ static bool32 TryStoreCustomSeed(void)
         return FALSE;
 
     sPersonalityTestTracker->rngSeed = seed;
+    sPersonalityTestTracker->unk4.customSeed = seed;
     sPersonalityTestTracker->seedChosen = TRUE;
     sPersonalityTestTracker->usingCustomSeed = TRUE;
     return TRUE;

@@ -22,7 +22,8 @@ struct unk_struct
     u32 unk18;
     DungeonLocation dungeonLocation;
     u32 unk20;
-    u32 padding[503];
+    s32 customSeed;
+    u32 padding[502];
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
@@ -289,6 +290,8 @@ u32 sub_8011FA8(void)
     if(saveStatus == READ_SAVE_VALID)
     {
         temp3 = r5->unk18;
+        if (temp3 == 0xF1207)
+            sub_8011C40(r5->customSeed);
     }
     MemoryFree(r5);
     return temp3;
@@ -386,6 +389,7 @@ u32 sub_80121E0(u32 r0)
     r4->unk18 = r0;
     r4->dungeonLocation = *GetDungeonLocationInfo();
     r4->checksum = 0x5071412;
+    r4->customSeed = sub_8011C34();
 
     gameName = GetGameInternalName();
     strncpy(r4->gameInternalName, gameName, ARRAY_COUNT(r4->gameInternalName));

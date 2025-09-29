@@ -40,6 +40,7 @@ static bool8 sub_80A6CF4(struct UnkGroundSpriteSubStructx48 *a0);
 static void sub_80A69FC(struct UnkGroundSpriteStruct *ptr);
 static void sub_80A6460(void);
 static void sub_80A72B8(struct UnkGroundSpriteStruct *ptr, bool8 a1);
+static bool8 GroundSprite_HasAnimation(axmain *axMain, s32 animIndex, s32 direction);
 
 void sub_80A62F0(void)
 {
@@ -566,6 +567,29 @@ void GroundSprite_ExtendPaletteDelete(struct UnkGroundSpriteStruct *ptr)
     }
 }
 
+static bool8 GroundSprite_HasAnimation(axmain *axMain, s32 animIndex, s32 direction)
+{
+    const ax_anim *const *animTable;
+
+    if (axMain == NULL)
+        return FALSE;
+    if (animIndex < 0 || animIndex >= (s32) axMain->animCount)
+        return FALSE;
+
+    animTable = axMain->animations[animIndex];
+    if (animTable == NULL)
+        return FALSE;
+
+    direction &= 7;
+    if (direction < 0 || direction >= 8)
+        return FALSE;
+
+    if (animTable[direction] == NULL)
+        return FALSE;
+
+    return TRUE;
+}
+
 static bool8 sub_80A6CF4(struct UnkGroundSpriteSubStructx48 *a0)
 {
     struct UnkGroundSpriteStruct *spArray[UNK_3001B7C_SUB0_COUNT];
@@ -698,6 +722,9 @@ void sub_80A6EFC(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 a2_)
 {
     s32 flagResult;
     unkStruct_3001B7C_sub0 *sub0Ptr;
+    axmain *axMain;
+    s32 animIndex;
+    s32 direction;
     s32 a1 = (s16) a1_;
     s32 a2 = (s8) a2_;
 
@@ -750,7 +777,26 @@ void sub_80A6EFC(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 a2_)
     }
 
     ptr->unk6E = 0;
-    AxResInit(&ptr->axdata, ptr->unk48.axmain, (a1 & 0xFF) + a2 / 8, a2 & 7, sub0Ptr->unk4, 0, ((u16)a1 & 0x800) != 0);
+
+    axMain = ptr->unk48.axmain;
+    animIndex = (a1 & 0xFF) + a2 / 8;
+    direction = a2 & 7;
+
+    if (!GroundSprite_HasAnimation(axMain, animIndex, direction)) {
+        animIndex = 0;
+        if (!GroundSprite_HasAnimation(axMain, animIndex, direction)) {
+            direction = 0;
+            if (!GroundSprite_HasAnimation(axMain, animIndex, direction)) {
+                ptr->axdata.flags &= ~(0x1000);
+                return;
+            }
+        }
+
+        a1 = (a1 & ~0xFF) | (animIndex & 0xFF);
+        a2 = direction;
+    }
+
+    AxResInit(&ptr->axdata, axMain, animIndex, direction, sub0Ptr->unk4, 0, ((u16)a1 & 0x800) != 0);
 }
 
 void sub_80A7040(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 a2_, s32 a3)

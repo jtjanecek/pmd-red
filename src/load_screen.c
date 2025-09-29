@@ -288,7 +288,24 @@ void DrawLoadScreenText(void)
       sprintfStatic(gLoadScreen->formattedCustomSeed, gCustomSeedUnsetText);
   else
       sprintfStatic(gLoadScreen->formattedCustomSeed, gCustomSeedLabelFormat, savedSeed);
-  PrintStringOnWindow(136,0,gLoadScreen->formattedCustomSeed,0,0);
+
+  {
+      // Clamp the X position so long seeds stay fully inside the window.
+      const s32 defaultSeedX = 136;
+      s32 seedX = defaultSeedX;
+      const s32 windowWidthPx = gWindows[0].width * 8;
+      const s32 seedWidth = GetStringLineWidth(gLoadScreen->formattedCustomSeed);
+
+      if (windowWidthPx > 0 && seedWidth > 0) {
+          s32 maxSeedX = windowWidthPx - seedWidth;
+          if (maxSeedX < 0)
+              maxSeedX = 0;
+          if (seedX > maxSeedX)
+              seedX = maxSeedX;
+      }
+
+      PrintStringOnWindow(seedX, 0, gLoadScreen->formattedCustomSeed, 0, 0);
+  }
 
   // Draw Team Name
   if (sub_80023E4(0)) {

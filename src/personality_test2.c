@@ -10,6 +10,7 @@
 #include "menu_input.h"
 #include "personality_test2.h"
 #include "pokemon.h"
+#include "random.h"
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
@@ -23,6 +24,7 @@ static s32 GetGlobalIndex(s32 localIndex);
 static void nullsub_135(void);
 static void PersonalityTest_DisplayPartnerSprite(void);
 static void RedrawPartnerSelectionMenu(void);
+static s16 ChooseRandomPartner(void);
 
 static void sub_803CEAC(void);
 static void sub_803CECC(void);
@@ -39,7 +41,7 @@ static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter)
     gUnknown_203B404->s18.m.menuWindow = &gUnknown_203B404->s18.m.windows.id[0];
 
     gUnknown_203B404->s18.m.windows.id[0] = gUnknown_80F4290;
-    gUnknown_203B404->s18.m.windows.id[1] = gUnknown_80F42A8;
+    gUnknown_203B404->s18.m.windows.id[1] = gUnknown_80F4278;
     gUnknown_203B404->s18.m.windows.id[2] = gUnknown_80F4278;
     gUnknown_203B404->s18.m.windows.id[3] = gUnknown_80F4278;
 
@@ -68,22 +70,25 @@ void CreateStarterSelectionMenu(void)
 
 u16 HandlePartnerSelectionInput(void)
 {
-    s32 partnerID;
+    s32 previousIndex;
     s32 keyPress;
 
-    partnerID = gUnknown_203B404->s18.m.input.menuIndex;
+    previousIndex = gUnknown_203B404->s18.m.input.menuIndex;
     gUnknown_203B404->unk16 = 0;
 
     if (MenuCursorUpdate(&gUnknown_203B404->s18.m.input, TRUE))
         RedrawPartnerSelectionMenu();
 
-    if (partnerID != gUnknown_203B404->s18.m.input.menuIndex)
+    if (previousIndex != gUnknown_203B404->s18.m.input.menuIndex)
         PersonalityTest_DisplayPartnerSprite();
 
     keyPress = GetKeyPress(&gUnknown_203B404->s18.m.input);
     if (keyPress == INPUT_A_BUTTON) {
+        s32 globalIndex = GetGlobalIndex(gUnknown_203B404->s18.m.input.menuIndex);
         PlayMenuSoundEffect(0);
-        return gUnknown_203B404->PartnerArray[GetGlobalIndex(gUnknown_203B404->s18.m.input.menuIndex)];
+        if (globalIndex == 0)
+            return ChooseRandomPartner();
+        return gUnknown_203B404->PartnerArray[globalIndex - 1];
     }
 
     if (gUnknown_203B404->unk16 != 0) {
@@ -136,6 +141,7 @@ static void RedrawPartnerSelectionMenu(void)
     u32 yCoord;
     const u8 *monName;
     s32 monCounter;
+    s32 globalIndex;
 
     UPDATE_MENU_WINDOW_HEIGHT(gUnknown_203B404->s18.m);
 
@@ -149,8 +155,14 @@ static void RedrawPartnerSelectionMenu(void)
     monCounter = 0;
     while (monCounter < gUnknown_203B404->s18.m.input.currPageEntries) {
         yCoord = GetMenuEntryYCoord(&gUnknown_203B404->s18.m.input, monCounter);
-        monName = GetMonSpecies(gUnknown_203B404->PartnerArray[GetGlobalIndex(monCounter)]);
-        PrintStringOnWindow(8, yCoord, monName, gUnknown_203B404->s18.m.menuWinId, 0);
+        globalIndex = GetGlobalIndex(monCounter);
+        if (globalIndex == 0) {
+            PrintStringOnWindow(8, yCoord, gMenuRandomSelectionText, gUnknown_203B404->s18.m.menuWinId, 0);
+        }
+        else {
+            monName = GetMonSpecies(gUnknown_203B404->PartnerArray[globalIndex - 1]);
+            PrintStringOnWindow(8, yCoord, monName, gUnknown_203B404->s18.m.menuWinId, 0);
+        }
         monCounter++;
     }
     sub_80073E0(gUnknown_203B404->s18.m.menuWinId);
@@ -159,25 +171,8 @@ static void RedrawPartnerSelectionMenu(void)
 
 static void PersonalityTest_DisplayPartnerSprite(void)
 {
-    s32 partnerID;
-    struct OpenedFile *faceFile;
-    s32 paletteIndex;
-    const u8 *gfx;
-    s32 emotionId;
-
-    partnerID = gUnknown_203B404->PartnerArray[GetGlobalIndex(gUnknown_203B404->s18.m.input.menuIndex)];
     CallPrepareTextbox_8008C54(1);
     sub_80073B8(1);
-    faceFile = GetDialogueSpriteDataPtr(partnerID);
-    if (faceFile != NULL) {
-        emotionId = EMOTION_NORMAL;
-        gfx = ((PortraitGfx *)(faceFile->data))->sprites[emotionId].gfx;
-        for (paletteIndex = 0; paletteIndex < 0x10; paletteIndex++) {
-            SetBGPaletteBufferColorArray(paletteIndex + 0xE0, &((PortraitGfx *)(faceFile->data))->sprites[emotionId].pal[paletteIndex]);
-        }
-        DisplayMonPortraitSpriteFlipped(1, gfx, 14);
-        CloseFile(faceFile);
-    }
     sub_80073E0(1);
     gUnknown_203B404->unk16 = 1;
 }
@@ -190,7 +185,7 @@ static s32 GetValidPartners(void)
     if (gUnknown_203B404->selectingStarter) {
         for (i = 0; i < NUM_PARTNERS; i++)
             gUnknown_203B404->PartnerArray[i] = gPartners[i];
-        return NUM_PARTNERS;
+        return NUM_PARTNERS + 1;
     }
 
     ValidPartnerCounter = 0;
@@ -200,11 +195,39 @@ static s32 GetValidPartners(void)
         ValidPartnerCounter++;
     }
 
-    return ValidPartnerCounter;
+    return ValidPartnerCounter + 1;
 }
 
 static s32 GetGlobalIndex(s32 localIndex)
 {
     MenuInputStruct *input = &gUnknown_203B404->s18.m.input;
     return input->currPage * input->entriesPerPage + localIndex;
+}
+
+static s16 ChooseRandomPartner(void)
+{
+    s16 selection;
+    s32 availableCount = gUnknown_203B404->s18.m.input.totalEntriesCount - 1;
+
+    if (availableCount <= 0)
+        return MONSTER_NONE;
+
+    if (!gUnknown_203B404->selectingStarter && gUnknown_203B404->StarterID != MONSTER_NONE && availableCount > 1) {
+        s32 attempts;
+
+        for (attempts = 0; attempts < 256; attempts++) {
+            selection = gUnknown_203B404->PartnerArray[RandInt(availableCount)];
+            if (selection != gUnknown_203B404->StarterID)
+                return selection;
+        }
+
+        for (attempts = 0; attempts < availableCount; attempts++) {
+            selection = gUnknown_203B404->PartnerArray[attempts];
+            if (selection != gUnknown_203B404->StarterID)
+                return selection;
+        }
+    }
+
+    selection = gUnknown_203B404->PartnerArray[RandInt(availableCount)];
+    return selection;
 }

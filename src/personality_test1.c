@@ -592,29 +592,17 @@ static void AdvanceToTestEnd(void)
 
 static void PersonalityTest_DisplayStarterSprite(void)
 {
-    s32 starterID;
-    struct OpenedFile *faceFile;
-    s32 paletteIndex;
-    s32 emotionId;
-    const u8 *gfx;
     WindowTemplates stackArray;
 
-    starterID = sPersonalityTestTracker->unk4.StarterID;
     RestoreSavedWindows(&stackArray);
-    stackArray.id[1] = sUnknown_80F4244;
+    stackArray.id[1].width = 0;
+    stackArray.id[1].height = 0;
+    stackArray.id[1].unk10 = 0;
+    stackArray.id[1].unk12 = 0;
+    stackArray.id[1].header = NULL;
     ResetUnusedInputStruct();
     ShowWindows(&stackArray, TRUE, FALSE);
     CallPrepareTextbox_8008C54(1);
     sub_80073B8(1);
-
-    faceFile = GetDialogueSpriteDataPtr(starterID);
-    gfx = ((PortraitGfx *)(faceFile->data))->sprites[EMOTION_HAPPY].gfx;
-    emotionId = EMOTION_HAPPY;
-    for (paletteIndex = 0; paletteIndex < 0x10; paletteIndex++) {
-        SetBGPaletteBufferColorArray(paletteIndex + 0xE0, &((PortraitGfx *)(faceFile->data))->sprites[emotionId].pal[paletteIndex]);
-    }
-
-    DisplayMonPortraitSpriteFlipped(1, gfx, 14);
-    CloseFile(faceFile);
     sub_80073E0(1);
 }

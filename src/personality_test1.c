@@ -30,6 +30,8 @@ enum
     PERSONALITY_PLAYER_GENDER,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
     PERSONALITY_PLAYER_STARTER_SELECTION,
+    PERSONALITY_ADVANCE_TO_STARTER_NICKNAME,
+    PERSONALITY_STARTER_NICKNAME,
     PERSONALITY_STARTER_REVEAL,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_2,
@@ -50,6 +52,8 @@ static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
 #define SEED_MENU_RANDOM 0
 #define SEED_MENU_CUSTOM 1
 #define NAMING_SCREEN_NUMERIC 6
+#define NAMING_SCREEN_PLAYER 0
+#define NAMING_SCREEN_PARTNER 3
 
 #include "data/personality_test1.h"
 
@@ -73,11 +77,13 @@ static void StartCustomSeedInput(void);
 static void HandleCustomSeedInput(void);
 static void StartGenderSelection(void);
 static void AdvanceToStarterSelection(void);
+static void AdvanceToStarterNickname(void);
 static void HandleStarterSelection(void);
+static void HandleStarterNickname(void);
 static s32 GenerateRandomSeed(void);
 static bool32 TryStoreCustomSeed(void);
 static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
-static void CleanupSeedNamingScreen(void);
+static void CleanupNamingScreen(void);
 
 bool8 CreateTestTracker(void)
 {
@@ -131,6 +137,12 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_PLAYER_STARTER_SELECTION:
             HandleStarterSelection();
+            break;
+        case PERSONALITY_ADVANCE_TO_STARTER_NICKNAME:
+            AdvanceToStarterNickname();
+            break;
+        case PERSONALITY_STARTER_NICKNAME:
+            HandleStarterNickname();
             break;
         case PERSONALITY_STARTER_REVEAL:
             RevealStarter();
@@ -243,21 +255,21 @@ static void HandleCustomSeedInput(void)
         case 0:
             break;
         case 2:
-            CleanupSeedNamingScreen();
+            CleanupNamingScreen();
             MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
             sPersonalityTestTracker->usingCustomSeed = FALSE;
             sPersonalityTestTracker->TestState = PERSONALITY_SEED_PROMPT;
             break;
         case 3:
             if (TryStoreCustomSeed()) {
-                CleanupSeedNamingScreen();
+                CleanupNamingScreen();
                 StartGenderSelection();
             }
             break;
     }
 }
 
-static void CleanupSeedNamingScreen(void)
+static void CleanupNamingScreen(void)
 {
     NamingScreen_Free();
     ResetUnusedInputStruct();
@@ -281,6 +293,17 @@ static void AdvanceToStarterSelection(void)
     sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_STARTER_SELECTION;
 }
 
+static void AdvanceToStarterNickname(void)
+{
+    s32 temp;
+
+    if (sub_80144A4(&temp) != 0)
+        return;
+
+    NamingScreen_Init(NAMING_SCREEN_PLAYER, sPersonalityTestTracker->unk4.StarterName);
+    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_NICKNAME;
+}
+
 static void HandleStarterSelection(void)
 {
     u16 chosen;
@@ -293,6 +316,26 @@ static void HandleStarterSelection(void)
     sub_803CE6C();
     sPersonalityTestTracker->unk4.StarterID = chosen;
     CopyMonsterNameToBuffer(gFormatBuffer_Monsters[0], chosen);
+    CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, chosen);
+    CreateDialogueBoxAndPortrait(gStarterNickPrompt, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_NICKNAME;
+}
+
+static void HandleStarterNickname(void)
+{
+    u32 result = NamingScreen_HandleInput();
+
+    if (result == 0)
+        return;
+
+    if (result == 2) {
+        CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
+    }
+    else if (result == 3 && sPersonalityTestTracker->unk4.StarterName[0] == '\0') {
+        CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
+    }
+
+    CleanupNamingScreen();
     sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
 }
 
@@ -440,6 +483,7 @@ static void PromptForPartnerNickname(void)
         if (selectedPartner != 0xFFFE) {
             sub_803CE6C();
             sPersonalityTestTracker->unk4.PartnerID = selectedPartner;
+            CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, selectedPartner);
             CreateDialogueBoxAndPortrait(gPartnerNickPrompt, 0, 0, 0x301);
             sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_2;
         }
@@ -450,14 +494,28 @@ static void AdvanceToPartnerNicknameScreen(void)
 {
     s32 temp;
 
-    if (sub_80144A4(&temp) == 0)
-        sPersonalityTestTracker->TestState = PERSONALITY_PARTNER_NICKNAME;
+    if (sub_80144A4(&temp) != 0)
+        return;
+
+    NamingScreen_Init(NAMING_SCREEN_PARTNER, sPersonalityTestTracker->unk4.PartnerNick);
+    sPersonalityTestTracker->TestState = PERSONALITY_PARTNER_NICKNAME;
 }
 
 static void NicknamePartner(void)
 {
-    CopyStringtoBuffer(sPersonalityTestTracker->unk4.PartnerNick, GetMonSpecies(sPersonalityTestTracker->unk4.PartnerID));
-    // Skip nickname UI; accept default and continue
+    u32 result = NamingScreen_HandleInput();
+
+    if (result == 0)
+        return;
+
+    if (result == 2) {
+        CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
+    }
+    else if (result == 3 && sPersonalityTestTracker->unk4.PartnerNick[0] == '\0') {
+        CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
+    }
+
+    CleanupNamingScreen();
     CreateDialogueBoxAndPortrait(gEndIntroText, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_TEST_END;
 }

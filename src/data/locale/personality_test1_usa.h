@@ -754,6 +754,8 @@
     "\n" \
     "{CENTER_ALIGN}The Pokémon {POKEMON_0}!"))
 
+#define STARTER_NICK_PROMPT (_("{CENTER_ALIGN}What will your name be?"))
+
 #define PARTNER_PROMPT (_( \
     "{CENTER_ALIGN}This is the final step.{WAIT_PRESS}\n" \
     "{CENTER_ALIGN}Who would you like to have as a partner?{EXTRA_MSG}" \

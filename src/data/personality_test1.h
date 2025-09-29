@@ -9,6 +9,7 @@ static const MenuItem gSeedModeMenu[] = {
 
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the exploration seed\n{CENTER_ALIGN}using the number pad.");
 ALIGNED(4) static const u8 gStarterPrompt[] = _("{CENTER_ALIGN}Select your character.");
+ALIGNED(4) static const u8 gStarterNickPrompt[] = STARTER_NICK_PROMPT;
 
 ALIGNED(4) static const u8 sGender0[] = GENDER_Q;
 static const MenuItem gGenderMenu[] = {

@@ -75,7 +75,7 @@ static EWRAM_INIT PersonalityRelated sPersonalityRelated_203B040 = {
     .PartnerNick = {""},
     .TeamName = {""},
     .customSeed = 0,
-    .difficulty = DIFFICULTY_NORMAL,
+    .difficulty = DIFFICULTY_VANILLA,
 };
 
 static void LoadTitleScreen(void);
@@ -995,7 +995,7 @@ void sub_8001044(PersonalityRelated *src)
 {
     sPersonalityRelated_203B040 = *src;
     if (sPersonalityRelated_203B040.difficulty >= NUM_DIFFICULTY_SETTINGS)
-        sPersonalityRelated_203B040.difficulty = DIFFICULTY_NORMAL;
+        sPersonalityRelated_203B040.difficulty = DIFFICULTY_VANILLA;
     SetGameDifficultySetting(sPersonalityRelated_203B040.difficulty);
 }
 

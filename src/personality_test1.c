@@ -53,8 +53,9 @@ static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
 
 #define INT32_MAX_VALUE 2147483647
 #define INT32_MIN_VALUE (-2147483647 - 1)
-#define SEED_MENU_RANDOM 0
-#define SEED_MENU_CUSTOM 1
+#define SEED_MENU_VANILLA 0
+#define SEED_MENU_RANDOM 1
+#define SEED_MENU_CUSTOM 2
 #define NAMING_SCREEN_NUMERIC 6
 #define NAMING_SCREEN_PLAYER 0
 #define NAMING_SCREEN_TEAM 1
@@ -114,8 +115,8 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->rngSeed = 0;
     sPersonalityTestTracker->seedChosen = FALSE;
     sPersonalityTestTracker->usingCustomSeed = FALSE;
-    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
-    SetGameDifficultySetting(DIFFICULTY_NORMAL);
+    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
+    SetGameDifficultySetting(DIFFICULTY_VANILLA);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
 }
 
@@ -230,6 +231,15 @@ static void HandleSeedSelection(void)
         return;
 
     switch (selection) {
+        case SEED_MENU_VANILLA:
+        {
+            sPersonalityTestTracker->rngSeed = -1;
+            sPersonalityTestTracker->unk4.customSeed = -1;
+            sPersonalityTestTracker->seedChosen = TRUE;
+            sPersonalityTestTracker->usingCustomSeed = FALSE;
+            StartDifficultySelection();
+            break;
+        }
         case SEED_MENU_RANDOM:
         {
             s32 generatedSeed = GenerateRandomSeed();
@@ -475,7 +485,7 @@ static void HandleDifficultySelection(void)
         return;
 
     if (selection < 0 || selection >= NUM_DIFFICULTY_SETTINGS)
-        selection = DIFFICULTY_NORMAL;
+        selection = DIFFICULTY_VANILLA;
 
     sPersonalityTestTracker->unk4.difficulty = selection;
     SetGameDifficultySetting(selection);

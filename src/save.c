@@ -29,7 +29,7 @@ struct unk_struct
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
-EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_NORMAL};
+EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_VANILLA};
 
 EWRAM_INIT u32 gUnknown_203B17C = {0};
 EWRAM_INIT const char *gUnknown_203B180 = {"POKE_DUNGEON__05"};
@@ -73,14 +73,14 @@ void sub_8011C40(s32 x)
 u32 GetGameDifficultySetting(void)
 {
     if (gUnknown_202DE2C >= NUM_DIFFICULTY_SETTINGS)
-        gUnknown_202DE2C = DIFFICULTY_NORMAL;
+        gUnknown_202DE2C = DIFFICULTY_VANILLA;
     return gUnknown_202DE2C;
 }
 
 void SetGameDifficultySetting(u32 value)
 {
     if (value >= NUM_DIFFICULTY_SETTINGS)
-        value = DIFFICULTY_NORMAL;
+        value = DIFFICULTY_VANILLA;
     gUnknown_202DE2C = value;
 }
 

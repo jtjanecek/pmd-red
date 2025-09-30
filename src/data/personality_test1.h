@@ -5,8 +5,9 @@ ALIGNED(4) static const u8 gSeedModePrompt[] = _(
     "{CENTER_ALIGN}The seed randomizes tilesets and Pokemon."
 );
 static const MenuItem gSeedModeMenu[] = {
-    { _("Random"), 0 },
-    { _("Custom"), 1 },
+    { _("Vanilla"), 0 },
+    { _("Random"), 1 },
+    { _("Custom"), 2 },
     { NULL, -1 },
 };
 
@@ -17,7 +18,7 @@ ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
     "{CENTER_ALIGN}Nightmare: Only the best will survive."
 );
 static const MenuItem gDifficultyMenu[] = {
-    { _("Normal"), DIFFICULTY_NORMAL },
+    { _("Vanilla"), DIFFICULTY_VANILLA },
     { _("Hard"), DIFFICULTY_HARD },
     { _("Nightmare"), DIFFICULTY_NIGHTMARE },
     { NULL, -1 },

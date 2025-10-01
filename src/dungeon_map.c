@@ -22,8 +22,13 @@
 #include "text_1.h"
 #include "trap.h"
 #include "run_dungeon.h"
+#include "dungeon_main.h"
 
 extern bool8 ShouldMinimapDisplayEntity(Entity *ent);
+extern bool8 gAutoExploreActive;
+extern DungeonPos gAutoCrawlTargetPos;
+extern DungeonPos gAutoCrawlNextStep1;
+extern DungeonPos gAutoCrawlNextStep2;
 
 struct UnkStruct1
 {
@@ -235,7 +240,25 @@ void DrawMinimapTile(s32 x, s32 y)
 
     if (GameOptions_ShowMiniMap() && !gDungeon->unk1356C) {
         mapGfxType = MAP_GFX_NOTHING;
-        if (!blinded) {
+        
+        // PRIORITY: Check if this is the auto-crawl target position FIRST
+        if (!blinded && gAutoExploreActive && gAutoCrawlTargetPos.x == x && gAutoCrawlTargetPos.y == y) {
+            mapGfxType = MAP_GFX_ITEM; // Use item icon (red circle) for target
+            lookForMapObject = FALSE;
+            // Debug: This should show up as a red circle on the minimap
+        }
+        // Check if this position is the next step in the A* path
+        else if (!blinded && gAutoExploreActive) {
+            if (gAutoCrawlNextStep1.x == x && gAutoCrawlNextStep1.y == y) {
+                mapGfxType = MAP_GFX_ALLY; // Use ally icon (blue circle) for next step
+                lookForMapObject = FALSE;
+            }
+            else if (gAutoCrawlNextStep2.x == x && gAutoCrawlNextStep2.y == y) {
+                mapGfxType = MAP_GFX_ALLY; // Use ally icon (blue circle) for second step
+                lookForMapObject = FALSE;
+            }
+        }
+        else if (!blinded) {
             Entity *entity = tile->monster;
             if (entity != NULL) {
                 s32 entType = GetEntityType(entity);
@@ -263,6 +286,7 @@ void DrawMinimapTile(s32 x, s32 y)
                 }
             }
         }
+        
         if (lookForMapObject && !blinded) {
             Entity *entity = tile->object;
             if (entity != NULL) {

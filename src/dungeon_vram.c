@@ -18,6 +18,9 @@
 #include "sprite.h"
 #include "text_1.h"
 #include "text_2.h"
+#include "text_3.h"
+#include "string_format.h"
+#include "structs/map.h"
 #include "dungeon_map.h"
 #include "dungeon_map_access.h"
 #include "dungeon_message.h"
@@ -166,10 +169,18 @@ void DungeonRunFrameActions(u32 a0)
         sub_803E668(a0);
 }
 
+// Debug function to display terrain information - temporarily disabled due to memory issues
+static void DrawTerrainDebugInfo(void)
+{
+    // TODO: Implement proper movement detection for tile notifications
+    // For now, disabled to avoid memory issues and spamming
+}
+
 static void sub_803E490(u32 unused)
 {
     sUnknown_202EDD4++;
     xxx_draw_string_80524F0();
+    DrawTerrainDebugInfo();
     sub_8085F78();
     UpdateCamera(1);
 

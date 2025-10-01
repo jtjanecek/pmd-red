@@ -39,6 +39,7 @@
 #include "dungeon_move.h"
 #include "dungeon_map_access.h"
 #include "warp_target.h"
+#include "dungeon_main.h"
 
 void sub_8075BA4(Entity *param_1, u8 param_2);
 void sub_804178C(u8 param_1);
@@ -68,6 +69,7 @@ void HandlePickUpAIAction(Entity *pokemon);
 void HandleThrowItemAIAction(Entity *pokemon);
 void HandleEatAIAction(Entity *pokemon);
 u32 sub_8075818(Entity *entity);;
+void CheckTileDebugNotification(Entity *leader);
 
 EWRAM_DATA u8 gUnknown_202F32C = 0;
 EWRAM_DATA u8 gUnknown_202F32D = 0;
@@ -180,6 +182,9 @@ bool8 ExecuteEntityDungeonAction(Entity *entity)
                     pos.y = entity->pos.y;
                     sub_80694C0(entity,pos1.x,pos1.y,0);
                     sub_8074FB0(entity,(info->action).direction,&pos);
+                    
+                    // Debug notification for tile movement
+                    CheckTileDebugNotification(entity);
                     if (((IQSkillIsEnabled(entity, IQ_SUPER_MOBILE)) && (info->invisibleClassStatus.status != STATUS_MOBILE)) &&
                         (!HasHeldItem(entity,ITEM_MOBILE_SCARF))) {
                         sub_804AE08(&entity->pos);

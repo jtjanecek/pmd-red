@@ -100,12 +100,23 @@ static void PrintOnMainMenu(bool8 printAll);
 EWRAM_DATA bool8 gAutoExploreActive = FALSE;
 EWRAM_DATA DungeonPos gAutoExploreTarget = {0, 0};
 EWRAM_DATA bool8 gAutoExploreHasTarget = FALSE;
+EWRAM_DATA DungeonPos gAutoExploreLastTarget = {0, 0};
+
+// Auto-crawl state tracking
+EWRAM_DATA bool8 gAutoCrawlInRoom = FALSE;
+EWRAM_DATA bool8 gAutoCrawlPreviousInRoom = FALSE;
 
 // Auto-explore functions
 void ResetAutoExplore(void)
 {
     gAutoExploreActive = FALSE;
     gAutoExploreHasTarget = FALSE;
+    gAutoExploreLastTarget.x = 0;
+    gAutoExploreLastTarget.y = 0;
+    
+    // Reset auto-crawl state
+    gAutoCrawlInRoom = FALSE;
+    gAutoCrawlPreviousInRoom = FALSE;
 }
 
 void SetAutoExploreActive(bool8 active)
@@ -140,7 +151,32 @@ bool8 AreStairsVisible(void)
     return (tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_REVEALED) != 0;
 }
 
-static bool8 FindNearestUnexploredTile(DungeonPos *playerPos, DungeonPos *outTarget)
+// Helper function to determine if we're currently in a room
+static bool8 IsInRoom(DungeonPos *pos)
+{
+    const Tile *tile = GetTile(pos->x, pos->y);
+    return tile->room != CORRIDOR_ROOM;
+}
+
+// Helper function to check if we're on a NATURAL_JUNCTION tile
+static bool8 IsOnJunction(DungeonPos *pos)
+{
+    const Tile *tile = GetTile(pos->x, pos->y);
+    return (tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION) != 0;
+}
+
+// Helper function to check if stairs are in the current room
+static bool8 AreStairsInCurrentRoom(DungeonPos *playerPos)
+{
+    const Tile *playerTile = GetTile(playerPos->x, playerPos->y);
+    const Tile *stairsTile = GetTile(gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
+    
+    return (playerTile->room == stairsTile->room) && (stairsTile->room != CORRIDOR_ROOM);
+}
+
+
+// Find unexplored junction tiles (corridor entrances) that lead to unexplored corridors
+static bool8 FindUnexploredJunction(DungeonPos *playerPos, DungeonPos *outTarget)
 {
     s32 x, y;
     s32 minDistance;
@@ -159,21 +195,17 @@ static bool8 FindNearestUnexploredTile(DungeonPos *playerPos, DungeonPos *outTar
     bestTarget.x = 0;
     bestTarget.y = 0;
     
-    // Search for unexplored walkable tiles
+    // Search for NATURAL_JUNCTION tiles (corridor entrances)
     for (y = 0; y < DUNGEON_MAX_SIZE_Y; y++) {
         for (x = 0; x < DUNGEON_MAX_SIZE_X; x++) {
             tile = GetTile(x, y);
             
-            // Skip if tile is already visited
-            if (tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_VISITED)
+            // Only consider NATURAL_JUNCTION tiles
+            if (!(tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION))
                 continue;
             
-            // Check if this is a walkable tile (normal terrain)
-            if (!(tile->terrainFlags & TERRAIN_TYPE_NORMAL))
-                continue;
-            
-            // Skip walls
-            if (tile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL)
+            // Skip if this is the same target we just reached
+            if (x == gAutoExploreLastTarget.x && y == gAutoExploreLastTarget.y)
                 continue;
             
             // Check if there's a revealed neighbor (so we can reach it)
@@ -202,7 +234,7 @@ static bool8 FindNearestUnexploredTile(DungeonPos *playerPos, DungeonPos *outTar
             if (!hasRevealedNeighbor)
                 continue;
             
-            // Calculate distance to this tile
+            // Calculate distance to this junction
             tilePos.x = x;
             tilePos.y = y;
             distance = GetDistance(playerPos, &tilePos);
@@ -226,8 +258,15 @@ static bool8 FindNearestUnexploredTile(DungeonPos *playerPos, DungeonPos *outTar
 
 bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
 {
-    // First priority: if stairs are visible, navigate to them
-    if (AreStairsVisible()) {
+    bool8 currentInRoom = IsInRoom(&leader->pos);
+    bool8 onJunction = IsOnJunction(&leader->pos);
+    
+    // Update state tracking
+    gAutoCrawlPreviousInRoom = gAutoCrawlInRoom;
+    gAutoCrawlInRoom = currentInRoom;
+    
+    // Logic 1: If we are in a room with stairs, A* to the stairs
+    if (currentInRoom && AreStairsInCurrentRoom(&leader->pos)) {
         outTarget->x = gDungeon->stairsSpawn.x;
         outTarget->y = gDungeon->stairsSpawn.y;
         gAutoExploreHasTarget = TRUE;
@@ -235,8 +274,72 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         return TRUE;
     }
     
-    // Second priority: find nearest unexplored tile
-    if (FindNearestUnexploredTile(&leader->pos, outTarget)) {
+    // Logic 2: If we are in a room without stairs, move towards NATURAL_JUNCTION that leads to unexplored corridor
+    if (currentInRoom && !AreStairsInCurrentRoom(&leader->pos)) {
+        if (FindUnexploredJunction(&leader->pos, outTarget)) {
+            gAutoExploreHasTarget = TRUE;
+            gAutoExploreTarget = *outTarget;
+            return TRUE;
+        }
+    }
+    
+    // Logic 3: If we are on a NATURAL_JUNCTION tile, move into the appropriate area
+    if (onJunction) {
+        s32 dx, dy;
+        s32 corridorX, corridorY;
+        s32 roomX, roomY;
+        const Tile *corridorTile;
+        const Tile *roomTile;
+        
+        if (gAutoCrawlPreviousInRoom) {
+            // We were in room, now go into corridor - find any adjacent corridor tile
+            for (dy = -1; dy <= 1; dy++) {
+                for (dx = -1; dx <= 1; dx++) {
+                    if (dx == 0 && dy == 0) continue;
+                    
+                    corridorX = leader->pos.x + dx;
+                    corridorY = leader->pos.y + dy;
+                    
+                    if (corridorX < 0 || corridorY < 0 || corridorX >= DUNGEON_MAX_SIZE_X || corridorY >= DUNGEON_MAX_SIZE_Y)
+                        continue;
+                    
+                    corridorTile = GetTile(corridorX, corridorY);
+                    if (corridorTile->room == CORRIDOR_ROOM) {
+                        outTarget->x = corridorX;
+                        outTarget->y = corridorY;
+                        gAutoExploreHasTarget = TRUE;
+                        gAutoExploreTarget = *outTarget;
+                        return TRUE;
+                    }
+                }
+            }
+        } else {
+            // We were in corridor, now go into room - find any adjacent room tile
+            for (dy = -1; dy <= 1; dy++) {
+                for (dx = -1; dx <= 1; dx++) {
+                    if (dx == 0 && dy == 0) continue;
+                    
+                    roomX = leader->pos.x + dx;
+                    roomY = leader->pos.y + dy;
+                    
+                    if (roomX < 0 || roomY < 0 || roomX >= DUNGEON_MAX_SIZE_X || roomY >= DUNGEON_MAX_SIZE_Y)
+                        continue;
+                    
+                    roomTile = GetTile(roomX, roomY);
+                    if (roomTile->room != CORRIDOR_ROOM) {
+                        outTarget->x = roomX;
+                        outTarget->y = roomY;
+                        gAutoExploreHasTarget = TRUE;
+                        gAutoExploreTarget = *outTarget;
+                        return TRUE;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Fallback: Use the original exploration logic
+    if (FindUnexploredJunction(&leader->pos, outTarget)) {
         gAutoExploreHasTarget = TRUE;
         gAutoExploreTarget = *outTarget;
         return TRUE;
@@ -247,12 +350,73 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
     return FALSE;
 }
 
+// Find the best path to a target using improved pathfinding
+static s32 FindBestPathToTarget(Entity *leader, DungeonPos *target)
+{
+    s32 direction;
+    s32 bestDirection = -1;
+    s32 bestScore = -9999;
+    s32 score;
+    DungeonPos testPos;
+    s32 currentDistance;
+    s32 testDistance;
+    
+    currentDistance = GetDistance(&leader->pos, target);
+    
+    // Try primary direction first
+    direction = GetDirectionTowardsPosition(&leader->pos, target);
+    if (CanMoveInDirection(leader, direction)) {
+        return direction;
+    }
+    
+    // Try all 8 directions and evaluate them with pathfinding
+    for (direction = 0; direction < 8; direction++) {
+        if (!CanMoveInDirection(leader, direction)) {
+            continue;
+        }
+        
+        // Calculate position after moving in this direction
+        testPos.x = leader->pos.x + gAdjacentTileOffsets[direction].x;
+        testPos.y = leader->pos.y + gAdjacentTileOffsets[direction].y;
+        testDistance = GetDistance(&testPos, target);
+        
+        // Start with basic distance improvement
+        score = currentDistance - testDistance;
+        
+        // Big bonus for getting closer to target
+        if (testDistance < currentDistance) {
+            score += 20;
+        }
+        
+        // Small penalty for getting further from target
+        if (testDistance > currentDistance) {
+            score -= 2;
+        }
+        
+        // Bonus for directions that are closer to the target direction
+        {
+            s32 targetDirection = GetDirectionTowardsPosition(&leader->pos, target);
+            s32 directionDiff = (direction - targetDirection + 8) % 8;
+            if (directionDiff > 4) directionDiff = 8 - directionDiff; // Wrap around
+            score += (4 - directionDiff) * 3; // Bonus for being closer to target direction
+        }
+        
+        // Small bonus for any valid movement
+        score += 1;
+        
+        if (score > bestScore) {
+            bestScore = score;
+            bestDirection = direction;
+        }
+    }
+    
+    return bestDirection;
+}
+
 s32 GetAutoExploreDirection(Entity *leader)
 {
     DungeonPos target;
     s32 direction;
-    s32 directions[4];
-    s32 i;
     
     if (!gAutoExploreActive)
         return -1;
@@ -260,6 +424,8 @@ s32 GetAutoExploreDirection(Entity *leader)
     // Check if we've reached our current target
     if (gAutoExploreHasTarget) {
         if (leader->pos.x == gAutoExploreTarget.x && leader->pos.y == gAutoExploreTarget.y) {
+            // Store the target we just reached to avoid immediately re-targeting it
+            gAutoExploreLastTarget = gAutoExploreTarget;
             gAutoExploreHasTarget = FALSE;
         }
     }
@@ -271,24 +437,11 @@ s32 GetAutoExploreDirection(Entity *leader)
         return -1;
     }
     
-    // Get direction towards target
-    direction = GetDirectionTowardsPosition(&leader->pos, &target);
+    // Use improved pathfinding to find the best direction
+    direction = FindBestPathToTarget(leader, &target);
     
-    // Check if we can move in that direction
-    if (!CanMoveInDirection(leader, direction)) {
-        // Try adjacent directions
-        directions[0] = (direction + 1) & DIRECTION_MASK;
-        directions[1] = (direction - 1) & DIRECTION_MASK;
-        directions[2] = (direction + 2) & DIRECTION_MASK;
-        directions[3] = (direction - 2) & DIRECTION_MASK;
-        
-        for (i = 0; i < 4; i++) {
-            if (CanMoveInDirection(leader, directions[i])) {
-                return directions[i];
-            }
-        }
-        
-        // Can't move towards target - clear it and try again next time
+    if (direction < 0) {
+        // Can't find a path to target - clear it and try again next time
         gAutoExploreHasTarget = FALSE;
         return -1;
     }

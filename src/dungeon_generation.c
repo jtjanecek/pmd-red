@@ -25,6 +25,7 @@ extern s32 sub_803DA20(s16 species);
 extern void sub_8049840(void);
 extern void sub_80429FC(DungeonPos *r0);
 extern void sub_80498A8(s32, s32);
+extern void ResetAutoExplore(void);
 extern void sub_8049B8C(void);
 
 enum CardinalDirection
@@ -183,6 +184,7 @@ void GenerateFloor(void)
     sKecleonShopPosition.minY = -1;
     sKecleonShopPosition.maxY = -1;
 
+    ResetAutoExplore();
     ResetFloor();
 
     gDungeon->unk644.unk20 = abs(floorProps->enemyDensity);

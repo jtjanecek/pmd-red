@@ -13,7 +13,7 @@ static const MenuItem gSeedModeMenu[] = {
 
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the dungeon seed\n{CENTER_ALIGN}using the number pad.");
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
-    "{CENTER_ALIGN}Normal: Closest to vanilla difficulty.\n"
+    "{CENTER_ALIGN}Vanilla: Similar difficulty to the base game..\n"
     "{CENTER_ALIGN}Hard: Stronger enemies. More bosses.\n"
     "{CENTER_ALIGN}Nightmare: Only the best will survive."
 );

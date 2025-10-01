@@ -23,6 +23,7 @@
 #include "dungeon_action.h"
 #include "dungeon_ai_movement.h"
 #include "dungeon_logic.h"
+#include "position_util.h"
 #include "dungeon_items.h"
 #include "dungeon_range.h"
 #include "dungeon_main.h"
@@ -94,6 +95,206 @@ static bool8 sub_805EC4C(Entity *a0, u8 a1);
 static bool8 sub_805EF60(Entity *a0, EntityInfo *a1);
 static void ShowMainMenu(bool8 fromBPress, bool8 a1);
 static void PrintOnMainMenu(bool8 printAll);
+
+// Auto-explore state
+EWRAM_DATA bool8 gAutoExploreActive = FALSE;
+EWRAM_DATA DungeonPos gAutoExploreTarget = {0, 0};
+EWRAM_DATA bool8 gAutoExploreHasTarget = FALSE;
+
+// Auto-explore functions
+void ResetAutoExplore(void)
+{
+    gAutoExploreActive = FALSE;
+    gAutoExploreHasTarget = FALSE;
+}
+
+void SetAutoExploreActive(bool8 active)
+{
+    gAutoExploreActive = active;
+    if (!active) {
+        gAutoExploreHasTarget = FALSE;
+    }
+}
+
+bool8 IsAutoExploreActive(void)
+{
+    return gAutoExploreActive;
+}
+
+bool8 AreStairsVisible(void)
+{
+    DungeonPos stairsPos;
+    const Tile *tile;
+    
+    stairsPos = gDungeon->stairsSpawn;
+    
+    if (stairsPos.x < 0 || stairsPos.y < 0)
+        return FALSE;
+    
+    if (stairsPos.x >= DUNGEON_MAX_SIZE_X || stairsPos.y >= DUNGEON_MAX_SIZE_Y)
+        return FALSE;
+    
+    tile = GetTile(stairsPos.x, stairsPos.y);
+    
+    // Check if the stairs tile has been revealed
+    return (tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_REVEALED) != 0;
+}
+
+static bool8 FindNearestUnexploredTile(DungeonPos *playerPos, DungeonPos *outTarget)
+{
+    s32 x, y;
+    s32 minDistance;
+    bool8 found;
+    DungeonPos bestTarget;
+    const Tile *tile;
+    bool8 hasRevealedNeighbor;
+    s32 dx, dy;
+    s32 nx, ny;
+    const Tile *neighborTile;
+    DungeonPos tilePos;
+    s32 distance;
+    
+    minDistance = 9999;
+    found = FALSE;
+    bestTarget.x = 0;
+    bestTarget.y = 0;
+    
+    // Search for unexplored walkable tiles
+    for (y = 0; y < DUNGEON_MAX_SIZE_Y; y++) {
+        for (x = 0; x < DUNGEON_MAX_SIZE_X; x++) {
+            tile = GetTile(x, y);
+            
+            // Skip if tile is already visited
+            if (tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_VISITED)
+                continue;
+            
+            // Check if this is a walkable tile (normal terrain)
+            if (!(tile->terrainFlags & TERRAIN_TYPE_NORMAL))
+                continue;
+            
+            // Skip walls
+            if (tile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL)
+                continue;
+            
+            // Check if there's a revealed neighbor (so we can reach it)
+            hasRevealedNeighbor = FALSE;
+            for (dy = -1; dy <= 1; dy++) {
+                for (dx = -1; dx <= 1; dx++) {
+                    if (dx == 0 && dy == 0)
+                        continue;
+                    
+                    nx = x + dx;
+                    ny = y + dy;
+                    
+                    if (nx < 0 || ny < 0 || nx >= DUNGEON_MAX_SIZE_X || ny >= DUNGEON_MAX_SIZE_Y)
+                        continue;
+                    
+                    neighborTile = GetTile(nx, ny);
+                    if (neighborTile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_REVEALED) {
+                        hasRevealedNeighbor = TRUE;
+                        break;
+                    }
+                }
+                if (hasRevealedNeighbor)
+                    break;
+            }
+            
+            if (!hasRevealedNeighbor)
+                continue;
+            
+            // Calculate distance to this tile
+            tilePos.x = x;
+            tilePos.y = y;
+            distance = GetDistance(playerPos, &tilePos);
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestTarget.x = x;
+                bestTarget.y = y;
+                found = TRUE;
+            }
+        }
+    }
+    
+    if (found) {
+        outTarget->x = bestTarget.x;
+        outTarget->y = bestTarget.y;
+    }
+    
+    return found;
+}
+
+bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
+{
+    // First priority: if stairs are visible, navigate to them
+    if (AreStairsVisible()) {
+        outTarget->x = gDungeon->stairsSpawn.x;
+        outTarget->y = gDungeon->stairsSpawn.y;
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        return TRUE;
+    }
+    
+    // Second priority: find nearest unexplored tile
+    if (FindNearestUnexploredTile(&leader->pos, outTarget)) {
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        return TRUE;
+    }
+    
+    // No valid target found
+    gAutoExploreHasTarget = FALSE;
+    return FALSE;
+}
+
+s32 GetAutoExploreDirection(Entity *leader)
+{
+    DungeonPos target;
+    s32 direction;
+    s32 directions[4];
+    s32 i;
+    
+    if (!gAutoExploreActive)
+        return -1;
+    
+    // Check if we've reached our current target
+    if (gAutoExploreHasTarget) {
+        if (leader->pos.x == gAutoExploreTarget.x && leader->pos.y == gAutoExploreTarget.y) {
+            gAutoExploreHasTarget = FALSE;
+        }
+    }
+    
+    // Get a new target if we don't have one
+    if (!GetAutoExploreTarget(leader, &target)) {
+        // No more targets - deactivate auto-explore
+        SetAutoExploreActive(FALSE);
+        return -1;
+    }
+    
+    // Get direction towards target
+    direction = GetDirectionTowardsPosition(&leader->pos, &target);
+    
+    // Check if we can move in that direction
+    if (!CanMoveInDirection(leader, direction)) {
+        // Try adjacent directions
+        directions[0] = (direction + 1) & DIRECTION_MASK;
+        directions[1] = (direction - 1) & DIRECTION_MASK;
+        directions[2] = (direction + 2) & DIRECTION_MASK;
+        directions[3] = (direction - 2) & DIRECTION_MASK;
+        
+        for (i = 0; i < 4; i++) {
+            if (CanMoveInDirection(leader, directions[i])) {
+                return directions[i];
+            }
+        }
+        
+        // Can't move towards target - clear it and try again next time
+        gAutoExploreHasTarget = FALSE;
+        return -1;
+    }
+    
+    return direction;
+}
 
 void DungeonHandlePlayerInput(void)
 {
@@ -321,6 +522,18 @@ void DungeonHandlePlayerInput(void)
                 }
             }
 
+            // Auto-explore mode: Hold L+R to automatically explore and navigate to stairs
+            if ((gRealInputs.held & (L_BUTTON | R_BUTTON)) == (L_BUTTON | R_BUTTON)) {
+                if (!IsAutoExploreActive()) {
+                    SetAutoExploreActive(TRUE);
+                }
+            }
+            else {
+                if (IsAutoExploreActive()) {
+                    SetAutoExploreActive(FALSE);
+                }
+            }
+
             tryItemThrow = FALSE;
             if (gRealInputs.held & R_BUTTON) {
                 if (!sInDiagonalMode) {
@@ -399,6 +612,60 @@ void DungeonHandlePlayerInput(void)
                 SetBGOBJEnableFlags(0);
                 DungeonRunFrameActions(0x2F);
                 DungeonRunFrameActions(0x2F);
+            }
+
+            // Handle auto-explore movement
+            if (IsAutoExploreActive() && !sInRotateMode) {
+                s32 autoExploreDir = GetAutoExploreDirection(leader);
+                if (autoExploreDir >= 0) {
+                    u8 canMoveFlags = 0;
+                    const u8 *immobilizedMsg = NULL;
+
+                    leaderInfo->action.direction = autoExploreDir & DIRECTION_MASK;
+
+                    if (sub_805EC4C(leader, 1))
+                        break;
+
+                    if (leaderInfo->frozenClassStatus.status == STATUS_SHADOW_HOLD) {
+                        immobilizedMsg = gUnknown_80F8A84, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_CONSTRICTION) {
+                        immobilizedMsg = gUnknown_80F8A6C, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_INGRAIN) {
+                        immobilizedMsg = gUnknown_80F8AB0, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_WRAP) {
+                        immobilizedMsg = gUnknown_80F8ADC, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_WRAPPED) {
+                        immobilizedMsg = gUnknown_80F8B0C, canMoveFlags |= 1;
+                    }
+
+                    if (!CanMoveInDirection(leader, autoExploreDir))
+                        canMoveFlags |= 2;
+
+                    sub_806CDD4(leader, sub_806CEBC(leader), autoExploreDir);
+
+                    if (!(canMoveFlags & 2)) {
+                        if (canMoveFlags & 1) {
+                            if (immobilizedMsg != NULL) {
+                                LogMessageByIdWithPopupCheckUser(leader, immobilizedMsg);
+                            }
+                            SetLeaderActionFields(ACTION_PASS_TURN);
+                            gDungeon->unk644.unk2F = 1;
+                        }
+                        else {
+                            SetLeaderActionFields(ACTION_WALK);
+                            leaderInfo->action.actionParameters[0].actionUseIndex = 1;
+                        }
+                        break;
+                    }
+                    else {
+                        // Can't move in auto-explore direction, stop auto-explore
+                        SetAutoExploreActive(FALSE);
+                    }
+                }
             }
 
             if (gDungeon->unk644.unk29 != 0 && !sInDiagonalMode) {

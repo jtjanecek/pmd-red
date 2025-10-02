@@ -575,6 +575,23 @@ s32 GetAutoExploreDirection(Entity *leader)
         return -1;
     }
     
+    // DEV: Check for auto-navigate exit at the start of pathfinding
+    {
+        // Check for any button press or hold (excluding the L+R activation combo)
+        bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+        bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+        
+        // Don't exit if we're in the middle of activating auto-navigate
+        bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
+                           ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+        
+        if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+            SetAutoExploreActive(FALSE);
+            LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate OFF!");
+            return -1;
+        }
+    }
+    
     // Check if we've reached our current target (exact position OR same room for junctions)
     if (gAutoExploreHasTarget) {
         bool8 reachedTarget = FALSE;
@@ -727,11 +744,45 @@ void DungeonHandlePlayerInput(void)
     }
 
     sub_806A914(1, 1, 1);
+    
+    // DEV: Check for auto-navigate exit early in the input loop
+    if (IsAutoExploreActive()) {
+        // Check for any button press or hold (excluding the L+R activation combo)
+        bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+        bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+        
+        // Don't exit if we're in the middle of activating auto-navigate
+        bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
+                           ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+        
+        if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+            SetAutoExploreActive(FALSE);
+            LogMessageByIdWithPopupCheckUser(GetLeader(), "Auto-navigate OFF!");
+        }
+    }
+    
     while (1) {
         Entity *leader = GetLeader();
         EntityInfo *leaderInfo = GetEntInfo(leader);
 
         sub_80978C8(leaderInfo->id);
+        
+        // DEV: Check for auto-navigate exit inside the main input loop
+        if (IsAutoExploreActive()) {
+            // Check for any button press or hold (excluding the L+R activation combo)
+            bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+            bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+            
+            // Don't exit if we're in the middle of activating auto-navigate
+            bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
+                               ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+            
+            if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate OFF!");
+            }
+        }
+        
         if (gDungeon->unk644.unk28 != 0) {
             if (sub_805E874()) {
                 leaderInfo->action.action = 2;

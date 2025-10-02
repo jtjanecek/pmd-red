@@ -346,8 +346,23 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
     
     // If we already have a target, check if we've reached it
     if (gAutoExploreHasTarget) {
-        // Check if we've reached the current target
+        // Check if we've reached the current target (exact position OR same room for junctions)
+        bool8 reachedTarget = FALSE;
+        
+        // First check: exact position match
         if (leader->pos.x == gAutoExploreTarget.x && leader->pos.y == gAutoExploreTarget.y) {
+            reachedTarget = TRUE;
+        }
+        // Second check: same room as junction target
+        else if (ArePlayerAndTargetInSameRoom(&leader->pos, &gAutoExploreTarget)) {
+            const Tile *targetTile = GetTile(gAutoExploreTarget.x, gAutoExploreTarget.y);
+            // Only apply same-room logic for junction tiles
+            if (targetTile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION) {
+                reachedTarget = TRUE;
+            }
+        }
+        
+        if (reachedTarget) {
             LogMessageByIdWithPopupCheckUser(leader, "Reached target!");
             // Mark the current room as discovered
             currentTile = GetTile(leader->pos.x, leader->pos.y);

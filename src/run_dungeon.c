@@ -94,7 +94,7 @@ extern u8 gUnknown_202F32C;
 extern u8 gUnknown_202F1A8;
 
 void EnforceMaxItemsAndMoney(void);
-static void sub_8043FD0(void);
+void sub_8043FD0(void);
 
 extern OpenedFile *gDungeonNameBannerPalette;
 
@@ -822,7 +822,7 @@ bool8 TryForcedLoss(bool8 a0)
     return ret;
 }
 
-static void sub_8043FD0(void)
+void sub_8043FD0(void)
 {
     s32 level;
     for (level = 2; level <= 100; level++) { // DEV: Level up to 100

@@ -27,5 +27,6 @@ void EnforceMaxItemsAndMoney(void);
 bool8 IsBossFight(void);
 bool8 IsCurrentFixedRoomBossFight(void);
 bool8 IsMakuhitaTrainingMaze(void);
+void sub_8043FD0(void);
 
 #endif

@@ -170,21 +170,25 @@ void GameLoop(void)
     if (GetScriptVarValue(NULL, EVENT_LOCAL) == 0)
         xxx_script_related_8001334(17);
 
-    // Auto-start directly in Thunderwave Cave with Bulbasaur (hero) and Charmander (partner).
-    // {
-    //     DungeonSetupStruct dungeonSetup;
-    //     sPersonalityRelated_203B040.StarterID = MONSTER_BULBASAUR;
-    //     sPersonalityRelated_203B040.PartnerID = MONSTER_CHARMANDER;
-    //     sPersonalityRelated_203B040.StarterName[0] = '\0';
-    //     sPersonalityRelated_203B040.PartnerNick[0] = '\0';
-    //     sub_8001064();
+    // DEV: Auto-start directly in Western Cave with level 100 Caterpie (hero) and Weedle (partner).
+    {
+        DungeonSetupStruct dungeonSetup;
+        sPersonalityRelated_203B040.StarterID = MONSTER_DEOXYS_NORMAL;
+        sPersonalityRelated_203B040.PartnerID = MONSTER_KECLEON;
+        sPersonalityRelated_203B040.StarterName[0] = '\0';
+        sPersonalityRelated_203B040.PartnerNick[0] = '\0';
+        sub_8001064();
 
-    //     dungeonSetup.unk0 = 0;
-    //     sub_80011CC(&dungeonSetup.info.sub0, DUNGEON_THUNDERWAVE_CAVE);
-    //     // Start on 1F instead of 0F
-    //     dungeonSetup.info.sub0.unk0.floor = 1;
-    //     LoadAndRunQuickSaveDungeon_Async(&dungeonSetup);
-    // }
+        // Level up team to 100
+        sub_8043FD0();
+
+        dungeonSetup.unk0 = 0;
+        sub_80011CC(&dungeonSetup.info.sub0, DUNGEON_WESTERN_CAVE);
+        // Start on 1F instead of 0F
+        dungeonSetup.info.sub0.unk0.floor = 1;
+        LoadAndRunQuickSaveDungeon_Async(&dungeonSetup);
+    }
+
 
     while (TRUE) {
         sUnknown_203B03C = 0;

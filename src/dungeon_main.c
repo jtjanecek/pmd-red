@@ -2229,6 +2229,8 @@ void InitializeJunctionT1Tiles(void)
 {
     s32 x, y;
     s32 count = 0;
+    bool8 roomsUsed[MAX_ROOM_COUNT] = {0}; // Track which rooms we've already found a junction for
+    const Tile *tile;
     
     // Clear existing path steps
     gAutoCrawlNextStep1.x = -1; gAutoCrawlNextStep1.y = -1;
@@ -2242,10 +2244,24 @@ void InitializeJunctionT1Tiles(void)
     gAutoCrawlNextStep9.x = -1; gAutoCrawlNextStep9.y = -1;
     gAutoCrawlNextStep10.x = -1; gAutoCrawlNextStep10.y = -1;
     
-    // Scan the entire dungeon and store first 10 junction T1 tiles
+    // Scan the entire dungeon and store first 10 junction T1 tiles (1 per room, excluding corridors)
     for (y = 0; y < DUNGEON_MAX_SIZE_Y && count < 10; y++) {
         for (x = 0; x < DUNGEON_MAX_SIZE_X && count < 10; x++) {
+            tile = GetTile(x, y);
+            
+            // Check if this is a junction T1 tile
             if (IsJunctionT1Tile(x, y)) {
+                // Skip if this junction is in a corridor
+                if (tile->room == CORRIDOR_ROOM) {
+                    continue;
+                }
+                
+                // Skip if we've already found a junction for this room
+                if (tile->room < MAX_ROOM_COUNT && roomsUsed[tile->room]) {
+                    continue;
+                }
+                
+                // Store this junction and mark the room as used
                 switch (count) {
                     case 0: gAutoCrawlNextStep1.x = x; gAutoCrawlNextStep1.y = y; break;
                     case 1: gAutoCrawlNextStep2.x = x; gAutoCrawlNextStep2.y = y; break;
@@ -2258,6 +2274,12 @@ void InitializeJunctionT1Tiles(void)
                     case 8: gAutoCrawlNextStep9.x = x; gAutoCrawlNextStep9.y = y; break;
                     case 9: gAutoCrawlNextStep10.x = x; gAutoCrawlNextStep10.y = y; break;
                 }
+                
+                // Mark this room as having a junction
+                if (tile->room < MAX_ROOM_COUNT) {
+                    roomsUsed[tile->room] = TRUE;
+                }
+                
                 count++;
             }
         }
@@ -2266,7 +2288,7 @@ void InitializeJunctionT1Tiles(void)
     // Debug: Show how many junction T1 tiles we found
     if (count > 0) {
         char message[64];
-        sprintf(message, "Floor has %d junction T1 tiles", count);
+        sprintf(message, "Floor has %d junction T1 tiles (1 per room)", count);
         LogMessageByIdWithPopupCheckUser(GetLeader(), message);
     }
 }

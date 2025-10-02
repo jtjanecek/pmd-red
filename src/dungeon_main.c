@@ -5,6 +5,7 @@
 #include "constants/iq_skill.h"
 #include "constants/status.h"
 #include "constants/tactic.h"
+#include "dungeon_astar.h"
 #include "structs/map.h"
 #include "structs/str_dungeon.h"
 #include "structs/str_text.h"
@@ -115,16 +116,7 @@ EWRAM_DATA s32 gLastDebugY = -1;
 EWRAM_DATA DungeonPos gAutoCrawlTargetPos = {-1, -1};
 
 // Path for minimap display (show next 10 steps for debugging)
-EWRAM_DATA DungeonPos gAutoCrawlNextStep1 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep2 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep3 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep4 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep5 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep6 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep7 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep8 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep9 = {-1, -1};
-EWRAM_DATA DungeonPos gAutoCrawlNextStep10 = {-1, -1};
+// Junction storage variables removed - using A* pathfinding instead
 
 // Junction T1 highlighting system - using existing path step variables
 
@@ -135,8 +127,6 @@ EWRAM_DATA DungeonPos gAutoCrawlNextStep10 = {-1, -1};
 static void CalculateSimplePath(Entity *leader, DungeonPos *target);
 static void CalculateFullPath(Entity *leader, DungeonPos *target); // DEV
 static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction);
-bool8 IsJunctionT1Tile(s32 x, s32 y);
-void InitializeJunctionT1Tiles(void);
 
 // Simple debug notification when player moves to a new tile
 void CheckTileDebugNotification(Entity *leader)
@@ -202,17 +192,7 @@ void ResetAutoExplore(void)
     gAutoExploreLastTarget.y = 0;
     gAutoExploreTargetPreserved = FALSE;
     
-    // Clear all path visualization
-    gAutoCrawlNextStep1.x = -1; gAutoCrawlNextStep1.y = -1;
-    gAutoCrawlNextStep2.x = -1; gAutoCrawlNextStep2.y = -1;
-    gAutoCrawlNextStep3.x = -1; gAutoCrawlNextStep3.y = -1;
-    gAutoCrawlNextStep4.x = -1; gAutoCrawlNextStep4.y = -1;
-    gAutoCrawlNextStep5.x = -1; gAutoCrawlNextStep5.y = -1;
-    gAutoCrawlNextStep6.x = -1; gAutoCrawlNextStep6.y = -1;
-    gAutoCrawlNextStep7.x = -1; gAutoCrawlNextStep7.y = -1;
-    gAutoCrawlNextStep8.x = -1; gAutoCrawlNextStep8.y = -1;
-    gAutoCrawlNextStep9.x = -1; gAutoCrawlNextStep9.y = -1;
-    gAutoCrawlNextStep10.x = -1; gAutoCrawlNextStep10.y = -1;
+    // Junction storage variables removed - using A* pathfinding instead
 }
 
 void SetAutoExploreActive(bool8 active)
@@ -559,23 +539,19 @@ static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction)
 // Simple pathfinding: move to the tile closest to destination
 static void CalculateSimplePath(Entity *leader, DungeonPos *target)
 {
-    // No longer needed - junction T1 tiles are highlighted in real-time during minimap drawing
-    // This function is kept for compatibility but does nothing
+    // Using A* pathfinding instead of junction storage
 }
 
 // DEV: Calculate the complete path from start to target (using existing step variables)
 static void CalculateFullPath(Entity *leader, DungeonPos *target)
 {
-    // This function is now just a placeholder since we're highlighting
-    // junction T1 tiles instead of calculating paths.
-    
-    // Debug: Show that we're using junction T1 highlighting
-    LogMessageByIdWithPopupCheckUser(leader, "Junction T1 highlighting active!");
+    // Using A* pathfinding instead of junction highlighting
 }
 
 s32 GetAutoExploreDirection(Entity *leader)
 {
     DungeonPos target;
+    DungeonPos nextStep;
     s32 direction;
     
     if (!gAutoExploreActive)
@@ -597,26 +573,20 @@ s32 GetAutoExploreDirection(Entity *leader)
         return -1;
     }
     
-    // Recalculate the 10-step path visualization first
-    CalculateSimplePath(leader, &target);
-    CalculateFullPath(leader, &target);
+    // Use A* pathfinding to get the next step
+    nextStep = AStarPathfind(leader->pos, target);
     
-    // Use the same direction as the first step of the calculated path
-    if (gAutoCrawlNextStep1.x != -1 && gAutoCrawlNextStep1.y != -1) {
-        // Calculate direction from current position to first step
-        DungeonPos currentPos = leader->pos;
-        DungeonPos firstStep = gAutoCrawlNextStep1;
-        
-        // Find the direction from current position to first step
-        direction = GetDirectionTowardsPosition(&currentPos, &firstStep);
+    if (nextStep.x != -1 && nextStep.y != -1) {
+        // Calculate direction from current position to next step
+        direction = AStarGetDirection(leader->pos, nextStep);
         
         // Verify this direction is valid
         if (!CanMoveInDirectionIgnoreMonsters(leader, direction)) {
-            // Fallback to original pathfinding if first step is invalid
+            // Fallback to original pathfinding if A* step is invalid
             direction = FindBestPathToTarget(leader, &target);
         }
     } else {
-        // No path calculated, use original pathfinding
+        // No path found with A*, use original pathfinding
         direction = FindBestPathToTarget(leader, &target);
     }
     
@@ -2200,97 +2170,6 @@ bool8 DungeonGiveNameToRecruitedMon(u8 *name)
     return FALSE;
 }
 
-// Junction T1 highlighting functions
-bool8 IsJunctionT1Tile(s32 x, s32 y)
-{
-    const Tile *tile;
-    u16 terrainType;
-    
-    // Check bounds
-    if (x < 0 || y < 0 || x >= DUNGEON_MAX_SIZE_X || y >= DUNGEON_MAX_SIZE_Y)
-        return FALSE;
-    
-    tile = GetTile(x, y);
-    
-    // Check if it's a junction tile
-    if (!(tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION))
-        return FALSE;
-    
-    // Check if it has T1 terrain (TERRAIN_TYPE_NORMAL)
-    terrainType = tile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
-    if (terrainType != TERRAIN_TYPE_NORMAL)
-        return FALSE;
-    
-    return TRUE;
-}
-
-// Initialize junction T1 tiles at the start of each floor
-void InitializeJunctionT1Tiles(void)
-{
-    s32 x, y;
-    s32 count = 0;
-    bool8 roomsUsed[MAX_ROOM_COUNT] = {0}; // Track which rooms we've already found a junction for
-    const Tile *tile;
-    
-    // Clear existing path steps
-    gAutoCrawlNextStep1.x = -1; gAutoCrawlNextStep1.y = -1;
-    gAutoCrawlNextStep2.x = -1; gAutoCrawlNextStep2.y = -1;
-    gAutoCrawlNextStep3.x = -1; gAutoCrawlNextStep3.y = -1;
-    gAutoCrawlNextStep4.x = -1; gAutoCrawlNextStep4.y = -1;
-    gAutoCrawlNextStep5.x = -1; gAutoCrawlNextStep5.y = -1;
-    gAutoCrawlNextStep6.x = -1; gAutoCrawlNextStep6.y = -1;
-    gAutoCrawlNextStep7.x = -1; gAutoCrawlNextStep7.y = -1;
-    gAutoCrawlNextStep8.x = -1; gAutoCrawlNextStep8.y = -1;
-    gAutoCrawlNextStep9.x = -1; gAutoCrawlNextStep9.y = -1;
-    gAutoCrawlNextStep10.x = -1; gAutoCrawlNextStep10.y = -1;
-    
-    // Scan the entire dungeon and store first 10 junction T1 tiles (1 per room, excluding corridors)
-    for (y = 0; y < DUNGEON_MAX_SIZE_Y && count < 10; y++) {
-        for (x = 0; x < DUNGEON_MAX_SIZE_X && count < 10; x++) {
-            tile = GetTile(x, y);
-            
-            // Check if this is a junction T1 tile
-            if (IsJunctionT1Tile(x, y)) {
-                // Skip if this junction is in a corridor
-                if (tile->room == CORRIDOR_ROOM) {
-                    continue;
-                }
-                
-                // Skip if we've already found a junction for this room
-                if (tile->room < MAX_ROOM_COUNT && roomsUsed[tile->room]) {
-                    continue;
-                }
-                
-                // Store this junction and mark the room as used
-                switch (count) {
-                    case 0: gAutoCrawlNextStep1.x = x; gAutoCrawlNextStep1.y = y; break;
-                    case 1: gAutoCrawlNextStep2.x = x; gAutoCrawlNextStep2.y = y; break;
-                    case 2: gAutoCrawlNextStep3.x = x; gAutoCrawlNextStep3.y = y; break;
-                    case 3: gAutoCrawlNextStep4.x = x; gAutoCrawlNextStep4.y = y; break;
-                    case 4: gAutoCrawlNextStep5.x = x; gAutoCrawlNextStep5.y = y; break;
-                    case 5: gAutoCrawlNextStep6.x = x; gAutoCrawlNextStep6.y = y; break;
-                    case 6: gAutoCrawlNextStep7.x = x; gAutoCrawlNextStep7.y = y; break;
-                    case 7: gAutoCrawlNextStep8.x = x; gAutoCrawlNextStep8.y = y; break;
-                    case 8: gAutoCrawlNextStep9.x = x; gAutoCrawlNextStep9.y = y; break;
-                    case 9: gAutoCrawlNextStep10.x = x; gAutoCrawlNextStep10.y = y; break;
-                }
-                
-                // Mark this room as having a junction
-                if (tile->room < MAX_ROOM_COUNT) {
-                    roomsUsed[tile->room] = TRUE;
-                }
-                
-                count++;
-            }
-        }
-    }
-    
-    // Debug: Show how many junction T1 tiles we found
-    if (count > 0) {
-        char message[64];
-        sprintf(message, "Floor has %d junction T1 tiles (1 per room)", count);
-        LogMessageByIdWithPopupCheckUser(GetLeader(), message);
-    }
-}
+// Junction T1 highlighting functions removed - using A* pathfinding instead
 
 

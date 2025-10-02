@@ -343,7 +343,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
         if (!r6) {
             GenerateFloor();
-            InitializeJunctionT1Tiles(); // Scan and store all junction T1 tiles for this floor
+            // Junction T1 initialization removed - using A* pathfinding instead
             gDungeon->unk644.windTurns = GetTurnLimit(gDungeon->unk644.dungeonLocation.id);
             gDungeon->unk644.unk36 = 0;
         }

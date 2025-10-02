@@ -19,6 +19,7 @@ SECTIONS {
         ewram_start = .;
 
         data/sound_data.o(.bss);
+        src/dungeon_astar.o(.bss);
         INCLUDE "sym_ewram.ld"
         *libgcc.a:fp-bit.o(.bss);
         *libgcc.a:dp-bit.o(.bss);
@@ -224,6 +225,7 @@ SECTIONS {
         src/move_orb_actions_5.o(.text);
         src/move_checks.o(.text);
         src/dungeon_main.o(.text);
+        src/dungeon_astar.o(.text);
         src/dungeon_submenu.o(.text);
         src/dungeon_menu_items.o(.text);
         src/dungeon_menu_team.o(.text);
@@ -609,6 +611,7 @@ SECTIONS {
         src/move_orb_actions_5.o(.rodata);
         src/move_checks.o(.rodata);
         src/dungeon_main.o(.rodata);
+        src/dungeon_astar.o(.rodata);
         src/dungeon_submenu.o(.rodata);
         src/dungeon_menu_items.o(.rodata);
         src/dungeon_menu_team.o(.rodata);
@@ -909,6 +912,7 @@ SECTIONS {
         ewram_init_start = .;
 
 		INCLUDE "sym_ewram_init.ld"
+		src/dungeon_astar.o(.data);
 		*libc.a:impure.o(.data);
 		*libc.a:locale.o(.data);
 		*libc.a:mallocr.o(.data);

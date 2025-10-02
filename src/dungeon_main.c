@@ -657,7 +657,22 @@ void DungeonHandlePlayerInput(void)
         if (!ShouldMonsterRunAwayAndShowEffect(GetLeader(), TRUE)) {
             SetLeaderActionToNothing(TRUE);
             sub_805E804();
-            ShowDungeonStairsMenu(GetLeader());
+            
+            // DEV: Auto-proceed on stairs during auto-navigate
+            if (IsAutoExploreActive()) {
+                // Automatically choose "Go Down" option (ACTION_STAIRS)
+                ActionContainer *action = &GetEntInfo(GetLeader())->action;
+                SetMonsterActionFields(action, ACTION_STAIRS);
+                action->actionParameters[0].actionUseIndex = 0;
+                action->actionParameters[0].itemPos.x = 0;
+                action->actionParameters[0].itemPos.y = 0;
+                action->actionParameters[1].actionUseIndex = 0;
+                action->actionParameters[1].itemPos.x = 0;
+                action->actionParameters[1].itemPos.y = 0;
+            } else {
+                ShowDungeonStairsMenu(GetLeader());
+            }
+            
             ResetRepeatTimers();
             ResetUnusedInputStruct();
             if (GetLeaderActionId() != ACTION_NOTHING) {
@@ -2058,7 +2073,22 @@ static void ShowMainMenu(bool8 fromBPress, bool8 a1)
             }
             else if (tile->terrainFlags & TERRAIN_TYPE_STAIRS) {
                 SetLeaderActionToNothing(TRUE);
-                ShowDungeonStairsMenu(GetLeader());
+                
+                // DEV: Auto-proceed on stairs during auto-navigate
+                if (IsAutoExploreActive()) {
+                    // Automatically choose "Go Down" option (ACTION_STAIRS)
+                    ActionContainer *action = &GetEntInfo(GetLeader())->action;
+                    SetMonsterActionFields(action, ACTION_STAIRS);
+                    action->actionParameters[0].actionUseIndex = 0;
+                    action->actionParameters[0].itemPos.x = 0;
+                    action->actionParameters[0].itemPos.y = 0;
+                    action->actionParameters[1].actionUseIndex = 0;
+                    action->actionParameters[1].itemPos.x = 0;
+                    action->actionParameters[1].itemPos.y = 0;
+                } else {
+                    ShowDungeonStairsMenu(GetLeader());
+                }
+                
                 if (GetLeaderActionId() != ACTION_NOTHING)
                     break;
             }

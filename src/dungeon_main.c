@@ -97,12 +97,15 @@ static bool8 sub_805EC4C(Entity *a0, u8 a1);
 static bool8 sub_805EF60(Entity *a0, EntityInfo *a1);
 static void ShowMainMenu(bool8 fromBPress, bool8 a1);
 static void PrintOnMainMenu(bool8 printAll);
+static bool8 AreStairsInCurrentRoom(DungeonPos *playerPos);
+static bool8 ArePlayerAndTargetInSameRoom(DungeonPos *playerPos, DungeonPos *targetPos);
 
 // Auto-explore state
 EWRAM_DATA bool8 gAutoExploreActive = FALSE;
 EWRAM_DATA DungeonPos gAutoExploreTarget = {0, 0};
 EWRAM_DATA bool8 gAutoExploreHasTarget = FALSE;
 EWRAM_DATA DungeonPos gAutoExploreLastTarget = {0, 0};
+EWRAM_DATA bool8 gAutoExploreTargetPreserved = FALSE;
 
 // Debug position tracking
 EWRAM_DATA s32 gLastDebugX = -1;
@@ -111,13 +114,29 @@ EWRAM_DATA s32 gLastDebugY = -1;
 // Auto-crawl target position for minimap display
 EWRAM_DATA DungeonPos gAutoCrawlTargetPos = {-1, -1};
 
-// A* path for minimap display (show next 2 steps)
+// Path for minimap display (show next 10 steps for debugging)
 EWRAM_DATA DungeonPos gAutoCrawlNextStep1 = {-1, -1};
 EWRAM_DATA DungeonPos gAutoCrawlNextStep2 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep3 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep4 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep5 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep6 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep7 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep8 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep9 = {-1, -1};
+EWRAM_DATA DungeonPos gAutoCrawlNextStep10 = {-1, -1};
+
+// Junction T1 highlighting system - using existing path step variables
+
+// Complete path for full path visualization (using existing step variables)
+// We'll extend the existing 10 steps to show more of the path
 
 // Forward declarations
-static void CalculateAStarPath(Entity *leader, DungeonPos *target);
+static void CalculateSimplePath(Entity *leader, DungeonPos *target);
+static void CalculateFullPath(Entity *leader, DungeonPos *target); // DEV
 static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction);
+bool8 IsJunctionT1Tile(s32 x, s32 y);
+void InitializeJunctionT1Tiles(void);
 
 // Simple debug notification when player moves to a new tile
 void CheckTileDebugNotification(Entity *leader)
@@ -126,7 +145,15 @@ void CheckTileDebugNotification(Entity *leader)
         s32 currentX = leader->pos.x;
         s32 currentY = leader->pos.y;
         const Tile *tile;
-        const u8 *message;
+        u8 message[64];
+        u16 terrainType;
+        u8 roomType;
+        
+        // Only show debug info for the actual player/leader, not enemies or partners
+        // Check if this is the leader monster (player), not just any monster
+        if (GetEntityType(leader) != ENTITY_MONSTER || leader != GetLeader()) {
+            return;
+        }
         
         // Only show notification when position changes
         if (gLastDebugX != currentX || gLastDebugY != currentY) {
@@ -135,17 +162,29 @@ void CheckTileDebugNotification(Entity *leader)
             
             tile = GetTile(currentX, currentY);
             
-            // Create a simple message based on terrain type
+            // Get terrain type
+            terrainType = tile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+            roomType = tile->room;
+            
+            // Create detailed message with both terrain and tile type
             if (tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION) {
-                message = "Junction tile!";
-            } else if (tile->room == CORRIDOR_ROOM) {
-                message = "Corridor tile!";
+                sprintf(message, "Junction! T:%d R:%d", terrainType, roomType);
             } else if (tile->terrainFlags & TERRAIN_TYPE_STAIRS) {
-                message = "Stairs tile!";
+                sprintf(message, "Stairs! T:%d R:%d", terrainType, roomType);
             } else if (tile->terrainFlags & TERRAIN_TYPE_SHOP) {
-                message = "Shop tile!";
+                sprintf(message, "Shop! T:%d R:%d", terrainType, roomType);
+            } else if (tile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL) {
+                sprintf(message, "Impassable! T:%d R:%d", terrainType, roomType);
+            } else if (tile->terrainFlags & TERRAIN_TYPE_UNBREAKABLE) {
+                sprintf(message, "Unbreakable! T:%d R:%d", terrainType, roomType);
+            } else if (tile->terrainFlags & TERRAIN_TYPE_SECONDARY) {
+                sprintf(message, "Water/Lava! T:%d R:%d", terrainType, roomType);
+            } else if (terrainType == 0) {
+                sprintf(message, "Wall! T:%d R:%d", terrainType, roomType);
+            } else if (roomType == CORRIDOR_ROOM) {
+                sprintf(message, "Corridor! T:%d R:%d", terrainType, roomType);
             } else {
-                message = "Room tile!";
+                sprintf(message, "Room! T:%d R:%d", terrainType, roomType);
             }
             
             // Display the notification only once per tile change
@@ -161,13 +200,55 @@ void ResetAutoExplore(void)
     gAutoExploreHasTarget = FALSE;
     gAutoExploreLastTarget.x = 0;
     gAutoExploreLastTarget.y = 0;
+    gAutoExploreTargetPreserved = FALSE;
+    
+    // Clear all path visualization
+    gAutoCrawlNextStep1.x = -1; gAutoCrawlNextStep1.y = -1;
+    gAutoCrawlNextStep2.x = -1; gAutoCrawlNextStep2.y = -1;
+    gAutoCrawlNextStep3.x = -1; gAutoCrawlNextStep3.y = -1;
+    gAutoCrawlNextStep4.x = -1; gAutoCrawlNextStep4.y = -1;
+    gAutoCrawlNextStep5.x = -1; gAutoCrawlNextStep5.y = -1;
+    gAutoCrawlNextStep6.x = -1; gAutoCrawlNextStep6.y = -1;
+    gAutoCrawlNextStep7.x = -1; gAutoCrawlNextStep7.y = -1;
+    gAutoCrawlNextStep8.x = -1; gAutoCrawlNextStep8.y = -1;
+    gAutoCrawlNextStep9.x = -1; gAutoCrawlNextStep9.y = -1;
+    gAutoCrawlNextStep10.x = -1; gAutoCrawlNextStep10.y = -1;
 }
 
 void SetAutoExploreActive(bool8 active)
 {
     gAutoExploreActive = active;
     if (!active) {
+        // When deactivating, preserve the target for potential reuse
+        gAutoExploreTargetPreserved = gAutoExploreHasTarget;
         gAutoExploreHasTarget = FALSE;
+    } else {
+        // When reactivating, check if we should preserve the target
+        if (gAutoExploreTargetPreserved) {
+            Entity *leader = GetLeader();
+            if (leader != NULL) {
+                // Check if we should switch targets (stairs in room OR same room as target)
+                if (AreStairsInCurrentRoom(&leader->pos) || 
+                    ArePlayerAndTargetInSameRoom(&leader->pos, &gAutoExploreTarget)) {
+                    // We should switch targets, so don't restore the old one
+                    gAutoExploreTargetPreserved = FALSE;
+                } else {
+                    // Keep the same target
+                    gAutoExploreHasTarget = TRUE;
+                    gAutoCrawlTargetPos = gAutoExploreTarget;
+                    gAutoExploreTargetPreserved = FALSE;
+                    
+                    // Recalculate the path for the preserved target
+                    CalculateSimplePath(leader, &gAutoExploreTarget);
+                    // DEV: Also calculate the complete path for visualization
+                    CalculateFullPath(leader, &gAutoExploreTarget);
+                    UpdateMinimap(); // Force minimap update to show new path icons
+                }
+            } else {
+                // No leader available, clear preserved target
+                gAutoExploreTargetPreserved = FALSE;
+            }
+        }
     }
 }
 
@@ -195,8 +276,6 @@ bool8 AreStairsVisible(void)
     return (tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_REVEALED) != 0;
 }
 
-// Helper function to determine if we're currently in a room
-
 // Helper function to check if stairs are in the current room
 static bool8 AreStairsInCurrentRoom(DungeonPos *playerPos)
 {
@@ -204,6 +283,15 @@ static bool8 AreStairsInCurrentRoom(DungeonPos *playerPos)
     const Tile *stairsTile = GetTile(gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
     
     return (playerTile->room == stairsTile->room) && (stairsTile->room != CORRIDOR_ROOM);
+}
+
+// Helper function to check if player and target are in the same room
+static bool8 ArePlayerAndTargetInSameRoom(DungeonPos *playerPos, DungeonPos *targetPos)
+{
+    const Tile *playerTile = GetTile(playerPos->x, playerPos->y);
+    const Tile *targetTile = GetTile(targetPos->x, targetPos->y);
+    
+    return (playerTile->room == targetTile->room) && (playerTile->room != CORRIDOR_ROOM);
 }
 
 
@@ -245,7 +333,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
     // Check for debug notifications when player moves
     CheckTileDebugNotification(leader);
     
-    // PRIORITY 1: If stairs in the current room -> A* to the stairs (ALWAYS takes priority)
+    // PRIORITY 1: If stairs in the current room -> path to the stairs (ALWAYS takes priority)
     if (AreStairsInCurrentRoom(&leader->pos)) {
         LogMessageByIdWithPopupCheckUser(leader, "Going to stairs!");
         outTarget->x = gDungeon->stairsSpawn.x;
@@ -254,8 +342,17 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         gAutoExploreTarget = *outTarget;
         gAutoCrawlTargetPos = *outTarget; // Set target for minimap display
         
-        // Calculate the full A* path
-        CalculateAStarPath(leader, outTarget);
+        // Clear any existing path before calculating new one
+        ResetAutoExplore();
+        gAutoExploreActive = TRUE;
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+        
+        // Calculate the full path
+        CalculateSimplePath(leader, outTarget);
+        // DEV: Also calculate the complete path for visualization
+        CalculateFullPath(leader, outTarget);
         
         LogMessageByIdWithPopupCheckUser(leader, "Stairs target set!");
         // Debug: Show target coordinates
@@ -287,15 +384,24 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         }
     }
     
-    // Logic 2: Pick a random room that is undiscovered, and A* there
+    // Logic 2: Pick a random room that is undiscovered, and path there
     if (FindRandomUndiscoveredRoom(outTarget)) {
         LogMessageByIdWithPopupCheckUser(leader, "Found undiscovered room!");
         gAutoExploreHasTarget = TRUE;
         gAutoExploreTarget = *outTarget;
         gAutoCrawlTargetPos = *outTarget; // Set target for minimap display
         
-        // Calculate the full A* path
-        CalculateAStarPath(leader, outTarget);
+        // Clear any existing path before calculating new one
+        ResetAutoExplore();
+        gAutoExploreActive = TRUE;
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+        
+        // Calculate the full path
+        CalculateSimplePath(leader, outTarget);
+        // DEV: Also calculate the complete path for visualization
+        CalculateFullPath(leader, outTarget);
         
         LogMessageByIdWithPopupCheckUser(leader, "Room target set!");
         // Debug: Show target coordinates
@@ -321,6 +427,7 @@ static s32 FindBestPathToTarget(Entity *leader, DungeonPos *target)
     s32 score;
     DungeonPos testPos;
     s32 currentDistance;
+    u16 terrainType;
     s32 testDistance;
     const Tile *targetTile;
     
@@ -343,16 +450,35 @@ static s32 FindBestPathToTarget(Entity *leader, DungeonPos *target)
         testPos.y = leader->pos.y + gAdjacentTileOffsets[direction].y;
         targetTile = GetTile(testPos.x, testPos.y);
         
-        // Allow movement to NATURAL_JUNCTION tiles (they should be walkable)
-        if (targetTile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION) {
-            // NATURAL_JUNCTION tiles are valid movement targets
-        } else if (targetTile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL) {
+        // Check for blocking terrain types first
+        if (targetTile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL) {
             // Skip impassable walls
             continue;
-        } else if (targetTile->monster != NULL) {
-            // Don't skip tiles with monsters - they're not blockers for auto-crawl
-            // The player can walk through/over monsters
+        } else if (targetTile->terrainFlags & TERRAIN_TYPE_UNREACHABLE_FROM_STAIRS) {
+            // Skip unreachable tiles (dead ends, isolated areas)
+            continue;
+        } else if (targetTile->terrainFlags & TERRAIN_TYPE_UNBREAKABLE) {
+            // Skip unbreakable tiles (key doors, permanent barriers)
+            continue;
+        } else if (testPos.x < 0 || testPos.y < 0 || 
+                   testPos.x >= DUNGEON_MAX_SIZE_X || testPos.y >= DUNGEON_MAX_SIZE_Y) {
+            // Skip out-of-bounds tiles
+            continue;
         }
+        
+        // Check if tile is walkable (not a wall) regardless of room/junction/corridor type
+        // A tile can be a room tile, junction tile, or corridor tile but still be a wall
+        terrainType = targetTile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+        if (terrainType == 0) {
+            // This is a wall tile (terrain type 0 = TERRAIN_TYPE_WALL)
+            // Skip it even if it's marked as room/junction/corridor
+            continue;
+        }
+        
+        // Allow room tiles, junction tiles, and corridor tiles ONLY if they are not walls
+        // NATURAL_JUNCTION tiles are valid movement targets (they're connection points)
+        // Don't skip tiles with monsters - they're not blockers for auto-crawl
+        // The player can walk through/over monsters
         testDistance = GetDistance(&testPos, target);
         
         // Start with basic distance improvement
@@ -388,83 +514,63 @@ static s32 FindBestPathToTarget(Entity *leader, DungeonPos *target)
     return bestDirection;
 }
 
-// Custom movement check that ignores monsters for auto-crawl
+// Note: FindBestPathToTargetWithVisited function removed - now using simple pathfinding
+
+// Simple movement check that only blocks truly impassable areas for auto-crawl
 static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction)
 {
-    u8 crossableTerrain = GetCrossableTerrain(GetEntInfo(pokemon)->id);
-    const Tile *currentMapTile = GetTile(pokemon->pos.x + gAdjacentTileOffsets[direction].x,
+    const Tile *targetTile = GetTile(pokemon->pos.x + gAdjacentTileOffsets[direction].x,
         pokemon->pos.y + gAdjacentTileOffsets[direction].y);
+    s32 testX = pokemon->pos.x + gAdjacentTileOffsets[direction].x;
+    s32 testY = pokemon->pos.y + gAdjacentTileOffsets[direction].y;
+    u16 terrainType;
 
-    // Block impassable walls
-    if (currentMapTile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL)
+    // Block out-of-bounds tiles
+    if (testX < 0 || testY < 0 || 
+        testX >= DUNGEON_MAX_SIZE_X || testY >= DUNGEON_MAX_SIZE_Y)
         return FALSE;
 
-    // Block if there's a monster in the immediate adjacent tile
-    // We don't want to walk directly into monsters
-    if (currentMapTile->monster != NULL)
+    // Only block truly impassable areas - ignore regular walls
+    if (targetTile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL)
+        return FALSE;
+    
+    // Block unreachable tiles (dead ends, isolated areas)
+    if (targetTile->terrainFlags & TERRAIN_TYPE_UNREACHABLE_FROM_STAIRS)
+        return FALSE;
+    
+    // Block unbreakable tiles (key doors, permanent barriers)
+    if (targetTile->terrainFlags & TERRAIN_TYPE_UNBREAKABLE)
         return FALSE;
 
-    // Apply all the same terrain checks as the original function, but ignore monsters
-    if (!IsCurrentFixedRoomBossFight())
-    {
-        if (GetEntInfo(pokemon)->invisibleClassStatus.status == STATUS_MOBILE || HasHeldItem(pokemon, ITEM_MOBILE_SCARF))
-            crossableTerrain = CROSSABLE_TERRAIN_WALL;
-        else if (IQSkillIsEnabled(pokemon, IQ_ALL_TERRAIN_HIKER))
-            crossableTerrain = CROSSABLE_TERRAIN_CREVICE;
-        else if (IQSkillIsEnabled(pokemon, IQ_SUPER_MOBILE)) {
-            if (direction & 1)
-                // Super Mobile can't break walls diagonally.
-                crossableTerrain = CROSSABLE_TERRAIN_CREVICE;
-            else
-                crossableTerrain = CROSSABLE_TERRAIN_WALL;
-        }
+    // Only allow tiles with terrain type 1 (T1) - TERRAIN_TYPE_NORMAL
+    terrainType = targetTile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+    if (terrainType != TERRAIN_TYPE_NORMAL) {
+        // Only allow T1 tiles - block everything else
+        return FALSE;
     }
 
-    // Check walkable neighbor flags (this handles terrain types properly)
-    currentMapTile = GetTile(pokemon->pos.x, pokemon->pos.y);
-    if (!(currentMapTile->walkableNeighborFlags[crossableTerrain] & (1 << direction)))
-        return FALSE;
+    // Don't block monsters for auto-crawl - the player can walk through/over monsters
+    // Don't block regular walls - auto-crawl should be able to navigate through them
+    // This allows auto-crawl to work even when there are monsters and walls in the way
 
     return TRUE;
 }
 
-// Calculate the next 2 steps of the A* path from current position to target
-static void CalculateAStarPath(Entity *leader, DungeonPos *target)
+// Simple pathfinding: move to the tile closest to destination
+static void CalculateSimplePath(Entity *leader, DungeonPos *target)
 {
-    s32 direction;
-    DungeonPos currentPos;
-    DungeonPos nextPos;
-    Entity tempLeader;
+    // No longer needed - junction T1 tiles are highlighted in real-time during minimap drawing
+    // This function is kept for compatibility but does nothing
+}
+
+// DEV: Calculate the complete path from start to target (using existing step variables)
+static void CalculateFullPath(Entity *leader, DungeonPos *target)
+{
+    // This function is now just a placeholder since we're highlighting
+    // junction T1 tiles instead of calculating paths.
     
-    // Clear the steps
-    gAutoCrawlNextStep1.x = -1;
-    gAutoCrawlNextStep1.y = -1;
-    gAutoCrawlNextStep2.x = -1;
-    gAutoCrawlNextStep2.y = -1;
-    
-    // Start from current position
-    currentPos = leader->pos;
-    tempLeader = *leader;
-    
-    // Calculate first step
-    direction = FindBestPathToTarget(&tempLeader, target);
-    if (direction != -1) {
-        nextPos.x = currentPos.x + gAdjacentTileOffsets[direction].x;
-        nextPos.y = currentPos.y + gAdjacentTileOffsets[direction].y;
-        gAutoCrawlNextStep1 = nextPos;
-        
-        // Calculate second step
-        tempLeader.pos = nextPos;
-        direction = FindBestPathToTarget(&tempLeader, target);
-        if (direction != -1) {
-            nextPos.x = tempLeader.pos.x + gAdjacentTileOffsets[direction].x;
-            nextPos.y = tempLeader.pos.y + gAdjacentTileOffsets[direction].y;
-            gAutoCrawlNextStep2 = nextPos;
-        }
-    }
-    
-    // Debug: Show next steps
-    LogMessageByIdWithPopupCheckUser(leader, "Next 2 steps calculated!");
+    // Debug: Show that we're using junction T1 highlighting
+    LogMessageByIdWithPopupCheckUser(leader, "Junction T1 highlighting active!");
 }
 
 s32 GetAutoExploreDirection(Entity *leader)
@@ -491,14 +597,37 @@ s32 GetAutoExploreDirection(Entity *leader)
         return -1;
     }
     
-    // Use improved pathfinding to find the best direction
-    direction = FindBestPathToTarget(leader, &target);
+    // Recalculate the 10-step path visualization first
+    CalculateSimplePath(leader, &target);
+    CalculateFullPath(leader, &target);
+    
+    // Use the same direction as the first step of the calculated path
+    if (gAutoCrawlNextStep1.x != -1 && gAutoCrawlNextStep1.y != -1) {
+        // Calculate direction from current position to first step
+        DungeonPos currentPos = leader->pos;
+        DungeonPos firstStep = gAutoCrawlNextStep1;
+        
+        // Find the direction from current position to first step
+        direction = GetDirectionTowardsPosition(&currentPos, &firstStep);
+        
+        // Verify this direction is valid
+        if (!CanMoveInDirectionIgnoreMonsters(leader, direction)) {
+            // Fallback to original pathfinding if first step is invalid
+            direction = FindBestPathToTarget(leader, &target);
+        }
+    } else {
+        // No path calculated, use original pathfinding
+        direction = FindBestPathToTarget(leader, &target);
+    }
     
     if (direction < 0) {
         // Can't find a path to target - clear it and try again next time
+        LogMessageByIdWithPopupCheckUser(leader, "Path not able to be found!");
         gAutoExploreHasTarget = FALSE;
         return -1;
     }
+    
+    UpdateMinimap(); // Force minimap update to show updated path
     
     return direction;
 }
@@ -2070,4 +2199,76 @@ bool8 DungeonGiveNameToRecruitedMon(u8 *name)
 
     return FALSE;
 }
+
+// Junction T1 highlighting functions
+bool8 IsJunctionT1Tile(s32 x, s32 y)
+{
+    const Tile *tile;
+    u16 terrainType;
+    
+    // Check bounds
+    if (x < 0 || y < 0 || x >= DUNGEON_MAX_SIZE_X || y >= DUNGEON_MAX_SIZE_Y)
+        return FALSE;
+    
+    tile = GetTile(x, y);
+    
+    // Check if it's a junction tile
+    if (!(tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION))
+        return FALSE;
+    
+    // Check if it has T1 terrain (TERRAIN_TYPE_NORMAL)
+    terrainType = tile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+    if (terrainType != TERRAIN_TYPE_NORMAL)
+        return FALSE;
+    
+    return TRUE;
+}
+
+// Initialize junction T1 tiles at the start of each floor
+void InitializeJunctionT1Tiles(void)
+{
+    s32 x, y;
+    s32 count = 0;
+    
+    // Clear existing path steps
+    gAutoCrawlNextStep1.x = -1; gAutoCrawlNextStep1.y = -1;
+    gAutoCrawlNextStep2.x = -1; gAutoCrawlNextStep2.y = -1;
+    gAutoCrawlNextStep3.x = -1; gAutoCrawlNextStep3.y = -1;
+    gAutoCrawlNextStep4.x = -1; gAutoCrawlNextStep4.y = -1;
+    gAutoCrawlNextStep5.x = -1; gAutoCrawlNextStep5.y = -1;
+    gAutoCrawlNextStep6.x = -1; gAutoCrawlNextStep6.y = -1;
+    gAutoCrawlNextStep7.x = -1; gAutoCrawlNextStep7.y = -1;
+    gAutoCrawlNextStep8.x = -1; gAutoCrawlNextStep8.y = -1;
+    gAutoCrawlNextStep9.x = -1; gAutoCrawlNextStep9.y = -1;
+    gAutoCrawlNextStep10.x = -1; gAutoCrawlNextStep10.y = -1;
+    
+    // Scan the entire dungeon and store first 10 junction T1 tiles
+    for (y = 0; y < DUNGEON_MAX_SIZE_Y && count < 10; y++) {
+        for (x = 0; x < DUNGEON_MAX_SIZE_X && count < 10; x++) {
+            if (IsJunctionT1Tile(x, y)) {
+                switch (count) {
+                    case 0: gAutoCrawlNextStep1.x = x; gAutoCrawlNextStep1.y = y; break;
+                    case 1: gAutoCrawlNextStep2.x = x; gAutoCrawlNextStep2.y = y; break;
+                    case 2: gAutoCrawlNextStep3.x = x; gAutoCrawlNextStep3.y = y; break;
+                    case 3: gAutoCrawlNextStep4.x = x; gAutoCrawlNextStep4.y = y; break;
+                    case 4: gAutoCrawlNextStep5.x = x; gAutoCrawlNextStep5.y = y; break;
+                    case 5: gAutoCrawlNextStep6.x = x; gAutoCrawlNextStep6.y = y; break;
+                    case 6: gAutoCrawlNextStep7.x = x; gAutoCrawlNextStep7.y = y; break;
+                    case 7: gAutoCrawlNextStep8.x = x; gAutoCrawlNextStep8.y = y; break;
+                    case 8: gAutoCrawlNextStep9.x = x; gAutoCrawlNextStep9.y = y; break;
+                    case 9: gAutoCrawlNextStep10.x = x; gAutoCrawlNextStep10.y = y; break;
+                }
+                count++;
+            }
+        }
+    }
+    
+    // Debug: Show how many junction T1 tiles we found
+    if (count > 0) {
+        char message[64];
+        sprintf(message, "Floor has %d junction T1 tiles", count);
+        LogMessageByIdWithPopupCheckUser(GetLeader(), message);
+    }
+}
+
 

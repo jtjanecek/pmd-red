@@ -26,6 +26,7 @@
 #include "dungeon_config.h"
 #include "dungeon_engine.h"
 #include "dungeon_generation.h"
+#include "dungeon_main.h"
 #include "dungeon_items.h"
 #include "dungeon_leveling.h"
 #include "dungeon_range.h"
@@ -342,6 +343,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
         if (!r6) {
             GenerateFloor();
+            InitializeJunctionT1Tiles(); // Scan and store all junction T1 tiles for this floor
             gDungeon->unk644.windTurns = GetTurnLimit(gDungeon->unk644.dungeonLocation.id);
             gDungeon->unk644.unk36 = 0;
         }

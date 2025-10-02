@@ -19,5 +19,6 @@ ActionContainer *GetLeaderActionContainer(void);
 u16 GetLeaderActionId(void);
 bool8 DungeonGiveNameToRecruitedMon(u8 *name);
 void CheckTileDebugNotification(Entity *leader);
+void InitializeJunctionT1Tiles(void);
 
 #endif // GUARD_DUNGEON_MAIN_H

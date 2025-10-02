@@ -24,11 +24,20 @@
 #include "run_dungeon.h"
 #include "dungeon_main.h"
 
+
 extern bool8 ShouldMinimapDisplayEntity(Entity *ent);
 extern bool8 gAutoExploreActive;
 extern DungeonPos gAutoCrawlTargetPos;
 extern DungeonPos gAutoCrawlNextStep1;
 extern DungeonPos gAutoCrawlNextStep2;
+extern DungeonPos gAutoCrawlNextStep3;
+extern DungeonPos gAutoCrawlNextStep4;
+extern DungeonPos gAutoCrawlNextStep5;
+extern DungeonPos gAutoCrawlNextStep6;
+extern DungeonPos gAutoCrawlNextStep7;
+extern DungeonPos gAutoCrawlNextStep8;
+extern DungeonPos gAutoCrawlNextStep9;
+extern DungeonPos gAutoCrawlNextStep10;
 
 struct UnkStruct1
 {
@@ -247,14 +256,20 @@ void DrawMinimapTile(s32 x, s32 y)
             lookForMapObject = FALSE;
             // Debug: This should show up as a red circle on the minimap
         }
-        // Check if this position is the next step in the A* path
-        else if (!blinded && gAutoExploreActive) {
-            if (gAutoCrawlNextStep1.x == x && gAutoCrawlNextStep1.y == y) {
-                mapGfxType = MAP_GFX_ALLY; // Use ally icon (blue circle) for next step
-                lookForMapObject = FALSE;
-            }
-            else if (gAutoCrawlNextStep2.x == x && gAutoCrawlNextStep2.y == y) {
-                mapGfxType = MAP_GFX_ALLY; // Use ally icon (blue circle) for second step
+        // Check if this is a stored junction T1 tile (show always, not just during auto-explore)
+        else if (!blinded) {
+            // Check if this position matches any of the stored junction T1 tiles
+            if ((gAutoCrawlNextStep1.x == x && gAutoCrawlNextStep1.y == y) ||
+                (gAutoCrawlNextStep2.x == x && gAutoCrawlNextStep2.y == y) ||
+                (gAutoCrawlNextStep3.x == x && gAutoCrawlNextStep3.y == y) ||
+                (gAutoCrawlNextStep4.x == x && gAutoCrawlNextStep4.y == y) ||
+                (gAutoCrawlNextStep5.x == x && gAutoCrawlNextStep5.y == y) ||
+                (gAutoCrawlNextStep6.x == x && gAutoCrawlNextStep6.y == y) ||
+                (gAutoCrawlNextStep7.x == x && gAutoCrawlNextStep7.y == y) ||
+                (gAutoCrawlNextStep8.x == x && gAutoCrawlNextStep8.y == y) ||
+                (gAutoCrawlNextStep9.x == x && gAutoCrawlNextStep9.y == y) ||
+                (gAutoCrawlNextStep10.x == x && gAutoCrawlNextStep10.y == y)) {
+                mapGfxType = MAP_GFX_TRAP; // Use trap icon (yellow circle) for junction T1 tiles
                 lookForMapObject = FALSE;
             }
         }

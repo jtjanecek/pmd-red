@@ -6,6 +6,10 @@
 #include "constants/status.h"
 #include "constants/tactic.h"
 #include "dungeon_astar.h"
+#include "dungeon_pathfinding_attack.h"
+#include "code_8066D04.h"
+#include "constants/move_id.h"
+#include "dungeon_message.h"
 #include "structs/map.h"
 #include "structs/str_dungeon.h"
 #include "structs/str_text.h"
@@ -135,7 +139,7 @@ void CheckTileDebugNotification(Entity *leader)
         s32 currentX = leader->pos.x;
         s32 currentY = leader->pos.y;
         const Tile *tile;
-        u8 message[64];
+        // u8 message[64];
         u16 terrainType;
         u8 roomType;
         
@@ -157,28 +161,28 @@ void CheckTileDebugNotification(Entity *leader)
             roomType = tile->room;
             
             // Create detailed message with both terrain and tile type
-            if (tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION) {
-                sprintf(message, "Junction! T:%d R:%d", terrainType, roomType);
-            } else if (tile->terrainFlags & TERRAIN_TYPE_STAIRS) {
-                sprintf(message, "Stairs! T:%d R:%d", terrainType, roomType);
-            } else if (tile->terrainFlags & TERRAIN_TYPE_SHOP) {
-                sprintf(message, "Shop! T:%d R:%d", terrainType, roomType);
-            } else if (tile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL) {
-                sprintf(message, "Impassable! T:%d R:%d", terrainType, roomType);
-            } else if (tile->terrainFlags & TERRAIN_TYPE_UNBREAKABLE) {
-                sprintf(message, "Unbreakable! T:%d R:%d", terrainType, roomType);
-            } else if (tile->terrainFlags & TERRAIN_TYPE_SECONDARY) {
-                sprintf(message, "Water/Lava! T:%d R:%d", terrainType, roomType);
-            } else if (terrainType == 0) {
-                sprintf(message, "Wall! T:%d R:%d", terrainType, roomType);
-            } else if (roomType == CORRIDOR_ROOM) {
-                sprintf(message, "Corridor! T:%d R:%d", terrainType, roomType);
-            } else {
-                sprintf(message, "Room! T:%d R:%d", terrainType, roomType);
-            }
+            // if (tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION) {
+            //     sprintf(message, "Junction! T:%d R:%d", terrainType, roomType);
+            // } else if (tile->terrainFlags & TERRAIN_TYPE_STAIRS) {
+            //     sprintf(message, "Stairs! T:%d R:%d", terrainType, roomType);
+            // } else if (tile->terrainFlags & TERRAIN_TYPE_SHOP) {
+            //     sprintf(message, "Shop! T:%d R:%d", terrainType, roomType);
+            // } else if (tile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL) {
+            //     sprintf(message, "Impassable! T:%d R:%d", terrainType, roomType);
+            // } else if (tile->terrainFlags & TERRAIN_TYPE_UNBREAKABLE) {
+            //     sprintf(message, "Unbreakable! T:%d R:%d", terrainType, roomType);
+            // } else if (tile->terrainFlags & TERRAIN_TYPE_SECONDARY) {
+            //     sprintf(message, "Water/Lava! T:%d R:%d", terrainType, roomType);
+            // } else if (terrainType == 0) {
+            //     sprintf(message, "Wall! T:%d R:%d", terrainType, roomType);
+            // } else if (roomType == CORRIDOR_ROOM) {
+            //     sprintf(message, "Corridor! T:%d R:%d", terrainType, roomType);
+            // } else {
+            //     sprintf(message, "Room! T:%d R:%d", terrainType, roomType);
+            // }
             
             // Display the notification only once per tile change
-            LogMessageByIdWithPopupCheckUser(leader, message);
+            // LogMessageByIdWithPopupCheckUser(leader, message);
         }
     }
 }
@@ -315,7 +319,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
     
     // PRIORITY 1: If stairs in the current room -> path to the stairs (ALWAYS takes priority)
     if (AreStairsInCurrentRoom(&leader->pos)) {
-        LogMessageByIdWithPopupCheckUser(leader, "Going to stairs!");
+        // LogMessageByIdWithPopupCheckUser(leader, "Going to stairs!");
         outTarget->x = gDungeon->stairsSpawn.x;
         outTarget->y = gDungeon->stairsSpawn.y;
         gAutoExploreHasTarget = TRUE;
@@ -334,9 +338,9 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         // DEV: Also calculate the complete path for visualization
         CalculateFullPath(leader, outTarget);
         
-        LogMessageByIdWithPopupCheckUser(leader, "Stairs target set!");
+        // LogMessageByIdWithPopupCheckUser(leader, "Stairs target set!");
         // Debug: Show target coordinates
-        LogMessageByIdWithPopupCheckUser(leader, "Target coords set!");
+        // LogMessageByIdWithPopupCheckUser(leader, "Target coords set!");
         UpdateMinimap(); // Force minimap update
         return TRUE;
     }
@@ -366,7 +370,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
     
     // Logic 2: Pick a random room that is undiscovered, and path there
     if (FindRandomUndiscoveredRoom(outTarget)) {
-        LogMessageByIdWithPopupCheckUser(leader, "Found undiscovered room!");
+        // LogMessageByIdWithPopupCheckUser(leader, "Found undiscovered room!");
         gAutoExploreHasTarget = TRUE;
         gAutoExploreTarget = *outTarget;
         gAutoCrawlTargetPos = *outTarget; // Set target for minimap display
@@ -383,15 +387,15 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         // DEV: Also calculate the complete path for visualization
         CalculateFullPath(leader, outTarget);
         
-        LogMessageByIdWithPopupCheckUser(leader, "Room target set!");
+        // LogMessageByIdWithPopupCheckUser(leader, "Room target set!");
         // Debug: Show target coordinates
-        LogMessageByIdWithPopupCheckUser(leader, "Target coords set!");
+        // LogMessageByIdWithPopupCheckUser(leader, "Target coords set!");
         UpdateMinimap(); // Force minimap update
         return TRUE;
     }
     
     // No valid target found
-    LogMessageByIdWithPopupCheckUser(leader, "No target found!");
+    // LogMessageByIdWithPopupCheckUser(leader, "No target found!");
     gAutoExploreHasTarget = FALSE;
     gAutoCrawlTargetPos.x = -1; // Clear target for minimap display
     gAutoCrawlTargetPos.y = -1;
@@ -576,7 +580,33 @@ s32 GetAutoExploreDirection(Entity *leader)
     // Use A* pathfinding to get the next step
     nextStep = AStarPathfind(leader->pos, target);
     
+    // Check for enemy attack before moving
     if (nextStep.x != -1 && nextStep.y != -1) {
+        const Tile *target_tile = GetTile(nextStep.x, nextStep.y);
+        
+        // If there's an enemy on the target tile, attack it (but not allies/partners)
+        if (target_tile->monster != NULL && GetEntityType(target_tile->monster) == ENTITY_MONSTER) {
+            EntityInfo *targetInfo = GetEntInfo(target_tile->monster);
+            
+            // Only attack if it's an actual enemy (not an ally/partner)
+            if (targetInfo->isNotTeamMember) {
+                EntityInfo *leaderInfo = GetEntInfo(leader);
+                s32 direction = GetDirectionTowardsPosition(&leader->pos, &target_tile->monster->pos);
+                
+                // Check if we can attack in this direction
+                if (CanAttackInDirection(leader, direction) && !CannotAttack(leader, FALSE)) {
+                    // Set up basic attack action
+                    SetMonsterActionFields(&leaderInfo->action, ACTION_REGULAR_ATTACK);
+                    leaderInfo->action.direction = direction & DIRECTION_MASK;
+                    TargetTileInFront(leader);
+                    // Execute the attack directly
+                    sub_8067904(leader, MOVE_REGULAR_ATTACK);
+                    LogMessageByIdWithPopupCheckUser(leader, "Attacking enemy!");
+                    return -1; // Don't move, just attack
+                }
+            }
+        }
+        
         // Calculate direction from current position to next step
         direction = AStarGetDirection(leader->pos, nextStep);
         

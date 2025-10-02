@@ -766,7 +766,7 @@ void HandleUseMovePlayerAction(Entity *entity)
     }
 }
 
-void sub_8067904(Entity *entity, u16 moveId)
+void sub_8067904(Entity *entity, u32 moveId)
 {
     Move move;
     EntityInfo *info = GetEntInfo(entity);

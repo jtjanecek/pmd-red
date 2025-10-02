@@ -326,8 +326,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         gAutoExploreTarget = *outTarget;
         gAutoCrawlTargetPos = *outTarget; // Set target for minimap display
         
-        // Clear any existing path before calculating new one
-        ResetAutoExplore();
+        // Don't reset auto-explore when stairs are detected - keep it active
         gAutoExploreActive = TRUE;
         gAutoExploreHasTarget = TRUE;
         gAutoExploreTarget = *outTarget;
@@ -375,8 +374,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         gAutoExploreTarget = *outTarget;
         gAutoCrawlTargetPos = *outTarget; // Set target for minimap display
         
-        // Clear any existing path before calculating new one
-        ResetAutoExplore();
+        // Don't reset auto-explore when stairs are detected - keep it active
         gAutoExploreActive = TRUE;
         gAutoExploreHasTarget = TRUE;
         gAutoExploreTarget = *outTarget;
@@ -861,17 +859,18 @@ void DungeonHandlePlayerInput(void)
                 }
             }
 
-            // Auto-explore mode: Hold L+R to automatically explore and navigate to stairs
-            if ((gRealInputs.held & (L_BUTTON | R_BUTTON)) == (L_BUTTON | R_BUTTON)) {
+            // Auto-explore mode: L+R to toggle ON auto-navigate
+            if ((gRealInputs.pressed & (L_BUTTON | R_BUTTON)) == (L_BUTTON | R_BUTTON)) {
                 if (!IsAutoExploreActive()) {
                     SetAutoExploreActive(TRUE);
+                    LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate ON!");
                 }
             }
-            else {
-                // Deactivate auto-explore when buttons are released
-                if (IsAutoExploreActive()) {
-                    SetAutoExploreActive(FALSE);
-                }
+            
+            // B button to cancel auto-navigate (only when auto-navigate is active)
+            if ((gRealInputs.pressed & B_BUTTON) && IsAutoExploreActive()) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate OFF!");
             }
 
             tryItemThrow = FALSE;

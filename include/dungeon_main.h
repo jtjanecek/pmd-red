@@ -21,4 +21,8 @@ bool8 DungeonGiveNameToRecruitedMon(u8 *name);
 void CheckTileDebugNotification(Entity *leader);
 void InitializeJunctionT1Tiles(void);
 
+// Auto-explore functions
+bool8 IsAutoExploreActive(void);
+void SetAutoExploreActive(bool8 active);
+
 #endif // GUARD_DUNGEON_MAIN_H

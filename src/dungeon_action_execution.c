@@ -40,6 +40,7 @@
 #include "dungeon_map_access.h"
 #include "warp_target.h"
 #include "dungeon_main.h"
+#include "input.h"
 
 void sub_8075BA4(Entity *param_1, u8 param_2);
 void sub_804178C(u8 param_1);
@@ -92,6 +93,22 @@ bool8 ExecuteEntityDungeonAction(Entity *entity)
     sub_804178C(1);
     gUnknown_203B434 = TRUE;
     info = GetEntInfo(entity);
+    
+    // DEV: Check for auto-navigate exit at the start of action execution
+    if (IsAutoExploreActive() && info->isTeamLeader) {
+        // Check for any button press or hold (excluding the L+R activation combo)
+        bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+        bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+        
+        // Don't exit if we're in the middle of activating auto-navigate
+        bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
+                           ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+        
+        if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+            SetAutoExploreActive(FALSE);
+            LogMessageByIdWithPopupCheckUser(entity, "Auto-navigate OFF!");
+        }
+    }
     info->useHeldItem = FALSE;
     info->unkF3 = FALSE;
     gDungeon->unkB8 = entity;

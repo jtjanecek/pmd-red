@@ -19,6 +19,7 @@
 #include "dungeon_cutscene.h"
 #include "menu_input.h"
 #include "weather.h"
+#include "input.h"
 
 extern void sub_807E378(void);
 extern u8 DisplayActions(u32);
@@ -105,11 +106,45 @@ static bool8 RunLeaderTurn(bool8 param_1)
             return FALSE;
         EnemyEvolution(entity);
         gDungeon->noActionInProgress = TRUE;
+        
+        // DEV: Check for auto-navigate exit before input handling
+        if (IsAutoExploreActive()) {
+            // Check for any button press or hold (excluding the L+R activation combo)
+            bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+            bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+            
+            // Don't exit if we're in the middle of activating auto-navigate
+            bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
+                               ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+            
+            if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser(entity, "Auto-navigate OFF!");
+            }
+        }
+        
         DungeonHandlePlayerInput();
         gDungeon->noActionInProgress = FALSE;
         if (IsFloorOver())
             break;
         ExecuteEntityDungeonAction(entity);
+        
+        // DEV: Check for auto-navigate exit after action execution
+        if (IsAutoExploreActive()) {
+            // Check for any button press or hold (excluding the L+R activation combo)
+            bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+            bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
+            
+            // Don't exit if we're in the middle of activating auto-navigate
+            bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
+                               ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+            
+            if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser(entity, "Auto-navigate OFF!");
+            }
+        }
+        
         sub_8086AC0();
         TryForcedLoss(0);
         if (IsFloorOver())

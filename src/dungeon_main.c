@@ -580,6 +580,9 @@ s32 GetAutoExploreDirection(Entity *leader)
     // Use A* pathfinding to get the next step
     nextStep = AStarPathfind(leader->pos, target);
     
+    // Enable fast movement animation for A* pathfinding (like running)
+    gDungeon->unk644.unk28 = 1;
+    
     // Check for enemy attack before moving
     if (nextStep.x != -1 && nextStep.y != -1) {
         const Tile *target_tile = GetTile(nextStep.x, nextStep.y);

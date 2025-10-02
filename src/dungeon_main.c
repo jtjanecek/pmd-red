@@ -601,7 +601,7 @@ s32 GetAutoExploreDirection(Entity *leader)
                     TargetTileInFront(leader);
                     // Execute the attack directly
                     sub_8067904(leader, MOVE_REGULAR_ATTACK);
-                    LogMessageByIdWithPopupCheckUser(leader, "Attacking enemy!");
+                    // LogMessageByIdWithPopupCheckUser(leader, "Attacking enemy!");
                     return -1; // Don't move, just attack
                 }
             }

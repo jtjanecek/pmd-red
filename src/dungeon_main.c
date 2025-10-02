@@ -190,7 +190,8 @@ void CheckTileDebugNotification(Entity *leader)
 // Auto-explore functions
 void ResetAutoExplore(void)
 {
-    gAutoExploreActive = FALSE;
+    // DEV: Preserve auto-explore state across floor changes
+    // gAutoExploreActive = FALSE;  // Don't reset the active state
     gAutoExploreHasTarget = FALSE;
     gAutoExploreLastTarget.x = 0;
     gAutoExploreLastTarget.y = 0;

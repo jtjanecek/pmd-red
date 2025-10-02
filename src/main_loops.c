@@ -174,7 +174,7 @@ void GameLoop(void)
     {
         DungeonSetupStruct dungeonSetup;
         sPersonalityRelated_203B040.StarterID = MONSTER_DEOXYS_NORMAL;
-        sPersonalityRelated_203B040.PartnerID = MONSTER_KECLEON;
+        sPersonalityRelated_203B040.PartnerID = MONSTER_DEOXYS_NORMAL;
         sPersonalityRelated_203B040.StarterName[0] = '\0';
         sPersonalityRelated_203B040.PartnerNick[0] = '\0';
         sub_8001064();

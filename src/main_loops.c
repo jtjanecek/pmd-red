@@ -173,14 +173,39 @@ void GameLoop(void)
     // DEV: Auto-start directly in Western Cave with level 100 Caterpie (hero) and Weedle (partner).
     {
         DungeonSetupStruct dungeonSetup;
-        sPersonalityRelated_203B040.StarterID = MONSTER_DEOXYS_NORMAL;
-        sPersonalityRelated_203B040.PartnerID = MONSTER_DEOXYS_NORMAL;
+        sPersonalityRelated_203B040.StarterID = MONSTER_CHARIZARD;
+        sPersonalityRelated_203B040.PartnerID = MONSTER_NONE;
         sPersonalityRelated_203B040.StarterName[0] = '\0';
         sPersonalityRelated_203B040.PartnerNick[0] = '\0';
         sub_8001064();
 
         // Level up team to 100
         sub_8043FD0();
+
+        // DEV: Give Charizard a Tight Belt
+        {
+            s32 i;
+            for (i = 0; i < NUM_MONSTERS; i++) {
+                Pokemon *pokemon = &gRecruitedPokemonRef->pokemon[i];
+                if (PokemonExists(pokemon) && pokemon->isTeamLeader) {
+                    InitBulkItem(&pokemon->heldItem, ITEM_TIGHT_BELT);
+                    break;
+                }
+            }
+        }
+
+        // DEV: Fill bag with 10 apples and 10 cleanse orbs
+        {
+            s32 i;
+            // Add 10 apples
+            for (i = 0; i < 10; i++) {
+                AddItemIdToInventory(ITEM_APPLE, FALSE);
+            }
+            // Add 10 cleanse orbs
+            for (i = 0; i < 10; i++) {
+                AddItemIdToInventory(ITEM_CLEANSE_ORB, FALSE);
+            }
+        }
 
         dungeonSetup.unk0 = 0;
         sub_80011CC(&dungeonSetup.info.sub0, DUNGEON_WESTERN_CAVE);

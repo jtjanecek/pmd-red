@@ -354,13 +354,9 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         if (leader->pos.x == gAutoExploreTarget.x && leader->pos.y == gAutoExploreTarget.y) {
             reachedTarget = TRUE;
         }
-        // Second check: same room as junction target
+        // Second check: same room as target (applies to all room targets)
         else if (ArePlayerAndTargetInSameRoom(&leader->pos, &gAutoExploreTarget)) {
-            const Tile *targetTile = GetTile(gAutoExploreTarget.x, gAutoExploreTarget.y);
-            // Only apply same-room logic for junction tiles
-            if (targetTile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION) {
-                reachedTarget = TRUE;
-            }
+            reachedTarget = TRUE;
         }
         
         if (reachedTarget) {
@@ -571,13 +567,28 @@ s32 GetAutoExploreDirection(Entity *leader)
     DungeonPos target;
     DungeonPos nextStep;
     s32 direction;
+    s32 attackDirection;
+    s32 dir;
+    DungeonPos adjacentPos;
     
-    if (!gAutoExploreActive)
+    if (!gAutoExploreActive) {
         return -1;
+    }
     
-    // Check if we've reached our current target
+    // Check if we've reached our current target (exact position OR same room for junctions)
     if (gAutoExploreHasTarget) {
+        bool8 reachedTarget = FALSE;
+        
+        // First check: exact position match
         if (leader->pos.x == gAutoExploreTarget.x && leader->pos.y == gAutoExploreTarget.y) {
+            reachedTarget = TRUE;
+        }
+        // Second check: same room as target (applies to all room targets)
+        else if (ArePlayerAndTargetInSameRoom(&leader->pos, &gAutoExploreTarget)) {
+            reachedTarget = TRUE;
+        }
+        
+        if (reachedTarget) {
             // Store the target we just reached to avoid immediately re-targeting it
             gAutoExploreLastTarget = gAutoExploreTarget;
             gAutoExploreHasTarget = FALSE;
@@ -587,6 +598,7 @@ s32 GetAutoExploreDirection(Entity *leader)
     // Get a new target if we don't have one
     if (!GetAutoExploreTarget(leader, &target)) {
         // No more targets - deactivate auto-explore
+        LogMessageByIdWithPopupCheckUser(leader, "No targets found - stopping auto-navigate");
         SetAutoExploreActive(FALSE);
         return -1;
     }
@@ -597,33 +609,50 @@ s32 GetAutoExploreDirection(Entity *leader)
     // Enable fast movement animation for A* pathfinding (like running)
     gDungeon->unk644.unk28 = 1;
     
-    // Check for enemy attack before moving
-    if (nextStep.x != -1 && nextStep.y != -1) {
-        const Tile *target_tile = GetTile(nextStep.x, nextStep.y);
+    // PRIORITY: Check for enemies in all 8 adjacent positions (including diagonals)
+    attackDirection = -1;
+    for (dir = 0; dir < 8; dir++) {
+        adjacentPos.x = leader->pos.x + gAdjacentTileOffsets[dir].x;
+        adjacentPos.y = leader->pos.y + gAdjacentTileOffsets[dir].y;
         
-        // If there's an enemy on the target tile, attack it (but not allies/partners)
-        if (target_tile->monster != NULL && GetEntityType(target_tile->monster) == ENTITY_MONSTER) {
-            EntityInfo *targetInfo = GetEntInfo(target_tile->monster);
+        // Check bounds
+        if (adjacentPos.x >= 0 && adjacentPos.y >= 0 && 
+            adjacentPos.x < DUNGEON_MAX_SIZE_X && adjacentPos.y < DUNGEON_MAX_SIZE_Y) {
             
-            // Only attack if it's an actual enemy (not an ally/partner)
-            if (targetInfo->isNotTeamMember) {
-                EntityInfo *leaderInfo = GetEntInfo(leader);
-                s32 direction = GetDirectionTowardsPosition(&leader->pos, &target_tile->monster->pos);
+            const Tile *adjacentTile = GetTile(adjacentPos.x, adjacentPos.y);
+            
+            // If there's an enemy in this adjacent tile, attack it (but not allies/partners)
+            if (adjacentTile->monster != NULL && GetEntityType(adjacentTile->monster) == ENTITY_MONSTER) {
+                EntityInfo *targetInfo = GetEntInfo(adjacentTile->monster);
                 
-                // Check if we can attack in this direction
-                if (CanAttackInDirection(leader, direction) && !CannotAttack(leader, FALSE)) {
-                    // Set up basic attack action
-                    SetMonsterActionFields(&leaderInfo->action, ACTION_REGULAR_ATTACK);
-                    leaderInfo->action.direction = direction & DIRECTION_MASK;
-                    TargetTileInFront(leader);
-                    // Execute the attack directly
-                    sub_8067904(leader, MOVE_REGULAR_ATTACK);
-                    // LogMessageByIdWithPopupCheckUser(leader, "Attacking enemy!");
-                    return -1; // Don't move, just attack
+                // Only attack if it's an actual enemy (not an ally/partner)
+                if (targetInfo->isNotTeamMember) {
+                    // Check if we can attack in this direction
+                    if (CanAttackInDirection(leader, dir) && !CannotAttack(leader, FALSE)) {
+                        attackDirection = dir;
+                        break; // Found an enemy to attack, stop searching
+                    }
                 }
             }
         }
+    }
+    
+    // If we found an enemy to attack, do it now
+    if (attackDirection != -1) {
+        EntityInfo *leaderInfo = GetEntInfo(leader);
         
+        // Set up basic attack action
+        SetMonsterActionFields(&leaderInfo->action, ACTION_REGULAR_ATTACK);
+        leaderInfo->action.direction = attackDirection & DIRECTION_MASK;
+        TargetTileInFront(leader);
+        // Execute the attack directly
+        sub_8067904(leader, MOVE_REGULAR_ATTACK);
+        // LogMessageByIdWithPopupCheckUser(leader, "Attacking enemy!");
+        return -1; // Don't move, just attack
+    }
+    
+    // If no enemies to attack, proceed with normal pathfinding
+    if (nextStep.x != -1 && nextStep.y != -1) {
         // Calculate direction from current position to next step
         direction = AStarGetDirection(leader->pos, nextStep);
         

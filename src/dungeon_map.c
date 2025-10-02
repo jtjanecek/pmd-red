@@ -243,9 +243,9 @@ void DrawMinimapTile(s32 x, s32 y)
         
         // PRIORITY: Check if this is the auto-crawl target position FIRST
         if (!blinded && gAutoExploreActive && gAutoCrawlTargetPos.x == x && gAutoCrawlTargetPos.y == y) {
-            mapGfxType = MAP_GFX_ITEM; // Use item icon (red circle) for target
+            mapGfxType = MAP_GFX_TRAP; // Use trap icon (red X) for target
             lookForMapObject = FALSE;
-            // Debug: This should show up as a red circle on the minimap
+            // Debug: This should show up as a red X on the minimap
         }
         // Junction T1 highlighting removed - using A* pathfinding instead
         else if (!blinded) {

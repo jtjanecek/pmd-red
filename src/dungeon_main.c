@@ -860,10 +860,23 @@ void DungeonHandlePlayerInput(void)
             }
 
             // Auto-explore mode: L+R to toggle ON auto-navigate
-            if ((gRealInputs.pressed & (L_BUTTON | R_BUTTON)) == (L_BUTTON | R_BUTTON)) {
+            // Support both: Hold L + Press R, or Hold R + Press L
+            if ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) {
+                //LogMessageByIdWithPopupCheckUser(leader, "Hold L + Press R!");
                 if (!IsAutoExploreActive()) {
                     SetAutoExploreActive(TRUE);
                     LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate ON!");
+                } else {
+                    LogMessageByIdWithPopupCheckUser(leader, "Already active!");
+                }
+            }
+            else if ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON)) {
+                //LogMessageByIdWithPopupCheckUser(leader, "Hold R + Press L!");
+                if (!IsAutoExploreActive()) {
+                    SetAutoExploreActive(TRUE);
+                    LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate ON!");
+                } else {
+                    LogMessageByIdWithPopupCheckUser(leader, "Already active!");
                 }
             }
             

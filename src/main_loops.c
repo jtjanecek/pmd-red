@@ -208,7 +208,7 @@ void GameLoop(void)
         }
 
         dungeonSetup.unk0 = 0;
-        sub_80011CC(&dungeonSetup.info.sub0, DUNGEON_WESTERN_CAVE);
+        sub_80011CC(&dungeonSetup.info.sub0, DUNGEON_FIERY_FIELD);
         // Start on 1F instead of 0F
         dungeonSetup.info.sub0.unk0.floor = 1;
         LoadAndRunQuickSaveDungeon_Async(&dungeonSetup);

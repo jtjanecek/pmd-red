@@ -574,7 +574,11 @@ s32 GetAutoExploreDirection(Entity *leader)
     if (!gAutoExploreActive) {
         return -1;
     }
+
+
     
+
+
     // DEV: Check for auto-navigate exit at the start of pathfinding
     {
         // Check for any button press or hold (excluding the L+R activation combo)
@@ -611,6 +615,12 @@ s32 GetAutoExploreDirection(Entity *leader)
             gAutoExploreHasTarget = FALSE;
         }
     }
+
+
+    //
+
+
+
     
     // Get a new target if we don't have one
     if (!GetAutoExploreTarget(leader, &target)) {
@@ -662,10 +672,9 @@ s32 GetAutoExploreDirection(Entity *leader)
         SetMonsterActionFields(&leaderInfo->action, ACTION_REGULAR_ATTACK);
         leaderInfo->action.direction = attackDirection & DIRECTION_MASK;
         TargetTileInFront(leader);
-        // Execute the attack directly
-        sub_8067904(leader, MOVE_REGULAR_ATTACK);
-        // LogMessageByIdWithPopupCheckUser(leader, "Attacking enemy!");
-        return -1; // Don't move, just attack
+        
+        // Return special value to indicate we want to attack
+        return -2; // Special value for attack
     }
     
     // If no enemies to attack, proceed with normal pathfinding
@@ -1080,7 +1089,12 @@ void DungeonHandlePlayerInput(void)
             // Handle auto-explore movement
             if (IsAutoExploreActive() && !sInRotateMode) {
                 s32 autoExploreDir = GetAutoExploreDirection(leader);
-                if (autoExploreDir >= 0) {
+                if (autoExploreDir == -2) {
+                    // Special case: attack enemy
+                    // The attack action was already set up in GetAutoExploreDirection
+                    break;
+                }
+                else if (autoExploreDir >= 0) {
                     u8 canMoveFlags = 0;
                     const u8 *immobilizedMsg = NULL;
 

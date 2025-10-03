@@ -12,6 +12,7 @@
 #include "dungeon_message.h"
 #include "structs/map.h"
 #include "structs/str_dungeon.h"
+#include "structs/dungeon_entity.h"
 #include "structs/str_text.h"
 #include "text_1.h"
 #include "text_3.h"
@@ -664,6 +665,16 @@ s32 GetAutoExploreDirection(Entity *leader)
         }
     }
     
+    // Check if we're paralyzed - if so, wait instead of doing anything
+    {
+        EntityInfo *leaderInfo = GetEntInfo(leader);
+        if (leaderInfo->burnClassStatus.status == STATUS_PARALYSIS) {
+            // Set up wait action (like A+B)
+            SetMonsterActionFields(&leaderInfo->action, ACTION_PASS_TURN);
+            return -3; // Special value for wait (paralysis)
+        }
+    }
+    
     // If we found an enemy to attack, do it now
     if (attackDirection != -1) {
         EntityInfo *leaderInfo = GetEntInfo(leader);
@@ -1092,6 +1103,11 @@ void DungeonHandlePlayerInput(void)
                 if (autoExploreDir == -2) {
                     // Special case: attack enemy
                     // The attack action was already set up in GetAutoExploreDirection
+                    break;
+                }
+                else if (autoExploreDir == -3) {
+                    // Special case: wait (paralysis)
+                    // The wait action was already set up in GetAutoExploreDirection
                     break;
                 }
                 else if (autoExploreDir >= 0) {

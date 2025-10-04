@@ -665,13 +665,16 @@ s32 GetAutoExploreDirection(Entity *leader)
         }
     }
     
-    // Check if we're paralyzed - if so, wait instead of doing anything
+    // Check if we're paralyzed or cringing - if so, wait instead of doing anything
     {
         EntityInfo *leaderInfo = GetEntInfo(leader);
-        if (leaderInfo->burnClassStatus.status == STATUS_PARALYSIS) {
+        if (leaderInfo->burnClassStatus.status == STATUS_PARALYSIS || 
+            leaderInfo->cringeClassStatus.status == STATUS_CRINGE ||
+            leaderInfo->cringeClassStatus.status == STATUS_COWERING ||
+            leaderInfo->cringeClassStatus.status == STATUS_CONFUSED) {
             // Set up wait action (like A+B)
             SetMonsterActionFields(&leaderInfo->action, ACTION_PASS_TURN);
-            return -3; // Special value for wait (paralysis)
+            return -3; // Special value for wait (paralysis/cringing)
         }
     }
     

@@ -13,6 +13,7 @@
 #include "friend_area.h"
 #include "code_80972F4.h"
 #include "code_8097670.h"
+#include "save.h"
 #include "pokemon.h"
 #include "pokemon_3.h"
 #include "ground_place.h"
@@ -71,7 +72,12 @@ void ThoroughlyResetScriptVars(void)
     SetScriptVarValue(NULL,DUNGEON_ENTER_INDEX,-1);
     SetScriptVarValue(NULL,DUNGEON_RESULT,0);
     SetScriptVarValue(NULL,START_MODE,0);
-    SetScriptVarValue(NULL,CLEAR_COUNT,0);
+    // Set CLEAR_COUNT based on skipBasicRescues setting
+    if (GetSkipBasicRescuesSetting()) {
+        SetScriptVarValue(NULL,CLEAR_COUNT,90); // High value to bypass all requirements
+    } else {
+        SetScriptVarValue(NULL,CLEAR_COUNT,0); // Vanilla behavior
+    }
     SetScriptVarValue(NULL,WEATHER_KIND,-1);
     SetScriptVarValue(NULL,PLAYER_KIND,0);
     SetScriptVarValue(NULL,PARTNER1_KIND,0);
@@ -462,7 +468,12 @@ void ScenarioCalc(s16 param_1,s32 param_2,s32 param_3)
   GetScriptVarScenario(param_1_s32,&local_18,&local_14);
   Log(6,"SCENARIO CALC [%3d] %4d %4d -> %4d %4d",param_1_s32,local_18,local_14,param_2,param_3);
   if ((param_1_s32 == 3) && ((param_2 != local_18 || (param_3 != local_14)))) {
-    SetScriptVarValue(NULL,CLEAR_COUNT,0);
+    // Reset CLEAR_COUNT based on skipBasicRescues setting
+    if (GetSkipBasicRescuesSetting()) {
+        SetScriptVarValue(NULL,CLEAR_COUNT,90); // High value to bypass all requirements
+    } else {
+        SetScriptVarValue(NULL,CLEAR_COUNT,0); // Vanilla behavior
+    }
   }
   SetScriptVarArrayValue(NULL,param_1_s32,0,param_2);
   SetScriptVarArrayValue(NULL,param_1_s32,1,param_3);

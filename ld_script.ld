@@ -37,7 +37,14 @@ SECTIONS {
     {
         iwram_start = .;
         INCLUDE "sym_iwram.ld"
-		iwram_end = .;
+
+        /* accept and keep custom IWRAM input sections */
+        KEEP(*(iwram_data))
+        KEEP(*(iwram_data.*))
+        KEEP(*(.iwram))
+        KEEP(*(.iwram.*))
+
+        iwram_end = .;
     } > IWRAM
 
     /* BEGIN ROM DATA */

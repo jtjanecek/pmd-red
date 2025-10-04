@@ -12,6 +12,7 @@
 #define GRID_H DUNGEON_MAX_SIZE_Y
 #define GRID_N ((GRID_W) * (GRID_H))
 #define PARENT_NONE 0xFFFF
+#define IWRAM_DATA __attribute__((section("iwram_data")))
 
 enum { NODE_UNSEEN = 0, NODE_OPEN = 1, NODE_CLOSED = 2 };
 

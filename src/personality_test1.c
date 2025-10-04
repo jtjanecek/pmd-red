@@ -29,6 +29,7 @@ enum
     PERSONALITY_SEED_BEGIN_INPUT,
     PERSONALITY_SEED_CUSTOM_INPUT,
     PERSONALITY_SKIP_CUTSCENES_SELECTION,
+    PERSONALITY_SKIP_BASIC_RESCUES_SELECTION,
     PERSONALITY_DIFFICULTY_SELECTION,
     PERSONALITY_PLAYER_GENDER,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
@@ -72,6 +73,8 @@ static void CallCreatePartnerSelectionMenu(void);
 static void InitializeTestStats(void);
 static void StartSkipCutscenesSelection(void);
 static void HandleSkipCutscenesSelection(void);
+static void StartSkipBasicRescuesSelection(void);
+static void HandleSkipBasicRescuesSelection(void);
 static void StartDifficultySelection(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
@@ -120,6 +123,7 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->usingCustomSeed = FALSE;
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
     sPersonalityTestTracker->unk4.skipCutscenes = 0; // Default to No
+    sPersonalityTestTracker->unk4.skipBasicRescues = 0; // Default to No
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
 }
@@ -147,6 +151,9 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_SKIP_CUTSCENES_SELECTION:
             HandleSkipCutscenesSelection();
+            break;
+        case PERSONALITY_SKIP_BASIC_RESCUES_SELECTION:
+            HandleSkipBasicRescuesSelection();
             break;
         case PERSONALITY_DIFFICULTY_SELECTION:
             HandleDifficultySelection();
@@ -331,6 +338,12 @@ static void StartSkipCutscenesSelection(void)
     sPersonalityTestTracker->TestState = PERSONALITY_SKIP_CUTSCENES_SELECTION;
 }
 
+static void StartSkipBasicRescuesSelection(void)
+{
+    CreateMenuDialogueBoxAndPortrait(gSkipBasicRescuesPrompt, 0, 0, gSkipBasicRescuesMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_SKIP_BASIC_RESCUES_SELECTION;
+}
+
 static void StartDifficultySelection(void)
 {
     CreateMenuDialogueBoxAndPortrait(gDifficultyPrompt, 0, 0, gDifficultyMenu, 0, 3, 0, 0, 0x101);
@@ -502,6 +515,21 @@ static void HandleSkipCutscenesSelection(void)
 
     sPersonalityTestTracker->unk4.skipCutscenes = (u8)selection;
     SetSkipCutscenesSetting((u8)selection);
+    StartSkipBasicRescuesSelection();
+}
+
+static void HandleSkipBasicRescuesSelection(void)
+{
+    s32 selection;
+
+    if (sub_80144A4(&selection) != 0)
+        return;
+
+    if (selection < 0 || selection > 1)
+        selection = 0; // Default to No
+
+    sPersonalityTestTracker->unk4.skipBasicRescues = (u8)selection;
+    SetSkipBasicRescuesSetting((u8)selection);
     StartDifficultySelection();
 }
 

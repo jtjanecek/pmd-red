@@ -28,7 +28,8 @@ typedef struct PersonalityRelated
     /* 0x3C */ s32 customSeed;
     /* 0x40 */ u8 difficulty;
     /* 0x41 */ u8 skipCutscenes;
-    /* 0x42 */ u8 fill42[2];
+    /* 0x42 */ u8 skipBasicRescues;
+    /* 0x43 */ u8 fill43[1];
 } PersonalityRelated;
 
 // size: 0x74

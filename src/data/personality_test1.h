@@ -21,6 +21,16 @@ static const MenuItem gSkipCutscenesMenu[] = {
     { _("Yes"), 1 },
     { NULL, -1 },
 };
+ALIGNED(4) static const u8 gSkipBasicRescuesPrompt[] = _(
+    "{CENTER_ALIGN}Skip Basic Rescues between Story Missions?\n"
+    "{CENTER_ALIGN}This will skip the requirement to complete\n"
+    "{CENTER_ALIGN}normal Rescues between story missions."
+);
+static const MenuItem gSkipBasicRescuesMenu[] = {
+    { _("No"), 0 },
+    { _("Yes"), 1 },
+    { NULL, -1 },
+};
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
     "{CENTER_ALIGN}Vanilla: Similar difficulty to the base game.\n"
     "{CENTER_ALIGN}Hard: Stronger enemies. More bosses.\n"

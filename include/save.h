@@ -91,6 +91,8 @@ u8 GetSkipCutscenesSetting(void);
 void SetSkipCutscenesSetting(u8 in);
 u8 GetSkipBasicRescuesSetting(void);
 void SetSkipBasicRescuesSetting(u8 in);
+u8 GetRecruitAllSetting(void);
+void SetRecruitAllSetting(u8 in);
 void sub_8011CA8(u32 *out, s32 size);
 u32 ReadSaveFromPak(u32 *a);
 u32 WriteSavetoPak(s32 *param_1, u32 param_2);

@@ -78,6 +78,7 @@ static EWRAM_INIT PersonalityRelated sPersonalityRelated_203B040 = {
     .difficulty = DIFFICULTY_VANILLA,
     .skipCutscenes = 0,
     .skipBasicRescues = 0,
+    .recruitAll = 0,
 };
 
 static void LoadTitleScreen(void);
@@ -1020,6 +1021,7 @@ void sub_8001024(PersonalityRelated *dst)
     sPersonalityRelated_203B040.difficulty = GetGameDifficultySetting();
     sPersonalityRelated_203B040.skipCutscenes = GetSkipCutscenesSetting();
     sPersonalityRelated_203B040.skipBasicRescues = GetSkipBasicRescuesSetting();
+    sPersonalityRelated_203B040.recruitAll = GetRecruitAllSetting();
     *dst = sPersonalityRelated_203B040;
 }
 
@@ -1032,6 +1034,7 @@ void sub_8001044(PersonalityRelated *src)
     SetGameDifficultySetting(sPersonalityRelated_203B040.difficulty);
     SetSkipCutscenesSetting(sPersonalityRelated_203B040.skipCutscenes);
     SetSkipBasicRescuesSetting(sPersonalityRelated_203B040.skipBasicRescues);
+    SetRecruitAllSetting(sPersonalityRelated_203B040.recruitAll);
 }
 
 // arm9.bin::0200CE48

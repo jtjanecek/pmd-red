@@ -14,7 +14,7 @@ static const MenuItem gSeedModeMenu[] = {
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the dungeon seed\n{CENTER_ALIGN}using the number pad.");
 ALIGNED(4) static const u8 gSkipCutscenesPrompt[] = _(
     "{CENTER_ALIGN}Skip cutscenes?\n"
-    "{CENTER_ALIGN}This will non-dungeon cutscenes."
+    "{CENTER_ALIGN}This will skip non-dungeon cutscenes."
 );
 static const MenuItem gSkipCutscenesMenu[] = {
     { _("No"), 0 },
@@ -27,6 +27,15 @@ ALIGNED(4) static const u8 gSkipBasicRescuesPrompt[] = _(
     "{CENTER_ALIGN}normal Rescues between story missions."
 );
 static const MenuItem gSkipBasicRescuesMenu[] = {
+    { _("No"), 0 },
+    { _("Yes"), 1 },
+    { NULL, -1 },
+};
+ALIGNED(4) static const u8 gRecruitAllPrompt[] = _(
+    "{CENTER_ALIGN}Allow all pokemon (including fully evolved)\n"
+    "{CENTER_ALIGN}to be recruited directly?"
+);
+static const MenuItem gRecruitAllMenu[] = {
     { _("No"), 0 },
     { _("Yes"), 1 },
     { NULL, -1 },

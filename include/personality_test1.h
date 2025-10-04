@@ -29,7 +29,7 @@ typedef struct PersonalityRelated
     /* 0x40 */ u8 difficulty;
     /* 0x41 */ u8 skipCutscenes;
     /* 0x42 */ u8 skipBasicRescues;
-    /* 0x43 */ u8 fill43[1];
+    /* 0x43 */ u8 recruitAll;
 } PersonalityRelated;
 
 // size: 0x74

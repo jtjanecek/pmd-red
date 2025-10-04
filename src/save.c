@@ -33,6 +33,7 @@ EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_VANILLA};
 EWRAM_DATA u8 gSkipCutscenesSetting = {0};
 EWRAM_DATA u8 gSkipBasicRescuesSetting = {0};
 EWRAM_DATA u8 gRecruitAllSetting = {0};
+EWRAM_DATA u8 gPlaySoloSetting = {0};
 
 EWRAM_INIT u32 gUnknown_203B17C = {0};
 EWRAM_INIT const char *gUnknown_203B180 = {"POKE_DUNGEON__05"};
@@ -121,6 +122,18 @@ void SetRecruitAllSetting(u8 value)
     if (value > 1)
         value = 0;
     gRecruitAllSetting = value;
+}
+
+u8 GetPlaySoloSetting(void)
+{
+    return gPlaySoloSetting;
+}
+
+void SetPlaySoloSetting(u8 value)
+{
+    if (value > 1)
+        value = 0;
+    gPlaySoloSetting = value;
 }
 
 static const char *GetGameInternalName(void)

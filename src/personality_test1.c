@@ -28,6 +28,7 @@ enum
     PERSONALITY_SEED_CUSTOM_MESSAGE,
     PERSONALITY_SEED_BEGIN_INPUT,
     PERSONALITY_SEED_CUSTOM_INPUT,
+    PERSONALITY_SKIP_CUTSCENES_SELECTION,
     PERSONALITY_DIFFICULTY_SELECTION,
     PERSONALITY_PLAYER_GENDER,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
@@ -69,6 +70,8 @@ static void AdvanceToPickPartnerPrompt(void);
 static void AdvanceToTestEnd(void);
 static void CallCreatePartnerSelectionMenu(void);
 static void InitializeTestStats(void);
+static void StartSkipCutscenesSelection(void);
+static void HandleSkipCutscenesSelection(void);
 static void StartDifficultySelection(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
@@ -116,6 +119,7 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->seedChosen = FALSE;
     sPersonalityTestTracker->usingCustomSeed = FALSE;
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
+    sPersonalityTestTracker->unk4.skipCutscenes = 0; // Default to No
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
 }
@@ -140,6 +144,9 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_SEED_CUSTOM_INPUT:
             HandleCustomSeedInput();
+            break;
+        case PERSONALITY_SKIP_CUTSCENES_SELECTION:
+            HandleSkipCutscenesSelection();
             break;
         case PERSONALITY_DIFFICULTY_SELECTION:
             HandleDifficultySelection();
@@ -237,7 +244,7 @@ static void HandleSeedSelection(void)
             sPersonalityTestTracker->unk4.customSeed = -1;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
-            StartDifficultySelection();
+            StartSkipCutscenesSelection();
             break;
         }
         case SEED_MENU_RANDOM:
@@ -247,7 +254,7 @@ static void HandleSeedSelection(void)
             sPersonalityTestTracker->unk4.customSeed = generatedSeed;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
-            StartDifficultySelection();
+            StartSkipCutscenesSelection();
             break;
         }
         case SEED_MENU_CUSTOM:
@@ -299,7 +306,7 @@ static void HandleCustomSeedInput(void)
         case 3:
             if (TryStoreCustomSeed()) {
                 CleanupNamingScreen();
-                StartDifficultySelection();
+                StartSkipCutscenesSelection();
             }
             break;
     }
@@ -316,6 +323,12 @@ static void StartGenderSelection(void)
 {
     CreateMenuDialogueBoxAndPortrait(sGender0, 0, 0, gGenderMenu, 0, 3, 0, 0, 0x101);
     sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_GENDER;
+}
+
+static void StartSkipCutscenesSelection(void)
+{
+    CreateMenuDialogueBoxAndPortrait(gSkipCutscenesPrompt, 0, 0, gSkipCutscenesMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_SKIP_CUTSCENES_SELECTION;
 }
 
 static void StartDifficultySelection(void)
@@ -475,6 +488,21 @@ static void SetPlayerGender(void)
     sub_8099690(0);
     CreateDialogueBoxAndPortrait(gStarterPrompt, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
+}
+
+static void HandleSkipCutscenesSelection(void)
+{
+    s32 selection;
+
+    if (sub_80144A4(&selection) != 0)
+        return;
+
+    if (selection < 0 || selection > 1)
+        selection = 0; // Default to No
+
+    sPersonalityTestTracker->unk4.skipCutscenes = (u8)selection;
+    SetSkipCutscenesSetting((u8)selection);
+    StartDifficultySelection();
 }
 
 static void HandleDifficultySelection(void)

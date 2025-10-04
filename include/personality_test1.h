@@ -27,7 +27,8 @@ typedef struct PersonalityRelated
     /* 0x30 */ u8 TeamName[TEAM_NAME_LENGTH + 1];
     /* 0x3C */ s32 customSeed;
     /* 0x40 */ u8 difficulty;
-    /* 0x41 */ u8 fill41[3];
+    /* 0x41 */ u8 skipCutscenes;
+    /* 0x42 */ u8 fill42[2];
 } PersonalityRelated;
 
 // size: 0x74

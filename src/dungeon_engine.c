@@ -119,7 +119,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
             
             if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
                 SetAutoExploreActive(FALSE);
-                LogMessageByIdWithPopupCheckUser(entity, "Auto-navigate OFF!");
+                LogMessageByIdWithPopupCheckUser(entity, "Autopilot OFF!");
             }
         }
         
@@ -141,7 +141,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
             
             if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
                 SetAutoExploreActive(FALSE);
-                LogMessageByIdWithPopupCheckUser(entity, "Auto-navigate OFF!");
+                LogMessageByIdWithPopupCheckUser(entity, "Autopilot OFF!");
             }
         }
         

@@ -76,6 +76,7 @@ static EWRAM_INIT PersonalityRelated sPersonalityRelated_203B040 = {
     .TeamName = {""},
     .customSeed = 0,
     .difficulty = DIFFICULTY_VANILLA,
+    .skipCutscenes = 0,
 };
 
 static void LoadTitleScreen(void);
@@ -171,48 +172,48 @@ void GameLoop(void)
         xxx_script_related_8001334(17);
 
     // DEV: Auto-start directly in Western Cave with level 100 Caterpie (hero) and Weedle (partner).
-    {
-        DungeonSetupStruct dungeonSetup;
-        sPersonalityRelated_203B040.StarterID = MONSTER_CHARIZARD;
-        sPersonalityRelated_203B040.PartnerID = MONSTER_NONE;
-        sPersonalityRelated_203B040.StarterName[0] = '\0';
-        sPersonalityRelated_203B040.PartnerNick[0] = '\0';
-        sub_8001064();
+    // {
+    //     DungeonSetupStruct dungeonSetup;
+    //     sPersonalityRelated_203B040.StarterID = MONSTER_CHARIZARD;
+    //     sPersonalityRelated_203B040.PartnerID = MONSTER_NONE;
+    //     sPersonalityRelated_203B040.StarterName[0] = '\0';
+    //     sPersonalityRelated_203B040.PartnerNick[0] = '\0';
+    //     sub_8001064();
 
-        // Level up team to 100
-        sub_8043FD0();
+    //     // Level up team to 100
+    //     sub_8043FD0();
 
-        // DEV: Give Charizard a Tight Belt
-        {
-            s32 i;
-            for (i = 0; i < NUM_MONSTERS; i++) {
-                Pokemon *pokemon = &gRecruitedPokemonRef->pokemon[i];
-                if (PokemonExists(pokemon) && pokemon->isTeamLeader) {
-                    InitBulkItem(&pokemon->heldItem, ITEM_TIGHT_BELT);
-                    break;
-                }
-            }
-        }
+    //     // DEV: Give Charizard a Tight Belt
+    //     {
+    //         s32 i;
+    //         for (i = 0; i < NUM_MONSTERS; i++) {
+    //             Pokemon *pokemon = &gRecruitedPokemonRef->pokemon[i];
+    //             if (PokemonExists(pokemon) && pokemon->isTeamLeader) {
+    //                 InitBulkItem(&pokemon->heldItem, ITEM_TIGHT_BELT);
+    //                 break;
+    //             }
+    //         }
+    //     }
 
-        // DEV: Fill bag with 10 apples and 10 cleanse orbs
-        {
-            s32 i;
-            // Add 10 apples
-            for (i = 0; i < 10; i++) {
-                AddItemIdToInventory(ITEM_APPLE, FALSE);
-            }
-            // Add 10 cleanse orbs
-            for (i = 0; i < 10; i++) {
-                AddItemIdToInventory(ITEM_CLEANSE_ORB, FALSE);
-            }
-        }
+    //     // DEV: Fill bag with 10 apples and 10 cleanse orbs
+    //     {
+    //         s32 i;
+    //         // Add 10 apples
+    //         for (i = 0; i < 10; i++) {
+    //             AddItemIdToInventory(ITEM_APPLE, FALSE);
+    //         }
+    //         // Add 10 cleanse orbs
+    //         for (i = 0; i < 10; i++) {
+    //             AddItemIdToInventory(ITEM_CLEANSE_ORB, FALSE);
+    //         }
+    //     }
 
-        dungeonSetup.unk0 = 0;
-        sub_80011CC(&dungeonSetup.info.sub0, DUNGEON_WESTERN_CAVE);
-        // Start on 1F instead of 0F
-        dungeonSetup.info.sub0.unk0.floor = 1;
-        LoadAndRunQuickSaveDungeon_Async(&dungeonSetup);
-    }
+    //     dungeonSetup.unk0 = 0;
+    //     sub_80011CC(&dungeonSetup.info.sub0, DUNGEON_WESTERN_CAVE);
+    //     // Start on 1F instead of 0F
+    //     dungeonSetup.info.sub0.unk0.floor = 1;
+    //     LoadAndRunQuickSaveDungeon_Async(&dungeonSetup);
+    // }
 
 
     while (TRUE) {
@@ -1016,6 +1017,7 @@ void sub_8001024(PersonalityRelated *dst)
 {
     sPersonalityRelated_203B040.customSeed = sub_8011C34();
     sPersonalityRelated_203B040.difficulty = GetGameDifficultySetting();
+    sPersonalityRelated_203B040.skipCutscenes = GetSkipCutscenesSetting();
     *dst = sPersonalityRelated_203B040;
 }
 
@@ -1026,6 +1028,7 @@ void sub_8001044(PersonalityRelated *src)
     if (sPersonalityRelated_203B040.difficulty >= NUM_DIFFICULTY_SETTINGS)
         sPersonalityRelated_203B040.difficulty = DIFFICULTY_VANILLA;
     SetGameDifficultySetting(sPersonalityRelated_203B040.difficulty);
+    SetSkipCutscenesSetting(sPersonalityRelated_203B040.skipCutscenes);
 }
 
 // arm9.bin::0200CE48

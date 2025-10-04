@@ -592,7 +592,7 @@ s32 GetAutoExploreDirection(Entity *leader)
         
         if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
             SetAutoExploreActive(FALSE);
-            LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate OFF!");
+            LogMessageByIdWithPopupCheckUser(leader, "Autopilot OFF!");
             return -1;
         }
     }
@@ -780,7 +780,7 @@ void DungeonHandlePlayerInput(void)
         
         if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
             SetAutoExploreActive(FALSE);
-            LogMessageByIdWithPopupCheckUser(GetLeader(), "Auto-navigate OFF!");
+            LogMessageByIdWithPopupCheckUser(GetLeader(), "Autopilot OFF!");
         }
     }
     
@@ -802,7 +802,7 @@ void DungeonHandlePlayerInput(void)
             
             if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
                 SetAutoExploreActive(FALSE);
-                LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate OFF!");
+                LogMessageByIdWithPopupCheckUser(leader, "Autopilot OFF!");
             }
         }
         
@@ -999,7 +999,7 @@ void DungeonHandlePlayerInput(void)
                 //LogMessageByIdWithPopupCheckUser(leader, "Hold L + Press R!");
                 if (!IsAutoExploreActive()) {
                     SetAutoExploreActive(TRUE);
-                    LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate ON!");
+                    LogMessageByIdWithPopupCheckUser(leader, "Autopilot ON!");
                 } else {
                     LogMessageByIdWithPopupCheckUser(leader, "Already active!");
                 }
@@ -1008,7 +1008,7 @@ void DungeonHandlePlayerInput(void)
                 //LogMessageByIdWithPopupCheckUser(leader, "Hold R + Press L!");
                 if (!IsAutoExploreActive()) {
                     SetAutoExploreActive(TRUE);
-                    LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate ON!");
+                    LogMessageByIdWithPopupCheckUser(leader, "Autopilot ON!");
                 } else {
                     LogMessageByIdWithPopupCheckUser(leader, "Already active!");
                 }
@@ -1017,7 +1017,7 @@ void DungeonHandlePlayerInput(void)
             // B button to cancel auto-navigate (only when auto-navigate is active)
             if ((gRealInputs.pressed & B_BUTTON) && IsAutoExploreActive()) {
                 SetAutoExploreActive(FALSE);
-                LogMessageByIdWithPopupCheckUser(leader, "Auto-navigate OFF!");
+                LogMessageByIdWithPopupCheckUser(leader, "Autopilot OFF!");
             }
 
             tryItemThrow = FALSE;

@@ -12,8 +12,17 @@ static const MenuItem gSeedModeMenu[] = {
 };
 
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the dungeon seed\n{CENTER_ALIGN}using the number pad.");
+ALIGNED(4) static const u8 gSkipCutscenesPrompt[] = _(
+    "{CENTER_ALIGN}Skip cutscenes?\n"
+    "{CENTER_ALIGN}This will non-dungeon cutscenes."
+);
+static const MenuItem gSkipCutscenesMenu[] = {
+    { _("No"), 0 },
+    { _("Yes"), 1 },
+    { NULL, -1 },
+};
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
-    "{CENTER_ALIGN}Vanilla: Similar difficulty to the base game..\n"
+    "{CENTER_ALIGN}Vanilla: Similar difficulty to the base game.\n"
     "{CENTER_ALIGN}Hard: Stronger enemies. More bosses.\n"
     "{CENTER_ALIGN}Nightmare: Only the best will survive."
 );

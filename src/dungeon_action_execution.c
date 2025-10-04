@@ -106,7 +106,7 @@ bool8 ExecuteEntityDungeonAction(Entity *entity)
         
         if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
             SetAutoExploreActive(FALSE);
-            LogMessageByIdWithPopupCheckUser(entity, "Auto-navigate OFF!");
+            LogMessageByIdWithPopupCheckUser(entity, "Autopilot OFF!");
         }
     }
     info->useHeldItem = FALSE;

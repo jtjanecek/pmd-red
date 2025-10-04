@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "constants/emotions.h"
+#include "constants/monster.h"
 #include "bg_palette_buffer.h"
 #include "code_801602C.h"
 #include "random_mersenne_twister.h"
@@ -375,7 +376,16 @@ static void HandlePlaySoloSelection(void)
 
     sPersonalityTestTracker->unk4.playSolo = (u8)selection;
     SetPlaySoloSetting((u8)selection);
-    sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1;
+    
+    if (selection == 1) {
+        // If playSolo is Yes, automatically set Magikarp as partner and skip partner selection
+        sPersonalityTestTracker->unk4.PartnerID = MONSTER_MAGIKARP;
+        CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, MONSTER_MAGIKARP);
+        sPersonalityTestTracker->TestState = PERSONALITY_TEAM_NAME_PROMPT;
+    } else {
+        // If playSolo is No, proceed to partner selection
+        sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1;
+    }
 }
 
 static void StartDifficultySelection(void)

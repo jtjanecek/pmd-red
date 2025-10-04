@@ -18,6 +18,7 @@
 #include "dungeon_range.h"
 #include "dungeon_message.h"
 #include "dungeon_message_log.h"
+#include "save.h"
 #include "dungeon_logic.h"
 #include "constants/dungeon.h"
 #include "constants/friend_area.h"
@@ -206,12 +207,18 @@ void SetDungeonMonsFromTeam(void)
 {
     int index;
     int recruitedId;
+    bool8 playSoloEnabled = GetPlaySoloSetting();
 
     index = 0;
     for (recruitedId = 0; recruitedId < NUM_MONSTERS; recruitedId++) {
         Pokemon lvl1Mon;
         Pokemon *pokeStruct = &gRecruitedPokemonRef->pokemon[recruitedId];
         if (PokemonExists(pokeStruct) && PokemonFlag2(pokeStruct)) {
+            // If playSolo is enabled, only include the team leader
+            if (playSoloEnabled && !pokeStruct->isTeamLeader) {
+                continue;
+            }
+            
             RecruitedPokemonToDungeonMon(&gRecruitedPokemonRef->dungeonTeam[index],recruitedId);
             if (IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id)) {
                 struct DungeonLocation dungeonLoc = {.id = DUNGEON_TINY_WOODS, .floor = 1};

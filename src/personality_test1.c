@@ -261,7 +261,7 @@ static void HandleSeedSelection(void)
     switch (selection) {
         case SEED_MENU_VANILLA:
         {
-            sPersonalityTestTracker->rngSeed = -1;
+            //sPersonalityTestTracker->rngSeed = -1;
             sPersonalityTestTracker->unk4.customSeed = -1;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;

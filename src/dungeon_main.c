@@ -130,7 +130,7 @@ EWRAM_DATA DungeonPos gAutoCrawlTargetPos = {-1, -1};
 
 // Forward declarations
 static void CalculateSimplePath(Entity *leader, DungeonPos *target);
-static void CalculateFullPath(Entity *leader, DungeonPos *target); // DEV
+static void CalculateFullPath(Entity *leader, DungeonPos *target);
 static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction);
 
 // Simple debug notification when player moves to a new tile
@@ -191,7 +191,7 @@ void CheckTileDebugNotification(Entity *leader)
 // Auto-explore functions
 void ResetAutoExplore(void)
 {
-    // DEV: Preserve auto-explore state across floor changes
+    // Preserve auto-explore state across floor changes
     // gAutoExploreActive = FALSE;  // Don't reset the active state
     gAutoExploreHasTarget = FALSE;
     gAutoExploreLastTarget.x = 0;
@@ -226,7 +226,7 @@ void SetAutoExploreActive(bool8 active)
                     
                     // Recalculate the path for the preserved target
                     CalculateSimplePath(leader, &gAutoExploreTarget);
-                    // DEV: Also calculate the complete path for visualization
+                    // Also calculate the complete path for visualization
                     CalculateFullPath(leader, &gAutoExploreTarget);
                     UpdateMinimap(); // Force minimap update to show new path icons
                 }
@@ -336,7 +336,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         
         // Calculate the full path
         CalculateSimplePath(leader, outTarget);
-        // DEV: Also calculate the complete path for visualization
+        // Also calculate the complete path for visualization
         CalculateFullPath(leader, outTarget);
         
         // LogMessageByIdWithPopupCheckUser(leader, "Stairs target set!");
@@ -395,7 +395,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         
         // Calculate the full path
         CalculateSimplePath(leader, outTarget);
-        // DEV: Also calculate the complete path for visualization
+        // Also calculate the complete path for visualization
         CalculateFullPath(leader, outTarget);
         
         // LogMessageByIdWithPopupCheckUser(leader, "Room target set!");
@@ -557,7 +557,7 @@ static void CalculateSimplePath(Entity *leader, DungeonPos *target)
     // Using A* pathfinding instead of junction storage
 }
 
-// DEV: Calculate the complete path from start to target (using existing step variables)
+// Calculate the complete path from start to target (using existing step variables)
 static void CalculateFullPath(Entity *leader, DungeonPos *target)
 {
     // Using A* pathfinding instead of junction highlighting
@@ -580,7 +580,7 @@ s32 GetAutoExploreDirection(Entity *leader)
     
 
 
-    // DEV: Check for auto-navigate exit at the start of pathfinding
+    // Check for auto-navigate exit at the start of pathfinding
     {
         // Check for any button press or hold (excluding the L+R activation combo)
         bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
@@ -743,7 +743,7 @@ void DungeonHandlePlayerInput(void)
             SetLeaderActionToNothing(TRUE);
             sub_805E804();
             
-            // DEV: Auto-proceed on stairs during auto-navigate
+            // Auto-proceed on stairs during auto-navigate
             if (IsAutoExploreActive()) {
                 // Automatically choose "Go Down" option (ACTION_STAIRS)
                 ActionContainer *action = &GetEntInfo(GetLeader())->action;
@@ -768,7 +768,7 @@ void DungeonHandlePlayerInput(void)
 
     sub_806A914(1, 1, 1);
     
-    // DEV: Check for auto-navigate exit early in the input loop
+    // Check for auto-navigate exit early in the input loop
     if (IsAutoExploreActive()) {
         // Check for any button press or hold (excluding the L+R activation combo)
         bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
@@ -790,7 +790,7 @@ void DungeonHandlePlayerInput(void)
 
         sub_80978C8(leaderInfo->id);
         
-        // DEV: Check for auto-navigate exit inside the main input loop
+        // Check for auto-navigate exit inside the main input loop
         if (IsAutoExploreActive()) {
             // Check for any button press or hold (excluding the L+R activation combo)
             bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
@@ -2203,7 +2203,7 @@ static void ShowMainMenu(bool8 fromBPress, bool8 a1)
             else if (tile->terrainFlags & TERRAIN_TYPE_STAIRS) {
                 SetLeaderActionToNothing(TRUE);
                 
-                // DEV: Auto-proceed on stairs during auto-navigate
+                // Auto-proceed on stairs during auto-navigate
                 if (IsAutoExploreActive()) {
                     // Automatically choose "Go Down" option (ACTION_STAIRS)
                     ActionContainer *action = &GetEntInfo(GetLeader())->action;

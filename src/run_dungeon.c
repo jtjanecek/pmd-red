@@ -825,7 +825,11 @@ bool8 TryForcedLoss(bool8 a0)
 void sub_8043FD0(void)
 {
     s32 level;
+#ifdef DEV
     for (level = 2; level <= 100; level++) { // DEV: Level up to 100
+#else
+    for (level = 2; level <= 2; level++) { // Normal: Level up to 2
+#endif
         s32 i, monId, movesCount;
         for (monId = 0; monId < NUM_MONSTERS; monId++) {
             Pokemon *monStruct = &gRecruitedPokemonRef->pokemon[monId];

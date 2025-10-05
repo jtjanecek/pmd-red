@@ -624,10 +624,11 @@ static inline bool32 DislayTutorialMsg(Entity *leader, const struct TutorialFlag
 
 void TryDisplayGeneralTutorialMessage(void)
 {
+#ifdef DEV
     // DEV: Disable general tutorial messages temporarily
+    // This should only appear in dev builds
     return;
-    
-    /*
+#else
     Entity *leader = GetLeader();
 
     if (DislayTutorialMsg(leader, &gUnknown_80FF020, TRUE)) return;
@@ -639,15 +640,15 @@ void TryDisplayGeneralTutorialMessage(void)
         if (DislayTutorialMsg(leader, &gMovementTutorial, TRUE)) return;
         if (DislayTutorialMsg(leader, &gHungerTutorial, TRUE)) return;
     }
-    */
+#endif
 }
 
 void DisplayItemTip(u8 itemId)
 {
+#ifdef DEV
     // DEV: Disable help tips temporarily
     return;
-    
-    /*
+#else
     u32 itemCategory = GetItemCategory(itemId);
 
     if (itemCategory == CATEGORY_FOOD_GUMMIES) {
@@ -674,7 +675,7 @@ void DisplayItemTip(u8 itemId)
     else if (itemId == ITEM_POKE) {
         DislayTutorialMsg(NULL, &gMoneyTutorial, FALSE);
     }
-    */
+#endif
 }
 
 void DisplayYouReachedDestFloorStr(void)

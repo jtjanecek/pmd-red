@@ -107,7 +107,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
         EnemyEvolution(entity);
         gDungeon->noActionInProgress = TRUE;
         
-        // DEV: Check for auto-navigate exit before input handling
+        // Check for auto-navigate exit before input handling
         if (IsAutoExploreActive()) {
             // Check for any button press or hold (excluding the L+R activation combo)
             bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
@@ -129,7 +129,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
             break;
         ExecuteEntityDungeonAction(entity);
         
-        // DEV: Check for auto-navigate exit after action execution
+        // Check for auto-navigate exit after action execution
         if (IsAutoExploreActive()) {
             // Check for any button press or hold (excluding the L+R activation combo)
             bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));

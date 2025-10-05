@@ -94,7 +94,7 @@ bool8 ExecuteEntityDungeonAction(Entity *entity)
     gUnknown_203B434 = TRUE;
     info = GetEntInfo(entity);
     
-    // DEV: Check for auto-navigate exit at the start of action execution
+    // Check for auto-navigate exit at the start of action execution
     if (IsAutoExploreActive() && info->isTeamLeader) {
         // Check for any button press or hold (excluding the L+R activation combo)
         bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));

@@ -173,6 +173,7 @@ void GameLoop(void)
     if (GetScriptVarValue(NULL, EVENT_LOCAL) == 0)
         xxx_script_related_8001334(17);
 
+#ifdef DEV
     // DEV: Auto-start directly in Western Cave with level 100 Caterpie (hero) and Weedle (partner).
     // {
     //     DungeonSetupStruct dungeonSetup;
@@ -216,6 +217,7 @@ void GameLoop(void)
     //     dungeonSetup.info.sub0.unk0.floor = 1;
     //     LoadAndRunQuickSaveDungeon_Async(&dungeonSetup);
     // }
+#endif
 
 
     while (TRUE) {

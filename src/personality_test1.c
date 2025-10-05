@@ -22,6 +22,9 @@
 #include "text_2.h"
 #include "text_util.h"
 
+// Forward declaration for dev mode level up function
+extern void sub_8043FD0(void);
+
 enum
 {
     PERSONALITY_SEED_PROMPT,
@@ -122,7 +125,6 @@ static void InitializeTestStats(void)
 {
     sub_8001024(&sPersonalityTestTracker->unk4);
     sPersonalityTestTracker->FrameCounter = 0;
-    sPersonalityTestTracker->TestState = PERSONALITY_SEED_PROMPT;
     sPersonalityTestTracker->playerGender = 0;
     sPersonalityTestTracker->rngSeed = 0;
     sPersonalityTestTracker->seedChosen = FALSE;
@@ -134,6 +136,37 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.playSolo = 0; // Default to No
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
+    
+    // DEV: Skip personality quiz and set dev defaults
+    // To enable dev mode, compile with: make DEV=1
+    // This will skip the personality quiz and set:
+    // - Main: Charizard
+    // - Solo: Yes  
+    // - Partner: Magikarp
+    // - Recruitment: No Recruitable
+    // - Skip basic rescues: Yes
+    // - Skip Cutscenes: Yes
+    // - Difficulty: Vanilla
+    #ifdef DEV
+    sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
+    sPersonalityTestTracker->unk4.PartnerID = MONSTER_MAGIKARP;
+    sPersonalityTestTracker->unk4.playSolo = 1; // Solo: Yes
+    sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
+    sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
+    sPersonalityTestTracker->unk4.skipCutscenes = 1; // Yes
+    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
+    SetPlaySoloSetting(1);
+    SetRecruitAllSetting(2);
+    SetSkipBasicRescuesSetting(1);
+    SetSkipCutscenesSetting(1);
+    SetGameDifficultySetting(DIFFICULTY_VANILLA);
+    
+    // Level up team to 100 in dev mode
+    sub_8043FD0();
+    #else
+    sPersonalityTestTracker->TestState = PERSONALITY_SEED_PROMPT;
+    #endif
 }
 
 u32 HandleTestTrackerState(void)

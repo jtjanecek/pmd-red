@@ -31,6 +31,9 @@ ifeq (modern,$(MAKECMDGOALS))
   MODERN := 1
 endif
 
+# Dev flag to skip personality quiz
+DEV         ?= 0
+
 PREFIX := arm-none-eabi-
 OBJCOPY := $(PREFIX)objcopy
 OBJDUMP := $(PREFIX)objdump
@@ -101,6 +104,9 @@ ifeq ($(MODERN),0)
   endif
   INCLUDE_PATHS   := -I include -I tools/agbcc/include
   CPPFLAGS        := -iquote include -I tools/agbcc/include -nostdinc -undef
+  ifeq ($(DEV),1)
+    CPPFLAGS += -DDEV
+  endif
 else
   MODERNCC := $(PREFIX)gcc
   PATH_MODERNCC := PATH="$(PATH)" $(MODERNCC)
@@ -112,6 +118,9 @@ else
   INCLUDE_CPP_ARGS := $(INCLUDE_DIRS:%=-iquote %)
   INCLUDE_PATHS := $(INCLUDE_DIRS:%=-I %)
   CPPFLAGS := $(INCLUDE_CPP_ARGS) -Wno-trigraphs -DMODERN=$(MODERN)
+  ifeq ($(DEV),1)
+    CPPFLAGS += -DDEV
+  endif
 endif
 
 #### Files ####

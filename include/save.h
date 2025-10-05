@@ -38,6 +38,10 @@ struct UnkStruct_sub_8011DAC
     u32 unk41C;
     u32 RngState;
     u32 difficulty;
+    u8 skipCutscenes;
+    u8 skipBasicRescues;
+    u8 recruitAll;
+    u8 playSolo;
     u32 savedRecruitedPokemon;
     u32 unk428;
     u8 fill42C[0x4];

@@ -40,6 +40,7 @@ struct LoadScreen
     /* 0x258 */ u8 formattedHelperInfo[0x24];
     /* 0x27C */ u8 formattedCustomSeed[0x24];
     /* 0x2A0 */ u8 formattedDifficulty[0x24];
+    /* 0x2C4 */ u8 formattedPlaySolo[0x24];
 };
 
 EWRAM_INIT struct LoadScreen *gLoadScreen = {NULL};
@@ -157,6 +158,10 @@ ALIGNED(4) const char *const gDifficultyLabels[] = {
     "Vanilla",
     "Hard",
     "Nightmare",
+};
+ALIGNED(4) const char *const gPlaySoloLabels[] = {
+    "Solo: Off",
+    "Solo: On",
 };
 ALIGNED(4) const char gNoTeamNamePlaceholder[] = _("？？？？");
 ALIGNED(4) const char gUnknown_80E7804[] = "%s ";
@@ -319,6 +324,14 @@ void DrawLoadScreenText(void)
               difficulty = DIFFICULTY_VANILLA;
           InlineStrcpy(gLoadScreen->formattedDifficulty, gDifficultyLabels[difficulty]);
           PrintStringOnWindow(seedX, 12, gLoadScreen->formattedDifficulty, 0, 0);
+      }
+
+      {
+          u8 playSolo = GetPlaySoloSetting();
+          if (playSolo > 1)
+              playSolo = 0;
+          InlineStrcpy(gLoadScreen->formattedPlaySolo, gPlaySoloLabels[playSolo]);
+          PrintStringOnWindow(seedX, 36, gLoadScreen->formattedPlaySolo, 0, 0);
       }
   }
 

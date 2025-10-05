@@ -25,7 +25,11 @@ struct unk_struct
     u32 unk20;
     s32 customSeed;
     u32 difficulty;
-    u32 padding[501];
+    u8 skipCutscenes;
+    u8 skipBasicRescues;
+    u8 recruitAll;
+    u8 playSolo;
+    u32 padding[500];
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
@@ -272,6 +276,10 @@ u32 ReadSaveFromPak(u32 *a)
             sub_8011C40(playerSave->unk418);
             SetRNGSeed(playerSave->RngState);
             SetGameDifficultySetting(playerSave->difficulty);
+            SetSkipCutscenesSetting(playerSave->skipCutscenes);
+            SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
+            SetRecruitAllSetting(playerSave->recruitAll);
+            SetPlaySoloSetting(playerSave->playSolo);
         }
         else {
             gUnknown_203B184->unk054 = playerSave->unk41C;
@@ -279,6 +287,10 @@ u32 ReadSaveFromPak(u32 *a)
             gUnknown_203B184->difficulty = playerSave->difficulty;
             gUnknown_203B184->RngState = playerSave->RngState;
             SetGameDifficultySetting(playerSave->difficulty);
+            SetSkipCutscenesSetting(playerSave->skipCutscenes);
+            SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
+            SetRecruitAllSetting(playerSave->recruitAll);
+            SetPlaySoloSetting(playerSave->playSolo);
         }
     }
     if (!saveStatus)
@@ -365,6 +377,10 @@ u32 sub_8011FA8(void)
         if (temp3 == 0xF1207) {
             sub_8011C40(r5->customSeed);
             SetGameDifficultySetting(r5->difficulty);
+            SetSkipCutscenesSetting(r5->skipCutscenes);
+            SetSkipBasicRescuesSetting(r5->skipBasicRescues);
+            SetRecruitAllSetting(r5->recruitAll);
+            SetPlaySoloSetting(r5->playSolo);
         }
     }
     MemoryFree(r5);
@@ -404,12 +420,20 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->unk418 = sub_8011C34();
     playerSave->RngState = GetRNGState();
     playerSave->difficulty = GetGameDifficultySetting();
+    playerSave->skipCutscenes = GetSkipCutscenesSetting();
+    playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
+    playerSave->recruitAll = GetRecruitAllSetting();
+    playerSave->playSolo = GetPlaySoloSetting();
   }
   else {
     playerSave->unk41C = gUnknown_203B184->unk054;
     playerSave->unk418 = gUnknown_203B184->unk050;
     playerSave->difficulty = gUnknown_203B184->difficulty;
     playerSave->RngState = gUnknown_203B184->RngState;
+    playerSave->skipCutscenes = GetSkipCutscenesSetting();
+    playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
+    playerSave->recruitAll = GetRecruitAllSetting();
+    playerSave->playSolo = GetPlaySoloSetting();
   }
    playerSave->checksum = 0x5071412;
   gameName = GetGameInternalName();
@@ -467,6 +491,10 @@ u32 sub_80121E0(u32 r0)
     r4->checksum = 0x5071412;
     r4->customSeed = sub_8011C34();
     r4->difficulty = GetGameDifficultySetting();
+    r4->skipCutscenes = GetSkipCutscenesSetting();
+    r4->skipBasicRescues = GetSkipBasicRescuesSetting();
+    r4->recruitAll = GetRecruitAllSetting();
+    r4->playSolo = GetPlaySoloSetting();
 
     gameName = GetGameInternalName();
     strncpy(r4->gameInternalName, gameName, ARRAY_COUNT(r4->gameInternalName));

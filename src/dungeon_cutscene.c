@@ -36,6 +36,7 @@
 #include "dungeon_tilemap.h"
 #include "dungeon_map.h"
 #include "dungeon_mon_spawn.h"
+#include "save.h"
 
 struct RgbS16
 {
@@ -142,6 +143,9 @@ void sub_80847D4(void)
             break;
         }
     }
+
+    // In PlaySolo mode, we skip running the pre-fight setup + dialogues,
+    // but we keep gDungeon->unk3A0D intact so post-battle triggers work.
     sub_8097FF8();
 }
 
@@ -174,6 +178,11 @@ bool8 ShouldShowDungeonBanner(void)
 
 void sub_80848F0(void)
 {
+  if (GetPlaySoloSetting()) {
+    // Skip pre-fight setup in PlaySolo (keep unk3A0D for victory triggers)
+    gDungeon->unk1356C = 0;
+    return;
+  }
   gDungeon->unk1356C = 1;
   switch(gDungeon->unk3A0D) {
     case 0:
@@ -347,6 +356,10 @@ void sub_80848F0(void)
 
 void DisplayPreFightDialogue(void)
 {
+  if (GetPlaySoloSetting()) {
+    // Skip dialogue in PlaySolo; triggers still work based on unk3A0D
+    return;
+  }
   switch(gDungeon->unk3A0D) {
       case 0:
         break;
@@ -750,7 +763,8 @@ void sub_8085374(void)
     s32 temp;
     Entity *leaderEntity = NULL;
     Entity *partnerEntity = NULL;
-    s32 species = sub_808D3F8()->speciesNum;
+    Pokemon *partnerMon = NULL;
+    s32 species = -1;
 
     for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
         entity = gDungeon->teamPokemon[i];
@@ -764,6 +778,15 @@ void sub_8085374(void)
 
     if (leaderEntity == NULL || partnerEntity != NULL || gDungeon->unk644.unk18 != 0)
         return;
+
+    // Determine species to spawn for partner ally.
+    // Prefer recruited partner species; fall back to leader's species if none.
+    partnerMon = sub_808D3F8();
+    if (partnerMon != NULL) {
+        species = partnerMon->speciesNum;
+    } else {
+        species = GetEntInfo(leaderEntity)->id;
+    }
 
     j = 0;
     while ((pos = gUnknown_80F4598[j]).x != 99) {
@@ -796,15 +819,34 @@ Entity *CutsceneGetPartner(void)
 {
     s32 counter;
     Entity *entity;
-    for(counter = 0; counter < MAX_TEAM_MEMBERS; counter++)
+    for (counter = 0; counter < MAX_TEAM_MEMBERS; counter++)
     {
         entity = gDungeon->teamPokemon[counter];
-        if(EntityIsValid(entity) && GetEntInfo(entity)->joinedAt.id == DUNGEON_JOIN_LOCATION_PARTNER)
+        if (EntityIsValid(entity) && GetEntInfo(entity)->joinedAt.id == DUNGEON_JOIN_LOCATION_PARTNER)
         {
             return entity;
         }
     }
-    return GetEntityFromMonsterBehavior(BEHAVIOR_ALLY);
+
+    // Fallback: if no partner in team and no existing ally entity, try spawning
+    // a temporary partner for cutscenes (e.g., when PlaySolo is enabled).
+    {
+        Entity *ally = GetEntityFromMonsterBehavior(BEHAVIOR_ALLY);
+        if (ally != NULL)
+            return ally;
+
+        // Attempt to spawn a temporary partner near the leader before cutscenes use it.
+        // sub_8085374 spawns a BEHAVIOR_ALLY entity with the partner's species
+        // if leader exists and no partner is present.
+        sub_8085374();
+
+        ally = GetEntityFromMonsterBehavior(BEHAVIOR_ALLY);
+        if (ally != NULL)
+            return ally;
+
+        // Absolute fallback: return leader to avoid NULL dereferences in cutscene scripts.
+        return GetLeader();
+    }
 }
 
 void sub_80854D4(void)
@@ -2003,4 +2045,3 @@ u8 sub_8086AE4(s16 _index)
     else
         return HasRecruitedMon(pokeIndex);
 }
-

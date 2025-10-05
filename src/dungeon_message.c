@@ -393,9 +393,17 @@ void DisplayDungeonDialogue(const struct DungeonDialogueStruct *dialogueInfo)
 
     if (partner != NULL) {
         EntityInfo *partnerInfo = GetEntInfo(partner);
-        DungeonMon *monStruct2 = &gRecruitedPokemonRef->dungeonTeam[partnerInfo->teamIndex];
-
-        sub_808DA0C(gFormatBuffer_Monsters[1], monStruct2);
+        if (!partnerInfo->isNotTeamMember) {
+            DungeonMon *monStruct2 = &gRecruitedPokemonRef->dungeonTeam[partnerInfo->teamIndex];
+            sub_808DA0C(gFormatBuffer_Monsters[1], monStruct2);
+        } else {
+            Pokemon *partnerMon = sub_808D3F8();
+            if (partnerMon != NULL) {
+                PrintPokeNameToBuffer(gFormatBuffer_Monsters[1], partnerMon);
+            } else {
+                CopyMonsterNameToBuffer(gFormatBuffer_Monsters[1], partnerInfo->apparentID);
+            }
+        }
         partnerId = partnerInfo->apparentID;
     }
     else {

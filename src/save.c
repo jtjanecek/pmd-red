@@ -123,7 +123,7 @@ u8 GetRecruitAllSetting(void)
 
 void SetRecruitAllSetting(u8 value)
 {
-    if (value > 1)
+    if (value > 2)
         value = 0;
     gRecruitAllSetting = value;
 }

@@ -32,12 +32,14 @@ static const MenuItem gSkipBasicRescuesMenu[] = {
     { NULL, -1 },
 };
 ALIGNED(4) static const u8 gRecruitAllPrompt[] = _(
-    "{CENTER_ALIGN}Allow all pokemon (including fully evolved)\n"
-    "{CENTER_ALIGN}to be recruited directly?"
+    "{CENTER_ALIGN}Recruitment Settings:\n"
+    "{CENTER_ALIGN}All Recruitable - Can recruit fully evolved\n"
+    "{CENTER_ALIGN}No Recruitable - No in-dungeon recruits"
 );
 static const MenuItem gRecruitAllMenu[] = {
-    { _("No"), 0 },
-    { _("Yes"), 1 },
+    { _("Vanilla"), 0 },
+    { _("All Recruitable"), 1 },
+    { _("No Recruitable"), 2 },
     { NULL, -1 },
 };
 ALIGNED(4) static const u8 gPlaySoloPrompt[] = _(

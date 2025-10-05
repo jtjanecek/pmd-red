@@ -584,8 +584,8 @@ static void HandleRecruitAllSelection(void)
     if (sub_80144A4(&selection) != 0)
         return;
 
-    if (selection < 0 || selection > 1)
-        selection = 0; // Default to No
+    if (selection < 0 || selection > 2)
+        selection = 0; // Default to Vanilla
 
     sPersonalityTestTracker->unk4.recruitAll = (u8)selection;
     SetRecruitAllSetting((u8)selection);

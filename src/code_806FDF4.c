@@ -18,6 +18,7 @@
 #include "dungeon_util.h"
 #include "friend_area.h"
 #include "pokemon.h"
+#include "save.h"
 #include "pokemon_3.h"
 #include "position_util.h"
 #include "text_util.h"
@@ -43,6 +44,10 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     EntityInfo *targetInfo = GetEntInfo(target);
     s32 foundIndex = -1;
     s32 size = GetBodySize(targetInfo->apparentID);
+
+    // Check recruitment setting - if set to "No Recruitable", deny all recruitment
+    if (GetRecruitAllSetting() == 2)
+        return FALSE;
 
     if (gDungeon->fixedRoomNumber != 5 && gDungeon->fixedRoomNumber != 4 && gDungeon->fixedRoomNumber != 9 && gDungeon->fixedRoomNumber != 0xf) {
         if ((gDungeon->fixedRoomNumber >= 0x2c && gDungeon->fixedRoomNumber <= 0x30)) {

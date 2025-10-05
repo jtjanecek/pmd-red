@@ -84,6 +84,9 @@ static void sub_8084854(const struct unkData_8107234 *);
 static void sub_8085764(void);
 static void sub_80857B8(void);
 static void sub_80861EC(Entity *);
+static void EnsureSoloSpacingFromBoss(void);
+static void SoloNormalizeBossRoomLayout(void);
+static bool8 IsBossBehavior(u8 behavior);
 
 static const struct unkData_8107234 gUnknown_8107234[28] = {
     [0] = {1, 1, 0, 2, 1, 3},
@@ -123,6 +126,402 @@ static const s32 gUnknown_8107314[] = {
 };
 
 EWRAM_DATA static unkStruct_202F3D0 gUnknown_202F3D0 = {0};
+
+// Return TRUE if this behavior represents a boss we want distance from in Solo
+static bool8 IsBossBehavior(u8 behavior)
+{
+    return (
+        behavior == BEHAVIOR_SKARMORY ||
+        behavior == BEHAVIOR_GENGAR   ||
+        behavior == BEHAVIOR_EKANS    ||
+        behavior == BEHAVIOR_MEDICHAM
+    );
+}
+
+// Ensure the leader is at least minDist tiles away (Chebyshev) from any boss entity.
+static void EnsureSoloSpacingFromBoss(void)
+{
+    Entity *leader;
+    Entity *bosses[8];
+    s32 bossCount;
+    s32 i;
+    s32 minDist;
+    bool8 closeToAny;
+    u8 bossRoom;
+    s16 leaderSpecies;
+    s32 j;
+
+    leader = GetLeader();
+    if (!EntityIsValid(leader)) return;
+
+    // Gather boss entities present on the floor
+    bossCount = 0;
+    for (i = 0; i < DUNGEON_MAX_POKEMON && bossCount < 8; i++) {
+        Entity *ent = gDungeon->activePokemon[i];
+        if (EntityIsValid(ent)) {
+            EntityInfo *info = GetEntInfo(ent);
+            if (info->isNotTeamMember && IsBossBehavior(info->monsterBehavior)) {
+                bosses[bossCount++] = ent;
+            }
+        }
+    }
+    if (bossCount == 0) return; // Nothing to do
+
+    // Target placement: 3 tiles BELOW the lowest boss (max Y), centered between bosses.
+    // This ensures all bosses are above the player.
+    minDist = 3;
+    closeToAny = TRUE; // always reposition for consistency
+
+    {
+        s32 minX, maxX, minY, maxY;
+        s32 centerX;
+        minX = maxX = bosses[0]->pos.x;
+        minY = maxY = bosses[0]->pos.y;
+        for (i = 1; i < bossCount; i++) {
+            if (bosses[i]->pos.x < minX) minX = bosses[i]->pos.x;
+            if (bosses[i]->pos.x > maxX) maxX = bosses[i]->pos.x;
+            if (bosses[i]->pos.y < minY) minY = bosses[i]->pos.y;
+            if (bosses[i]->pos.y > maxY) maxY = bosses[i]->pos.y;
+        }
+        centerX = (minX + maxX) / 2;
+
+        bossRoom = GetTile(bosses[0]->pos.x, bosses[0]->pos.y)->room;
+        leaderSpecies = GetEntInfo(leader)->id;
+
+        // Try exact (centerX, baseYStart) first; if blocked, expand horizontally,
+        // then step further down within the room bounds.
+        {
+            static const s8 dxPref[] = {0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, -8, 8, -9, 9, -10, 10};
+            s32 baseX = centerX;
+            s32 baseYStart, baseYEnd;
+            s32 roomMinY = DUNGEON_MAX_SIZE_Y;
+            s32 roomMaxY = -1;
+            s32 rx, ry;
+            for (ry = 0; ry < DUNGEON_MAX_SIZE_Y; ry++) {
+                for (rx = 0; rx < DUNGEON_MAX_SIZE_X; rx++) {
+                    const Tile *rtile = GetTile(rx, ry);
+                    if (rtile->room == bossRoom) {
+                        if (ry < roomMinY) roomMinY = ry;
+                        if (ry > roomMaxY) roomMaxY = ry;
+                    }
+                }
+            }
+            baseYStart = maxY + 3;
+            if (baseYStart > roomMaxY) baseYStart = roomMaxY;
+            if (baseYStart < roomMinY) baseYStart = roomMinY;
+            baseYEnd = baseYStart + 5;
+            if (baseYEnd > roomMaxY) baseYEnd = roomMaxY;
+            for (; baseYStart <= baseYEnd; baseYStart++) {
+                for (i = 0; i < (s32)(sizeof(dxPref)/sizeof(dxPref[0])); i++) {
+                    s32 nx = baseX + dxPref[i];
+                    s32 ny = baseYStart;
+                    const Tile *tile = GetTile(nx, ny);
+                    if (tile->room != bossRoom) continue;
+                    if (sub_807034C(leaderSpecies, tile) != 0) continue;
+
+                    sub_80856C8(leader, nx, ny);
+                    sub_8085860(nx, ny);
+                    return;
+                }
+            }
+        }
+    }
+
+    // Fallback: find any valid tile at least 3 tiles away using the offset pattern.
+    bossRoom = GetTile(bosses[0]->pos.x, bosses[0]->pos.y)->room;
+    leaderSpecies = GetEntInfo(leader)->id;
+    for (j = 0; ; j++) {
+        DungeonPos off = gUnknown_80F4598[j];
+        s32 dx, dy;
+        s32 nx, ny;
+        const Tile *tile;
+        bool8 farFromAll;
+        if (off.x == 99) break;
+
+        dx = off.x; if (dx < 0) dx = -dx;
+        dy = off.y; if (dy < 0) dy = -dy;
+        if ((dx > dy ? dx : dy) < minDist) continue;
+
+        nx = bosses[0]->pos.x + off.x;
+        ny = bosses[0]->pos.y + off.y;
+        tile = GetTile(nx, ny);
+        if (tile->room != bossRoom) continue;
+        if (sub_807034C(leaderSpecies, tile) != 0) continue;
+
+        farFromAll = TRUE;
+        for (i = 0; i < bossCount; i++) {
+            s32 ddx, ddy;
+            ddx = nx - bosses[i]->pos.x; if (ddx < 0) ddx = -ddx;
+            ddy = ny - bosses[i]->pos.y; if (ddy < 0) ddy = -ddy;
+            if ((ddx > ddy ? ddx : ddy) < minDist) { farFromAll = FALSE; break; }
+        }
+        if (!farFromAll) continue;
+
+        sub_80856C8(leader, nx, ny);
+        sub_8085860(nx, ny);
+        return;
+    }
+}
+
+// For PlaySolo: move all enemies in the boss room to one row from the top of that room,
+// then place the leader three rows below that. Keeps fights readable and consistent.
+static void SoloNormalizeBossRoomLayout(void)
+{
+    Entity *leader;
+    Entity *bosses[8];
+    s32 bossCount;
+    s32 i;
+    u8 bossRoom;
+    s16 leaderSpecies;
+    s32 roomMinY = DUNGEON_MAX_SIZE_Y;
+    s32 roomMaxY = -1;
+    s32 roomMinX = DUNGEON_MAX_SIZE_X;
+    s32 roomMaxX = -1;
+
+    leader = GetLeader();
+    if (!EntityIsValid(leader)) return;
+
+    // Identify boss room via any boss-behavior enemy present
+    bossCount = 0;
+    for (i = 0; i < DUNGEON_MAX_POKEMON && bossCount < 8; i++) {
+        Entity *ent = gDungeon->activePokemon[i];
+        if (EntityIsValid(ent)) {
+            EntityInfo *info = GetEntInfo(ent);
+            if (info->isNotTeamMember && IsBossBehavior(info->monsterBehavior)) {
+                bosses[bossCount++] = ent;
+            }
+        }
+    }
+    if (bossCount == 0) return; // no boss; nothing to normalize
+
+    bossRoom = GetTile(bosses[0]->pos.x, bosses[0]->pos.y)->room;
+
+    // Compute room bounds
+    {
+        s32 rx, ry;
+        for (ry = 0; ry < DUNGEON_MAX_SIZE_Y; ry++) {
+            for (rx = 0; rx < DUNGEON_MAX_SIZE_X; rx++) {
+                const Tile *t = GetTile(rx, ry);
+                if (t->room == bossRoom) {
+                    if (ry < roomMinY) roomMinY = ry;
+                    if (ry > roomMaxY) roomMaxY = ry;
+                    if (rx < roomMinX) roomMinX = rx;
+                    if (rx > roomMaxX) roomMaxX = rx;
+                }
+            }
+        }
+        if (roomMaxY < roomMinY) return; // invalid room
+    }
+
+    // Desired rows
+    {
+        s32 enemyRow = roomMinY + 1; // one row from the top
+        s32 leaderRow = enemyRow + 3; // three rows below
+        s32 centerX;
+        if (leaderRow > roomMaxY) leaderRow = roomMaxY; // clamp
+        if (leaderRow <= enemyRow && enemyRow < roomMaxY) leaderRow = enemyRow + 1;
+
+        leaderSpecies = GetEntInfo(leader)->id;
+        // Center X as midpoint of the room horizontally for leader placement
+        centerX = (roomMinX + roomMaxX) / 2;
+
+        // Special case: single-boss fights (e.g., Skarmory).
+        // Do not relocate the boss; instead anchor the leader 3 rows below the boss
+        // (or 1 below if room is shallow). Avoid the same column as the boss.
+        if (bossCount == 1) {
+            s32 targetY = bosses[0]->pos.y + 3;
+            s32 baseX = bosses[0]->pos.x;
+            static const s8 dxPrefSingle[] = {0, -1, 1, -2, 2, -3, 3, -4, 4};
+            s32 k;
+
+            if (targetY > roomMaxY) targetY = bosses[0]->pos.y + 1;
+            if (targetY > roomMaxY) targetY = roomMaxY;
+            if (targetY <= bosses[0]->pos.y && bosses[0]->pos.y > roomMinY) {
+                // If we still couldn't get below, place one row above as a last resort
+                targetY = bosses[0]->pos.y - 1;
+            }
+
+            for (k = 0; k < (s32)(sizeof(dxPrefSingle)/sizeof(dxPrefSingle[0])); k++) {
+                s32 nx = baseX + dxPrefSingle[k];
+                s32 ny = targetY;
+                const Tile *tile = GetTile(nx, ny);
+                if (tile->room != bossRoom) continue;
+                if (sub_807034C(leaderSpecies, tile) != 0) continue;
+                if (tile->monster != NULL) continue;
+                if (nx == bosses[0]->pos.x && ny == bosses[0]->pos.y) continue; // not on boss
+                sub_80856C8(leader, nx, ny);
+                sub_8085860(nx, ny);
+                return;
+            }
+            // If we couldn't place relative to boss cleanly, fall back to center-based logic below
+        }
+
+        // If this is the Team Meanies fight (multiple bosses), place them in a tight
+        // formation on enemyRow around the room center: Medicham (left), Gengar (center), Ekans (right).
+        // Otherwise, gently normalize all enemies to enemyRow.
+        {
+            Entity *gengar = NULL, *ekans = NULL, *medicham = NULL;
+            bool8 hasMeanies = FALSE;
+            for (i = 0; i < DUNGEON_MAX_POKEMON; i++) {
+                Entity *ent = gDungeon->activePokemon[i];
+                if (EntityIsValid(ent)) {
+                    EntityInfo *info = GetEntInfo(ent);
+                    const Tile *currTile = GetTile(ent->pos.x, ent->pos.y);
+                    if (info->isNotTeamMember && currTile->room == bossRoom) {
+                        if (info->monsterBehavior == BEHAVIOR_GENGAR) gengar = ent;
+                        else if (info->monsterBehavior == BEHAVIOR_EKANS) ekans = ent;
+                        else if (info->monsterBehavior == BEHAVIOR_MEDICHAM) medicham = ent;
+                    }
+                }
+            }
+            if (gengar != NULL && (ekans != NULL || medicham != NULL)) {
+                hasMeanies = TRUE;
+            }
+
+            if (hasMeanies) {
+                // Desired Xs
+                s32 gx = centerX;           // Gengar center
+                s32 mx = centerX - 2;       // Medicham left
+                s32 ex = centerX + 2;       // Ekans right
+                static const s8 wiggle[] = {0, -1, 1, -2, 2, -3, 3};
+                s32 k;
+
+                // Place Gengar first at center
+                if (gengar != NULL) {
+                    for (k = 0; k < (s32)(sizeof(wiggle)/sizeof(wiggle[0])); k++) {
+                        s32 nx = gx + wiggle[k];
+                        const Tile *tile = GetTile(nx, enemyRow);
+                        if (tile->room != bossRoom) continue;
+                        if (sub_807034C(GetEntInfo(gengar)->id, tile) != 0) continue;
+                        if (tile->monster != NULL) continue;
+                        sub_80856C8(gengar, nx, enemyRow);
+                        break;
+                    }
+                }
+
+                // Place Medicham on left side
+                if (medicham != NULL) {
+                    for (k = 0; k < (s32)(sizeof(wiggle)/sizeof(wiggle[0])); k++) {
+                        s32 nx = mx + wiggle[k];
+                        const Tile *tile = GetTile(nx, enemyRow);
+                        if (tile->room != bossRoom) continue;
+                        if (sub_807034C(GetEntInfo(medicham)->id, tile) != 0) continue;
+                        if (tile->monster != NULL) continue;
+                        sub_80856C8(medicham, nx, enemyRow);
+                        break;
+                    }
+                }
+
+                // Place Ekans on right side
+                if (ekans != NULL) {
+                    for (k = 0; k < (s32)(sizeof(wiggle)/sizeof(wiggle[0])); k++) {
+                        s32 nx = ex + wiggle[k];
+                        const Tile *tile = GetTile(nx, enemyRow);
+                        if (tile->room != bossRoom) continue;
+                        if (sub_807034C(GetEntInfo(ekans)->id, tile) != 0) continue;
+                        if (tile->monster != NULL) continue;
+                        sub_80856C8(ekans, nx, enemyRow);
+                        break;
+                    }
+                }
+
+                // Any other enemies in the boss room: gently slide to enemyRow
+                for (i = 0; i < DUNGEON_MAX_POKEMON; i++) {
+                    Entity *ent = gDungeon->activePokemon[i];
+                    if (EntityIsValid(ent)) {
+                        EntityInfo *info = GetEntInfo(ent);
+                        const Tile *currTile = GetTile(ent->pos.x, ent->pos.y);
+                        if (info->isNotTeamMember && currTile->room == bossRoom && ent != gengar && ent != ekans && ent != medicham) {
+                            s32 baseX = ent->pos.x;
+                            s32 k2;
+                            for (k2 = 0; k2 < (s32)(sizeof(wiggle)/sizeof(wiggle[0])); k2++) {
+                                s32 nx = baseX + wiggle[k2];
+                                const Tile *tile = GetTile(nx, enemyRow);
+                                if (tile->room != bossRoom) continue;
+                                if (sub_807034C(info->id, tile) != 0) continue;
+                                if (tile->monster != NULL) continue;
+                                sub_80856C8(ent, nx, enemyRow);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                // Generic normalization for non-Meanies rooms
+                static const s8 dxPref[] = {0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6};
+                for (i = 0; i < DUNGEON_MAX_POKEMON; i++) {
+                    Entity *ent = gDungeon->activePokemon[i];
+                    if (EntityIsValid(ent)) {
+                        EntityInfo *info = GetEntInfo(ent);
+                        const Tile *currTile = GetTile(ent->pos.x, ent->pos.y);
+                        if (info->isNotTeamMember && currTile->room == bossRoom) {
+                            s32 baseX = ent->pos.x;
+                            s32 k;
+                            for (k = 0; k < (s32)(sizeof(dxPref)/sizeof(dxPref[0])); k++) {
+                                s32 nx = baseX + dxPref[k];
+                                const Tile *tile = GetTile(nx, enemyRow);
+                                if (tile->room != bossRoom) continue;
+                                if (sub_807034C(info->id, tile) != 0) continue;
+                                if (tile->monster != NULL) continue;
+                                sub_80856C8(ent, nx, enemyRow);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Place the leader on leaderRow near center; for Team Meanies, anchor to Gengar's X
+        // and allow same column so the formation is perfectly vertical.
+        {
+            static const s8 dxPref2[] = {0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7};
+            s32 k;
+            s32 anchorX = centerX;
+            bool8 anchorIsGengar = FALSE;
+            // Try to use Gengar's X as anchor if present in this room
+            for (i = 0; i < DUNGEON_MAX_POKEMON; i++) {
+                Entity *e = gDungeon->activePokemon[i];
+                if (EntityIsValid(e)) {
+                    EntityInfo *ei = GetEntInfo(e);
+                    if (ei->isNotTeamMember && ei->monsterBehavior == BEHAVIOR_GENGAR && GetTile(e->pos.x, e->pos.y)->room == bossRoom) {
+                        anchorX = e->pos.x;
+                        anchorIsGengar = TRUE;
+                        break;
+                    }
+                }
+            }
+            for (k = 0; k < (s32)(sizeof(dxPref2)/sizeof(dxPref2[0])); k++) {
+                s32 nx = anchorX + dxPref2[k];
+                s32 ny = leaderRow;
+                const Tile *tile = GetTile(nx, ny);
+                if (tile->room != bossRoom) continue;
+                if (sub_807034C(leaderSpecies, tile) != 0) continue;
+                if (tile->monster != NULL) continue; // avoid landing on an enemy
+                if (!anchorIsGengar) {
+                    // Avoid same column as any enemy only when not anchoring to Gengar
+                    bool8 sameColumn = FALSE;
+                    for (i = 0; i < DUNGEON_MAX_POKEMON; i++) {
+                        Entity *e2 = gDungeon->activePokemon[i];
+                        if (EntityIsValid(e2)) {
+                            EntityInfo *ei2 = GetEntInfo(e2);
+                            if (ei2->isNotTeamMember && GetTile(e2->pos.x, e2->pos.y)->room == bossRoom) {
+                                if (e2->pos.x == nx) { sameColumn = TRUE; break; }
+                            }
+                        }
+                    }
+                    if (sameColumn) continue;
+                }
+                sub_80856C8(leader, nx, ny);
+                sub_8085860(nx, ny);
+                return;
+            }
+        }
+    }
+    // Fallback to spacing-only logic if we couldn't find a good spot
+    EnsureSoloSpacingFromBoss();
+}
 
 void sub_80847D4(void)
 {
@@ -179,6 +578,8 @@ bool8 ShouldShowDungeonBanner(void)
 void sub_80848F0(void)
 {
   if (GetPlaySoloSetting()) {
+    // Normalize boss room layout (enemies to top row+1; leader 3 rows below)
+    SoloNormalizeBossRoomLayout();
     // Skip pre-fight setup in PlaySolo (keep unk3A0D for victory triggers)
     gDungeon->unk1356C = 0;
     return;

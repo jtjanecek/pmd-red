@@ -1720,6 +1720,15 @@ s32 ExecuteScriptCommand(Action *action)
                     GroundMainRescueRequest(SCRIPT_DUNGEON_TINY_WOODS, 30);
                     break;
                 }
+                // Skip Tiny Woods end-room station (success scene inside the dungeon end map)
+                if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_END && group == 1 && sector == 0) {
+                    break;
+                }
+                // Skip the post-Tiny Woods cutscene at Tiny Woods entry
+                if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 3 && sector == 0) {
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
+                    break;
+                }
 
                 res = curCmd.op == 0x1e;
                 GroundMap_ExecuteStation(map, group, sector, res);

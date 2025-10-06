@@ -25,6 +25,7 @@
 #include "ground_main.h"
 #include "ground_map.h"
 #include "ground_map_1.h"
+#include "ground_place.h"
 #include "ground_script.h"
 #include "ground_sprite.h"
 #include "input.h"
@@ -1727,6 +1728,13 @@ s32 ExecuteScriptCommand(Action *action)
                 // Skip the post-Tiny Woods cutscene at Tiny Woods entry
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 3 && sector == 0) {
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
+                    break;
+                }
+                // Skip early Team Base arrival cutscene: "Well, this is the place..."
+                if (GetSkipCutscenesSetting()
+                    && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE
+                    && group == 17 && sector == 0) {
+                    // Nothing to set here; EVENT_M01E01A already sets SCENARIO_MAIN after this.
                     break;
                 }
 

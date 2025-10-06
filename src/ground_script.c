@@ -14,6 +14,7 @@
 #include "code_80972F4.h"
 #include "code_8097670.h"
 #include "code_80A26CC.h"
+#include "constants/script_dungeon_id.h"
 #include "debug.h"
 #include "dungeon_info.h"
 #include "event_flag.h"
@@ -1709,6 +1710,17 @@ s32 ExecuteScriptCommand(Action *action)
                     sector = tmp;
                 }
                 map = GetAdjustedGroundMap(map);
+
+                // Skip the Tiny Woods initial "You're finally awake!" cutscene when enabled.
+                // This station is gs178 group 1 sector 0 (MAP_TINY_WOODS_ENTRY).
+                if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
+                    // Directly request entering Tiny Woods like the script's NEXT_DUNGEON would.
+                    // Use a fade speed of 30 to match the original script.
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 2);
+                    GroundMainRescueRequest(SCRIPT_DUNGEON_TINY_WOODS, 30);
+                    break;
+                }
+
                 res = curCmd.op == 0x1e;
                 GroundMap_ExecuteStation(map, group, sector, res);
                 if (gUnknown_2039A34 != map) {

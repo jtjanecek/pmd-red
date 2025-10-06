@@ -605,6 +605,10 @@ static bool8 sub_8052DC0(Entity *entity)
 
 static inline bool32 DislayTutorialMsg(Entity *leader, const struct TutorialFlagMsg *tutorial, bool32 unkFunctionCall)
 {
+#ifdef DEV
+    // DEV: Skip tutorial messages in dev mode
+    return FALSE;
+#else
     const u8 *str;
     s32 flag = tutorial->flagId;
     bool8 flagDone = GetTutorialFlag(flag);
@@ -620,6 +624,7 @@ static inline bool32 DislayTutorialMsg(Entity *leader, const struct TutorialFlag
         return TRUE;
     }
     return FALSE;
+#endif
 }
 
 void TryDisplayGeneralTutorialMessage(void)

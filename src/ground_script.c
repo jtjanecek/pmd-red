@@ -1741,6 +1741,8 @@ s32 ExecuteScriptCommand(Action *action)
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_END && group == 1 && sector == 0) {
                     // Advance scenario and return to Team Base with a short fade.
                     GiveStarterSetIfNeeded();
+                    // Mark Tiny Woods scenario as completed so it no longer shows as a GO story mission.
+                    sub_8097418(SCRIPT_DUNGEON_TINY_WOODS, 1);
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
                     GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
                     break;
@@ -1748,6 +1750,11 @@ s32 ExecuteScriptCommand(Action *action)
                 // Skip the post-Tiny Woods cutscene at Tiny Woods entry
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 3 && sector == 0) {
                     // Normally gives Toolbox + Badge + Pokémon News and then sets next dungeon.
+                    // Seed the initial Pokémon News so the base menu unlocks (Items/Team/Job List).
+                    sub_8096488();        // Put Pokémon News (floor 0) in mailbox
+                    sub_80961B4();        // Allow news generation pipeline to start
+                    // Unlock Thunderwave Cave in the Dungeons list like the script would.
+                    sub_80973A8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
                     GroundMainRescueRequest(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 30);
                     break;
@@ -1757,6 +1764,9 @@ s32 ExecuteScriptCommand(Action *action)
                 if (GetSkipCutscenesSetting()
                     && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE
                     && group == 18 && sector == 0) {
+                    // Ensure initial news exists to unlock menus if we skipped earlier scenes.
+                    sub_8096488();
+                    sub_80961B4();
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
                     GroundMainRescueRequest(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 30);
                     break;
@@ -1766,6 +1776,40 @@ s32 ExecuteScriptCommand(Action *action)
                     && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE
                     && group == 17 && sector == 0) {
                     // Nothing to set here; EVENT_M01E01A already sets SCENARIO_MAIN after this.
+                    break;
+                }
+
+                // Safety: when entering Team Base during early game with skip enabled,
+                // ensure the appropriate story dungeons are unlocked in the Dungeons list.
+                if (GetSkipCutscenesSetting() && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE) {
+                    s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    // Before Thunderwave Cave (scene 3): ensure TWC is marked as current story mission.
+                    if (scen == 3 && !sub_8097384(SCRIPT_DUNGEON_THUNDERWAVE_CAVE)) {
+                        sub_80973A8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
+                        // Tiny Woods should not remain as a story mission anymore.
+                        sub_8097418(SCRIPT_DUNGEON_TINY_WOODS, 1);
+                    }
+                    // After Thunderwave Cave (scene 4): ensure Mt. Steel is the current story mission.
+                    if (scen == 4 && !sub_8097384(SCRIPT_DUNGEON_MT_STEEL)) {
+                        sub_80973A8(SCRIPT_DUNGEON_MT_STEEL, 1);
+                        sub_8097418(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
+                    }
+                }
+
+                // Skip the Thunderwave Cave end-room cutscene ("Oh, there they are!")
+                // This station is gs181 group 1 sector 0 (MAP_THUNDERWAVE_CAVE_END).
+                if (GetSkipCutscenesSetting() && map == MAP_THUNDERWAVE_CAVE_END && group == 1 && sector == 0) {
+                    // Ensure base menu unlocks if the initial news was never seeded.
+                    if (sub_8096E2C() == 0 && CountFilledMailboxSlots() == 0) {
+                        sub_8096488();
+                        sub_80961B4();
+                    }
+                    // Mark Thunderwave Cave as completed and unlock Mt. Steel for the next mission.
+                    sub_8097418(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
+                    sub_80973A8(SCRIPT_DUNGEON_MT_STEEL, 1);
+                    // Advance scenario to immediately after TWC completion and return to Team Base.
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 4);
+                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
                     break;
                 }
 

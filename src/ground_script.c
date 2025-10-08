@@ -1721,8 +1721,12 @@ s32 ExecuteScriptCommand(Action *action)
                     GroundMainRescueRequest(SCRIPT_DUNGEON_TINY_WOODS, 30);
                     break;
                 }
-                // Skip Tiny Woods end-room station (success scene inside the dungeon end map)
+                // Skip Tiny Woods end-room station (success scene inside the dungeon end map).
+                // Jump directly to the next story step as if the scene completed.
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_END && group == 1 && sector == 0) {
+                    // Advance scenario and return to Team Base with a short fade.
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
+                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
                     break;
                 }
                 // Skip the post-Tiny Woods cutscene at Tiny Woods entry

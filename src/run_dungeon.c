@@ -154,6 +154,10 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
     gDungeon->unk644.canRecruit = setupPtr->info.sub0.unk6;
     gDungeon->unk644.unk15 = setupPtr->info.sub0.unk7;
     gDungeon->unk644.hasInventory = setupPtr->info.sub0.unk9;
+    // Enable Toolbox at start of Tiny Woods for testing so we can pick up many items
+    if (setupPtr->info.sub0.unk0.id == DUNGEON_TINY_WOODS) {
+        gDungeon->unk644.hasInventory = TRUE;
+    }
     gDungeon->unk644.unk19 = setupPtr->info.sub0.unkA;
     StopDungeonBGM();
     sub_803D4AC();

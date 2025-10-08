@@ -53,6 +53,20 @@
 #include "unk_ds_only_feature.h"
 #include "textbox.h"
 
+// Starter items helpers
+static void GiveStarterSetIfNeeded(void)
+{
+    // Avoid duplicates by checking for one representative item.
+    if (FindItemInInventory(ITEM_ORAN_BERRY) < 0 && FindItemInInventory(ITEM_REVIVER_SEED) < 0) {
+        AddItemIdToInventory(ITEM_ORAN_BERRY, FALSE);
+        AddItemIdToInventory(ITEM_PECHA_BERRY, FALSE);
+        AddItemIdToInventory(ITEM_RAWST_BERRY, FALSE);
+        AddItemIdToInventory(ITEM_REVIVER_SEED, FALSE);
+        AddItemIdToInventory(ITEM_PECHA_SCARF, FALSE);
+        FillInventoryGaps();
+    }
+}
+
 void GroundMap_Select(s16);
 void GroundMap_SelectDungeon(s32, DungeonLocation*, u32);
 void GroundMap_GetStationScript(ScriptInfoSmall *out, s16, s32, s32);
@@ -1717,6 +1731,7 @@ s32 ExecuteScriptCommand(Action *action)
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
                     // Directly request entering Tiny Woods like the script's NEXT_DUNGEON would.
                     // Use a fade speed of 30 to match the original script.
+                    GiveStarterSetIfNeeded();
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 2);
                     GroundMainRescueRequest(SCRIPT_DUNGEON_TINY_WOODS, 30);
                     break;
@@ -1725,13 +1740,25 @@ s32 ExecuteScriptCommand(Action *action)
                 // Jump directly to the next story step as if the scene completed.
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_END && group == 1 && sector == 0) {
                     // Advance scenario and return to Team Base with a short fade.
+                    GiveStarterSetIfNeeded();
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
                     GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
                     break;
                 }
                 // Skip the post-Tiny Woods cutscene at Tiny Woods entry
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 3 && sector == 0) {
+                    // Normally gives Toolbox + Badge + Pokémon News and then sets next dungeon.
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
+                    GroundMainRescueRequest(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 30);
+                    break;
+                }
+
+                // Skip the next-morning "...Hunh?! Oh, no!" cutscene at Team Base (group 18 sector 0)
+                if (GetSkipCutscenesSetting()
+                    && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE
+                    && group == 18 && sector == 0) {
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
+                    GroundMainRescueRequest(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 30);
                     break;
                 }
                 // Skip early Team Base arrival cutscene: "Well, this is the place..."

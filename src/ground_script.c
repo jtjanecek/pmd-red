@@ -1794,6 +1794,11 @@ s32 ExecuteScriptCommand(Action *action)
                         sub_80973A8(SCRIPT_DUNGEON_MT_STEEL, 1);
                         sub_8097418(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
                     }
+                    // After Mt. Steel (scene 5): ensure Sinister Woods is the current story mission.
+                    if (scen == 5 && !sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS)) {
+                        sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
+                    }
                 }
 
                 // Skip the Thunderwave Cave end-room cutscene ("Oh, there they are!")
@@ -1809,6 +1814,18 @@ s32 ExecuteScriptCommand(Action *action)
                     sub_80973A8(SCRIPT_DUNGEON_MT_STEEL, 1);
                     // Advance scenario to immediately after TWC completion and return to Team Base.
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 4);
+                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
+                    break;
+                }
+
+                // Skip the Mt. Steel end-room cutscene and jump straight to Sinister Woods unlock.
+                // This station is gs183 group 1 sector 0 (MAP_MT_STEEL_END).
+                if (GetSkipCutscenesSetting() && map == MAP_MT_STEEL_END && group == 1 && sector == 0) {
+                    // Mark Mt. Steel completed and set Sinister Woods as the next story dungeon.
+                    sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
+                    sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                    // Move scenario forward to the post–Mt. Steel stage (major scene 5) and return to base.
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
                     GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
                     break;
                 }

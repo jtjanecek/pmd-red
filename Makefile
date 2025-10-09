@@ -32,7 +32,8 @@ ifeq (modern,$(MAKECMDGOALS))
 endif
 
 # Dev flag to skip personality quiz
-DEV         ?= 0
+# Default to DEV=1 so developer conveniences are enabled without passing the flag.
+DEV         ?= 1
 
 PREFIX := arm-none-eabi-
 OBJCOPY := $(PREFIX)objcopy

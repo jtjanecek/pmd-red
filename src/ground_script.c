@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "ground_script.h"
+#include "mgba_log.h"
 #include "constants/dungeon.h"
 #include "constants/friend_area.h"
 #include "constants/item.h"
@@ -1726,6 +1727,16 @@ s32 ExecuteScriptCommand(Action *action)
                 }
                 map = GetAdjustedGroundMap(map);
 
+                // Verbose tracing to identify stations that still show mini-cutscenes when skipping.
+                if (GetSkipCutscenesSetting()) {
+                    s32 place = gGroundMapConversionTable[map].groundPlaceId;
+                    s32 scenDbg = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if (place == GROUND_PLACE_TEAM_BASE || place == GROUND_PLACE_TEAM_BASE_INSIDE ||
+                        map == MAP_THUNDERWAVE_CAVE_END || map == MAP_MT_STEEL_END) {
+                        MGBA_Warnf("[GS] enter map=%d place=%d grp=%d sec=%d scen=%d", map, place, group, sector, scenDbg);
+                    }
+                }
+
                 // Skip the Tiny Woods initial "You're finally awake!" cutscene when enabled.
                 // This station is gs178 group 1 sector 0 (MAP_TINY_WOODS_ENTRY).
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
@@ -1799,6 +1810,23 @@ s32 ExecuteScriptCommand(Action *action)
                         sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
                         sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
                     }
+
+                    // Strong skip for the "Good morning... rescue mission" mini-scene:
+                    // Limit to the specific Team Base outside morning station(s) so the
+                    // player can still freely leave the base afterward.
+                    if (scen == 4 &&
+                        ( (group == 18 && sector == 0) ||
+                          (group == 17 && sector == 0) ||
+                          (group == 26 && sector == 0) ) ) {
+                        if (!sub_8097384(SCRIPT_DUNGEON_MT_STEEL))
+                            sub_80973A8(SCRIPT_DUNGEON_MT_STEEL, 1);
+                        sub_8097418(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
+                        // Reload Team Base INSIDE (wake-up scene position) into its
+                        // free-roam station so the partner is present, then skip this station.
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                        MGBA_Warnf("[GS] strong-skip TB outside grp=%d sec=%d -> inside free-roam", group, sector);
+                        break;
+                    }
                 }
 
                 // Skip the Thunderwave Cave end-room cutscene ("Oh, there they are!")
@@ -1814,6 +1842,7 @@ s32 ExecuteScriptCommand(Action *action)
                     sub_80973A8(SCRIPT_DUNGEON_MT_STEEL, 1);
                     // Advance scenario to immediately after TWC completion and return to Team Base.
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 4);
+                    MGBA_Warnf("[GS] skip TWC end -> Team Base outside free-roam");
                     GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
                     break;
                 }

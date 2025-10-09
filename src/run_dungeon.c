@@ -58,6 +58,7 @@
 #include "dungeon_cleared_window.h"
 #include "dungeon_cutscene.h"
 #include "dungeon_mon_spawn.h"
+#include "mgba_log.h"
 
 EWRAM_INIT struct UnkStruct_203B414 *gUnknown_203B414 = NULL;
 EWRAM_INIT Dungeon *gDungeon = NULL;
@@ -122,6 +123,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
     RGB color;
 
     gUnknown_203B40C = 0;
+    MGBA_Warnf("[demo] Enter dungeon id=%d seed=%d", setupPtr->info.sub0.unk0.id, setupPtr->info.dungeonSeed);
     r6 = setupPtr->info.sub0.unk4;
     r9 = setupPtr->info.sub0.unkD;
     r10 = setupPtr->info.sub0.unkC;

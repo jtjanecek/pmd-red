@@ -201,6 +201,7 @@ SECTIONS {
         src/code_803C1B4.o(.text);
         src/personality_test1.o(.text);
         src/personality_test2.o(.text);
+        src/mgba_log.o(.text);
         src/code_803D0D8.o(.text);
         src/dungeon_floor_spawns.o(.text);
         src/dungeon_name_banner.o(.text);
@@ -551,6 +552,7 @@ SECTIONS {
         src/credits1.o(.rodata);
         data/credits1.o(.rodata);
         src/credits2.o(.rodata);
+        src/mgba_log.o(.rodata);
         src/main_menu1.o(.rodata);
         src/main_menu2.o(.rodata);
         src/trade_items_menu.o(.rodata);

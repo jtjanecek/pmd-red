@@ -48,6 +48,7 @@
 #include "text_2.h"
 #include "text_3.h"
 #include "text_util.h"
+#include "mgba_log.h"
 #include "decompress_at.h"
 #include "world_map.h"
 #include "friend_areas_map.h"
@@ -138,6 +139,7 @@ void GameLoop(void)
     u32 flag;
 
     InitHeap();
+    MGBA_Warnf("[demo] GameLoop start");
     NDS_DebugInit();
     ResetSoundEffectCounters();
     NDS_LoadOverlay_GroundMain();
@@ -346,6 +348,9 @@ static void MainLoops_RunFrameActions(u32 unused)
     UpdateSoundEffectCounters();
     WaitForNextFrameAndAdvanceRNG();
     LoadBufferedInputs();
+    // Demo: press L+R together to emit a Warning to mGBA logs
+    if ((gRealInputs.pressed & (L_BUTTON | R_BUTTON)) == (L_BUTTON | R_BUTTON))
+        MGBA_Warnf("[demo] L+R pressed");
 
     CopySpritesToOam();
     sub_8005304();

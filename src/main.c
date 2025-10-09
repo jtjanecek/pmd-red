@@ -17,6 +17,7 @@
 #include "reg_control.h"
 #include "sprite.h"
 #include "text_1.h"
+#include "mgba_log.h"
 
 extern u8 ewram_start[];
 extern u8 ewram_end[]; // Force a second storage in the asm
@@ -95,6 +96,11 @@ void AgbMain(void)
     InitBGPaletteBuffer();
     sub_80057E8();
     InitFileSystem();
+    #ifdef DEV
+    MGBA_Init();
+    MGBA_Warnf("mGBA logger initialized");
+    MGBA_Log("[demo] no$-style print path OK");
+    #endif
     LoadCharmaps();
     ResetScheduledMemCopies();
     InitGraphics();

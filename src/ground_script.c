@@ -1811,9 +1811,9 @@ s32 ExecuteScriptCommand(Action *action)
                         sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
                     }
 
-                    // Strong skip for the "Good morning... rescue mission" mini-scene:
-                    // Limit to the specific Team Base outside morning station(s) so the
-                    // player can still freely leave the base afterward.
+                    // Strong skip for the "Good morning... rescue mission" mini-scene (scene 4)
+                    // and for the Meanies + Caterpie mini-scene (scene 5). Limit to the
+                    // specific Team Base outside stations that trigger these.
                     if (scen == 4 &&
                         ( (group == 18 && sector == 0) ||
                           (group == 17 && sector == 0) ||
@@ -1825,6 +1825,31 @@ s32 ExecuteScriptCommand(Action *action)
                         // free-roam station so the partner is present, then skip this station.
                         GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                         MGBA_Warnf("[GS] strong-skip TB outside grp=%d sec=%d -> inside free-roam", group, sector);
+                        break;
+                    }
+
+                    if (scen == 5 && (group == 31 && sector == 0)) {
+                        if (!sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS))
+                            sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                        MGBA_Warnf("[GS] strong-skip TB outside post-MS grp=%d sec=%d -> inside free-roam", group, sector);
+                        break;
+                    }
+                }
+
+                // Skip Pokémon Square "Team Meanies + Caterpie" scene after Mt. Steel.
+                // When arriving at Pokémon Square with scen==5 (post–Mt. Steel), just
+                // keep Sinister Woods as GO and enter Square free-roam.
+                if (GetSkipCutscenesSetting()
+                    && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_POKEMON_SQUARE) {
+                    s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if (scen == 5) {
+                        if (!sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS))
+                            sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
+                        MGBA_Warnf("[GS] strong-skip Square grp=%d sec=%d -> Square free-roam", group, sector);
+                        GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
                         break;
                     }
                 }

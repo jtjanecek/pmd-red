@@ -58,9 +58,14 @@ Runtime enforcement for robustness
  - scen==7 (post‑SC, pre‑Mt. Thunder clear) → enforce Mt. Thunder as active GO
    and clear any lingering SC GO; preselect Mt. Thunder.
  - These guards are in `src/ground_script.c` and are no‑ops once SC is conquered.
-  - Mini‑scene skips at Team Base: in skip mode we skip the outside Team Base
-    “Team Meanies + Caterpie” (scene 5) and the post‑SW “thank‑you” (scene 6)
-    by reloading the inside free‑roam station.
+- Mini‑scene skips at Team Base: in skip mode we skip the outside Team Base
+  “Team Meanies + Caterpie” (scene 5) and the post‑SW “thank‑you” (scene 6)
+  by reloading the inside free‑roam station.
+- After Mt. Thunder (scene 8), we also skip the outside partner prompt
+  about heading to Great Canyon and go straight to inside free‑roam with
+  GC already set as GO. This uses `EVENT_S08E01[0]` as a one‑shot guard so
+  the skip only triggers immediately after returning from Mt. Thunder and
+  does not bounce you back inside on later exits.
 
 Script alias note
 

@@ -1741,6 +1741,20 @@ s32 ExecuteScriptCommand(Action *action)
                                map, place, group, sector, scenDbg, msGo, swGo, scGo, swOrd, scOrd, sel);
                 }
 
+                // Replace the post–Mt. Thunder mini-cutscene at Team Base INSIDE
+                // (group 43 sector 0: partner pushes GC prompt) with the normal
+                // generic morning partner speech (group 42) when skipping cutscenes.
+                // This avoids the repeating GC prompt while preserving GC as GO.
+                if (GetSkipCutscenesSetting()
+                    && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
+                    && group == 43 && sector == 0) {
+                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if (scenNow == 8) {
+                        group = 42; // reroute to generic morning talk
+                        MGBA_Warnf("[GS] replace TB inside post-MT g43 -> g42 (generic morning talk)");
+                    }
+                }
+
                 // Skip the Tiny Woods initial "You're finally awake!" cutscene when enabled.
                 // This station is gs178 group 1 sector 0 (MAP_TINY_WOODS_ENTRY).
                 if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
@@ -1956,6 +1970,33 @@ s32 ExecuteScriptCommand(Action *action)
                         break;
                     }
 
+                    // Strong skip: after Silent Chasm clear (scene 6) we already
+                    // skip the outside thank‑you. After Mt. Thunder (scene 8), skip the
+                    // outside partner "Let's go to Great Canyon" prompt and jump straight
+                    // to inside free‑roam with GC set as GO.
+                    // One-shot skip outside partner prompt after Mt. Thunder.
+                    // Use EVENT_S08E01[1] as a guard so this only triggers once,
+                    // avoiding bounce-backs when leaving base later. Index [0] is
+                    // managed by dungeon return; index [1] is reserved for our skip.
+                    if (scen == 8 && GetScriptVarArrayValue(NULL, EVENT_S08E01, 1) == 0 &&
+                        ( (group == 31 && sector == 0) ||
+                          (group == 30 && sector == 0) ||
+                          (group == 26 && sector == 0) ||
+                          (group == 43 && sector == 0) ) ) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_MT_THUNDER))
+                            sub_8097418(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                        if (!sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON))
+                            sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                        {
+                            s32 gcIndex = sub_80A26B8(SCRIPT_DUNGEON_GREAT_CANYON);
+                            if (gcIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, gcIndex);
+                        }
+                        SetScriptVarArrayValue(NULL, EVENT_S08E01, 1, 1);
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                        MGBA_Warnf("[GS] strong-skip TB outside post-MT grp=%d sec=%d -> inside free-roam (skip partner prompt)", group, sector);
+                        break;
+                    }
+
                     // Strong skip: after Sinister Woods clear (scene 6), skip the
                     // outside Team Base "Caterpie/Metapod thank-you" scene and go
                     // straight to free-roam inside the base. Limit to common TB
@@ -1992,6 +2033,25 @@ s32 ExecuteScriptCommand(Action *action)
                         MGBA_Warnf("[GS] strong-skip Square grp=%d sec=%d -> Square free-roam (clear SC GO)", group, sector);
                         GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
                         break;
+                    }
+
+                    // One-shot skip for Square outside station that leads into the
+                    // post-Mt. Thunder partner prompt. Trigger once and jump to TB inside.
+                    if (scen == 8 && GetScriptVarArrayValue(NULL, EVENT_S08E01, 1) == 0) {
+                        if (group == 30 && sector == 0) {
+                            if (!RescueScenarioConquered(SCRIPT_DUNGEON_MT_THUNDER))
+                                sub_8097418(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                            if (!sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON))
+                                sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                            {
+                                s32 gcIndex = sub_80A26B8(SCRIPT_DUNGEON_GREAT_CANYON);
+                                if (gcIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, gcIndex);
+                            }
+                            SetScriptVarArrayValue(NULL, EVENT_S08E01, 1, 1);
+                            MGBA_Warnf("[GS] strong-skip Square post-MT grp=%d sec=%d -> TB inside free-roam", group, sector);
+                            GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                            break;
+                        }
                     }
 
                     // Detect Great Canyon clear return and jump to Square sleeping (scene 14)
@@ -2180,8 +2240,8 @@ s32 ExecuteScriptCommand(Action *action)
                     sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 1);
                     // Advance scenario to post–Mt. Thunder (major scene 8) and return to base.
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 8);
-                    MGBA_Warnf("[GS] skip MT end -> Team Base (set GC GO)");
-                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
+                    MGBA_Warnf("[GS] skip MT end -> Team Base INSIDE (set GC GO)");
+                    GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                     break;
                 }
 
@@ -3181,6 +3241,11 @@ s32 ExecuteScriptCommand(Action *action)
                 if (GetSkipCutscenesSetting() && scriptDungeonId == SCRIPT_DUNGEON_SILENT_CHASM) {
                     if (scen == 5 && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS)) {
                         MGBA_Warnf("[GS] block script GO for Silent Chasm (scene 5; SW incomplete)");
+                        break;
+                    }
+                    // Also block any attempts to re‑set SC GO once we've advanced beyond it.
+                    if (scen >= 7) {
+                        MGBA_Warnf("[GS] block script GO for Silent Chasm (scene %d; post-SC)", scen);
                         break;
                     }
                 }

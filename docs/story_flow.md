@@ -53,11 +53,14 @@ Runtime enforcement for robustness
 
 - On entering Team Base or Pokémon Square with skip enabled:
   - scen==5 and SW not conquered → enforce SW as sole GO (clear SC GO).
-- scen==6 (post‑SW, pre‑SC clear) → enforce SC as active GO and clear any
+ - scen==6 (post‑SW, pre‑SC clear) → enforce SC as active GO and clear any
   lingering SW GO, also preselect SC in `DUNGEON_SELECT`.
  - scen==7 (post‑SC, pre‑Mt. Thunder clear) → enforce Mt. Thunder as active GO
    and clear any lingering SC GO; preselect Mt. Thunder.
-  - These guards are in `src/ground_script.c` and are no‑ops once SC is conquered.
+ - These guards are in `src/ground_script.c` and are no‑ops once SC is conquered.
+  - Mini‑scene skips at Team Base: in skip mode we skip the outside Team Base
+    “Team Meanies + Caterpie” (scene 5) and the post‑SW “thank‑you” (scene 6)
+    by reloading the inside free‑roam station.
 
 Script alias note
 
@@ -98,6 +101,8 @@ End‑room cutscene skips
 - To keep scenario progression consistent while skipping:
   - Tiny Woods end: marks TW conquered; sets TWC GO (already present).
   - Mt. Steel end: marks MS conquered; sets SW GO (already present).
+  - Sinister Woods end: marks SW conquered; sets Silent Chasm GO (skips the
+    Metapod/Caterpie thank‑you scene).
   - Silent Chasm end: marks SC conquered; sets Mt. Thunder GO.
   - Mt. Thunder end: marks MT conquered; sets Great Canyon GO.
   - Each skip advances `SCENARIO_MAIN` to the next major stage and returns to

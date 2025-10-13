@@ -1836,6 +1836,17 @@ s32 ExecuteScriptCommand(Action *action)
                         }
                     }
 
+                    // Detect Silent Chasm clear return and promote Mt. Thunder immediately
+                    if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
+                        && sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM))
+                            sub_8097418(SCRIPT_DUNGEON_SILENT_CHASM, 1);
+                        sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0);
+                        sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 7);
+                        MGBA_Warnf("[GS] TB detect SC clear: set MT GO + scen=7");
+                    }
+
                     // After SW clear (scene 6): ensure SC is the current story mission
                     if (scen == 6) {
                         if (!RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM)) {
@@ -1944,6 +1955,23 @@ s32 ExecuteScriptCommand(Action *action)
                         MGBA_Warnf("[GS] strong-skip TB outside post-MS grp=%d sec=%d -> inside free-roam (clear SC GO)", group, sector);
                         break;
                     }
+
+                    // Strong skip: after Sinister Woods clear (scene 6), skip the
+                    // outside Team Base "Caterpie/Metapod thank-you" scene and go
+                    // straight to free-roam inside the base. Limit to common TB
+                    // outside groups observed to trigger mini-scenes.
+                    if (scen == 6 &&
+                        ( (group == 31 && sector == 0) ||
+                          (group == 26 && sector == 0) ) ) {
+                        // Keep SC as current story mission; ensure SW/MS are marked cleared.
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS))
+                            sub_8097418(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 1);
+                        sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                        MGBA_Warnf("[GS] strong-skip TB outside post-SW grp=%d sec=%d -> inside free-roam (skip thank-you)", group, sector);
+                        break;
+                    }
                 }
 
                 // Skip Pokémon Square "Team Meanies + Caterpie" scene after Mt. Steel.
@@ -1952,6 +1980,7 @@ s32 ExecuteScriptCommand(Action *action)
                 if (GetSkipCutscenesSetting()
                     && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_POKEMON_SQUARE) {
                     s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    s32 lastRes2 = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
                     s32 lastRes = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
                     s32 lastEnter = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
                     MGBA_Warnf("[GS] SQ resume: D_RESULT=%d D_ENTER=%d scen=%d", lastRes, lastEnter, scen);
@@ -1977,6 +2006,17 @@ s32 ExecuteScriptCommand(Action *action)
                     GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
                     break;
                 }
+
+                    // Detect Silent Chasm clear return and promote Mt. Thunder immediately
+                    if ((lastRes2 == 6 || lastRes2 == 9 || lastRes2 == 11 || lastRes2 == 12)
+                        && sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM))
+                            sub_8097418(SCRIPT_DUNGEON_SILENT_CHASM, 1);
+                        sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0);
+                        sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 7);
+                        MGBA_Warnf("[GS] SQ detect SC clear: set MT GO + scen=7");
+                    }
 
                     // Enforce while roaming Square: ensure only SW is GO until SW is completed
                     if (scen == 5 && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS)) {
@@ -2101,6 +2141,20 @@ s32 ExecuteScriptCommand(Action *action)
                     // Move scenario forward to the post–Mt. Steel stage (major scene 5) and return to base.
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
                     MGBA_Warnf("[GS] skip MS end -> Team Base (set SW GO, clear SC GO, select SW)");
+                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
+                    break;
+                }
+
+                // Skip the Sinister Woods end-room cutscene (Metapod + Caterpie thank-you).
+                // Jump straight to setting Silent Chasm as next story mission.
+                // This station is gs185 group 1 sector 0 (MAP_SINISTER_WOODS_END).
+                if (GetSkipCutscenesSetting() && map == MAP_SINISTER_WOODS_END && group == 1 && sector == 0) {
+                    // Mark Sinister Woods completed and set Silent Chasm as the next story dungeon.
+                    sub_8097418(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                    sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 1);
+                    // Advance scenario to the post–Sinister Woods stage (major scene 6) and return to base.
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 6);
+                    MGBA_Warnf("[GS] skip SW end -> Team Base (set SC GO)");
                     GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
                     break;
                 }

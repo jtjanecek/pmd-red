@@ -1731,10 +1731,14 @@ s32 ExecuteScriptCommand(Action *action)
                 if (GetSkipCutscenesSetting()) {
                     s32 place = gGroundMapConversionTable[map].groundPlaceId;
                     s32 scenDbg = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-                    if (place == GROUND_PLACE_TEAM_BASE || place == GROUND_PLACE_TEAM_BASE_INSIDE ||
-                        map == MAP_THUNDERWAVE_CAVE_END || map == MAP_MT_STEEL_END) {
-                        MGBA_Warnf("[GS] enter map=%d place=%d grp=%d sec=%d scen=%d", map, place, group, sector, scenDbg);
-                    }
+                    bool8 msGo = sub_8097384(SCRIPT_DUNGEON_MT_STEEL);
+                    bool8 swGo = sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS);
+                    bool8 scGo = sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM);
+                    bool8 swOrd = sub_8097318(SCRIPT_DUNGEON_SINISTER_WOODS);
+                    bool8 scOrd = sub_8097318(SCRIPT_DUNGEON_SILENT_CHASM);
+                    s32 sel = GetScriptVarValue(NULL, DUNGEON_SELECT);
+                    MGBA_Warnf("[GS] enter map=%d place=%d grp=%d sec=%d scen=%d | MS=%d SW=%d SC=%d | ordSW=%d ordSC=%d sel=%d",
+                               map, place, group, sector, scenDbg, msGo, swGo, scGo, swOrd, scOrd, sel);
                 }
 
                 // Skip the Tiny Woods initial "You're finally awake!" cutscene when enabled.
@@ -1794,6 +1798,10 @@ s32 ExecuteScriptCommand(Action *action)
                 // ensure the appropriate story dungeons are unlocked in the Dungeons list.
                 if (GetSkipCutscenesSetting() && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE) {
                     s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    s32 lastRes = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
+                    s32 lastEnter = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+                    // Trace last dungeon result to tighten skip flow around returns
+                    MGBA_Warnf("[GS] TB resume: D_RESULT=%d D_ENTER=%d scen=%d", lastRes, lastEnter, scen);
                     // Before Thunderwave Cave (scene 3): ensure TWC is marked as current story mission.
                     if (scen == 3 && !sub_8097384(SCRIPT_DUNGEON_THUNDERWAVE_CAVE)) {
                         sub_80973A8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
@@ -1810,6 +1818,105 @@ s32 ExecuteScriptCommand(Action *action)
                         sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
                         sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
                     }
+
+                    // Enforce: while SW not conquered (scene 5, pre-SW clear), SC must NOT be GO.
+                    if (scen == 5 && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS)) {
+                        if (sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                            sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0);
+                            MGBA_Warnf("[GS] enforce TB: clear Silent Chasm GO while SW incomplete");
+                        }
+                        // Reassert SW GO and explicitly set selection to SW dungeon index
+                        sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        {
+                            s32 swIndex = sub_80A26B8(SCRIPT_DUNGEON_SINISTER_WOODS);
+                            if (swIndex != -1) {
+                                SetScriptVarValue(NULL, DUNGEON_SELECT, swIndex);
+                                MGBA_Warnf("[GS] enforce TB: set Sinister Woods GO + select=%d", swIndex);
+                            }
+                        }
+                    }
+
+                    // After SW clear (scene 6): ensure SC is the current story mission
+                    if (scen == 6) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                            // Clear any lingering SW GO and select SC
+                            if (sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS)) {
+                                sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 0);
+                                MGBA_Warnf("[GS] enforce TB: clear SW GO after SW clear (scene 6)");
+                            }
+                            sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 1);
+                            {
+                                s32 scIndex = sub_80A26B8(SCRIPT_DUNGEON_SILENT_CHASM);
+                                if (scIndex != -1) {
+                                    SetScriptVarValue(NULL, DUNGEON_SELECT, scIndex);
+                                    MGBA_Warnf("[GS] enforce TB: set Silent Chasm GO + select=%d", scIndex);
+                                }
+                            }
+                        }
+                    }
+
+                    // After SC clear (scene 7): ensure Mt. Thunder becomes the current story mission
+                    if (scen == 7) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_MT_THUNDER)) {
+                            // Clear any lingering SC GO and select Mt. Thunder
+                            if (sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                                sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0);
+                                MGBA_Warnf("[GS] enforce TB: clear SC GO after SC clear (scene 7)");
+                            }
+                            sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                            {
+                                s32 mtIndex = sub_80A26B8(SCRIPT_DUNGEON_MT_THUNDER);
+                                if (mtIndex != -1) {
+                                    SetScriptVarValue(NULL, DUNGEON_SELECT, mtIndex);
+                                    MGBA_Warnf("[GS] enforce TB: set Mt. Thunder GO + select=%d", mtIndex);
+                                }
+                            }
+                        }
+                    }
+
+                    // After Mt. Thunder clear: promote Great Canyon as GO
+                    if (RescueScenarioConquered(SCRIPT_DUNGEON_MT_THUNDER) &&
+                        !RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                        // Clear any lingering Mt. Thunder GO and set Great Canyon
+                        if (sub_8097384(SCRIPT_DUNGEON_MT_THUNDER)) {
+                            sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 0);
+                            MGBA_Warnf("[GS] enforce TB: clear MT GO post-MT clear");
+                        }
+                        sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                        {
+                            s32 gcIndex = sub_80A26B8(SCRIPT_DUNGEON_GREAT_CANYON);
+                            if (gcIndex != -1) {
+                                SetScriptVarValue(NULL, DUNGEON_SELECT, gcIndex);
+                                MGBA_Warnf("[GS] enforce TB: set Great Canyon GO + select=%d", gcIndex);
+                            }
+                        }
+                    }
+
+                    // After Great Canyon clear: fast‑forward to Square sleeping (scene 14)
+                    // without setting LC GO; partner talk will trigger the dungeon.
+                    if (RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON) &&
+                        !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)) {
+                        if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                            sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 0);
+                            MGBA_Warnf("[GS] enforce TB: clear GC GO post-GC clear");
+                        }
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 14);
+                        MGBA_Warnf("[GS] enforce TB: scen=14 (Square sleeping), await partner talk");
+                    }
+
+                    // Detect Great Canyon clear return and jump to Square sleeping (scene 14)
+                    // Be permissive about result codes (observed: 6, 9, 11, 12)
+                    if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
+                        && sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON))
+                            sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                        if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON))
+                            sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 0);
+                    ScenarioCalc(SCENARIO_MAIN, 11, 2);
+                    MGBA_Warnf("[GS] TB detect GC clear: scen=11.2 -> Square sleeping (partner talk)");
+                    GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
+                    break;
+                }
 
                     // Strong skip for the "Good morning... rescue mission" mini-scene (scene 4)
                     // and for the Meanies + Caterpie mini-scene (scene 5). Limit to the
@@ -1831,9 +1938,10 @@ s32 ExecuteScriptCommand(Action *action)
                     if (scen == 5 && (group == 31 && sector == 0)) {
                         if (!sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS))
                             sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0); // prevent early GO on Silent Chasm
                         sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
                         GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
-                        MGBA_Warnf("[GS] strong-skip TB outside post-MS grp=%d sec=%d -> inside free-roam", group, sector);
+                        MGBA_Warnf("[GS] strong-skip TB outside post-MS grp=%d sec=%d -> inside free-roam (clear SC GO)", group, sector);
                         break;
                     }
                 }
@@ -1844,13 +1952,111 @@ s32 ExecuteScriptCommand(Action *action)
                 if (GetSkipCutscenesSetting()
                     && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_POKEMON_SQUARE) {
                     s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    s32 lastRes = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
+                    s32 lastEnter = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+                    MGBA_Warnf("[GS] SQ resume: D_RESULT=%d D_ENTER=%d scen=%d", lastRes, lastEnter, scen);
                     if (scen == 5) {
                         if (!sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS))
                             sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0); // ensure SC not GO until SW complete
                         sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
-                        MGBA_Warnf("[GS] strong-skip Square grp=%d sec=%d -> Square free-roam", group, sector);
+                        MGBA_Warnf("[GS] strong-skip Square grp=%d sec=%d -> Square free-roam (clear SC GO)", group, sector);
                         GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
                         break;
+                    }
+
+                    // Detect Great Canyon clear return and jump to Square sleeping (scene 14)
+                    if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
+                        && sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON))
+                            sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                        if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON))
+                            sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 0);
+                    ScenarioCalc(SCENARIO_MAIN, 11, 2);
+                    MGBA_Warnf("[GS] SQ detect GC clear: scen=11.2 -> Square sleeping (partner talk)");
+                    GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
+                    break;
+                }
+
+                    // Enforce while roaming Square: ensure only SW is GO until SW is completed
+                    if (scen == 5 && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS)) {
+                        if (sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                            sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0);
+                            MGBA_Warnf("[GS] enforce SQ: clear Silent Chasm GO while SW incomplete");
+                        }
+                        sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                        {
+                            s32 swIndex = sub_80A26B8(SCRIPT_DUNGEON_SINISTER_WOODS);
+                            if (swIndex != -1) {
+                                SetScriptVarValue(NULL, DUNGEON_SELECT, swIndex);
+                                MGBA_Warnf("[GS] enforce SQ: set Sinister Woods GO + select=%d", swIndex);
+                            }
+                        }
+                    }
+
+                    // After SW clear (scene 6): ensure SC becomes the active GO and SW is cleared
+                    if (scen == 6) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                            if (sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS)) {
+                                sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 0);
+                                MGBA_Warnf("[GS] enforce SQ: clear SW GO after SW clear (scene 6)");
+                            }
+                            sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 1);
+                            {
+                                s32 scIndex = sub_80A26B8(SCRIPT_DUNGEON_SILENT_CHASM);
+                                if (scIndex != -1) {
+                                    SetScriptVarValue(NULL, DUNGEON_SELECT, scIndex);
+                                    MGBA_Warnf("[GS] enforce SQ: set Silent Chasm GO + select=%d", scIndex);
+                                }
+                            }
+                        }
+                    }
+
+                    // After SC clear (scene 7): ensure Mt. Thunder becomes the active GO and SC is cleared
+                    if (scen == 7) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_MT_THUNDER)) {
+                            if (sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                                sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0);
+                                MGBA_Warnf("[GS] enforce SQ: clear SC GO after SC clear (scene 7)");
+                            }
+                            sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                            {
+                                s32 mtIndex = sub_80A26B8(SCRIPT_DUNGEON_MT_THUNDER);
+                                if (mtIndex != -1) {
+                                    SetScriptVarValue(NULL, DUNGEON_SELECT, mtIndex);
+                                    MGBA_Warnf("[GS] enforce SQ: set Mt. Thunder GO + select=%d", mtIndex);
+                                }
+                            }
+                        }
+                    }
+
+                    // After Mt. Thunder clear: promote Great Canyon as GO
+                    if (RescueScenarioConquered(SCRIPT_DUNGEON_MT_THUNDER) &&
+                        !RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                        if (sub_8097384(SCRIPT_DUNGEON_MT_THUNDER)) {
+                            sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 0);
+                            MGBA_Warnf("[GS] enforce SQ: clear MT GO post-MT clear");
+                        }
+                        sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                        {
+                            s32 gcIndex = sub_80A26B8(SCRIPT_DUNGEON_GREAT_CANYON);
+                            if (gcIndex != -1) {
+                                SetScriptVarValue(NULL, DUNGEON_SELECT, gcIndex);
+                                MGBA_Warnf("[GS] enforce SQ: set Great Canyon GO + select=%d", gcIndex);
+                            }
+                        }
+                    }
+
+                    // After Great Canyon clear: fast‑forward to Square sleeping (scene 14)
+                    // without setting LC GO; partner talk will trigger the dungeon.
+                    if (RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON) &&
+                        !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)) {
+                        if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                            sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 0);
+                            MGBA_Warnf("[GS] enforce SQ: clear GC GO post-GC clear");
+                        }
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 14);
+                        MGBA_Warnf("[GS] enforce SQ: scen=14 (Square sleeping), await partner talk");
                     }
                 }
 
@@ -1873,14 +2079,70 @@ s32 ExecuteScriptCommand(Action *action)
                 }
 
                 // Skip the Mt. Steel end-room cutscene and jump straight to Sinister Woods unlock.
+                // NOTE: Stations/scene flow: at scen==5 (post–Mt. Steel), the story GO should
+                // be Sinister Woods. The Dungeons list expects SW to render under display id 3,
+                // while the GO flag is stored under script id 4. UI code accounts for this by
+                // remapping the display id when SW is GO; here we ensure the flags are set so
+                // the UI can reflect the intended state immediately upon returning to base.
                 // This station is gs183 group 1 sector 0 (MAP_MT_STEEL_END).
                 if (GetSkipCutscenesSetting() && map == MAP_MT_STEEL_END && group == 1 && sector == 0) {
                     // Mark Mt. Steel completed and set Sinister Woods as the next story dungeon.
                     sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
                     sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
+                    // Ensure Silent Chasm is not prematurely marked as a story GO before SW is cleared.
+                    sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 0);
+                    // Pre-select Sinister Woods on the World Map so the player sees the correct GO.
+                    {
+                        s32 swIndex = sub_80A26B8(SCRIPT_DUNGEON_SINISTER_WOODS);
+                        if (swIndex != -1) {
+                            SetScriptVarValue(NULL, DUNGEON_SELECT, swIndex);
+                        }
+                    }
                     // Move scenario forward to the post–Mt. Steel stage (major scene 5) and return to base.
                     SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
+                    MGBA_Warnf("[GS] skip MS end -> Team Base (set SW GO, clear SC GO, select SW)");
                     GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
+                    break;
+                }
+
+                // Skip the Silent Chasm end-room cutscene and jump straight to Mt. Thunder unlock.
+                // Station: gs187 group 1 sector 0 (MAP_SILENT_CHASM_END)
+                if (GetSkipCutscenesSetting() && map == MAP_SILENT_CHASM_END && group == 1 && sector == 0) {
+                    // Mark Silent Chasm completed and set Mt. Thunder as the next story dungeon.
+                    sub_8097418(SCRIPT_DUNGEON_SILENT_CHASM, 1);
+                    sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                    // Advance scenario to post–Silent Chasm (major scene 7) and return to base.
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 7);
+                    MGBA_Warnf("[GS] skip SC end -> Team Base (set MT GO)");
+                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
+                    break;
+                }
+
+                // Skip the Mt. Thunder end-room cutscene and unlock Great Canyon immediately.
+                // Station: gs190 group 1 sector 0 (MAP_MT_THUNDER_END)
+                if (GetSkipCutscenesSetting() && map == MAP_MT_THUNDER_END && group == 1 && sector == 0) {
+                    // Mark Mt. Thunder completed and set Great Canyon as the next story dungeon.
+                    sub_8097418(SCRIPT_DUNGEON_MT_THUNDER, 1);
+                    sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                    // Advance scenario to post–Mt. Thunder (major scene 8) and return to base.
+                    SetScriptVarValue(NULL, SCENARIO_MAIN, 8);
+                    MGBA_Warnf("[GS] skip MT end -> Team Base (set GC GO)");
+                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, 30);
+                    break;
+                }
+
+                // Skip the Great Canyon end-room cutscene (Hill of the Ancients) and
+                // jump straight to the "Square sleeping" free-roam (partner talk triggers LC).
+                // Station: Hill of the Ancients (MAP_HILL_OF_THE_ANCIENTS), group 1 sector 0
+                if (GetSkipCutscenesSetting() && map == MAP_HILL_OF_THE_ANCIENTS && group == 1 && sector == 0) {
+                    // Mark Great Canyon conquered and fast-forward the scenario.
+                    sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                    // Fast‑forward to the post–Great Canyon stage (major scene 14) and
+                    // arrive at Pokémon Square free‑roam (sleeping town). Do NOT set LC GO here;
+                    // the partner talk in Square will trigger the dungeon entry.
+                    ScenarioCalc(SCENARIO_MAIN, 11, 2);
+                    MGBA_Warnf("[GS] skip GC end -> scen=11.2 -> Square sleeping (partner talk)");
+                    GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
                     break;
                 }
 
@@ -2858,11 +3120,61 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0xaf: {
-                sub_80973A8(curCmd.argShort, (u8)curCmd.argByte > 0);
+                s16 scriptDungeonId = curCmd.argShort;
+                bool8 setGo = ((u8)curCmd.argByte) > 0;
+                s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                MGBA_Warnf("[GS] script GO op id=%d set=%d scen=%d", scriptDungeonId, setGo, scen);
+                if (GetSkipCutscenesSetting() && scriptDungeonId == SCRIPT_DUNGEON_SILENT_CHASM) {
+                    if (scen == 5 && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS)) {
+                        MGBA_Warnf("[GS] block script GO for Silent Chasm (scene 5; SW incomplete)");
+                        break;
+                    }
+                }
+                if (GetSkipCutscenesSetting() && (scriptDungeonId == SCRIPT_DUNGEON_MT_STEEL || scriptDungeonId == SCRIPT_DUNGEON_3)) {
+                    // Never allow re-setting GO on Mt. Steel once we've advanced past it.
+                    if (scen >= 5) {
+                        MGBA_Warnf("[GS] block script GO for Mt. Steel (id=%d, scene %d)", scriptDungeonId, scen);
+                        break;
+                    }
+                }
+                sub_80973A8(scriptDungeonId, setGo);
+                // Post-state: log flags for visibility
+                {
+                    bool8 msGo = sub_8097384(SCRIPT_DUNGEON_MT_STEEL);
+                    bool8 swGo = sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS);
+                    bool8 scGo = sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM);
+                    s32 sel = GetScriptVarValue(NULL, DUNGEON_SELECT);
+                    MGBA_Warnf("[GS] state after GO op: MS_GO=%d SW_GO=%d SC_GO=%d sel=%d", msGo, swGo, scGo, sel);
+                }
                 break;
             }
             case 0xb0: {
                 sub_8097418(curCmd.argShort, (u8)curCmd.argByte > 0);
+                // Alias fix: some scripts mark an alias id as conquered (e.g., 3),
+                // but the active GO for the stage lives on the true script id.
+                // When skipping cutscenes, proactively clear the SW GO flag if its
+                // alias gets conquered so the UI does not retain a stale GO badge.
+                if (GetSkipCutscenesSetting() && (u8)curCmd.argByte > 0) {
+                    if (curCmd.argShort == SCRIPT_DUNGEON_3) {
+                        if (sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS)) {
+                            sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 0);
+                            MGBA_Warnf("[GS] post-SW conquer via alias (id=3): clear SW GO");
+                        }
+                    }
+                    // After Great Canyon is conquered, skip the Hill of the Ancients scene
+                    // and jump to Square sleeping (scene 14) with Lapis Cave set as GO.
+                    if (curCmd.argShort == SCRIPT_DUNGEON_GREAT_CANYON) {
+                        // Clear GC GO (if any), mark conquered, and move to Square sleeping.
+                        if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                            sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 0);
+                        }
+                        sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 14);
+                        MGBA_Warnf("[GS] post-GC conquer: scen=14 -> Square sleeping (await partner talk)");
+                        GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
+                        break;
+                    }
+                }
                 break;
             }
             case 0xb1: {

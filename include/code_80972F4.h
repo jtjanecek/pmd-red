@@ -15,6 +15,7 @@ typedef struct MissionText
 
 const u8 *GetCurrentMissionText(s16 index);
 bool8 IsMazeCompleted(s16 mazeIndex);
+s32 sub_8097318(s16); // order list helper (returns 0/1)
 
 bool8 sub_8096F50(WonderMail *mail);
 void sub_8097418(s32 index, bool32);

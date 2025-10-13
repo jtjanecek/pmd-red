@@ -151,7 +151,7 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_MAGIKARP;
-    sPersonalityTestTracker->unk4.playSolo = 1; // Solo: Yes
+    sPersonalityTestTracker->unk4.playSolo = 0; // Solo: Yes
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.skipCutscenes = 1; // Yes

@@ -136,11 +136,12 @@ Square “Sleeping” after Great Canyon
 
 - Target behavior (skip mode): After GC clear, do not auto‑enter Lapis Cave or
   jump into the Blaze/Freeze chain. Instead, enter Pokémon Square “sleeping”
-  where partner talk triggers Lapis Cave.
+  where partner talk triggers the Lapis Cave entrance cutscene (with the
+  Kangaskhan statue) before entering the dungeon.
 - Implementation details:
-  - Fast‑forward to `SCENARIO_MAIN = 11.2` (not 14.0) and warp to Pokémon
-    Square. This matches the pre‑Lapis sleeping setup and avoids Mt. Blaze/
-    Mt. Freeze arcs.
+  - Fast‑forward to `SCENARIO_MAIN = 11.2` and warp to Pokémon Square. Some
+    resume paths may instead set scene `14`; both represent a pre‑Lapis
+    “sleeping” free‑roam state in skip mode.
   - Detection is resilient: on returning to Team Base or Square, if the last
     dungeon result indicates success (observed values 6/9/11/12), normalize the
     last entered dungeon id (handle 0x50/0x51/0x52 via `DUNGEON_ENTER_INDEX`),
@@ -148,7 +149,12 @@ Square “Sleeping” after Great Canyon
     11.2 + Square.
   - End‑room path (Hill of the Ancients) is also hooked to apply the same
     fast‑forward if reached directly.
-  - We intentionally do NOT set Lapis Cave GO; the partner talk initiates LC.
+  - We intentionally do NOT set Lapis Cave GO; the partner talk initiates LC
+    by redirecting to `MAP_LAPIS_CAVE_ENTRY`. The redirect triggers for scene
+    11.* and 14 when Great Canyon is conquered and Lapis Cave is not. If a
+    partner prompt attempts to run the long fugitive scene
+    (`EVENT_M01E07A_L002`), skip mode intercepts it and immediately warps to
+    the Lapis Cave entrance cutscene instead.
 
 Skip‑mode vs vanilla
 

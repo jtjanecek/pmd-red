@@ -53,6 +53,7 @@
 #include "ground_map_conversion_table.h"
 #include "unk_ds_only_feature.h"
 #include "textbox.h"
+#include "data_script.h"
 
 // Starter items helpers
 static void GiveStarterSetIfNeeded(void)
@@ -1702,10 +1703,36 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0x1c: {
+                if (GetSkipCutscenesSetting()) {
+                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if ((scenNow == 11 || scenNow == 14)
+                        && RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)
+                        && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)
+                        && curCmd.argShort == EVENT_M01E07A_L002) {
+                        MGBA_Warnf("[GS] intercept EXECUTE_FUNCTION*: skip fugitive -> Lapis Cave entrance");
+                        GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
+                        break;
+                    }
+                }
                 GroundMap_ExecuteEvent(curCmd.argShort, 1);
                 break;
             }
             case 0x1b: {
+                // EXECUTE_FUNCTION(f): some partner “ready” prompts trigger long
+                // fugitive cutscenes (EVENT_M01E07A_L002). In skip mode, during the
+                // pre‑Lapis “Square sleeping” phase, jump straight to the Lapis Cave
+                // entrance cutscene instead of running the fugitive scene.
+                if (GetSkipCutscenesSetting()) {
+                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if ((scenNow == 11 || scenNow == 14)
+                        && RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)
+                        && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)
+                        && curCmd.argShort == EVENT_M01E07A_L002) {
+                        MGBA_Warnf("[GS] intercept EXECUTE_FUNCTION: skip fugitive -> Lapis Cave entrance");
+                        GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
+                        break;
+                    }
+                }
                 GroundMap_ExecuteEvent(curCmd.argShort, 0);
                 break;
             }
@@ -2294,7 +2321,10 @@ s32 ExecuteScriptCommand(Action *action)
                 // instead of entering the dungeon directly.
                 if (GetSkipCutscenesSetting()) {
                     s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-                    if (scenNow == 14) {
+                    bool8 postGC = RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON);
+                    bool8 preLC = !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE);
+                    // Accept both scen==14 and scen==11.* (fast-forward) as Square sleeping states
+                    if ((scenNow == 14 || scenNow == 11) && postGC && preLC) {
                         MGBA_Warnf("[GS] redirect: partner 'ready' -> Lapis Cave entrance cutscene");
                         GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
                         break;

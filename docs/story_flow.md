@@ -28,6 +28,16 @@ Early‑game ids of interest
 - 4: SCRIPT_DUNGEON_SINISTER_WOODS (script id used by GO flag for SW)
 - 6: SCRIPT_DUNGEON_SILENT_CHASM
 
+Quick summary (up to Great Canyon)
+
+- Scene 3 → Thunderwave Cave is GO; Tiny Woods cleared.
+- Scene 4 → Mt. Steel becomes GO; Thunderwave Cave cleared.
+- Scene 5 → Sinister Woods is enforced as sole GO (SC hidden until SW clear).
+- Scene 6 → Silent Chasm becomes GO; any lingering SW GO cleared; SC preselected.
+- Scene 7 → Mt. Thunder becomes GO; SC GO cleared; MT preselected.
+- Scene 8 → Great Canyon becomes GO; MT GO cleared; GC preselected.
+- After GC clear → Jump to Pokémon Square sleeping (scene 11.2); GC GO cleared. Partner talk triggers Lapis Cave (no auto‑GO).
+
 Important nuance (Sinister Woods) and resolution
 
 - Scripts set GO on script id 4 (SINISTER_WOODS), while the Dungeons list is
@@ -53,11 +63,11 @@ Runtime enforcement for robustness
 
 - On entering Team Base or Pokémon Square with skip enabled:
   - scen==5 and SW not conquered → enforce SW as sole GO (clear SC GO).
- - scen==6 (post‑SW, pre‑SC clear) → enforce SC as active GO and clear any
-  lingering SW GO, also preselect SC in `DUNGEON_SELECT`.
- - scen==7 (post‑SC, pre‑Mt. Thunder clear) → enforce Mt. Thunder as active GO
-   and clear any lingering SC GO; preselect Mt. Thunder.
- - These guards are in `src/ground_script.c` and are no‑ops once SC is conquered.
+  - scen==6 (post‑SW, pre‑SC clear) → enforce SC as active GO, clear SW GO, preselect SC.
+  - scen==7 (post‑SC, pre‑Mt. Thunder clear) → enforce Mt. Thunder as active GO, clear SC GO, preselect MT.
+  - scen==8 (post‑MT, pre‑GC clear) → enforce Great Canyon as active GO, clear MT GO, preselect GC.
+  - After GC clear on resume → clear GC GO and fast‑forward to Square sleeping (scene 11.2).
+  - These guards are in `src/ground_script.c` and are no‑ops once each dungeon is conquered.
 - Mini‑scene skips at Team Base: in skip mode we skip the outside Team Base
   “Team Meanies + Caterpie” (scene 5) and the post‑SW “thank‑you” (scene 6)
   by reloading the inside free‑roam station.

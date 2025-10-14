@@ -1814,6 +1814,10 @@ s32 ExecuteScriptCommand(Action *action)
                     s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                     s32 lastRes = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
                     s32 lastEnter = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+                    s32 lastEnterNorm = lastEnter;
+                    if (lastEnter == 0x50 || lastEnter == 0x51 || lastEnter == 0x52) {
+                        lastEnterNorm = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
+                    }
                     // Trace last dungeon result to tighten skip flow around returns
                     MGBA_Warnf("[GS] TB resume: D_RESULT=%d D_ENTER=%d scen=%d", lastRes, lastEnter, scen);
                     // Before Thunderwave Cave (scene 3): ensure TWC is marked as current story mission.
@@ -1851,7 +1855,9 @@ s32 ExecuteScriptCommand(Action *action)
                     }
 
                     // Detect Silent Chasm clear return and promote Mt. Thunder immediately
+                    // Guard on lastEnter (normalized) to ensure we actually returned from Silent Chasm
                     if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
+                        && lastEnterNorm == SCRIPT_DUNGEON_SILENT_CHASM
                         && sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
                         if (!RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM))
                             sub_8097418(SCRIPT_DUNGEON_SILENT_CHASM, 1);
@@ -1930,9 +1936,10 @@ s32 ExecuteScriptCommand(Action *action)
                     }
 
                     // Detect Great Canyon clear return and jump to Square sleeping (scene 14)
-                    // Be permissive about result codes (observed: 6, 9, 11, 12)
+                    // Only trigger if the last entered dungeon was Great Canyon.
+                    // Accept common success-like result codes (6, 9, 11, 12).
                     if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
-                        && sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                        && lastEnterNorm == SCRIPT_DUNGEON_GREAT_CANYON) {
                         if (!RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON))
                             sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
                         if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON))
@@ -2024,6 +2031,10 @@ s32 ExecuteScriptCommand(Action *action)
                     s32 lastRes2 = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
                     s32 lastRes = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
                     s32 lastEnter = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+                    s32 lastEnterNorm = lastEnter;
+                    if (lastEnter == 0x50 || lastEnter == 0x51 || lastEnter == 0x52) {
+                        lastEnterNorm = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
+                    }
                     MGBA_Warnf("[GS] SQ resume: D_RESULT=%d D_ENTER=%d scen=%d", lastRes, lastEnter, scen);
                     if (scen == 5) {
                         if (!sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS))
@@ -2055,8 +2066,9 @@ s32 ExecuteScriptCommand(Action *action)
                     }
 
                     // Detect Great Canyon clear return and jump to Square sleeping (scene 14)
+                    // Only trigger if the last entered dungeon was Great Canyon.
                     if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
-                        && sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                        && lastEnterNorm == SCRIPT_DUNGEON_GREAT_CANYON) {
                         if (!RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON))
                             sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
                         if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON))
@@ -2068,7 +2080,9 @@ s32 ExecuteScriptCommand(Action *action)
                 }
 
                     // Detect Silent Chasm clear return and promote Mt. Thunder immediately
+                    // Guard on lastEnter (normalized) to ensure we actually returned from Silent Chasm
                     if ((lastRes2 == 6 || lastRes2 == 9 || lastRes2 == 11 || lastRes2 == 12)
+                        && lastEnterNorm == SCRIPT_DUNGEON_SILENT_CHASM
                         && sub_8097384(SCRIPT_DUNGEON_SILENT_CHASM)) {
                         if (!RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM))
                             sub_8097418(SCRIPT_DUNGEON_SILENT_CHASM, 1);
@@ -2274,6 +2288,18 @@ s32 ExecuteScriptCommand(Action *action)
                 s32 a = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
                 const DungeonInfo *ret1 = GetDungeonInfo_80A2608(a);
                 s32 thing = GetScriptVarArrayValue(NULL, DUNGEON_ENTER_LIST, (u16) a) == 0 ? ret1->unk6 : ret1->unk8;
+                // When the player confirms readiness with the partner during the
+                // Square-sleeping phase (scene 14) for Lapis Cave, route to the
+                // Lapis Cave entrance ground map immediately to play its cutscene
+                // instead of entering the dungeon directly.
+                if (GetSkipCutscenesSetting()) {
+                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if (scenNow == 14) {
+                        MGBA_Warnf("[GS] redirect: partner 'ready' -> Lapis Cave entrance cutscene");
+                        GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
+                        break;
+                    }
+                }
                 // fakematch: this is almost certainly a range check of the form 0x37 <= a && a < 0x48
                 // but that loses the s32 -> u16 cast. Inlines, macros, or other schenanigans are likely involved
                 if (!((u16)(a - 0x37) < 0x11) && (s16)sub_80A2750(a) == 1) {

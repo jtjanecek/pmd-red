@@ -113,6 +113,15 @@ End‑room cutscene skips
   - Each skip advances `SCENARIO_MAIN` to the next major stage and returns to
     Team Base for free roam.
 
+Return detection normalization
+
+- Some returns encode `DUNGEON_ENTER` with sentinels (0x50/0x51/0x52) and place
+  the true script dungeon id in `DUNGEON_ENTER_INDEX`.
+- The Team Base and Pokémon Square resume handlers now normalize the last‑enter
+  value before checking for Silent Chasm or Great Canyon clears. This ensures we
+  correctly promote Mt. Thunder after SC and fast‑forward after GC even when
+  logs show `D_ENTER=81`.
+
 Square “Sleeping” after Great Canyon
 
 - Target behavior (skip mode): After GC clear, do not auto‑enter Lapis Cave or
@@ -123,8 +132,10 @@ Square “Sleeping” after Great Canyon
     Square. This matches the pre‑Lapis sleeping setup and avoids Mt. Blaze/
     Mt. Freeze arcs.
   - Detection is resilient: on returning to Team Base or Square, if the last
-    dungeon result indicates success (observed values 6/9/11/12) and GC is the
-    active GO, mark GC conquered, clear its GO, then move to 11.2 + Square.
+    dungeon result indicates success (observed values 6/9/11/12), normalize the
+    last entered dungeon id (handle 0x50/0x51/0x52 via `DUNGEON_ENTER_INDEX`),
+    and if it was Great Canyon, mark GC conquered, clear its GO, then move to
+    11.2 + Square.
   - End‑room path (Hill of the Ancients) is also hooked to apply the same
     fast‑forward if reached directly.
   - We intentionally do NOT set Lapis Cave GO; the partner talk initiates LC.

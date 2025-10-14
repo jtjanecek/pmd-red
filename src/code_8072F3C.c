@@ -296,6 +296,13 @@ s32 sub_802FBF4(void)
             allowed = sub_80A27CC(scriptId);
             MGBA_Warnf("[WM] allow idx=%d sid=%d allowed=%d go(sid)=%d conq(sid)=%d scen=%d",
                        iVar6, scriptId, allowed, sub_8097384(scriptId), RescueScenarioConquered(scriptId), (s16)GetScriptVarValue(NULL, SCENARIO_MAIN));
+            // New rule (corrected): Hide Mt. Thunder until after Silent Chasm is conquered.
+            // After Sinister Woods, Silent Chasm should be next; Mt. Thunder appears only
+            // after clearing Silent Chasm.
+            if (allowed && scriptId == SCRIPT_DUNGEON_MT_THUNDER && !RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM)) {
+                allowed = FALSE;
+                MGBA_Warnf("[WM] hide MT until after SC (conquered=%d)", RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM));
+            }
             // Safety: In scene 5, if SW is GO, force-allow it into the list (some
             // engines gate visibility too strictly when skipping scenes).
             if (!allowed && scriptId == SCRIPT_DUNGEON_SINISTER_WOODS &&

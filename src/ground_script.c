@@ -1711,7 +1711,7 @@ s32 ExecuteScriptCommand(Action *action)
                         && curCmd.argShort == EVENT_M01E07A_L002) {
                         MGBA_Warnf("[GS] intercept EXECUTE_FUNCTION*: skip fugitive -> Lapis Cave entrance");
                         GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
-                        break;
+                        return 2; // perform action now and abort current script chain
                     }
                 }
                 GroundMap_ExecuteEvent(curCmd.argShort, 1);
@@ -1730,7 +1730,7 @@ s32 ExecuteScriptCommand(Action *action)
                         && curCmd.argShort == EVENT_M01E07A_L002) {
                         MGBA_Warnf("[GS] intercept EXECUTE_FUNCTION: skip fugitive -> Lapis Cave entrance");
                         GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
-                        break;
+                        return 2; // perform action now and abort current script chain
                     }
                 }
                 GroundMap_ExecuteEvent(curCmd.argShort, 0);
@@ -1779,6 +1779,43 @@ s32 ExecuteScriptCommand(Action *action)
                     if (scenNow == 8) {
                         group = 42; // reroute to generic morning talk
                         MGBA_Warnf("[GS] replace TB inside post-MT g43 -> g42 (generic morning talk)");
+                    }
+                }
+
+                // In Square-sleeping pre‑LC, any attempt to route to Team Base should
+                // be overridden to Lapis Cave entrance. This avoids bouncing into
+                // base/save flows when confirming "All set!".
+                if (GetSkipCutscenesSetting()) {
+                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    bool8 postGC = RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON);
+                    bool8 preLC = !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE);
+                    s32 place = gGroundMapConversionTable[map].groundPlaceId;
+                    if ((scenNow == 11 || scenNow == 14) && postGC && preLC &&
+                        (place == GROUND_PLACE_TEAM_BASE || place == GROUND_PLACE_TEAM_BASE_INSIDE)) {
+                        map = MAP_LAPIS_CAVE_ENTRY;
+                        group = 4;
+                        sector = 0;
+                        MGBA_Warnf("[GS] override TB -> Lapis entry (g4 s0) during Square sleeping pre-LC");
+                    }
+                }
+
+                // At Lapis Cave entrance in skip mode, default to the entrance event
+                // station (g4 s0) ONLY on initial arrival (group 0/sector 0) so we
+                // don't loop when stations hop internally to g3.* for the partner
+                // selection ("Which way should we go?"). Use MAP_LOCAL[0] as a
+                // one‑shot guard within this map.
+                if (GetSkipCutscenesSetting() && map == MAP_LAPIS_CAVE_ENTRY && group == 0 && sector == 0) {
+                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if ((scenNow == 11 || scenNow == 14)
+                        && RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)
+                        && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)) {
+                        s32 lapisEntryGuard = GetScriptVarArrayValue(NULL, MAP_LOCAL, 0);
+                        if (lapisEntryGuard == 0) {
+                            SetScriptVarArrayValue(NULL, MAP_LOCAL, 0, 1);
+                            group = 4;
+                            sector = 0;
+                            MGBA_Warnf("[GS] reroute Lapis entry -> entrance event station (g4 s0)");
+                        }
                     }
                 }
 
@@ -2325,9 +2362,16 @@ s32 ExecuteScriptCommand(Action *action)
                     bool8 preLC = !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE);
                     // Accept both scen==14 and scen==11.* (fast-forward) as Square sleeping states
                     if ((scenNow == 14 || scenNow == 11) && postGC && preLC) {
-                        MGBA_Warnf("[GS] redirect: partner 'ready' -> Lapis Cave entrance cutscene");
-                        GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
-                        break;
+                        s32 curMap = gUnknown_2039A34;
+                        s32 curPlace = gGroundMapConversionTable[curMap].groundPlaceId;
+                        // Avoid redirect loops when already at Lapis Cave entrance/exit
+                        if (curPlace == GROUND_PLACE_LAPIS_CAVE || curPlace == GROUND_PLACE_LAPIS_CAVE_EXIT) {
+                            MGBA_Warnf("[GS] suppress redirect at Lapis place=%d (avoid loop)", curPlace);
+                        } else {
+                            MGBA_Warnf("[GS] redirect: partner 'ready' -> Lapis Cave entrance cutscene");
+                            GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
+                            break;
+                        }
                     }
                 }
                 // fakematch: this is almost certainly a range check of the form 0x37 <= a && a < 0x48

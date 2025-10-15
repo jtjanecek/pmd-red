@@ -156,6 +156,30 @@ Square “Sleeping” after Great Canyon
     (`EVENT_M01E07A_L002`), skip mode intercepts it and immediately warps to
     the Lapis Cave entrance cutscene instead.
 
+Lapis Cave handoff details (skip mode)
+
+- Fugitive-scene interception: Partner “All set!” can invoke
+  `EVENT_M01E07A_L002`. We intercept this and perform a direct warp to
+  `MAP_LAPIS_CAVE_ENTRY`, aborting the remainder of the event chain to avoid
+  bouncing into Team Base/save flows.
+- Base override during Square sleeping: If anything tries to route to Team Base
+  (inside/outside) while in scene 11.* or 14 (GC done, LC not), we override the
+  destination to Lapis Cave entrance. This guarantees we don’t land in base
+  after pressing “All set!”.
+- Entrance station enforcement: On arrival at `MAP_LAPIS_CAVE_ENTRY`, we force
+  the entrance event station (g4 s0) so the cutscene runs and the partner is
+  present. The cutscene then hands off to the partner prompt “Which way should
+  we go?” (Lapis / Rock Path).
+
+Key log breadcrumbs while debugging
+
+- Intercepts
+  - `[GS] intercept EXECUTE_FUNCTION*: skip fugitive -> Lapis Cave entrance` (src/ground_script.c:1712)
+  - `[GS] intercept EXECUTE_FUNCTION: skip fugitive -> Lapis Cave entrance` (src/ground_script.c:1731)
+- Overrides/reroutes
+  - `[GS] override TB -> Lapis entry (g4 s0) during Square sleeping pre-LC` (src/ground_script.c:1798)
+  - `[GS] reroute Lapis entry -> entrance event station (g4 s0)` (src/ground_script.c:1812)
+
 Skip‑mode vs vanilla
 
 - All UI gating, end‑room skips, and enforcement live behind the

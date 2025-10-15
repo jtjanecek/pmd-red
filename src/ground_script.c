@@ -1782,6 +1782,26 @@ s32 ExecuteScriptCommand(Action *action)
                         GroundMainGroundRequest(MAP_MT_BLAZE_ENTRY, 0, 30);
                         break;
                     }
+
+                    // If we just cleared Mt. Blaze (Peak), immediately promote Frosty Forest
+                    // and warp to its entrance, skipping the long interlude scene.
+                    if ((lastResX == 6 || lastResX == 9 || lastResX == 11 || lastResX == 12)
+                        && (lastEnterNormX == SCRIPT_DUNGEON_MT_BLAZE || lastEnterNormX == SCRIPT_DUNGEON_MT_BLAZE_PEAK)
+                        && !RescueScenarioConquered(SCRIPT_DUNGEON_MT_BLAZE)) {
+                        sub_8097418(SCRIPT_DUNGEON_MT_BLAZE, 1);
+                        if (sub_8097384(SCRIPT_DUNGEON_MT_BLAZE))
+                            sub_80973A8(SCRIPT_DUNGEON_MT_BLAZE, 0);
+                        if (!sub_8097384(SCRIPT_DUNGEON_FROSTY_FOREST))
+                            sub_80973A8(SCRIPT_DUNGEON_FROSTY_FOREST, 1);
+                        {
+                            s32 ffIndex = sub_80A26B8(SCRIPT_DUNGEON_FROSTY_FOREST);
+                            if (ffIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, ffIndex);
+                        }
+                        ScenarioCalc(SCENARIO_MAIN, 13, 2);
+                        MGBA_Warnf("[GS] enter detect MB clear: scen=13.2 -> Frosty Forest entrance (set FF GO)");
+                        GroundMainGroundRequest(MAP_FROSTY_FOREST_ENTRY, 0, 30);
+                        break;
+                    }
                 }
 
                 // Verbose tracing to identify stations that still show mini-cutscenes when skipping.
@@ -2062,6 +2082,25 @@ s32 ExecuteScriptCommand(Action *action)
                     ScenarioCalc(SCENARIO_MAIN, 12, 2);
                     MGBA_Warnf("[GS] TB detect LC clear: scen=12.2 -> Mt. Blaze entrance (set MB GO)");
                     GroundMainGroundRequest(MAP_MT_BLAZE_ENTRY, 0, 30);
+                    break;
+                }
+
+                // Detect Mt. Blaze clear return and jump straight to Frosty Forest entrance
+                if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
+                    && (lastEnterNorm == SCRIPT_DUNGEON_MT_BLAZE || lastEnterNorm == SCRIPT_DUNGEON_MT_BLAZE_PEAK)) {
+                    if (!RescueScenarioConquered(SCRIPT_DUNGEON_MT_BLAZE))
+                        sub_8097418(SCRIPT_DUNGEON_MT_BLAZE, 1);
+                    if (sub_8097384(SCRIPT_DUNGEON_MT_BLAZE))
+                        sub_80973A8(SCRIPT_DUNGEON_MT_BLAZE, 0);
+                    if (!sub_8097384(SCRIPT_DUNGEON_FROSTY_FOREST))
+                        sub_80973A8(SCRIPT_DUNGEON_FROSTY_FOREST, 1);
+                    {
+                        s32 ffIndex = sub_80A26B8(SCRIPT_DUNGEON_FROSTY_FOREST);
+                        if (ffIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, ffIndex);
+                    }
+                    ScenarioCalc(SCENARIO_MAIN, 13, 2);
+                    MGBA_Warnf("[GS] TB detect MB clear: scen=13.2 -> Frosty Forest entrance (set FF GO)");
+                    GroundMainGroundRequest(MAP_FROSTY_FOREST_ENTRY, 0, 30);
                     break;
                 }
 

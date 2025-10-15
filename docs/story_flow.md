@@ -3,6 +3,12 @@ Story Flow Notes (GS/GO/Gating)
 This document collects quick notes while iterating on scene skipping and the
 early‑game story dungeon selection (GO) flow.
 
+Note on scope
+
+- All runtime changes described here run only when `SkipCutscenes=ON`
+  (`GetSkipCutscenesSetting() == TRUE`). With skip OFF, vanilla scripts and
+  flows are preserved.
+
 Terminology
 
 - Script dungeon id: value from `include/constants/script_dungeon_id.h` used by
@@ -45,6 +51,13 @@ Post‑GC to Mt. Blaze (skip mode)
 - After Lapis Cave clear: Immediately promote Mt. Blaze as GO and warp to
   the Mt. Blaze entrance. Scenario advances into the Mt. Blaze arc (`12.2`).
   Lapis Cave GO is cleared and its conquered flag set.
+
+Post‑Mt. Blaze to Frosty Forest (skip mode)
+
+- Target behavior: Skip the long "We’ve come a really long way…" interlude.
+- After Mt. Blaze clear (Peak): Immediately promote Frosty Forest as GO and
+  warp to `MAP_FROSTY_FOREST_ENTRY`. Scenario advances into the Frosty arc
+  (`13.2`). Mt. Blaze is marked conquered and any lingering MB GO is cleared.
 
 Important nuance (Sinister Woods) and resolution
 
@@ -175,6 +188,9 @@ After Lapis Cave clear (skip mode)
     - Set Mt. Blaze as GO and select it.
     - Fast‑forward scenario to `SCENARIO_MAIN = 12.2` and warp to
       `MAP_MT_BLAZE_ENTRY`.
+  - Early hook: the same detection also runs at the start of any ground‑map
+    enter (before any map reroutes) to prevent Team Base → Lapis overrides from
+    re‑triggering immediately after Lapis clear.
   - All of the above runs only when `SkipCutscenes=ON`.
 
 Lapis Cave handoff details (skip mode)
@@ -191,6 +207,26 @@ Lapis Cave handoff details (skip mode)
   the entrance event station (g4 s0) so the cutscene runs and the partner is
   present. The cutscene then hands off to the partner prompt “Which way should
   we go?” (Lapis / Rock Path).
+  - One‑shot guard: enforcement applies only on first arrival (group 0/sector 0)
+    and sets a local guard (`MAP_LOCAL[0]`) to prevent bouncing back after
+    internal station hops.
+  - Loop protection at Lapis place: if already at a Lapis place (entrance/exit),
+    the partner “ready” redirect is suppressed to avoid re‑warping.
+
+Expected logs (skip mode)
+
+- Post–Mt. Thunder return:
+  - `[GS] enforce TB: set Great Canyon GO + select=…`
+- After Great Canyon clear:
+  - `[GS] TB detect GC clear: scen=11.2 -> Square sleeping (partner talk)` or
+    `[GS] SQ detect GC clear: scen=11.2 -> Square sleeping (partner talk)`
+- Partner “All set!” at Square sleeping:
+  - `[GS] redirect: partner 'ready' -> Lapis Cave entrance cutscene` or
+    `[GS] suppress redirect at Lapis place=22 (avoid loop)`
+  - `[GS] reroute Lapis entry -> entrance event station (g4 s0)` (one‑shot)
+- After Lapis Cave clear:
+  - `[GS] enter detect LC clear: scen=12.2 -> Mt. Blaze entrance (set MB GO)` or
+    `[GS] TB|SQ detect LC clear: scen=12.2 -> Mt. Blaze entrance (set MB GO)`
 
 Key log breadcrumbs while debugging
 

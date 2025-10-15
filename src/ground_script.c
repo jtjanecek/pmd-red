@@ -1754,6 +1754,36 @@ s32 ExecuteScriptCommand(Action *action)
                 }
                 map = GetAdjustedGroundMap(map);
 
+                // Early, global clear-detection while entering any ground map.
+                // This runs before any reroutes to avoid loops. SkipCutscenes only.
+                if (GetSkipCutscenesSetting()) {
+                    s32 lastResX = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
+                    s32 lastEnterX = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+                    s32 lastEnterNormX = lastEnterX;
+                    if (lastEnterX == 0x50 || lastEnterX == 0x51 || lastEnterX == 0x52) {
+                        lastEnterNormX = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
+                    }
+                    // If we just cleared Lapis Cave, immediately promote Mt. Blaze
+                    // and warp to its entrance, preventing any TB->Lapis overrides.
+                    if ((lastResX == 6 || lastResX == 9 || lastResX == 11 || lastResX == 12)
+                        && lastEnterNormX == SCRIPT_DUNGEON_LAPIS_CAVE
+                        && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)) {
+                        sub_8097418(SCRIPT_DUNGEON_LAPIS_CAVE, 1);
+                        if (sub_8097384(SCRIPT_DUNGEON_LAPIS_CAVE))
+                            sub_80973A8(SCRIPT_DUNGEON_LAPIS_CAVE, 0);
+                        if (!sub_8097384(SCRIPT_DUNGEON_MT_BLAZE))
+                            sub_80973A8(SCRIPT_DUNGEON_MT_BLAZE, 1);
+                        {
+                            s32 mbIndex = sub_80A26B8(SCRIPT_DUNGEON_MT_BLAZE);
+                            if (mbIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, mbIndex);
+                        }
+                        ScenarioCalc(SCENARIO_MAIN, 12, 2);
+                        MGBA_Warnf("[GS] enter detect LC clear: scen=12.2 -> Mt. Blaze entrance (set MB GO)");
+                        GroundMainGroundRequest(MAP_MT_BLAZE_ENTRY, 0, 30);
+                        break;
+                    }
+                }
+
                 // Verbose tracing to identify stations that still show mini-cutscenes when skipping.
                 if (GetSkipCutscenesSetting()) {
                     s32 place = gGroundMapConversionTable[map].groundPlaceId;
@@ -2014,6 +2044,27 @@ s32 ExecuteScriptCommand(Action *action)
                     break;
                 }
 
+                // Detect Lapis Cave clear return and jump straight to Mt. Blaze entrance
+                // Only trigger if the last entered dungeon was Lapis Cave.
+                if ((lastRes == 6 || lastRes == 9 || lastRes == 11 || lastRes == 12)
+                    && lastEnterNorm == SCRIPT_DUNGEON_LAPIS_CAVE) {
+                    if (!RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE))
+                        sub_8097418(SCRIPT_DUNGEON_LAPIS_CAVE, 1);
+                    if (sub_8097384(SCRIPT_DUNGEON_LAPIS_CAVE))
+                        sub_80973A8(SCRIPT_DUNGEON_LAPIS_CAVE, 0);
+                    if (!sub_8097384(SCRIPT_DUNGEON_MT_BLAZE))
+                        sub_80973A8(SCRIPT_DUNGEON_MT_BLAZE, 1);
+                    {
+                        s32 mbIndex = sub_80A26B8(SCRIPT_DUNGEON_MT_BLAZE);
+                        if (mbIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, mbIndex);
+                    }
+                    // Advance scenario into the Mt. Blaze arc (use 12.* window) and warp to entrance.
+                    ScenarioCalc(SCENARIO_MAIN, 12, 2);
+                    MGBA_Warnf("[GS] TB detect LC clear: scen=12.2 -> Mt. Blaze entrance (set MB GO)");
+                    GroundMainGroundRequest(MAP_MT_BLAZE_ENTRY, 0, 30);
+                    break;
+                }
+
                     // Strong skip for the "Good morning... rescue mission" mini-scene (scene 4)
                     // and for the Meanies + Caterpie mini-scene (scene 5). Limit to the
                     // specific Team Base outside stations that trigger these.
@@ -2143,6 +2194,24 @@ s32 ExecuteScriptCommand(Action *action)
                     break;
                 }
 
+                    // Detect Lapis Cave clear return and jump straight to Mt. Blaze entrance
+                    if ((lastRes2 == 6 || lastRes2 == 9 || lastRes2 == 11 || lastRes2 == 12)
+                        && lastEnterNorm == SCRIPT_DUNGEON_LAPIS_CAVE) {
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE))
+                            sub_8097418(SCRIPT_DUNGEON_LAPIS_CAVE, 1);
+                        if (sub_8097384(SCRIPT_DUNGEON_LAPIS_CAVE))
+                            sub_80973A8(SCRIPT_DUNGEON_LAPIS_CAVE, 0);
+                        if (!sub_8097384(SCRIPT_DUNGEON_MT_BLAZE))
+                            sub_80973A8(SCRIPT_DUNGEON_MT_BLAZE, 1);
+                        {
+                            s32 mbIndex = sub_80A26B8(SCRIPT_DUNGEON_MT_BLAZE);
+                            if (mbIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, mbIndex);
+                        }
+                        ScenarioCalc(SCENARIO_MAIN, 12, 2);
+                        MGBA_Warnf("[GS] SQ detect LC clear: scen=12.2 -> Mt. Blaze entrance (set MB GO)");
+                        GroundMainGroundRequest(MAP_MT_BLAZE_ENTRY, 0, 30);
+                        break;
+                    }
                     // Detect Silent Chasm clear return and promote Mt. Thunder immediately
                     // Guard on lastEnter (normalized) to ensure we actually returned from Silent Chasm
                     if ((lastRes2 == 6 || lastRes2 == 9 || lastRes2 == 11 || lastRes2 == 12)

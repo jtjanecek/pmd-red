@@ -38,6 +38,14 @@ Quick summary (up to Great Canyon)
 - Scene 8 → Great Canyon becomes GO; MT GO cleared; GC preselected.
 - After GC clear → Jump to Pokémon Square sleeping (scene 11.2); GC GO cleared. Partner talk triggers Lapis Cave (no auto‑GO).
 
+Post‑GC to Mt. Blaze (skip mode)
+
+- Square “sleeping” (scene 11.* or 14): Partner “All set!” redirects to the
+  Lapis Cave entrance cutscene (no Lapis GO set; player chooses Lapis/Rock Path).
+- After Lapis Cave clear: Immediately promote Mt. Blaze as GO and warp to
+  the Mt. Blaze entrance. Scenario advances into the Mt. Blaze arc (`12.2`).
+  Lapis Cave GO is cleared and its conquered flag set.
+
 Important nuance (Sinister Woods) and resolution
 
 - Scripts set GO on script id 4 (SINISTER_WOODS), while the Dungeons list is
@@ -155,6 +163,19 @@ Square “Sleeping” after Great Canyon
     partner prompt attempts to run the long fugitive scene
     (`EVENT_M01E07A_L002`), skip mode intercepts it and immediately warps to
     the Lapis Cave entrance cutscene instead.
+
+After Lapis Cave clear (skip mode)
+
+- Target behavior: Do not return to base/entrance loops. Promote Mt. Blaze and
+  arrive at `MAP_MT_BLAZE_ENTRY` ready to proceed.
+- Implementation details:
+  - On TB/SQ resume, normalize last‑enter id. If it was `Lapis Cave` and the
+    result was a success code (6/9/11/12):
+    - Mark Lapis Cave conquered; clear any lingering Lapis GO.
+    - Set Mt. Blaze as GO and select it.
+    - Fast‑forward scenario to `SCENARIO_MAIN = 12.2` and warp to
+      `MAP_MT_BLAZE_ENTRY`.
+  - All of the above runs only when `SkipCutscenes=ON`.
 
 Lapis Cave handoff details (skip mode)
 

@@ -28,11 +28,31 @@
 #include "trap.h"
 #include "math.h"
 #include "dungeon_config.h"
+#include "save.h" // GetSkipCutscenesSetting
+#include "constants/dungeon.h"
+
+// Forward decl for Articuno pre-fight setup (lives in dungeon_cutscene_articuno.c)
+extern void sub_8087F54(void);
 #include "dungeon_boss_dialogue.h"
 
 
 void sub_80885A0(void)
 {
+  // In skip-cutscene mode, if we somehow routed into the "empty summit"
+  // path at Mt. Freeze Peak, force the Articuno pre-fight instead of
+  // showing the empty message. This mirrors vanilla flow and prevents
+  // the user from seeing "nobody here" in the Frosty/Mt. Freeze arc.
+  if (GetSkipCutscenesSetting()) {
+    u16 did = gDungeon->unk644.dungeonLocation.id;
+    if (did == DUNGEON_MT_FREEZE_PEAK || did == DUNGEON_MT_FREEZE_PEAK_2) {
+      // Ensure post-battle triggers see Articuno's cutscene id
+      // (matches case 0xD in sub_80848F0).
+      gDungeon->unk3A0D = 0x0D;
+      sub_8087F54(); // ArticunoPreFight setup
+      return;
+    }
+  }
+
   DungeonFadeOutBGM(0x3c);
   sub_803E708(0x3c,0x46);
   DungeonStopBGM();
@@ -44,6 +64,17 @@ void sub_80885C4(void)
   Entity * leaderEntity;
 
   leaderEntity = CutsceneGetLeader();
+  // Same guard as above for the alternate entry point into the
+  // empty-summit sequence.
+  if (GetSkipCutscenesSetting()) {
+    u16 did = gDungeon->unk644.dungeonLocation.id;
+    if (did == DUNGEON_MT_FREEZE_PEAK || did == DUNGEON_MT_FREEZE_PEAK_2) {
+      gDungeon->unk3A0D = 0x0D;
+      sub_8087F54(); // ArticunoPreFight setup
+      return;
+    }
+  }
+
   DungeonFadeOutBGM(0x3c);
   sub_803E708(0x3c,0x46);
   DungeonStopBGM();

@@ -58,6 +58,9 @@ Post‑Mt. Blaze to Frosty Forest (skip mode)
 - After Mt. Blaze clear (Peak): Immediately promote Frosty Forest as GO and
   warp to `MAP_FROSTY_FOREST_ENTRY`. Scenario advances into the Frosty arc
   (`13.2`). Mt. Blaze is marked conquered and any lingering MB GO is cleared.
+- Frosty Forest END station (skip mode): auto‑promote Frosty Grotto as GO and
+  warp to `MAP_FROSTY_FOREST_MID` (save point), mirroring the Lapis→Mt. Blaze
+  handoff. This avoids stray "nobody is here" lines at the end station.
 
 Important nuance (Sinister Woods) and resolution
 

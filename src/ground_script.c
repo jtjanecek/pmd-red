@@ -2446,6 +2446,26 @@ s32 ExecuteScriptCommand(Action *action)
                     break;
                 }
 
+                // Skip the Mt. Blaze → Frosty interlude: when arriving at the
+                // Frosty Forest END station in skip mode, immediately promote
+                // Frosty Grotto and jump to the Frosty Forest MID (save point).
+                // This mirrors how we handle Lapis→Mt. Blaze.
+                if (GetSkipCutscenesSetting() && map == MAP_FROSTY_FOREST_END && group == 1 && sector == 0) {
+                    // Mark Frosty Forest completed and set Frosty Grotto as next story dungeon.
+                    if (!RescueScenarioConquered(SCRIPT_DUNGEON_FROSTY_FOREST))
+                        sub_8097418(SCRIPT_DUNGEON_FROSTY_FOREST, 1);
+                    if (!sub_8097384(SCRIPT_DUNGEON_FROSTY_GROTTO))
+                        sub_80973A8(SCRIPT_DUNGEON_FROSTY_GROTTO, 1);
+                    {
+                        s32 fgIndex = sub_80A26B8(SCRIPT_DUNGEON_FROSTY_GROTTO);
+                        if (fgIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, fgIndex);
+                    }
+                    ScenarioCalc(SCENARIO_MAIN, 13, 2);
+                    MGBA_Warnf("[GS] skip FF end -> Frosty Forest MID (set FG GO)");
+                    GroundMainGroundRequest(MAP_FROSTY_FOREST_MID, 0, 30);
+                    break;
+                }
+
                 res = curCmd.op == 0x1e;
                 GroundMap_ExecuteStation(map, group, sector, res);
                 if (gUnknown_2039A34 != map) {
@@ -3491,15 +3511,20 @@ s32 ExecuteScriptCommand(Action *action)
                     // After Great Canyon is conquered, skip the Hill of the Ancients scene
                     // and jump to Square sleeping (scene 14) with Lapis Cave set as GO.
                     if (curCmd.argShort == SCRIPT_DUNGEON_GREAT_CANYON) {
-                        // Clear GC GO (if any), mark conquered, and move to Square sleeping.
-                        if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
-                            sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 0);
+                        // Only apply the GC -> Square sleeping fast‑forward while still in
+                        // the post‑MT arc (before entering Lapis/Mt. Blaze arcs). Prevents
+                        // late GC flags from bouncing mid‑Frosty flows.
+                        s32 scenNow2 = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                        if (scenNow2 <= 11 && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)) {
+                            if (sub_8097384(SCRIPT_DUNGEON_GREAT_CANYON)) {
+                                sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 0);
+                            }
+                            sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
+                            SetScriptVarValue(NULL, SCENARIO_MAIN, 14);
+                            MGBA_Warnf("[GS] post-GC conquer: scen=14 -> Square sleeping (await partner talk)");
+                            GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
+                            break;
                         }
-                        sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
-                        SetScriptVarValue(NULL, SCENARIO_MAIN, 14);
-                        MGBA_Warnf("[GS] post-GC conquer: scen=14 -> Square sleeping (await partner talk)");
-                        GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
-                        break;
                     }
                 }
                 break;

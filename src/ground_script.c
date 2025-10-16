@@ -56,7 +56,7 @@
 #include "data_script.h"
 
 // Forward declares for helpers used by linear skip functions
-extern void sub_80973A8(s16, bool8);        // set GO flag
+extern void sub_80973A8(s32, u32);          // set GO flag
 extern void sub_8096488(void);              // seed initial news
 
 // Linear skip mode helpers (alternative to scene-aware skip flow)
@@ -205,9 +205,9 @@ char sub_8002984(s32, u8);
 bool8 sub_802FCF0(void);
 
 
-void sub_809733C(s16, bool8);
-void sub_80973A8(s16, bool8);
-void sub_80975A8(s16, bool8);
+void sub_809733C(s16, u32);
+void sub_80973A8(s32, u32);
+void sub_80975A8(s16, u8);
 u32 sub_809A6E4();
 u32 sub_809A6F8();
 u32 sub_809A768();
@@ -1812,20 +1812,12 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0x1c: {
-                // EXECUTE_FUNCTION*: When SkipCutscenes is ON, do not trigger any events/cutscenes.
-                if (IsSkipLinearMode()) {
-                    MGBA_Warnf("[GS] linear-skip: suppress event* id=%d", curCmd.argShort);
-                    break;
-                }
+                // EXECUTE_FUNCTION* (always allow; targeted skips handled elsewhere)
                 GroundMap_ExecuteEvent(curCmd.argShort, 1);
                 break;
             }
             case 0x1b: {
-                // EXECUTE_FUNCTION: When SkipCutscenes is ON, do not trigger any events/cutscenes.
-                if (IsSkipLinearMode()) {
-                    MGBA_Warnf("[GS] linear-skip: suppress event id=%d", curCmd.argShort);
-                    break;
-                }
+                // EXECUTE_FUNCTION (always allow; targeted skips handled elsewhere)
                 GroundMap_ExecuteEvent(curCmd.argShort, 0);
                 break;
             }
@@ -1878,8 +1870,78 @@ s32 ExecuteScriptCommand(Action *action)
                         GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                         break;
                     }
+
+                    // Also skip the Team Base INSIDE wake-up ("The next morning...") station
+                    // (group 41, sector 0) when skipping cutscenes; route straight to free‑roam.
+                    if (gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
+                        && group == 41 && sector == 0) {
+                        MGBA_Warnf("[GS] linear-skip: suppress Team Base g41 (wake-up) -> base free-roam");
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                        break;
+                    }
                     if (SkipLinear_HandleClearAndWarp())
                         break;
+
+                    // Starter kit + first letter cutscenes at Team Base (outside) during scene 3
+                    // Show up as groups 18/19/20. In linear-skip, fast-forward once as if done,
+                    // seed news and starter items, set TWC GO, and immediately switch this station
+                    // execution to Team Base Inside free‑roam (g16 s0) without scheduling a warp.
+                    {
+                        s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                        s32 place = gGroundMapConversionTable[map].groundPlaceId;
+                        if (scenNow == 3 && place == GROUND_PLACE_TEAM_BASE &&
+                            ( (group == 18 && sector == 0) || group == 19 || group == 20) &&
+                            GetScriptVarArrayValue(NULL, EVENT_S08E01, 2) == 0) {
+                            // Guard so we only do this once
+                            SetScriptVarArrayValue(NULL, EVENT_S08E01, 2, 1);
+                            sub_8096488(); // seed news
+                            sub_80961B4();
+                            GiveStarterSetIfNeeded();
+                            if (!RescueScenarioConquered(SCRIPT_DUNGEON_TINY_WOODS))
+                                sub_8097418(SCRIPT_DUNGEON_TINY_WOODS, 1);
+                            if (!sub_8097384(SCRIPT_DUNGEON_THUNDERWAVE_CAVE))
+                                sub_80973A8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
+                            {
+                                s32 twcIndex = sub_80A26B8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE);
+                                if (twcIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, twcIndex);
+                            }
+                            // Fast-forward scenario beyond early base scenes
+                            SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
+                            // Redirect EXECUTE_STATION to Team Base Inside free‑roam in-place.
+                            map = MAP_TEAM_BASE_INSIDE;
+                            group = 16;
+                            sector = 0; // RET_DIRECT
+                            MGBA_Warnf("[GS] linear-skip: redirect TB starter kit/letter -> TB inside g16 s0 (set TWC GO)");
+                        }
+                    }
+
+                    // Force Team Base INSIDE free‑roam for any lingering early base scenes
+                    // (e.g., group 17 wake/look‑around, group 41 wake-up) when skipping.
+                    {
+                        s32 scenNow2 = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                        s32 place2 = gGroundMapConversionTable[map].groundPlaceId;
+                        if (place2 == GROUND_PLACE_TEAM_BASE_INSIDE && scenNow2 <= 4 &&
+                            (group == 17 || group == 41) &&
+                            GetScriptVarArrayValue(NULL, EVENT_S08E01, 3) == 0) {
+                            // Only force once per early-base session to avoid interfering with save flow
+                            SetScriptVarArrayValue(NULL, EVENT_S08E01, 3, 1);
+                            MGBA_Warnf("[GS] linear-skip: force TB INSIDE free-roam (g16 s0) from grp=%d sec=%d", group, sector);
+                            map = MAP_TEAM_BASE_INSIDE;
+                            group = 16;
+                            sector = 0;
+                        }
+                    }
+
+                    // Skip Thunderwave Cave entrance cutscene: jump straight into the
+                    // dungeon when the engine attempts to enter the TWC entry map.
+                    if (map == MAP_THUNDERWAVE_CAVE_ENTRY) {
+                        MGBA_Warnf("[GS] linear-skip: redirect TWC entry -> direct dungeon");
+                        // Ensure TWC is visible as GO in UI if needed, then enter dungeon.
+                        if (!sub_8097384(SCRIPT_DUNGEON_THUNDERWAVE_CAVE))
+                            sub_80973A8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
+                        GroundMainRescueRequest(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 30);
+                        break;
+                    }
                 }
 
                 // Unconditional safety: suppress the Team Base INSIDE “Dream Eater” (Gengar) cutscene
@@ -2182,6 +2244,33 @@ s32 ExecuteScriptCommand(Action *action)
                     GroundMainGroundRequest(MAP_FROSTY_FOREST_ENTRY, 0, 30);
                     break;
                 }
+
+                    // Strong skip: Starter‑kit and first‑letter flow at Team Base (scene 3)
+                    // When SkipCutscenes is ON, pretend the mailbox “Rescue Team Starter Set”
+                    // and first letter have already been handled. Seed initial news and a small
+                    // starter item set, mark Tiny Woods as conquered and set Thunderwave Cave as GO.
+                    if (scen == 3 &&
+                        gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE &&
+                        ((group == 18 && sector == 0) || (group == 19) || (group == 20))) {
+                        // Seed base menus/news and initial items.
+                        sub_8096488();        // Put Pokémon News in mailbox
+                        sub_80961B4();        // Enable news generation pipeline
+                        GiveStarterSetIfNeeded();
+                        // Ensure post‑Tiny Woods state and prepare TWC.
+                        if (!RescueScenarioConquered(SCRIPT_DUNGEON_TINY_WOODS))
+                            sub_8097418(SCRIPT_DUNGEON_TINY_WOODS, 1);
+                        if (!sub_8097384(SCRIPT_DUNGEON_THUNDERWAVE_CAVE))
+                            sub_80973A8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE, 1);
+                        {
+                            s32 twcIndex = sub_80A26B8(SCRIPT_DUNGEON_THUNDERWAVE_CAVE);
+                            if (twcIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, twcIndex);
+                        }
+                        // Fast‑forward scenario to after the letter acceptance (3.6)
+                        ScenarioCalc(SCENARIO_MAIN, 3, 6);
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                        MGBA_Warnf("[GS] strong-skip TB starter kit/letter -> inside free-roam (set TWC GO)");
+                        break;
+                    }
 
                     // Strong skip for the "Good morning... rescue mission" mini-scene (scene 4)
                     // and for the Meanies + Caterpie mini-scene (scene 5). Limit to the
@@ -2789,11 +2878,13 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0x2e: {
+                if (GetSkipCutscenesSetting()) break;
                 ScriptSetPortraitInfo(curCmd.argShort, (s8)curCmd.arg1, (u8)curCmd.argByte);
                 break;
             }
             case 0x2f: {
                 PixelPos pos;
+                if (GetSkipCutscenesSetting()) break;
                 pos.x = curCmd.arg1;
                 pos.y = curCmd.arg2;
                 ScriptSetPortraitPosDelta(curCmd.argShort, &pos);
@@ -2801,6 +2892,10 @@ s32 ExecuteScriptCommand(Action *action)
             }
             case 0x32 ... 0x38: {
                 s8 ret = 0;
+                if (GetSkipCutscenesSetting()) {
+                    // Suppress all dialogue/text when skipping cutscenes
+                    break;
+                }
                 switch (scriptData->curScriptOp) {
                     case 0x32: ret = ScriptPrintText(SCRIPT_TEXT_TYPE_INSTANT, curCmd.argShort, curCmd.argPtr); break;
                     case 0x33: ret = ScriptPrintText(SCRIPT_TEXT_TYPE_PLAYER, curCmd.argShort, curCmd.argPtr); break;
@@ -2817,6 +2912,7 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0x39: {
+                if (GetSkipCutscenesSetting()) break;
                 if ((s8)ScriptPrintTextOnBgAuto(curCmd.argShort, curCmd.argPtr) && curCmd.argShort >= 0) {
                     sub_80A87AC(0, 10);
                     if (GroundScriptCheckLockCondition(action, 0)) return 2;

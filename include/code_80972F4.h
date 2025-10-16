@@ -18,6 +18,7 @@ bool8 IsMazeCompleted(s16 mazeIndex);
 s32 sub_8097318(s16); // order list helper (returns 0/1)
 
 bool8 sub_8096F50(WonderMail *mail);
+void sub_80973A8(s32 index, u32 setGo);
 void sub_8097418(s32 index, bool32);
 bool8 sub_8097504(s16 mazeIndex);
 const u8 *sub_80975DC(s16);

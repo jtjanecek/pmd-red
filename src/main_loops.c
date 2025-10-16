@@ -738,6 +738,15 @@ static u32 RunGameMode_Async(u32 a0)
             sUnknown_203B03C = 2;
             sub_800A8F8(4);
             r5 = xxx_script_related_8001334(mode);
+            // If we just finished a non-story dungeon and skip cutscenes is ON,
+            // prefer returning directly to Team Base (inside) rather than opening
+            // the World Map (r5 == 6). This makes normal runs end at base.
+            if (GetSkipCutscenesSetting() && mode == MODE_DUNGEON_WON && r5 == 6) {
+                SetScriptVarValue(NULL,GROUND_ENTER,MAP_TEAM_BASE_INSIDE);
+                SetScriptVarValue(NULL,GROUND_ENTER_LINK,0);
+                mode = MODE_GROUND;
+                continue;
+            }
             if (r5 == 14) {
                 break;
             }

@@ -13,6 +13,10 @@
 #include "debug.h"
 #include "event_flag.h"
 #include "ground_main.h"
+#include "ground_map_conversion_table.h"
+#include "ground_place.h"
+#include "save.h" // GetSkipCutscenesSetting
+#include "code_80972F4.h" // sub_8097384, sub_80973A8, sub_8097418, RescueScenarioConquered
 #include "ground_map.h"
 #include "ground_map_1.h"
 #include "play_time.h"
@@ -243,6 +247,20 @@ u32 xxx_script_related_8098468(s32 param_1)
                         gUnknown_20398BE = var;
                         gUnknown_20398C0 = 0;
                     }
+
+                    // When skipping cutscenes, if the cleared dungeon was a GO story mission,
+                    // mark it conquered and clear its GO flag immediately to keep progression clean.
+                    if (GetSkipCutscenesSetting()) {
+                        s16 clearedId = (s16)scriptVar13;
+                        if (clearedId == 0x50 || clearedId == 0x51 || clearedId == 0x52) {
+                            clearedId = (s16)GetScriptVarValue(0, DUNGEON_ENTER_INDEX);
+                        }
+                        if (clearedId >= 0 && sub_8097384(clearedId)) {
+                            if (!RescueScenarioConquered(clearedId))
+                                sub_8097418(clearedId, 1);
+                            sub_80973A8(clearedId, 0);
+                        }
+                    }
                 }
                 break;
             }
@@ -302,6 +320,7 @@ u32 xxx_script_related_8098468(s32 param_1)
         sub_809C658();
         nullsub_16();
         UpdateAdventureAchievements();
+        // Always execute map events; we suppress text elsewhere to avoid cutscenes
         if (r7 != -1) {
             GroundMap_ExecuteEvent(r7,0);
         }

@@ -21,6 +21,10 @@
 #include "text_1.h"
 #include "text_2.h"
 #include "text_util.h"
+#include "event_flag.h" // SetScriptVarValue
+#include "constants/ground_map.h" // MAP_TEAM_BASE_INSIDE
+#include "constants/script_dungeon_id.h"
+#include "constants/event_flag.h" // SCENARIO_MAIN, GROUND_ENTER, GROUND_ENTER_LINK
 
 // Forward declaration for dev mode level up function
 extern void sub_8043FD0(void);
@@ -264,6 +268,13 @@ u32 HandleTestTrackerState(void)
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
+            // SkipCutscenes mode: ensure we start at Team Base Inside free‑roam with
+            // a safe scenario value to avoid early cutscenes causing hangs.
+            if (GetSkipCutscenesSetting()) {
+                SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
+                SetScriptVarValue(NULL, GROUND_ENTER, MAP_TEAM_BASE_INSIDE);
+                SetScriptVarValue(NULL, GROUND_ENTER_LINK, 0);
+            }
             return 3;
         default:
             break;

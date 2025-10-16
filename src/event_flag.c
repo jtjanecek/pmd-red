@@ -26,7 +26,7 @@ EWRAM_DATA u8 gScriptVarBuffer[SCRIPT_VAR_BUFFER_LEN] = {0}; // NDS=020876DC
 extern bool8 GetScriptMode(void);
 extern bool8 HasCompletedAllMazes(void);
 extern void sub_809733C(u32, u32);
-extern void sub_80973A8(u32, u32);
+extern void sub_80973A8(s32, u32);
 extern void sub_80972F4(void);
 extern void nullsub_128(void);
 

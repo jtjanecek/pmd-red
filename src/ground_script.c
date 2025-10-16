@@ -55,6 +55,115 @@
 #include "textbox.h"
 #include "data_script.h"
 
+// Forward declares for helpers used by linear skip functions
+extern void sub_80973A8(s16, bool8);        // set GO flag
+extern void sub_8096488(void);              // seed initial news
+
+// Linear skip mode helpers (alternative to scene-aware skip flow)
+static inline bool8 IsSkipLinearMode(void) { return GetSkipCutscenesSetting(); }
+static inline bool8 UseOldSkipCutsceneFlow(void) { return FALSE; }
+
+// Main-story linear progression order for SkipCutscenes=ON
+static const s16 kSkipLinearOrder[] = {
+    SCRIPT_DUNGEON_TINY_WOODS,
+    SCRIPT_DUNGEON_THUNDERWAVE_CAVE,
+    SCRIPT_DUNGEON_MT_STEEL,
+    SCRIPT_DUNGEON_SINISTER_WOODS,
+    SCRIPT_DUNGEON_SILENT_CHASM,
+    SCRIPT_DUNGEON_MT_THUNDER,
+    SCRIPT_DUNGEON_GREAT_CANYON,
+    SCRIPT_DUNGEON_LAPIS_CAVE,
+    SCRIPT_DUNGEON_MT_BLAZE,
+    SCRIPT_DUNGEON_MT_BLAZE_PEAK,
+    SCRIPT_DUNGEON_FROSTY_FOREST,
+    SCRIPT_DUNGEON_FROSTY_GROTTO,
+    SCRIPT_DUNGEON_MT_FREEZE,
+    SCRIPT_DUNGEON_MT_FREEZE_PEAK,
+    SCRIPT_DUNGEON_MAGMA_CAVERN,
+    SCRIPT_DUNGEON_MAGMA_CAVERN_PIT,
+    SCRIPT_DUNGEON_SKY_TOWER,
+    SCRIPT_DUNGEON_SKY_TOWER_SUMMIT,
+};
+
+static s16 SkipLinear_FindNext(s16 cleared)
+{
+    s32 i;
+    for (i = 0; i < (s32)(sizeof(kSkipLinearOrder)/sizeof(kSkipLinearOrder[0])); i++) {
+        if (kSkipLinearOrder[i] == cleared) {
+            if (i + 1 < (s32)(sizeof(kSkipLinearOrder)/sizeof(kSkipLinearOrder[0])))
+                return kSkipLinearOrder[i + 1];
+            return -1;
+        }
+    }
+    return -1;
+}
+
+static void SkipLinear_EnsureInitialGo(void)
+{
+    if (!IsSkipLinearMode()) return;
+    // If no story dungeon is currently GO, seed Tiny Woods as GO and preselect it.
+    if (!sub_8097384(SCRIPT_DUNGEON_TINY_WOODS)) {
+        // As a simple heuristic, if nothing is conquered yet, force Tiny Woods GO.
+        if (!RescueScenarioConquered(SCRIPT_DUNGEON_TINY_WOODS)) {
+            sub_80973A8(SCRIPT_DUNGEON_TINY_WOODS, 1);
+            {
+                s32 twIndex = sub_80A26B8(SCRIPT_DUNGEON_TINY_WOODS);
+                if (twIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, twIndex);
+            }
+            // Seed base menus/news in case intro scenes were skipped entirely.
+            if (sub_8096E2C() == 0 && CountFilledMailboxSlots() == 0) {
+                sub_8096488();
+                sub_80961B4();
+            }
+        }
+    }
+}
+
+static inline bool8 SkipLinear_IsSuccess(s32 res)
+{
+    return (res == 6 || res == 9 || res == 11 || res == 12);
+}
+
+// Returns TRUE if it handled a clear and requested a warp.
+static bool8 SkipLinear_HandleClearAndWarp(void)
+{
+    s32 lastRes;
+    s32 lastEnter;
+    s32 lastEnterNorm;
+    s16 cleared;
+    s16 next;
+    s32 selIndex;
+
+    if (!IsSkipLinearMode()) return FALSE;
+
+    lastRes = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
+    lastEnter = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+    lastEnterNorm = lastEnter;
+    if (lastEnter == 0x50 || lastEnter == 0x51 || lastEnter == 0x52)
+        lastEnterNorm = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
+
+    if (SkipLinear_IsSuccess(lastRes)) {
+        cleared = (s16)lastEnterNorm;
+        next = SkipLinear_FindNext(cleared);
+        if (next != -1) {
+            // Mark cleared and advance GO to next.
+            if (!RescueScenarioConquered(cleared))
+                sub_8097418(cleared, 1);
+            if (sub_8097384(cleared))
+                sub_80973A8(cleared, 0);
+            if (!sub_8097384(next))
+                sub_80973A8(next, 1);
+            selIndex = sub_80A26B8(next);
+            if (selIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, selIndex);
+            MGBA_Warnf("[GS] linear-skip: cleared=%d -> next GO=%d", cleared, next);
+            // Return to Team Base INSIDE for a consistent loop.
+            GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 // Starter items helpers
 static void GiveStarterSetIfNeeded(void)
 {
@@ -1703,35 +1812,19 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0x1c: {
-                if (GetSkipCutscenesSetting()) {
-                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-                    if ((scenNow == 11 || scenNow == 14)
-                        && RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)
-                        && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)
-                        && curCmd.argShort == EVENT_M01E07A_L002) {
-                        MGBA_Warnf("[GS] intercept EXECUTE_FUNCTION*: skip fugitive -> Lapis Cave entrance");
-                        GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
-                        return 2; // perform action now and abort current script chain
-                    }
+                // EXECUTE_FUNCTION*: When SkipCutscenes is ON, do not trigger any events/cutscenes.
+                if (IsSkipLinearMode()) {
+                    MGBA_Warnf("[GS] linear-skip: suppress event* id=%d", curCmd.argShort);
+                    break;
                 }
                 GroundMap_ExecuteEvent(curCmd.argShort, 1);
                 break;
             }
             case 0x1b: {
-                // EXECUTE_FUNCTION(f): some partner “ready” prompts trigger long
-                // fugitive cutscenes (EVENT_M01E07A_L002). In skip mode, during the
-                // pre‑Lapis “Square sleeping” phase, jump straight to the Lapis Cave
-                // entrance cutscene instead of running the fugitive scene.
-                if (GetSkipCutscenesSetting()) {
-                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-                    if ((scenNow == 11 || scenNow == 14)
-                        && RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)
-                        && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)
-                        && curCmd.argShort == EVENT_M01E07A_L002) {
-                        MGBA_Warnf("[GS] intercept EXECUTE_FUNCTION: skip fugitive -> Lapis Cave entrance");
-                        GroundMainGroundRequest(MAP_LAPIS_CAVE_ENTRY, 0, 30);
-                        return 2; // perform action now and abort current script chain
-                    }
+                // EXECUTE_FUNCTION: When SkipCutscenes is ON, do not trigger any events/cutscenes.
+                if (IsSkipLinearMode()) {
+                    MGBA_Warnf("[GS] linear-skip: suppress event id=%d", curCmd.argShort);
+                    break;
                 }
                 GroundMap_ExecuteEvent(curCmd.argShort, 0);
                 break;
@@ -1754,58 +1847,54 @@ s32 ExecuteScriptCommand(Action *action)
                 }
                 map = GetAdjustedGroundMap(map);
 
-                // Early, global clear-detection while entering any ground map.
-                // This runs before any reroutes to avoid loops. SkipCutscenes only.
-                if (GetSkipCutscenesSetting()) {
-                    s32 lastResX = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
-                    s32 lastEnterX = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
-                    s32 lastEnterNormX = lastEnterX;
-                    if (lastEnterX == 0x50 || lastEnterX == 0x51 || lastEnterX == 0x52) {
-                        lastEnterNormX = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
-                    }
-                    // If we just cleared Lapis Cave, immediately promote Mt. Blaze
-                    // and warp to its entrance, preventing any TB->Lapis overrides.
-                    if ((lastResX == 6 || lastResX == 9 || lastResX == 11 || lastResX == 12)
-                        && lastEnterNormX == SCRIPT_DUNGEON_LAPIS_CAVE
-                        && !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE)) {
-                        sub_8097418(SCRIPT_DUNGEON_LAPIS_CAVE, 1);
-                        if (sub_8097384(SCRIPT_DUNGEON_LAPIS_CAVE))
-                            sub_80973A8(SCRIPT_DUNGEON_LAPIS_CAVE, 0);
-                        if (!sub_8097384(SCRIPT_DUNGEON_MT_BLAZE))
-                            sub_80973A8(SCRIPT_DUNGEON_MT_BLAZE, 1);
+                // Linear-skip: ensure initial GO and handle any dungeon clear globally.
+                if (IsSkipLinearMode()) {
+                    SkipLinear_EnsureInitialGo();
+                    // If the engine tries to start the Tiny Woods entry cutscene, reroute to Team Base INSIDE.
+                    if (map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
+                        // First arrival after quiz wants to start TW entry; in linear skip,
+                        // jump to base free-roam instead and advance scenario out of prologue.
+                        MGBA_Warnf("[GS] linear-skip: reroute TW entry -> Team Base INSIDE (start-at-base)");
+                        if (!sub_8097384(SCRIPT_DUNGEON_TINY_WOODS))
+                            sub_80973A8(SCRIPT_DUNGEON_TINY_WOODS, 1);
                         {
-                            s32 mbIndex = sub_80A26B8(SCRIPT_DUNGEON_MT_BLAZE);
-                            if (mbIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, mbIndex);
+                            s32 twIndex = sub_80A26B8(SCRIPT_DUNGEON_TINY_WOODS);
+                            if (twIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, twIndex);
                         }
-                        ScenarioCalc(SCENARIO_MAIN, 12, 2);
-                        MGBA_Warnf("[GS] enter detect LC clear: scen=12.2 -> Mt. Blaze entrance (set MB GO)");
-                        GroundMainGroundRequest(MAP_MT_BLAZE_ENTRY, 0, 30);
+                        // Move scenario forward to avoid prologue re-entry loop.
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                         break;
                     }
 
-                    // If we just cleared Mt. Blaze (Peak), immediately promote Frosty Forest
-                    // and warp to its entrance, skipping the long interlude scene.
-                    if ((lastResX == 6 || lastResX == 9 || lastResX == 11 || lastResX == 12)
-                        && (lastEnterNormX == SCRIPT_DUNGEON_MT_BLAZE || lastEnterNormX == SCRIPT_DUNGEON_MT_BLAZE_PEAK)
-                        && !RescueScenarioConquered(SCRIPT_DUNGEON_MT_BLAZE)) {
-                        sub_8097418(SCRIPT_DUNGEON_MT_BLAZE, 1);
-                        if (sub_8097384(SCRIPT_DUNGEON_MT_BLAZE))
-                            sub_80973A8(SCRIPT_DUNGEON_MT_BLAZE, 0);
-                        if (!sub_8097384(SCRIPT_DUNGEON_FROSTY_FOREST))
-                            sub_80973A8(SCRIPT_DUNGEON_FROSTY_FOREST, 1);
-                        {
-                            s32 ffIndex = sub_80A26B8(SCRIPT_DUNGEON_FROSTY_FOREST);
-                            if (ffIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, ffIndex);
-                        }
-                        ScenarioCalc(SCENARIO_MAIN, 13, 2);
-                        MGBA_Warnf("[GS] enter detect MB clear: scen=13.2 -> Frosty Forest entrance (set FF GO)");
-                        GroundMainGroundRequest(MAP_FROSTY_FOREST_ENTRY, 0, 30);
+                    // Suppress Team Base INSIDE “Dream Eater” (Team Meanies/Gengar) cutscene
+                    // which is driven by the station group 42 in b01p02a (Team Base INSIDE).
+                    // When SkipCutscenes is ON, short-circuit this station and resume free roam
+                    // to avoid replaying the same “light is coming” sequence at the base.
+                    if ((gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
+                         || gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE)
+                        && group == 42 && sector == 0) {
+                        MGBA_Warnf("[GS] linear-skip: suppress Team Base g42 (Dream Eater) -> base free-roam");
+                        GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                         break;
                     }
+                    if (SkipLinear_HandleClearAndWarp())
+                        break;
+                }
+
+                // Unconditional safety: suppress the Team Base INSIDE “Dream Eater” (Gengar) cutscene
+                // which resides in station group 42 sector 0 on the Team Base INSIDE map. This avoids
+                // the recurring "light is coming" dream sequence at the base under all configurations.
+                if ((gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
+                     || gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE)
+                    && group == 42 && sector == 0) {
+                    MGBA_Warnf("[GS] suppress Team Base g42 (Dream Eater) -> base free-roam (unconditional)");
+                    GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                    break;
                 }
 
                 // Verbose tracing to identify stations that still show mini-cutscenes when skipping.
-                if (GetSkipCutscenesSetting()) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting()) {
                     s32 place = gGroundMapConversionTable[map].groundPlaceId;
                     s32 scenDbg = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                     bool8 msGo = sub_8097384(SCRIPT_DUNGEON_MT_STEEL);
@@ -1818,24 +1907,14 @@ s32 ExecuteScriptCommand(Action *action)
                                map, place, group, sector, scenDbg, msGo, swGo, scGo, swOrd, scOrd, sel);
                 }
 
-                // Replace the post–Mt. Thunder mini-cutscene at Team Base INSIDE
-                // (group 43 sector 0: partner pushes GC prompt) with the normal
-                // generic morning partner speech (group 42) when skipping cutscenes.
-                // This avoids the repeating GC prompt while preserving GC as GO.
-                if (GetSkipCutscenesSetting()
-                    && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
-                    && group == 43 && sector == 0) {
-                    s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-                    if (scenNow == 8) {
-                        group = 42; // reroute to generic morning talk
-                        MGBA_Warnf("[GS] replace TB inside post-MT g43 -> g42 (generic morning talk)");
-                    }
-                }
+                // Do not force a specific Team Base INSIDE station here; rely on
+                // GroundMap_ExecuteEnter to choose a safe entry (g0 s0), and on the
+                // cutscene suppressors above to bypass unwanted sequences.
 
                 // In Square-sleeping pre‑LC, any attempt to route to Team Base should
                 // be overridden to Lapis Cave entrance. This avoids bouncing into
                 // base/save flows when confirming "All set!".
-                if (GetSkipCutscenesSetting()) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting()) {
                     s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                     bool8 postGC = RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON);
                     bool8 preLC = !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE);
@@ -1854,7 +1933,7 @@ s32 ExecuteScriptCommand(Action *action)
                 // don't loop when stations hop internally to g3.* for the partner
                 // selection ("Which way should we go?"). Use MAP_LOCAL[0] as a
                 // one‑shot guard within this map.
-                if (GetSkipCutscenesSetting() && map == MAP_LAPIS_CAVE_ENTRY && group == 0 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_LAPIS_CAVE_ENTRY && group == 0 && sector == 0) {
                     s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                     if ((scenNow == 11 || scenNow == 14)
                         && RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)
@@ -1871,7 +1950,7 @@ s32 ExecuteScriptCommand(Action *action)
 
                 // Skip the Tiny Woods initial "You're finally awake!" cutscene when enabled.
                 // This station is gs178 group 1 sector 0 (MAP_TINY_WOODS_ENTRY).
-                if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
                     // Directly request entering Tiny Woods like the script's NEXT_DUNGEON would.
                     // Use a fade speed of 30 to match the original script.
                     GiveStarterSetIfNeeded();
@@ -1881,7 +1960,7 @@ s32 ExecuteScriptCommand(Action *action)
                 }
                 // Skip Tiny Woods end-room station (success scene inside the dungeon end map).
                 // Jump directly to the next story step as if the scene completed.
-                if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_END && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_END && group == 1 && sector == 0) {
                     // Advance scenario and return to Team Base with a short fade.
                     GiveStarterSetIfNeeded();
                     // Mark Tiny Woods scenario as completed so it no longer shows as a GO story mission.
@@ -1891,7 +1970,7 @@ s32 ExecuteScriptCommand(Action *action)
                     break;
                 }
                 // Skip the post-Tiny Woods cutscene at Tiny Woods entry
-                if (GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 3 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_TINY_WOODS_ENTRY && group == 3 && sector == 0) {
                     // Normally gives Toolbox + Badge + Pokémon News and then sets next dungeon.
                     // Seed the initial Pokémon News so the base menu unlocks (Items/Team/Job List).
                     sub_8096488();        // Put Pokémon News (floor 0) in mailbox
@@ -1904,7 +1983,7 @@ s32 ExecuteScriptCommand(Action *action)
                 }
 
                 // Skip the next-morning "...Hunh?! Oh, no!" cutscene at Team Base (group 18 sector 0)
-                if (GetSkipCutscenesSetting()
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting()
                     && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE
                     && group == 18 && sector == 0) {
                     // Ensure initial news exists to unlock menus if we skipped earlier scenes.
@@ -1915,7 +1994,7 @@ s32 ExecuteScriptCommand(Action *action)
                     break;
                 }
                 // Skip early Team Base arrival cutscene: "Well, this is the place..."
-                if (GetSkipCutscenesSetting()
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting()
                     && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE
                     && group == 17 && sector == 0) {
                     // Nothing to set here; EVENT_M01E01A already sets SCENARIO_MAIN after this.
@@ -1924,7 +2003,7 @@ s32 ExecuteScriptCommand(Action *action)
 
                 // Safety: when entering Team Base during early game with skip enabled,
                 // ensure the appropriate story dungeons are unlocked in the Dungeons list.
-                if (GetSkipCutscenesSetting() && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE) {
                     s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                     s32 lastRes = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
                     s32 lastEnter = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
@@ -2179,7 +2258,7 @@ s32 ExecuteScriptCommand(Action *action)
                 // Skip Pokémon Square "Team Meanies + Caterpie" scene after Mt. Steel.
                 // When arriving at Pokémon Square with scen==5 (post–Mt. Steel), just
                 // keep Sinister Woods as GO and enter Square free-roam.
-                if (GetSkipCutscenesSetting()
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting()
                     && gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_POKEMON_SQUARE) {
                     s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                     s32 lastRes2 = (s16)GetScriptVarValue(NULL, DUNGEON_RESULT);
@@ -2348,7 +2427,7 @@ s32 ExecuteScriptCommand(Action *action)
 
                 // Skip the Thunderwave Cave end-room cutscene ("Oh, there they are!")
                 // This station is gs181 group 1 sector 0 (MAP_THUNDERWAVE_CAVE_END).
-                if (GetSkipCutscenesSetting() && map == MAP_THUNDERWAVE_CAVE_END && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_THUNDERWAVE_CAVE_END && group == 1 && sector == 0) {
                     // Ensure base menu unlocks if the initial news was never seeded.
                     if (sub_8096E2C() == 0 && CountFilledMailboxSlots() == 0) {
                         sub_8096488();
@@ -2371,7 +2450,7 @@ s32 ExecuteScriptCommand(Action *action)
                 // remapping the display id when SW is GO; here we ensure the flags are set so
                 // the UI can reflect the intended state immediately upon returning to base.
                 // This station is gs183 group 1 sector 0 (MAP_MT_STEEL_END).
-                if (GetSkipCutscenesSetting() && map == MAP_MT_STEEL_END && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_MT_STEEL_END && group == 1 && sector == 0) {
                     // Mark Mt. Steel completed and set Sinister Woods as the next story dungeon.
                     sub_8097418(SCRIPT_DUNGEON_MT_STEEL, 1);
                     sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
@@ -2394,7 +2473,7 @@ s32 ExecuteScriptCommand(Action *action)
                 // Skip the Sinister Woods end-room cutscene (Metapod + Caterpie thank-you).
                 // Jump straight to setting Silent Chasm as next story mission.
                 // This station is gs185 group 1 sector 0 (MAP_SINISTER_WOODS_END).
-                if (GetSkipCutscenesSetting() && map == MAP_SINISTER_WOODS_END && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_SINISTER_WOODS_END && group == 1 && sector == 0) {
                     // Mark Sinister Woods completed and set Silent Chasm as the next story dungeon.
                     sub_8097418(SCRIPT_DUNGEON_SINISTER_WOODS, 1);
                     sub_80973A8(SCRIPT_DUNGEON_SILENT_CHASM, 1);
@@ -2407,7 +2486,7 @@ s32 ExecuteScriptCommand(Action *action)
 
                 // Skip the Silent Chasm end-room cutscene and jump straight to Mt. Thunder unlock.
                 // Station: gs187 group 1 sector 0 (MAP_SILENT_CHASM_END)
-                if (GetSkipCutscenesSetting() && map == MAP_SILENT_CHASM_END && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_SILENT_CHASM_END && group == 1 && sector == 0) {
                     // Mark Silent Chasm completed and set Mt. Thunder as the next story dungeon.
                     sub_8097418(SCRIPT_DUNGEON_SILENT_CHASM, 1);
                     sub_80973A8(SCRIPT_DUNGEON_MT_THUNDER, 1);
@@ -2420,7 +2499,7 @@ s32 ExecuteScriptCommand(Action *action)
 
                 // Skip the Mt. Thunder end-room cutscene and unlock Great Canyon immediately.
                 // Station: gs190 group 1 sector 0 (MAP_MT_THUNDER_END)
-                if (GetSkipCutscenesSetting() && map == MAP_MT_THUNDER_END && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_MT_THUNDER_END && group == 1 && sector == 0) {
                     // Mark Mt. Thunder completed and set Great Canyon as the next story dungeon.
                     sub_8097418(SCRIPT_DUNGEON_MT_THUNDER, 1);
                     sub_80973A8(SCRIPT_DUNGEON_GREAT_CANYON, 1);
@@ -2434,7 +2513,7 @@ s32 ExecuteScriptCommand(Action *action)
                 // Skip the Great Canyon end-room cutscene (Hill of the Ancients) and
                 // jump straight to the "Square sleeping" free-roam (partner talk triggers LC).
                 // Station: Hill of the Ancients (MAP_HILL_OF_THE_ANCIENTS), group 1 sector 0
-                if (GetSkipCutscenesSetting() && map == MAP_HILL_OF_THE_ANCIENTS && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_HILL_OF_THE_ANCIENTS && group == 1 && sector == 0) {
                     // Mark Great Canyon conquered and fast-forward the scenario.
                     sub_8097418(SCRIPT_DUNGEON_GREAT_CANYON, 1);
                     // Fast‑forward to the post–Great Canyon stage (major scene 14) and
@@ -2450,7 +2529,7 @@ s32 ExecuteScriptCommand(Action *action)
                 // Frosty Forest END station in skip mode, immediately promote
                 // Frosty Grotto and jump to the Frosty Forest MID (save point).
                 // This mirrors how we handle Lapis→Mt. Blaze.
-                if (GetSkipCutscenesSetting() && map == MAP_FROSTY_FOREST_END && group == 1 && sector == 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && map == MAP_FROSTY_FOREST_END && group == 1 && sector == 0) {
                     // Mark Frosty Forest completed and set Frosty Grotto as next story dungeon.
                     if (!RescueScenarioConquered(SCRIPT_DUNGEON_FROSTY_FOREST))
                         sub_8097418(SCRIPT_DUNGEON_FROSTY_FOREST, 1);
@@ -3466,7 +3545,7 @@ s32 ExecuteScriptCommand(Action *action)
                 bool8 setGo = ((u8)curCmd.argByte) > 0;
                 s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                 MGBA_Warnf("[GS] script GO op id=%d set=%d scen=%d", scriptDungeonId, setGo, scen);
-                if (GetSkipCutscenesSetting() && scriptDungeonId == SCRIPT_DUNGEON_SILENT_CHASM) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && scriptDungeonId == SCRIPT_DUNGEON_SILENT_CHASM) {
                     if (scen == 5 && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS)) {
                         MGBA_Warnf("[GS] block script GO for Silent Chasm (scene 5; SW incomplete)");
                         break;
@@ -3477,7 +3556,7 @@ s32 ExecuteScriptCommand(Action *action)
                         break;
                     }
                 }
-                if (GetSkipCutscenesSetting() && (scriptDungeonId == SCRIPT_DUNGEON_MT_STEEL || scriptDungeonId == SCRIPT_DUNGEON_3)) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && (scriptDungeonId == SCRIPT_DUNGEON_MT_STEEL || scriptDungeonId == SCRIPT_DUNGEON_3)) {
                     // Never allow re-setting GO on Mt. Steel once we've advanced past it.
                     if (scen >= 5) {
                         MGBA_Warnf("[GS] block script GO for Mt. Steel (id=%d, scene %d)", scriptDungeonId, scen);
@@ -3501,7 +3580,7 @@ s32 ExecuteScriptCommand(Action *action)
                 // but the active GO for the stage lives on the true script id.
                 // When skipping cutscenes, proactively clear the SW GO flag if its
                 // alias gets conquered so the UI does not retain a stale GO badge.
-                if (GetSkipCutscenesSetting() && (u8)curCmd.argByte > 0) {
+                if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && (u8)curCmd.argByte > 0) {
                     if (curCmd.argShort == SCRIPT_DUNGEON_3) {
                         if (sub_8097384(SCRIPT_DUNGEON_SINISTER_WOODS)) {
                             sub_80973A8(SCRIPT_DUNGEON_SINISTER_WOODS, 0);

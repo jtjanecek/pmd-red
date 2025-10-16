@@ -250,18 +250,30 @@ s32 sub_802FBF4(void)
     {
         iVar6 = iVar6 = (s16)index; // list index (display id)
 
-        if (!GetSkipCutscenesSetting()) {
-            // Vanilla behavior for visibility and GO badges.
-            allowed = sub_80A27CC(index);
-            if (((allowed != 0) && (iVar6 != 0x13)) && (iVar6 != 0x1d)) {
-                gUnknown_203B314->unk0[counter] = iVar6;
-                sub_802FBF4_sub(gUnknown_203B314->unk5C, counter);
-                sub_802FBF4_sub(gUnknown_203B314->unk8A, counter);
-                if ((gUnknown_203B314->unkB8 != 0) && (iVar6 != 0xd)) {
-                    dungeonIndex = sub_80A270C(index);
-                    bVar1 = FALSE;
-                    if (0x1e >= iVar6) {
-                        if (sub_8097384(iVar6) == 0) {
+        // Default/vanilla visibility gate
+        allowed = sub_80A27CC(index);
+
+        // Ensure the current GO dungeon is visible when SkipCutscenes is ON.
+        // Use scriptId mapping so aliases (e.g., Sinister Woods) work correctly.
+        if (!allowed && GetSkipCutscenesSetting()) {
+            s16 scriptIdVis = sub_80A26B8(iVar6);
+            if (scriptIdVis >= 0 && sub_8097384(scriptIdVis))
+                allowed = TRUE;
+        }
+
+        if (((allowed != 0) && (iVar6 != 0x13)) && (iVar6 != 0x1d)) {
+            gUnknown_203B314->unk0[counter] = iVar6;
+            sub_802FBF4_sub(gUnknown_203B314->unk5C, counter);
+            sub_802FBF4_sub(gUnknown_203B314->unk8A, counter);
+            if ((gUnknown_203B314->unkB8 != 0) && (iVar6 != 0xd)) {
+                dungeonIndex = sub_80A270C(index);
+                bVar1 = FALSE;
+                if (0x1e >= iVar6)
+                {
+                    // Determine GO badge using scriptId mapping for correctness under skip mode.
+                    s16 scriptId2 = sub_80A26B8(iVar6);
+                    if (scriptId2 >= 0) {
+                        if (sub_8097384(scriptId2) == 0) {
                             if (iVar6 == 6) {
                                 if (sub_8097384(0x13) != 0) {
                                     gUnknown_203B314->unk0[counter] = 0x13;
@@ -274,135 +286,18 @@ s32 sub_802FBF4(void)
                             }
                         }
                         else {
+                            // Base case: this entry is a GO story mission.
                             bVar1 = TRUE;
                         }
-                    }
-                    gUnknown_203B314->unk5C[counter] = bVar1;
-                    if ((!bVar1) && (0 < CountJobsinDungeon(dungeonIndex))) {
-                        gUnknown_203B314->unk8A[counter] = 1;
-                    }
-                }
-                counter++;
-            }
-            continue;
-        }
-
-        // Cutscene-skip specific behavior
-        {
-            s16 scriptId = sub_80A26B8(iVar6);
-            // Important: gate visibility using the script id, not the display
-            // index. Using the index can accidentally piggyback on another
-            // dungeon's GO/conquered state (e.g., Great Canyon vs. Silent Chasm).
-            allowed = sub_80A27CC(scriptId);
-            MGBA_Warnf("[WM] allow idx=%d sid=%d allowed=%d go(sid)=%d conq(sid)=%d scen=%d",
-                       iVar6, scriptId, allowed, sub_8097384(scriptId), RescueScenarioConquered(scriptId), (s16)GetScriptVarValue(NULL, SCENARIO_MAIN));
-            // New rule (corrected): Hide Mt. Thunder until after Silent Chasm is conquered.
-            // After Sinister Woods, Silent Chasm should be next; Mt. Thunder appears only
-            // after clearing Silent Chasm.
-            if (allowed && scriptId == SCRIPT_DUNGEON_MT_THUNDER && !RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM)) {
-                allowed = FALSE;
-                MGBA_Warnf("[WM] hide MT until after SC (conquered=%d)", RescueScenarioConquered(SCRIPT_DUNGEON_SILENT_CHASM));
-            }
-            // Safety: In scene 5, if SW is GO, force-allow it into the list (some
-            // engines gate visibility too strictly when skipping scenes).
-            if (!allowed && scriptId == SCRIPT_DUNGEON_SINISTER_WOODS &&
-                (s16)GetScriptVarValue(NULL, SCENARIO_MAIN) == 5 && sub_8097384(scriptId)) {
-                MGBA_Warnf("[WM] force-allow SW into list (scene 5; SW is GO)");
-                allowed = TRUE;
-            }
-
-            if (((allowed != 0) && (iVar6 != 0x13)) && (iVar6 != 0x1d)) {
-            gUnknown_203B314->unk0[counter] = iVar6;
-            sub_802FBF4_sub(gUnknown_203B314->unk5C, counter);
-            sub_802FBF4_sub(gUnknown_203B314->unk8A, counter);
-            if ((gUnknown_203B314->unkB8 != 0) && (iVar6 != 0xd)) {
-                dungeonIndex = sub_80A270C(index);
-                bVar1 = FALSE;
-                if (0x1e >= iVar6)
-                {
-                    s16 scriptId2 = sub_80A26B8(iVar6);
-                    if (sub_8097384(scriptId2) == 0) {
-                        if (iVar6 == 6) {
-                            if (sub_8097384(0x13) != 0) {
-                                gUnknown_203B314->unk0[counter] = 0x13;
-                                bVar1 = TRUE;
-                            }
-                        }
-                        else if ((iVar6 == 10) && (sub_8097384(0x1d) != 0)) {
-                            gUnknown_203B314->unk0[counter] = 0x1d;
-                            bVar1 = TRUE;
-                        }
-                    }
-                    else {
-                        // Base case: this entry is a GO story mission.
-                        bVar1 = TRUE;
-                    }
-                }
-                // While in the post–Mt. Steel stage (scene 5) and Sinister Woods is not
-                // yet conquered, never show Silent Chasm as GO in the Dungeons list.
-                {
-                    s32 scenMain = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-                    s16 scriptId3 = sub_80A26B8(iVar6);
-                    if (scenMain == 5
-                        && scriptId3 == SCRIPT_DUNGEON_SILENT_CHASM
-                        && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS))
-                    {
-                        if (bVar1) {
-                            MGBA_Warnf("[WM] force-clear SC GO in list (scene 5; SW incomplete)");
-                        }
-                        bVar1 = FALSE;
-                    }
-                    // After SW completion (scene >= 6), never show SW as GO again.
-                    if (scenMain >= 6 && scriptId3 == SCRIPT_DUNGEON_SINISTER_WOODS) {
-                        if (bVar1) {
-                            MGBA_Warnf("[WM] force-clear SW GO in list (scene %d; post-SW)", scenMain);
-                        }
-                        bVar1 = FALSE;
-                    }
-                    // After SC completion (scene >= 7), never show SC as GO again.
-                    if (scenMain >= 7 && scriptId3 == SCRIPT_DUNGEON_SILENT_CHASM) {
-                        if (bVar1) {
-                            MGBA_Warnf("[WM] force-clear SC GO in list (scene %d; post-SC)", scenMain);
-                        }
-                        bVar1 = FALSE;
-                    }
-                    // After Mt. Thunder is conquered, never show it as GO again.
-                    if (scriptId3 == SCRIPT_DUNGEON_MT_THUNDER && RescueScenarioConquered(SCRIPT_DUNGEON_MT_THUNDER)) {
-                        if (bVar1) {
-                            MGBA_Warnf("[WM] force-clear MT GO in list (post-MT)");
-                        }
-                        bVar1 = FALSE;
-                    }
-                    // After Great Canyon is conquered, never show it as GO again.
-                    if (scriptId3 == SCRIPT_DUNGEON_GREAT_CANYON && RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON)) {
-                        if (bVar1) {
-                            MGBA_Warnf("[WM] force-clear GC GO in list (post-GC)");
-                        }
-                        bVar1 = FALSE;
                     }
                 }
                 gUnknown_203B314->unk5C[counter] = bVar1;
                 if ((!bVar1) && (0 < CountJobsinDungeon(dungeonIndex))) {
                     gUnknown_203B314->unk8A[counter] = 1;
                 }
-
-                // Debug: trace how GO/Job icons are computed for SW and SC
-                {
-                    s16 sid = sub_80A26B8(iVar6);
-                    if (sid == SCRIPT_DUNGEON_SINISTER_WOODS || sid == SCRIPT_DUNGEON_SILENT_CHASM) {
-                        s32 goFlag = GetScriptVarArrayValue(NULL, RESCUE_SCENARIO_JOB_LIST, (u16) sid);
-                        s32 orderFlag = GetScriptVarArrayValue(NULL, RESCUE_SCENARIO_ORDER_LIST, (u16) sid);
-                        s32 conqueredFlag = GetScriptVarArrayValue(NULL, RESCUE_SCENARIO_CONQUEST_LIST, (u16) sid);
-                        MGBA_Warnf("[WM] list sid=%d go=%d ord=%d conq=%d jobs=%d iconGO=%d iconJob=%d",
-                                   sid, goFlag, orderFlag, conqueredFlag,
-                                   CountJobsinDungeon(dungeonIndex), gUnknown_203B314->unk5C[counter], gUnknown_203B314->unk8A[counter]);
-                    }
-                }
             }
             counter++;
         }
-    }
-    // Close extra open block to satisfy older compiler's brace matching
     }
     return counter;
 }

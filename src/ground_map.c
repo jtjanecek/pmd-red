@@ -9,6 +9,8 @@
 #include "ground_script_file.h"
 #include "memory.h"
 #include "ground_map_conversion_table.h"
+#include "ground_place.h"
+#include "save.h" // GetSkipCutscenesSetting
 #include "code_800558C.h"
 #include "constants/dungeon.h"
 
@@ -183,10 +185,22 @@ void GroundMap_ExecuteEnter(s16 param_1)
     iVar1 = param_1;
 
     Log(0, gUnknown_8117650, iVar1); // GroundMap ExecuteEnter %3d
-    GroundMap_GetFirstStationScript(&script, iVar1);
-    script.state = 2;
-    script.group = 0;
-    script.sector = 0;
+
+    if (GetSkipCutscenesSetting() &&
+        gGroundMapConversionTable[iVar1].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE) {
+        // In linear skip mode, start Team Base Inside at the default ENTER_CONTROL (g0 s0)
+        // and rely on ground_script cutscene suppressors for safety — do NOT use g42 (Dream Eater).
+        GroundMap_GetStationScript(&script, iVar1, 0, 0);
+        script.state = 2;
+        script.group = 0;
+        script.sector = 0;
+    } else {
+        GroundMap_GetFirstStationScript(&script, iVar1);
+        script.state = 2;
+        script.group = 0;
+        script.sector = 0;
+    }
+
     GroundScript_ExecutePP(&gGroundMapAction->action, 0, &script, &gUnknown_8117698);
 }
 
@@ -1375,4 +1389,3 @@ void sub_80A59DC(void)
 
     sub_80A60D8();
 }
-

@@ -248,19 +248,7 @@ u32 xxx_script_related_8098468(s32 param_1)
                         gUnknown_20398C0 = 0;
                     }
 
-                    // When skipping cutscenes, if the cleared dungeon was a GO story mission,
-                    // mark it conquered and clear its GO flag immediately to keep progression clean.
-                    if (GetSkipCutscenesSetting()) {
-                        s16 clearedId = (s16)scriptVar13;
-                        if (clearedId == 0x50 || clearedId == 0x51 || clearedId == 0x52) {
-                            clearedId = (s16)GetScriptVarValue(0, DUNGEON_ENTER_INDEX);
-                        }
-                        if (clearedId >= 0 && sub_8097384(clearedId)) {
-                            if (!RescueScenarioConquered(clearedId))
-                                sub_8097418(clearedId, 1);
-                            sub_80973A8(clearedId, 0);
-                        }
-                    }
+                    // No skipCutscenes-specific GO adjustments here.
                 }
                 break;
             }

@@ -25,6 +25,7 @@
 #include "constants/ground_map.h" // MAP_TEAM_BASE_INSIDE
 #include "constants/script_dungeon_id.h"
 #include "constants/event_flag.h" // SCENARIO_MAIN, GROUND_ENTER, GROUND_ENTER_LINK
+#include "code_80972F4.h"
 
 // Forward declaration for dev mode level up function
 extern void sub_8043FD0(void);
@@ -113,6 +114,7 @@ static bool32 TryStoreCustomSeed(void);
 static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
 static void CleanupNamingScreen(void);
 static void HandleDifficultySelection(void);
+// Skip-cutscene override is disabled for now; no postgame force.
 
 bool8 CreateTestTracker(void)
 {
@@ -154,16 +156,16 @@ static void InitializeTestStats(void)
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
-    sPersonalityTestTracker->unk4.PartnerID = MONSTER_MAGIKARP;
+    sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.playSolo = 0; // Solo: Yes
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.skipCutscenes = 1; // Yes
+    sPersonalityTestTracker->unk4.skipCutscenes = 0; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
-    SetPlaySoloSetting(1);
+    SetPlaySoloSetting(0);
     SetRecruitAllSetting(2);
     SetSkipBasicRescuesSetting(1);
-    SetSkipCutscenesSetting(1);
+    SetSkipCutscenesSetting(0);
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     
     // Level up team to 100 in dev mode
@@ -268,13 +270,7 @@ u32 HandleTestTrackerState(void)
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
-            // SkipCutscenes mode: ensure we start at Team Base Inside free‑roam with
-            // a safe scenario value to avoid early cutscenes causing hangs.
-            if (GetSkipCutscenesSetting()) {
-                SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
-                SetScriptVarValue(NULL, GROUND_ENTER, MAP_TEAM_BASE_INSIDE);
-                SetScriptVarValue(NULL, GROUND_ENTER_LINK, 0);
-            }
+            // SkipCutscenes handling is disabled for now; no special routing.
             return 3;
         default:
             break;
@@ -650,6 +646,11 @@ static void HandleDifficultySelection(void)
     SetGameDifficultySetting(selection);
     StartGenderSelection();
 }
+
+// Strong override for SkipCutscenes=ON: behave as if postgame is unlocked
+// and all main-story missions are complete. Spawn in Team Base Inside,
+// seed basic items/news, and clear any pending GO flags.
+// (skipCutscenes postgame bootstrap removed)
 
 static void RevealStarter(void)
 {

@@ -55,12 +55,47 @@
 #include "textbox.h"
 #include "data_script.h"
 
+// Debug helper to dump core script variables around ground station routing
+static void DebugDumpCoreVars(const char *tag)
+{
+    s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+    s32 start = (s16)GetScriptVarValue(NULL, START_MODE);
+    s32 ge = (s16)GetScriptVarValue(NULL, GROUND_ENTER);
+    s32 gel = (u8)GetScriptVarValue(NULL, GROUND_ENTER_LINK);
+    s32 go = (s16)GetScriptVarValue(NULL, GROUND_GETOUT);
+    s32 gm = (s16)GetScriptVarValue(NULL, GROUND_MAP);
+    s32 gp = (s16)GetScriptVarValue(NULL, GROUND_PLACE);
+    s32 ds = (s16)GetScriptVarValue(NULL, DUNGEON_SELECT);
+    s32 de = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+    s32 dei = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
+    s32 dr = (u8)GetScriptVarValue(NULL, DUNGEON_RESULT);
+    s32 baseK = (s8)GetScriptVarValue(NULL, BASE_KIND);
+    s32 baseL = (s8)GetScriptVarValue(NULL, BASE_LEVEL);
+    s32 warpL = (s8)GetScriptVarValue(NULL, WARP_LOCK);
+    s32 s1 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB1);
+    s32 s2 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB2);
+    s32 s3 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB3);
+    s32 s4 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB4);
+    s32 s5 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB5);
+    s32 s6 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB6);
+    s32 s7 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB7);
+    s32 s8 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB8);
+    s32 s9 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB9);
+    s32 e8_0 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 0);
+    s32 e8_1 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 1);
+    s32 e8_2 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 2);
+    s32 e8_3 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 3);
+    MGBA_Warnf("[GS] dump(%s): scen=%d start=%d GE=%d GEL=%d GO=%d GM=%d GP=%d DS=%d DE=%d DEI=%d DR=%d BK=%d BL=%d WL=%d s1=%d s2=%d s3=%d s4=%d s5=%d s6=%d s7=%d s8=%d s9=%d E8=[%d,%d,%d,%d]",
+               tag, scen, start, ge, gel, go, gm, gp, ds, de, dei, dr, baseK, baseL, warpL,
+               s1, s2, s3, s4, s5, s6, s7, s8, s9, e8_0, e8_1, e8_2, e8_3);
+}
 // Forward declares for helpers used by linear skip functions
 extern void sub_80973A8(s32, u32);          // set GO flag
 extern void sub_8096488(void);              // seed initial news
 
 // Linear skip mode helpers (alternative to scene-aware skip flow)
-static inline bool8 IsSkipLinearMode(void) { return GetSkipCutscenesSetting(); }
+// Temporarily disable all skip-cutscene linear flow; we'll revisit later.
+static inline bool8 IsSkipLinearMode(void) { return FALSE; }
 static inline bool8 UseOldSkipCutsceneFlow(void) { return FALSE; }
 
 // Main-story linear progression order for SkipCutscenes=ON
@@ -1838,25 +1873,44 @@ s32 ExecuteScriptCommand(Action *action)
                     sector = tmp;
                 }
                 map = GetAdjustedGroundMap(map);
+                DebugDumpCoreVars("pre-station");
+
+                // In full skip/postgame mode, clamp scenario forward so early-story
+                // stations cannot reschedule prologue and first-mission flows.
+                if (IsSkipLinearMode()) {
+                    s32 scenClamp = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if (scenClamp < 0x12)
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 0x12);
+                }
 
                 // Linear-skip: ensure initial GO and handle any dungeon clear globally.
                 if (IsSkipLinearMode()) {
-                    SkipLinear_EnsureInitialGo();
+                    // Only seed initial GO in true early-game; do not in postgame skip mode.
+                    s32 scenNowX = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+                    if (scenNowX < 0x12)
+                        SkipLinear_EnsureInitialGo();
                     // If the engine tries to start the Tiny Woods entry cutscene, reroute to Team Base INSIDE.
                     if (map == MAP_TINY_WOODS_ENTRY && group == 1 && sector == 0) {
-                        // First arrival after quiz wants to start TW entry; in linear skip,
-                        // jump to base free-roam instead and advance scenario out of prologue.
-                        MGBA_Warnf("[GS] linear-skip: reroute TW entry -> Team Base INSIDE (start-at-base)");
-                        if (!sub_8097384(SCRIPT_DUNGEON_TINY_WOODS))
-                            sub_80973A8(SCRIPT_DUNGEON_TINY_WOODS, 1);
-                        {
-                            s32 twIndex = sub_80A26B8(SCRIPT_DUNGEON_TINY_WOODS);
-                            if (twIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, twIndex);
-                        }
-                        // Move scenario forward to avoid prologue re-entry loop.
-                        SetScriptVarValue(NULL, SCENARIO_MAIN, 3);
+                        // First arrival after quiz wants to start TW entry; in skip mode,
+                        // bypass it and move directly to Team Base INSIDE. Do not set any GO
+                        // here to avoid re-triggering story guidance. Also lift scenario past
+                        // prologue to prevent early base scenes from scheduling mandatory saves.
+                        MGBA_Warnf("[GS] linear-skip: bypass TW entry -> Team Base INSIDE (no GO)");
+                        // Lift scenario to postgame baseline so no early-base scenes trigger
+                        SetScriptVarValue(NULL, SCENARIO_MAIN, 0x12);
                         GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                         break;
+                    }
+
+                    // If entering Team Base INSIDE at the default enter station (g0 s0)
+                    // during postgame skip, jump directly to free‑roam (g16 s0).
+                    if (gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
+                        && group == 0 && sector == 0 && (s16)GetScriptVarValue(NULL, SCENARIO_MAIN) >= 0x12) {
+                        MGBA_Warnf("[GS] linear-skip: reroute TB INSIDE g0 s0 -> g16 s0 (postgame)");
+                        // Ensure getout points to the current inside map to avoid stale returns.
+                        SetScriptVarValue(NULL, GROUND_GETOUT, map);
+                        group = 16;
+                        sector = 0;
                     }
 
                     // Suppress Team Base INSIDE “Dream Eater” (Team Meanies/Gengar) cutscene
@@ -1878,6 +1932,17 @@ s32 ExecuteScriptCommand(Action *action)
                         MGBA_Warnf("[GS] linear-skip: suppress Team Base g41 (wake-up) -> base free-roam");
                         GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                         break;
+                    }
+                    // Postgame morning chatter at Team Base INSIDE (group 45 sector 0).
+                    // Redirect in-place to the inside free-roam station (g46 s0) to avoid
+                    // re-scheduling this station and causing loops/black screens.
+                    if (gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
+                        && group == 45 && sector == 0) {
+                        MGBA_Warnf("[GS] linear-skip: suppress Team Base g45 (postgame morning) -> inside RET_DIRECT (g46 s0)");
+                        SetScriptVarValue(NULL, GROUND_GETOUT, map);
+                        group = 46; // STATION_CONTROL RET_DIRECT
+                        sector = 0;
+                        // Do not break; let GroundMap_ExecuteStation run with updated group/sector.
                     }
                     if (SkipLinear_HandleClearAndWarp())
                         break;
@@ -1907,30 +1972,17 @@ s32 ExecuteScriptCommand(Action *action)
                             }
                             // Fast-forward scenario beyond early base scenes
                             SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
-                            // Redirect EXECUTE_STATION to Team Base Inside free‑roam in-place.
-                            map = MAP_TEAM_BASE_INSIDE;
-                            group = 16;
-                            sector = 0; // RET_DIRECT
-                            MGBA_Warnf("[GS] linear-skip: redirect TB starter kit/letter -> TB inside g16 s0 (set TWC GO)");
+                            // Request a proper warp to Team Base Inside free‑roam to avoid
+                            // lingering station state issues that can occur after saving.
+                            MGBA_Warnf("[GS] linear-skip: warp TB starter kit/letter -> TB inside free-roam (set TWC select)");
+                            GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                            break;
                         }
                     }
 
-                    // Force Team Base INSIDE free‑roam for any lingering early base scenes
-                    // (e.g., group 17 wake/look‑around, group 41 wake-up) when skipping.
-                    {
-                        s32 scenNow2 = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-                        s32 place2 = gGroundMapConversionTable[map].groundPlaceId;
-                        if (place2 == GROUND_PLACE_TEAM_BASE_INSIDE && scenNow2 <= 4 &&
-                            (group == 17 || group == 41) &&
-                            GetScriptVarArrayValue(NULL, EVENT_S08E01, 3) == 0) {
-                            // Only force once per early-base session to avoid interfering with save flow
-                            SetScriptVarArrayValue(NULL, EVENT_S08E01, 3, 1);
-                            MGBA_Warnf("[GS] linear-skip: force TB INSIDE free-roam (g16 s0) from grp=%d sec=%d", group, sector);
-                            map = MAP_TEAM_BASE_INSIDE;
-                            group = 16;
-                            sector = 0;
-                        }
-                    }
+                    // Note: We previously redirected TB INSIDE group 17 to group 16 (free‑roam)
+                    // unconditionally. That caused occasional hangs after saving. The targeted
+                    // g41/g42 skips above are sufficient; avoid rewriting group here.
 
                     // Skip Thunderwave Cave entrance cutscene: jump straight into the
                     // dungeon when the engine attempts to enter the TWC entry map.
@@ -1944,16 +1996,7 @@ s32 ExecuteScriptCommand(Action *action)
                     }
                 }
 
-                // Unconditional safety: suppress the Team Base INSIDE “Dream Eater” (Gengar) cutscene
-                // which resides in station group 42 sector 0 on the Team Base INSIDE map. This avoids
-                // the recurring "light is coming" dream sequence at the base under all configurations.
-                if ((gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
-                     || gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE)
-                    && group == 42 && sector == 0) {
-                    MGBA_Warnf("[GS] suppress Team Base g42 (Dream Eater) -> base free-roam (unconditional)");
-                    GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
-                    break;
-                }
+                // No unconditional overrides when skip-cutscene logic is disabled.
 
                 // Verbose tracing to identify stations that still show mini-cutscenes when skipping.
                 if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting()) {
@@ -2635,7 +2678,10 @@ s32 ExecuteScriptCommand(Action *action)
                 }
 
                 res = curCmd.op == 0x1e;
+                MGBA_Warnf("[GS] exec station map=%d group=%d sector=%d set=%d place=%d", map, group, sector, res, gGroundMapConversionTable[map].groundPlaceId);
+                DebugDumpCoreVars("pre-exec");
                 GroundMap_ExecuteStation(map, group, sector, res);
+                DebugDumpCoreVars("post-exec");
                 if (gUnknown_2039A34 != map) {
                     gUnknown_2039A34 = map;
                     GroundCancelAllEntities();

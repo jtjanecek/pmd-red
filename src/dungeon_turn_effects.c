@@ -79,6 +79,11 @@ void ApplyEndOfTurnEffects(Entity *entity)
 
     // handle belly decrease
     if (entityInfo->isTeamLeader) {
+#ifdef DEV
+        // DEV: Keep Belly full at all times for the leader.
+        entityInfo->belly = entityInfo->maxBelly;
+        gDungeon->unk644.emptyBellyAlert = 0;
+#else
         s48_16 baseBellyDecrementValue, modifiedBellyDecrementValue;
         FixedPoint bellyBefore;
         bool8 sound;
@@ -161,6 +166,7 @@ void ApplyEndOfTurnEffects(Entity *entity)
             LogMessageByIdWithPopupCheckUser(entity, str);
             sub_803E708(30, 0x32);
         }
+#endif // DEV
     }
 
     if (!EntityIsValid(entity) || IsFloorOver())
@@ -571,4 +577,3 @@ void TickStatusAndHealthRegen(Entity *entity)
         }
     }
 }
-

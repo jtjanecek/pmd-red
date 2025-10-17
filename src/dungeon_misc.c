@@ -1468,12 +1468,16 @@ void sub_806A5B8(Entity *entity)
             }
         }
     }
-    // If wall - decrement belly by 5
+    // If wall - decrement belly by 5 (disabled in DEV)
     else if (terrainType == TERRAIN_TYPE_WALL) {
         const u8 *str;
         EntityInfo *info = GetEntInfo(entity);
 
         if (info->isTeamLeader) {
+#ifdef DEV
+            // DEV: Do not decrease Belly in walls
+            (void)str; // silence unused in DEV
+#else
             FixedPoint bellyBefore = info->belly;
             info->belly = FixedPoint_Subtract(bellyBefore, IntToFixedPointMacro(5));
             str = NULL;
@@ -1487,6 +1491,7 @@ void sub_806A5B8(Entity *entity)
             if (str != NULL) {
                 LogMessageByIdWithPopupCheckUser(entity, str);
             }
+#endif
         }
     }
 }
@@ -1498,10 +1503,18 @@ void sub_806A6E8(Entity *entity)
     if (info->unk64 != info->heldItem.id) {
         if (!info->isTeamLeader) {
             if (info->heldItem.id == ITEM_HEAL_RIBBON || info->heldItem.id == ITEM_MUNCH_BELT) {
+#ifdef DEV
+                // DEV: Prevent Belly decrease from Heal Ribbon/Munch Belt effects
+#else
                 info->belly = FixedPoint_Subtract(info->belly, IntToFixedPoint(10));
+#endif
             }
             else if (info->heldItem.id == ITEM_DIET_RIBBON) {
+#ifdef DEV
+                // DEV: Prevent Diet Ribbon from emptying Belly
+#else
                 info->belly = IntToFixedPoint(0);
+#endif
             }
 
             if (gDungeon->unk644.itemHoldersIdentified) {

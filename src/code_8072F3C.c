@@ -253,13 +253,7 @@ s32 sub_802FBF4(void)
         // Default/vanilla visibility gate
         allowed = sub_80A27CC(index);
 
-        // Ensure the current GO dungeon is visible when SkipCutscenes is ON.
-        // Use scriptId mapping so aliases (e.g., Sinister Woods) work correctly.
-        if (!allowed && GetSkipCutscenesSetting()) {
-            s16 scriptIdVis = sub_80A26B8(iVar6);
-            if (scriptIdVis >= 0 && sub_8097384(scriptIdVis))
-                allowed = TRUE;
-        }
+        // No special visibility overrides for skipCutscenes.
 
         if (((allowed != 0) && (iVar6 != 0x13)) && (iVar6 != 0x1d)) {
             gUnknown_203B314->unk0[counter] = iVar6;
@@ -268,28 +262,10 @@ s32 sub_802FBF4(void)
             if ((gUnknown_203B314->unkB8 != 0) && (iVar6 != 0xd)) {
                 dungeonIndex = sub_80A270C(index);
                 bVar1 = FALSE;
-                if (0x1e >= iVar6)
-                {
-                    // Determine GO badge using scriptId mapping for correctness under skip mode.
-                    s16 scriptId2 = sub_80A26B8(iVar6);
-                    if (scriptId2 >= 0) {
-                        if (sub_8097384(scriptId2) == 0) {
-                            if (iVar6 == 6) {
-                                if (sub_8097384(0x13) != 0) {
-                                    gUnknown_203B314->unk0[counter] = 0x13;
-                                    bVar1 = TRUE;
-                                }
-                            }
-                            else if ((iVar6 == 10) && (sub_8097384(0x1d) != 0)) {
-                                gUnknown_203B314->unk0[counter] = 0x1d;
-                                bVar1 = TRUE;
-                            }
-                        }
-                        else {
-                            // Base case: this entry is a GO story mission.
-                            bVar1 = TRUE;
-                        }
-                    }
+                if (iVar6 <= 0x1e) {
+                    // Vanilla: GO badge if this script dungeon id is currently GO
+                    if (sub_8097384(iVar6))
+                        bVar1 = TRUE;
                 }
                 gUnknown_203B314->unk5C[counter] = bVar1;
                 if ((!bVar1) && (0 < CountJobsinDungeon(dungeonIndex))) {

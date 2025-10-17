@@ -189,41 +189,10 @@ void GroundMap_ExecuteEnter(s16 param_1)
 
     Log(0, gUnknown_8117650, iVar1); // GroundMap ExecuteEnter %3d
 
-    // When Skip Cutscenes is enabled and entering Team Base Inside:
-    // 1) Ensure Tiny Woods is the initial GO if nothing is set yet
-    // 2) Fast-forward scenario out of early-base cutscene range
-    if (GetSkipCutscenesSetting() &&
-        gGroundMapConversionTable[iVar1].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE) {
-        // 1) Tiny Woods initial GO
-        if (!sub_8097384(SCRIPT_DUNGEON_TINY_WOODS) &&
-            !RescueScenarioConquered(SCRIPT_DUNGEON_TINY_WOODS)) {
-            sub_80973A8(SCRIPT_DUNGEON_TINY_WOODS, 1);
-            {
-                s32 twIndex = sub_80A26B8(SCRIPT_DUNGEON_TINY_WOODS);
-                if (twIndex != -1) SetScriptVarValue(NULL, DUNGEON_SELECT, twIndex);
-            }
-        }
-        // 2) Lift scenario past early wake/start kit scenes
-        {
-            s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
-            if (scen < 5) SetScriptVarValue(NULL, SCENARIO_MAIN, 5);
-        }
-    }
-
-    if (GetSkipCutscenesSetting() &&
-        gGroundMapConversionTable[iVar1].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE) {
-        // In linear skip mode, enter Team Base Inside directly at the RET_DIRECT station
-        // (group 16, sector 0) for an immediate free‑roam handoff.
-        GroundMap_GetStationScript(&script, iVar1, 16, 0);
-        script.state = 2;
-        script.group = 16;
-        script.sector = 0;
-    } else {
-        GroundMap_GetFirstStationScript(&script, iVar1);
-        script.state = 2;
-        script.group = 0;
-        script.sector = 0;
-    }
+    GroundMap_GetFirstStationScript(&script, iVar1);
+    script.state = 2;
+    script.group = 0;
+    script.sector = 0;
 
     GroundScript_ExecutePP(&gGroundMapAction->action, 0, &script, &gUnknown_8117698);
 }

@@ -22,6 +22,8 @@ typedef struct SavePakWrite
 } SavePakWrite;
 
 static EWRAM_INIT SavePakWrite *sSavePakWrite = {NULL};
+// Tracks if we just marked the first-save guard this write (persisted to save)
+static EWRAM_INIT u8 sJustMarkedFirstSkipSave = 0;
 
 #include "data/save_write.h"
 
@@ -88,6 +90,19 @@ bool8 WriteSavePak(void)
         case 4:
             local_14 = 0;
             sub_80140DC();
+            // For SkipCutscenes=ON, persist a one-shot "first save done" guard
+            // into the save file before writing global script vars. This allows
+            // us to reboot to title only once.
+            if (GetSkipCutscenesSetting()) {
+                if (GetScriptVarArrayValue(0, EVENT_S08E01, 3) == 0) {
+                    SetScriptVarArrayValue(0, EVENT_S08E01, 3, 1);
+                    sJustMarkedFirstSkipSave = 1;
+                } else {
+                    sJustMarkedFirstSkipSave = 0;
+                }
+            } else {
+                sJustMarkedFirstSkipSave = 0;
+            }
             sSavePakWrite->saveStatus = WriteSavetoPak(&local_14, sub_8011C1C());
 
             switch (sSavePakWrite->saveStatus) {
@@ -158,8 +173,8 @@ void FinishWriteSavePak(void)
         SetScriptVarArrayValue(0, EVENT_S08E01, 0, 1);
         // After the first save only, reboot to main menu to cold-start
         // normalized postgame state and avoid lingering wake chains.
-        if (GetScriptVarArrayValue(0, EVENT_S08E01, 3) == 0) {
-            SetScriptVarArrayValue(0, EVENT_S08E01, 3, 1);
+        if (sJustMarkedFirstSkipSave) {
+            sJustMarkedFirstSkipSave = 0;
             GroundMainGameCancelRequest(0x1e);
         }
     }

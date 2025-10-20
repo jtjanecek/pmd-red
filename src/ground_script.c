@@ -1882,6 +1882,18 @@ s32 ExecuteScriptCommand(Action *action)
                     // Known stations from logs to suppress: g41 (wake), g42 (dream), g45 (postgame morning),
                     // and 6/8/11 control stations that run on postgame wake without visible cutscenes.
                     if (placeNow == GROUND_PLACE_TEAM_BASE_INSIDE) {
+                        // Post-save guard: after saving, ensure first entry to TB Inside executes
+                        // free-roam (g16 s0) even if a wake/intro station was scheduled.
+                        if (GetScriptVarArrayValue(NULL, EVENT_S08E01, 0) == 1) {
+                            if (!(group == 16 && sector == 0)) {
+                                MGBA_Warnf("[GS] skip: post-save TB Inside g%d s%d -> force g16 s0 free-roam", group, sector);
+                                group = 16;
+                                sector = 0;
+                            } else {
+                                // Clear guard once we actually run free-roam
+                                SetScriptVarArrayValue(NULL, EVENT_S08E01, 0, 0);
+                            }
+                        }
                         if (group == 45 && sector == 0) {
                             // Redirect postgame morning to free-roam (g16 s0) and preselect Lives/Objects
                             // so the map is populated immediately, avoiding black screens and loops.
@@ -1939,6 +1951,18 @@ s32 ExecuteScriptCommand(Action *action)
                             break;
                         }
                     } else if (placeNow == GROUND_PLACE_TEAM_BASE) {
+                        // Post-save guard: first time stepping outside after a save, enforce
+                        // free-roam in Square instead of triggering outside base mini-scenes.
+                        if (GetScriptVarArrayValue(NULL, EVENT_S08E01, 0) == 1) {
+                            if (!(group == 7 && sector == 0)) {
+                                MGBA_Warnf("[GS] skip: post-save outside TB group=%d s=%d -> warp to Square g7 s0", group, sector);
+                                SetScriptVarArrayValue(NULL, EVENT_S08E01, 0, 0);
+                                GroundMainGroundRequest(MAP_POKEMON_SQUARE, 0, 30);
+                                break;
+                            }
+                            // Clear the guard when we actually execute the free-roam station
+                            SetScriptVarArrayValue(NULL, EVENT_S08E01, 0, 0);
+                        }
                         // Team Base (outside) first-day station — suppress when skipping cutscenes
                         if (group == 18 && sector == 0) {
                             MGBA_Warnf("[GS] skip: TB Outside g18 s0 -> warp inside free-roam");

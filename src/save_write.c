@@ -7,6 +7,7 @@
 #include "constants/ground_map.h" // MAP_TEAM_BASE_INSIDE
 #include "constants/event_flag.h" // SCENARIO_MAIN, START_MODE, etc.
 #include "save_write.h"
+#include "ground_main.h" // GroundMainGameCancelRequest
 #include "string_format.h"
 #include "menu_input.h"
 
@@ -155,6 +156,12 @@ void FinishWriteSavePak(void)
         // Clear warp lock if any and set a postgame one-shot guard flag
         SetScriptVarValue(0, WARP_LOCK, 0);
         SetScriptVarArrayValue(0, EVENT_S08E01, 0, 1);
+        // After the first save only, reboot to main menu to cold-start
+        // normalized postgame state and avoid lingering wake chains.
+        if (GetScriptVarArrayValue(0, EVENT_S08E01, 3) == 0) {
+            SetScriptVarArrayValue(0, EVENT_S08E01, 3, 1);
+            GroundMainGameCancelRequest(0x1e);
+        }
     }
     sub_80993E4();
 }

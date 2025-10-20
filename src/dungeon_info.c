@@ -15,7 +15,6 @@
 #include "dungeon_data.h"
 
 static void AppendWithNewLines(u8 *dst, const u8 *src);
-static bool8 TeamMonWithMove(u16 moveID);
 
 static const u8 sDungeonFloorCount[] = {
     [DUNGEON_TINY_WOODS]                = 4,
@@ -2619,27 +2618,9 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         }
     }
 
-    if (requireHm) {
-        s32 i;
-        u16 movesNeeded[MAX_MON_MOVES] = {MOVE_FLY, MOVE_DIVE, MOVE_WATERFALL, MOVE_SURF};
-        u8 hmsNeeded[MAX_MON_MOVES] = {ITEM_HM_FLY, ITEM_HM_DIVE, ITEM_HM_WATERFALL, ITEM_HM_SURF};
-
-        for (i = 0; i < MAX_MON_MOVES; i++) {
-            if ((((gDungeons[dungeonIndex].HMMask >> (i) & 1) != 0) && !TeamMonWithMove(movesNeeded[i])) && GetItemPossessionCount(hmsNeeded[i]) == 0) {
-                break;
-            }
-        }
-
-        if (i < MAX_MON_MOVES) {
-            struct Move move;
-
-            InitPokemonMove(&move,movesNeeded[i]);
-            BufferMoveName(gFormatBuffer_Items[0],&move,0);
-            FormatString((requirementFailed) ? gText_AlsoMustHaveMonWithMove : gText_MustHaveMonWithMove, text, &text[TXT_BUFFER_LEN], 0);
-            AppendWithNewLines(buffer,text);
-            requirementFailed = TRUE;
-        }
-    }
+    // Disable HM-based entry requirements: allow entering regardless of HM items or moves.
+    // Keeping other non-HM checks (e.g., party size, item limits, water-type) intact.
+    (void)requireHm;
 
     if (gDungeons[dungeonIndex].HMMask & 0x10) {
         s32 otherSpeciesId = NUM_MONSTERS;
@@ -2716,23 +2697,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
     }
 }
 
-static bool8 TeamMonWithMove(u16 moveID)
-{
-    s32 speciesId, moveIndex;
-
-    for (speciesId = 0; speciesId < NUM_MONSTERS; speciesId++) {
-        Pokemon *pokeStruct = &gRecruitedPokemonRef->pokemon[speciesId];
-        if (PokemonExists(pokeStruct) && PokemonFlag2(pokeStruct)) {
-            for (moveIndex = 0; moveIndex < MAX_MON_MOVES; moveIndex++) {
-                Move *move = &pokeStruct->moves[moveIndex];
-                if (MoveFlagExists(move) && move->id == moveID) {
-                    return TRUE;
-                }
-            }
-        }
-    }
-    return FALSE;
-}
+// Removed: TeamMonWithMove helper (no longer needed after disabling HM checks)
 
 static void AppendWithNewLines(u8 *dst, const u8 *src)
 {

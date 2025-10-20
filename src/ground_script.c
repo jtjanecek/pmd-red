@@ -2807,11 +2807,13 @@ s32 ExecuteScriptCommand(Action *action)
 
                 res = curCmd.op == 0x1e;
                 // Safety: after save in skip-cutscene postgame, executing TB Inside free‑roam (g16 s0)
-                // with `set=1` can stall the script engine. Force normal station mode.
-                if (GetSkipCutscenesSetting() &&
-                    gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE &&
-                    group == 16 && sector == 0) {
-                    res = 0;
+                // or Pokémon Square free‑roam (g7 s0) with `set=1` can interfere with interactions.
+                // Force normal station mode for these free‑roam control stations.
+                if (GetSkipCutscenesSetting()) {
+                    s32 placeExec = gGroundMapConversionTable[map].groundPlaceId;
+                    if (placeExec == GROUND_PLACE_TEAM_BASE_INSIDE && group == 16 && sector == 0) {
+                        res = 0;
+                    }
                 }
                 MGBA_Warnf("[GS] exec station map=%d group=%d sector=%d set=%d place=%d", map, group, sector, res, gGroundMapConversionTable[map].groundPlaceId);
                 DebugDumpCoreVars("pre-exec");

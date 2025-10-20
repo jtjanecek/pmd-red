@@ -9,6 +9,7 @@
 #include "save_write.h"
 #include "ground_main.h" // GroundMainGameCancelRequest
 #include "string_format.h"
+#include "story_debug.h"
 #include "menu_input.h"
 
 // size: 0x20
@@ -90,19 +91,8 @@ bool8 WriteSavePak(void)
         case 4:
             local_14 = 0;
             sub_80140DC();
-            // For SkipCutscenes=ON, persist a one-shot "first save done" guard
-            // into the save file before writing global script vars. This allows
-            // us to reboot to title only once.
-            if (GetSkipCutscenesSetting()) {
-                if (GetScriptVarArrayValue(0, EVENT_S08E01, 3) == 0) {
-                    SetScriptVarArrayValue(0, EVENT_S08E01, 3, 1);
-                    sJustMarkedFirstSkipSave = 1;
-                } else {
-                    sJustMarkedFirstSkipSave = 0;
-                }
-            } else {
-                sJustMarkedFirstSkipSave = 0;
-            }
+            // SkipCutscenes no longer persists special guards during save.
+            sJustMarkedFirstSkipSave = 0;
             sSavePakWrite->saveStatus = WriteSavetoPak(&local_14, sub_8011C1C());
 
             switch (sSavePakWrite->saveStatus) {
@@ -153,30 +143,6 @@ void FinishWriteSavePak(void)
             CloseFile(sSavePakWrite->monPortrait.faceFile);
         FREE_AND_SET_NULL(sSavePakWrite);
     }
-    // When skipping cutscenes, normalize state to postgame after a save.
-    // This prevents early "wake" sequences from re-running and ensures
-    // the player resumes in Team Base Inside free-roam.
-    if (GetSkipCutscenesSetting()) {
-        // Clamp to postgame scenario and ground mode
-        SetScriptVarValue(0, SCENARIO_MAIN, 19);
-        SetScriptVarValue(0, START_MODE, 2); // MODE_GROUND
-        // Normalize enter/exit to Team Base Inside
-        SetScriptVarValue(0, GROUND_ENTER, MAP_TEAM_BASE_INSIDE);
-        SetScriptVarValue(0, GROUND_ENTER_LINK, 0);
-        SetScriptVarValue(0, GROUND_GETOUT, MAP_TEAM_BASE_INSIDE);
-        // Clear last-enter markers to avoid resume logic misfires
-        SetScriptVarValue(0, DUNGEON_ENTER, -1);
-        SetScriptVarValue(0, DUNGEON_ENTER_INDEX, -1);
-        SetScriptVarValue(0, DUNGEON_RESULT, 0);
-        // Clear warp lock if any and set a postgame one-shot guard flag
-        SetScriptVarValue(0, WARP_LOCK, 0);
-        SetScriptVarArrayValue(0, EVENT_S08E01, 0, 1);
-        // After the first save only, reboot to main menu to cold-start
-        // normalized postgame state and avoid lingering wake chains.
-        if (sJustMarkedFirstSkipSave) {
-            sJustMarkedFirstSkipSave = 0;
-            GroundMainGameCancelRequest(0x1e);
-        }
-    }
+    // SkipCutscenes no longer normalizes post-save state.
     sub_80993E4();
 }

@@ -228,7 +228,8 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
     if (r10) {
         setupPtr->info.mon.heldItem.id = 0;
-        if (IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id)) {
+        // Do not reset leader/guest to Level 1 on entry
+        if (FALSE && IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id)) {
             sub_808D0D8(&setupPtr->info.mon);
         }
         sub_8068A84(&setupPtr->info.mon);

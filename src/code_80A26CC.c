@@ -1284,9 +1284,7 @@ bool8 sub_80A27CC(s16 r0)
     s32 temp2;
     const DungeonInfo *t;
 
-    // In skip-cutscenes mode, expose all script dungeons in the list.
-    if (GetSkipCutscenesSetting())
-        return TRUE;
+    // SkipCutscenes no longer changes dungeon list visibility.
 
     // Same dumbness as above to get a match
     temp2 = r0;
@@ -1311,9 +1309,7 @@ bool8 sub_80A2824(u8 index)
     s32 i;
     const DungeonInfo *temp;
 
-    // In skip-cutscenes mode, allow selection for any dungeon shown.
-    if (GetSkipCutscenesSetting())
-        return TRUE;
+    // SkipCutscenes no longer changes dungeon selection gating.
 
     if (sub_80023E4(5))
         return FALSE;

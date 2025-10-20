@@ -220,7 +220,8 @@ void SetDungeonMonsFromTeam(void)
             }
             
             RecruitedPokemonToDungeonMon(&gRecruitedPokemonRef->dungeonTeam[index],recruitedId);
-            if (IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id)) {
+            // Do not reset to Level 1: preserve original level/stats when entering
+            if (FALSE && IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id)) {
                 struct DungeonLocation dungeonLoc = {.id = DUNGEON_TINY_WOODS, .floor = 1};
                 CreateLevel1Pokemon(&lvl1Mon,pokeStruct->speciesNum,0,0,&dungeonLoc,0);
                 gRecruitedPokemonRef->dungeonTeam[index].level = lvl1Mon.level;
@@ -349,12 +350,8 @@ void sub_8068BDC(bool8 a0)
             }
 
             if (sub_806A58C(monPtr->recruitedPokemonId)) {
-                if (IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id)) {
-                    sub_808DFDC(monPtr->recruitedPokemonId, monPtr);
-                }
-                else {
-                    DungeonMonToRecruitedPokemon(monPtr->recruitedPokemonId, monPtr);
-                }
+                // Always persist stats/level back to recruited list (no special Level 1 handling)
+                DungeonMonToRecruitedPokemon(monPtr->recruitedPokemonId, monPtr);
             }
             else {
                 if (a0) {
@@ -573,9 +570,8 @@ void HandleFaint(Entity *entity, s32 dungeonExitReason_, Entity *param_3)
                 DungeonMon *partnerStruct = &gRecruitedPokemonRef->dungeonTeam[partnerInfo->teamIndex];
                 sub_806C264(partnerInfo->teamIndex,partnerInfo);
                 if (sub_806A58C(partnerStruct->recruitedPokemonId) != 0) {
-                    if (IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id) == 0) {
-                        DungeonMonToRecruitedPokemon(partnerStruct->recruitedPokemonId, partnerStruct);
-                    }
+                    // Always persist partner state back to recruited list (no Level 1 special case)
+                    DungeonMonToRecruitedPokemon(partnerStruct->recruitedPokemonId, partnerStruct);
                     if (!IsMakuhitaTrainingMaze()) {
                         ClearMonItemId(&gRecruitedPokemonRef->pokemon[partnerStruct->recruitedPokemonId]);
                     }

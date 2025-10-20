@@ -4636,9 +4636,12 @@ static const struct ScriptCommand s_script_GETOUT_S03E01A[] = { /* 0x812cdd4 */
 
 static const struct ScriptCommand s_script_GETOUT_S04E01A[] = { /* 0x812cf24 */
     DEBUGINFO,
+    // Trigger the Spinda -> Xatu (Clear Wing) handoff when returning from
+    // Great Canyon. Some returns encode DUNGEON_ENTER with a sentinel (0x50/0x51/0x52)
+    // and store the true id in DUNGEON_ENTER_INDEX, so handle both forms.
     CJUMP_VAR(DUNGEON_ENTER),
-    COND_EQUAL(27, /* to label */ 0),
-    COND_EQUAL(81, /* to label */ 1),
+    COND_EQUAL(7, /* to label */ 0),           // DUNGEON_GREAT_CANYON
+    COND_EQUAL(81, /* to label */ 1),          // sentinel -> check DEI
     JUMP_LABEL(2),
   LABEL(0), /* = 0x00 */
     JUMPIF_EQUAL(SCENARIO_SUB4, 38, /* to label */ 3),
@@ -4650,6 +4653,8 @@ static const struct ScriptCommand s_script_GETOUT_S04E01A[] = { /* 0x812cf24 */
   LABEL(5), /* = 0x05 */
     JUMP_SCRIPT(EVENT_S04E01A_L002),
   LABEL(1), /* = 0x01 */
+    CJUMP_VAR(DUNGEON_ENTER_INDEX),
+    COND_EQUAL(7, /* to label */ 0),           // normalized GC via DEI
     JUMP_SCRIPT(GETOUT_R00E01A),
   LABEL(2), /* = 0x02 */
     JUMP_SCRIPT(EVENT_DIVIDE),
@@ -5670,4 +5675,3 @@ static const struct ScriptCommand s_script_MOVE_DEBUG_CAMERA[] = { /* 0x812f198 
     { 405, 7, _("SETUP_DEBUG_CAMERA"), s_script_SETUP_DEBUG_CAMERA },
     { 406, 5, _("MOVE_DEBUG_CAMERA"), s_script_MOVE_DEBUG_CAMERA },
 };
-

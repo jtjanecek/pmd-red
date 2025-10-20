@@ -54,6 +54,7 @@
 #include "unk_ds_only_feature.h"
 #include "textbox.h"
 #include "data_script.h"
+#include "story_debug.h"
 
 // Debug helper to dump core script variables around ground station routing
 static void DebugDumpCoreVars(const char *tag)
@@ -95,7 +96,7 @@ extern void sub_8096488(void);              // seed initial news
 
 // Linear skip mode helpers (alternative to scene-aware skip flow)
 // Enable linear flow when SkipCutscenes is ON. Keep the legacy per-scene flow disabled.
-static inline bool8 IsSkipLinearMode(void) { return GetSkipCutscenesSetting(); }
+static inline bool8 IsSkipLinearMode(void) { return FALSE; }
 static inline bool8 UseOldSkipCutsceneFlow(void) { return FALSE; }
 
 // Main-story linear progression order for SkipCutscenes=ON
@@ -1874,10 +1875,18 @@ s32 ExecuteScriptCommand(Action *action)
                 }
                 map = GetAdjustedGroundMap(map);
                 DebugDumpCoreVars("pre-station");
+                DumpStoryFlags("pre-station");
 
-                // Minimal cutscene skip: postgame and free-roam stabilizers
-                if (GetSkipCutscenesSetting()) {
+                // SkipCutscenes no longer alters station execution.
+                if (0 && GetSkipCutscenesSetting()) {
                     s32 placeNow = gGroundMapConversionTable[map].groundPlaceId;
+                    // Sky Tower: skip the long entry cutscene (g1 s0) and jump to the
+                    // streamlined entry that immediately hands off to the dungeon (g2 s0).
+                    if (placeNow == GROUND_PLACE_SKY_TOWER && group == 1 && sector == 0) {
+                        MGBA_Warnf("[GS] skip: Sky Tower entry g1 s0 -> redirect to g2 s0 (skip intro)");
+                        group = 2;
+                        sector = 0;
+                    }
                     // In Team Base Inside, suppress various morning/wake/control stations.
                     // Known stations from logs to suppress: g41 (wake), g42 (dream), g45 (postgame morning),
                     // and 6/8/11 control stations that run on postgame wake without visible cutscenes.
@@ -2806,10 +2815,8 @@ s32 ExecuteScriptCommand(Action *action)
                 }
 
                 res = curCmd.op == 0x1e;
-                // Safety: after save in skip-cutscene postgame, executing TB Inside free‑roam (g16 s0)
-                // or Pokémon Square free‑roam (g7 s0) with `set=1` can interfere with interactions.
-                // Force normal station mode for these free‑roam control stations.
-                if (GetSkipCutscenesSetting()) {
+                // SkipCutscenes no longer alters station set-mode.
+                if (0 && GetSkipCutscenesSetting()) {
                     s32 placeExec = gGroundMapConversionTable[map].groundPlaceId;
                     if (placeExec == GROUND_PLACE_TEAM_BASE_INSIDE && group == 16 && sector == 0) {
                         res = 0;
@@ -2817,8 +2824,10 @@ s32 ExecuteScriptCommand(Action *action)
                 }
                 MGBA_Warnf("[GS] exec station map=%d group=%d sector=%d set=%d place=%d", map, group, sector, res, gGroundMapConversionTable[map].groundPlaceId);
                 DebugDumpCoreVars("pre-exec");
+                DumpStoryFlags("pre-exec");
                 GroundMap_ExecuteStation(map, group, sector, res);
                 DebugDumpCoreVars("post-exec");
+                DumpStoryFlags("post-exec");
                 if (gUnknown_2039A34 != map) {
                     gUnknown_2039A34 = map;
                     GroundCancelAllEntities();
@@ -2831,11 +2840,8 @@ s32 ExecuteScriptCommand(Action *action)
                 s32 a = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
                 const DungeonInfo *ret1 = GetDungeonInfo_80A2608(a);
                 s32 thing = GetScriptVarArrayValue(NULL, DUNGEON_ENTER_LIST, (u16) a) == 0 ? ret1->unk6 : ret1->unk8;
-                // When the player confirms readiness with the partner during the
-                // Square-sleeping phase (scene 14) for Lapis Cave, route to the
-                // Lapis Cave entrance ground map immediately to play its cutscene
-                // instead of entering the dungeon directly.
-                if (GetSkipCutscenesSetting()) {
+                // SkipCutscenes no longer reroutes partner readiness to Lapis Cave.
+                if (0 && GetSkipCutscenesSetting()) {
                     s32 scenNow = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                     bool8 postGC = RescueScenarioConquered(SCRIPT_DUNGEON_GREAT_CANYON);
                     bool8 preLC = !RescueScenarioConquered(SCRIPT_DUNGEON_LAPIS_CAVE);
@@ -3061,13 +3067,13 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0x2e: {
-                if (GetSkipCutscenesSetting()) break;
+                if (0 && GetSkipCutscenesSetting()) break;
                 ScriptSetPortraitInfo(curCmd.argShort, (s8)curCmd.arg1, (u8)curCmd.argByte);
                 break;
             }
             case 0x2f: {
                 PixelPos pos;
-                if (GetSkipCutscenesSetting()) break;
+                if (0 && GetSkipCutscenesSetting()) break;
                 pos.x = curCmd.arg1;
                 pos.y = curCmd.arg2;
                 ScriptSetPortraitPosDelta(curCmd.argShort, &pos);
@@ -3075,7 +3081,7 @@ s32 ExecuteScriptCommand(Action *action)
             }
             case 0x32 ... 0x38: {
                 s8 ret = 0;
-                if (GetSkipCutscenesSetting()) {
+                if (0 && GetSkipCutscenesSetting()) {
                     // Suppress all dialogue/text when skipping cutscenes
                     break;
                 }
@@ -3095,7 +3101,7 @@ s32 ExecuteScriptCommand(Action *action)
                 break;
             }
             case 0x39: {
-                if (GetSkipCutscenesSetting()) break;
+                if (0 && GetSkipCutscenesSetting()) break;
                 if ((s8)ScriptPrintTextOnBgAuto(curCmd.argShort, curCmd.argPtr) && curCmd.argShort >= 0) {
                     sub_80A87AC(0, 10);
                     if (GroundScriptCheckLockCondition(action, 0)) return 2;
@@ -3824,7 +3830,7 @@ s32 ExecuteScriptCommand(Action *action)
                 bool8 setGo = ((u8)curCmd.argByte) > 0;
                 s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                 MGBA_Warnf("[GS] script GO op id=%d set=%d scen=%d", scriptDungeonId, setGo, scen);
-                if (GetSkipCutscenesSetting()) {
+                if (0 && GetSkipCutscenesSetting()) {
                     if (scriptDungeonId == SCRIPT_DUNGEON_TINY_WOODS) {
                         MGBA_Warnf("[GS] skip: block script GO for Tiny Woods at scen=%d", scen);
                         break;

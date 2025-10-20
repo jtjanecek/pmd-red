@@ -2405,11 +2405,17 @@ s16 GetTurnLimit(u8 dungeon)
 
 bool8 IsEnterWithoutGameSave(u8 dungeon)
 {
+    // Remove forced quicksave for Level 1 dungeons
+    if (IsLevelResetDungeon(dungeon))
+        return TRUE;
     return gDungeons[dungeon].enterWithoutGameSave;
 }
 
 u8 HasCheckpoint(u8 dungeon)
 {
+    // Allow checkpoints in Level 1 dungeons
+    if (IsLevelResetDungeon(dungeon))
+        return TRUE;
     return gDungeons[dungeon].hasCheckpoint;
 }
 
@@ -2420,26 +2426,41 @@ bool8 IsLevelResetDungeon(u8 dungeon)
 
 u32 GetMaxItemsAllowed(u8 dungeon)
 {
+    // Allow full inventory in Level 1 dungeons
+    if (IsLevelResetDungeon(dungeon))
+        return INVENTORY_SIZE;
     return gDungeons[dungeon].maxItemsAllowed;
 }
 
 bool8 IsMoneyAllowed(u8 dungeon)
 {
+    // Keep money in Level 1 dungeons
+    if (IsLevelResetDungeon(dungeon))
+        return TRUE;
     return gDungeons[dungeon].keepMoney;
 }
 
 s8 GetRescuesAllowed(u8 dungeon)
 {
+    // Enable rescues in Level 1 dungeons (use a generous default)
+    if (IsLevelResetDungeon(dungeon))
+        return 3;
     return gDungeons[dungeon].rescuesAllowed;
 }
 
 bool8 IsRecruitingEnabled(u8 dungeon)
 {
+    // Enable recruiting in Level 1 dungeons
+    if (IsLevelResetDungeon(dungeon))
+        return TRUE;
     return gDungeons[dungeon].recruitingEnabled;
 }
 
 bool8 CanLeaderSwitch(u8 dungeon)
 {
+    // Allow leader switching in Level 1 dungeons
+    if (IsLevelResetDungeon(dungeon))
+        return TRUE;
     return gDungeons[dungeon].leaderCanSwitch;
 }
 
@@ -2570,9 +2591,14 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         }
     }
 
+    // Remove entry party-size limits for Level 1 dungeons (allow full party)
     maxPartyMembers = gDungeons[dungeonIndex].maxPartyMembers;
-    if (!requireHm && maxPartyMembers > 3) {
-        maxPartyMembers = 3;
+    if (IsLevelResetDungeon(dungeonIndex)) {
+        maxPartyMembers = MAX_TEAM_MEMBERS; // allow 4
+    } else {
+        if (!requireHm && maxPartyMembers > 3) {
+            maxPartyMembers = 3;
+        }
     }
     if (counter > maxPartyMembers) {
         if (maxPartyMembers == 1) {
@@ -2586,7 +2612,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         requirementFailed = TRUE;
     }
 
-    if (gDungeons[dungeonIndex].maxItemsAllowed != 0 && gDungeons[dungeonIndex].maxItemsAllowed < numInvSlots) {
+    if (!IsLevelResetDungeon(dungeonIndex) && gDungeons[dungeonIndex].maxItemsAllowed != 0 && gDungeons[dungeonIndex].maxItemsAllowed < numInvSlots) {
         gFormatArgs[0] = gDungeons[dungeonIndex].maxItemsAllowed;
         gFormatArgs[1] = numInvSlots - gDungeons[dungeonIndex].maxItemsAllowed;
         FormatString((requirementFailed) ? gText_AlsoOnlyXItemsMayBeBroughtIntoDungeon : gText_OnlyXItemsMayBeBroughtIntoDungeon, text, &text[TXT_BUFFER_LEN], 0);
@@ -2622,7 +2648,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
     // Keeping other non-HM checks (e.g., party size, item limits, water-type) intact.
     (void)requireHm;
 
-    if (gDungeons[dungeonIndex].HMMask & 0x10) {
+    if (!IsLevelResetDungeon(dungeonIndex) && (gDungeons[dungeonIndex].HMMask & 0x10)) {
         s32 otherSpeciesId = NUM_MONSTERS;
 
         if (speciesId != MONSTER_NONE && (GetPokemonType(speciesId,0) == TYPE_WATER || (GetPokemonType(speciesId,1) == TYPE_WATER))) {
@@ -2651,7 +2677,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         return DUNGEON_REQUIREMENTS_FAIL;
     }
 
-    if ((!gDungeons[dungeonIndex].enterWithoutGameSave) || (param_5)) {
+    if ((!IsLevelResetDungeon(dungeonIndex) && !gDungeons[dungeonIndex].enterWithoutGameSave) || (param_5)) {
         if (!requirementsAsk) {
             strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
             strcat(buffer,newLine);
@@ -2669,7 +2695,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         strcat(buffer,gText_TeamWillEnterAtLv1);
         strcat(buffer,newLine);
     }
-    if ((gDungeons[dungeonIndex].maxItemsAllowed == 0) && (numInvSlots + sp_0xf0 != 0)) {
+    if (!IsLevelResetDungeon(dungeonIndex) && (gDungeons[dungeonIndex].maxItemsAllowed == 0) && (numInvSlots + sp_0xf0 != 0)) {
         if (!requirementsAsk) {
             strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
             strcat(buffer,newLine);
@@ -2678,7 +2704,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         strcat(buffer,gText_AllItemsLostOnEntering);
         strcat(buffer,newLine);
     }
-    if ((!gDungeons[dungeonIndex].keepMoney) && (gTeamInventoryRef->teamMoney != 0)) {
+    if (!IsLevelResetDungeon(dungeonIndex) && (!gDungeons[dungeonIndex].keepMoney) && (gTeamInventoryRef->teamMoney != 0)) {
         if (!requirementsAsk) {
             strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
             strcat(buffer,newLine);

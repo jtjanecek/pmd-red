@@ -14,6 +14,7 @@
 #include "random.h"
 #include "save.h"
 #include "constants/ground_map.h" // MAP_TEAM_BASE_INSIDE
+#include "story_debug.h"
 
 // size: 0x800
 struct unk_struct
@@ -304,20 +305,7 @@ u32 ReadSaveFromPak(u32 *a)
         else {
             MemoryCopy8(gUnknown_203B184->unk04C, playerSave->unk004, ARRAY_COUNT(playerSave->unk004));
         }
-        // After loading globals, normalize to postgame baseline if skipCutscenes is ON.
-        // This runs before any front-end stations execute, preventing pre-title script chains.
-        if (!saveStatus && GetSkipCutscenesSetting()) {
-            SetScriptVarValue(NULL, SCENARIO_MAIN, 19);
-            SetScriptVarValue(NULL, START_MODE, 2); // MODE_GROUND
-            SetScriptVarValue(NULL, GROUND_ENTER, MAP_TEAM_BASE_INSIDE);
-            SetScriptVarValue(NULL, GROUND_ENTER_LINK, 0);
-            SetScriptVarValue(NULL, GROUND_GETOUT, MAP_TEAM_BASE_INSIDE);
-            SetScriptVarValue(NULL, DUNGEON_ENTER, -1);
-            SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
-            SetScriptVarValue(NULL, DUNGEON_RESULT, 0);
-            SetScriptVarValue(NULL, WARP_LOCK, 0);
-            SetScriptVarArrayValue(NULL, EVENT_S08E01, 0, 1);
-        }
+        // SkipCutscenes no longer normalizes post-load state.
     }
     if (!saveStatus)
     {

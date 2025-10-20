@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "debug.h"
+#include "mgba_log.h"
 
 EWRAM_INIT static bool32 gNDS_DebugEnabled = {0}; // NDS=020EACE4
 EWRAM_INIT static u8 sUnknown_203B150 = {0};
@@ -190,7 +191,8 @@ static void nullsub_28(void)
 // arm9.bin::02018970
 bool8 ScriptLoggingEnabled(bool8 unused)
 {
-    return FALSE;
+    // Enable legacy script logging gates; route to mGBA logger.
+    return TRUE;
 }
 
 #if (GAME_VERSION == VERSION_RED)
@@ -213,9 +215,14 @@ UNUSED static void UnusedHang(void)
 // arm9.bin::02018964
 void Log(u8 num, const u8 *text, ...)
 {
+    // Minimal printf-style logger that prints to the emulator console via mGBA.
+    // Existing calls pass a category in 'num' that we ignore here.
+    char buf[256];
     va_list vArgv;
     va_start(vArgv, text);
+    vsprintf(buf, (const char *)text, vArgv);
     va_end(vArgv);
+    MGBA_Warnf("%s", buf);
 }
 
 #if (GAME_VERSION == VERSION_RED)

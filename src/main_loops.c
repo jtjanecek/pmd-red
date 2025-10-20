@@ -642,13 +642,8 @@ static u32 RunGameMode_Async(u32 a0)
         }
     }
     else if (mode != MODE_NEW_GAME && mode != MODE_11) {
-        // In skip-cutscene mode, allow a direct ground resume when START_MODE
-        // has been normalized by the save loader; otherwise default to Continue.
-        if (GetSkipCutscenesSetting() && mode == MODE_GROUND) {
-            mode = MODE_GROUND;
-        } else {
-            mode = MODE_CONTINUE_GAME;
-        }
+        // SkipCutscenes no longer changes resume behavior; default to Continue.
+        mode = MODE_CONTINUE_GAME;
     }
 
     ClearScriptVarArray(NULL, EVENT_S08E01);

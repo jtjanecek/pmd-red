@@ -1,13 +1,18 @@
 Story Flow Notes (GS/GO/Gating)
 
+Deprecation notice
+
+- SkipCutscenes no longer changes dungeon lists, GO flags, gating, routing, or
+  cutscene execution at runtime. The notes below capture prior experiments and
+  are retained for historical context only.
+
 This document collects quick notes while iterating on scene skipping and the
 early‑game story dungeon selection (GO) flow.
 
 Note on scope
 
-- All runtime changes described here run only when `SkipCutscenes=ON`
-  (`GetSkipCutscenesSetting() == TRUE`). With skip OFF, vanilla scripts and
-  flows are preserved.
+- Previously, some runtime changes applied when `SkipCutscenes=ON`. Those
+  changes have been removed; vanilla scripts and flows are preserved.
 
 Terminology
 

@@ -28,6 +28,7 @@
 #include "dungeon_strings.h"
 #include "dungeon_cutscene.h"
 #include "dungeon_portrait_placement.h"
+#include "save.h" // GetSkipCutscenesSetting
 
 static EWRAM_DATA Entity *sLastLogMsgEntity = NULL;
 static UNUSED EWRAM_DATA u8 sUnused = 0;
@@ -375,9 +376,14 @@ void DisplayDungeonDialogue(const struct DungeonDialogueStruct *dialogueInfo)
     MonPortraitMsg monPortrait;
     s32 leaderId, partnerId, dialogueMonId;
     s32 chosenMenuIndex;
-    Entity *leader = CutsceneGetLeader();
-    Entity *partner = CutsceneGetPartner();
+    Entity *leader;
+    Entity *partner;
     MonPortraitMsg *monPortraitPtr = NULL;
+
+    // SkipCutscenes no longer suppresses dungeon dialogue.
+
+    leader = CutsceneGetLeader();
+    partner = CutsceneGetPartner();
 
     if (leader != NULL) {
         EntityInfo *leaderInfo = GetEntInfo(leader);

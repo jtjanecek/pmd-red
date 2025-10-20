@@ -46,8 +46,18 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     s32 size = GetBodySize(targetInfo->apparentID);
 
     // Check recruitment setting - if set to "No Recruitable", deny all recruitment
+#ifdef DEV
+    // DEV override: allow large-body targets (size > 1) to proceed even if
+    // global NoRecruitment is enabled, so our DEV testing path still works.
+    if (GetRecruitAllSetting() == 2) {
+        if (size <= 1)
+            return FALSE;
+        // else: continue with recruitment checks for size > 1
+    }
+#else
     if (GetRecruitAllSetting() == 2)
         return FALSE;
+#endif
 
     if (gDungeon->fixedRoomNumber != 5 && gDungeon->fixedRoomNumber != 4 && gDungeon->fixedRoomNumber != 9 && gDungeon->fixedRoomNumber != 0xf) {
         if ((gDungeon->fixedRoomNumber >= 0x2c && gDungeon->fixedRoomNumber <= 0x30)) {
@@ -109,6 +119,14 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
         recruitRate += gFriendBowRecruitRateUpValue;
     }
     recruitRate += gRecruitRateByLevel[attackerInfo->level];
+
+#ifdef DEV
+    // DEV: Guarantee recruitment for large-body targets (size > 1)
+    // when all other checks pass. The random roll range is [0,999], so 1000 is 100%.
+    if (size > 1) {
+        recruitRate = 1000;
+    }
+#endif
     if (rand >= recruitRate)
         return FALSE;
 

@@ -6,6 +6,7 @@
 #include "items.h"
 #include "event_flag.h"
 #include "debug.h"
+#include "mgba_log.h"
 #include "memory.h"
 #include "friend_area.h"
 #include "rescue_team_info.h"
@@ -29,6 +30,24 @@ extern void sub_809733C(u32, u32);
 extern void sub_80973A8(s32, u32);
 extern void sub_80972F4(void);
 extern void nullsub_128(void);
+
+// Helper: print a script var write in a readable, centralized format.
+static void DebugLogScriptVarWrite(u8 *localVarBuf, s32 varId, s32 idx, s32 val, bool8 isArray)
+{
+    const struct ScriptVarInfo *infoPtr;
+    const char *name;
+    if (varId < LOCAL0) {
+        infoPtr = &gScriptVarInfo[varId];
+    } else {
+        infoPtr = &sLocalScriptVarInfo[varId - LOCAL0];
+    }
+    name = infoPtr->name ? infoPtr->name : "(unnamed)";
+    if (isArray)
+        MGBA_Warnf("[SV] %s[%d] = %d", name, (int)idx, (int)val);
+    else
+        MGBA_Warnf("[SV] %s = %d", name, (int)val);
+    (void)localVarBuf; // silence unused warning for matching
+}
 
 // arm9.bin::0200FF68
 void ThoroughlyResetScriptVars(void)
@@ -309,6 +328,8 @@ void SetScriptVarValue(u8 *localVarBuf, s32 varId_, s32 val)
             }
         }
     }
+    // Debug log every write for visibility of story/progression state
+    DebugLogScriptVarWrite(localVarBuf, varID, -1, val, FALSE);
 }
 
 // arm9.bin::0200F5A8
@@ -371,6 +392,8 @@ void SetScriptVarArrayValue(u8 *localVarBuf, s32 varId_, s32 idx_, s32 val)
             }
         }
     }
+    // Debug log every write for visibility of story/progression state
+    DebugLogScriptVarWrite(localVarBuf, varID, idx, val, TRUE);
 }
 
 #if (GAME_VERSION == VERSION_RED)

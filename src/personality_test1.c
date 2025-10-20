@@ -120,7 +120,7 @@ static bool32 TryStoreCustomSeed(void);
 static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
 static void CleanupNamingScreen(void);
 static void HandleDifficultySelection(void);
-static void ApplySkipStartMinimal(void);
+UNUSED static void ApplySkipStartMinimal(void);
 // Skip-cutscene override is disabled for now; no postgame force.
 
 bool8 CreateTestTracker(void)
@@ -167,7 +167,7 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.playSolo = 0; // Solo: Yes
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.skipCutscenes = 1; // Yes
+    sPersonalityTestTracker->unk4.skipCutscenes = 0; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
     SetPlaySoloSetting(0);
     SetRecruitAllSetting(2);
@@ -277,8 +277,7 @@ u32 HandleTestTrackerState(void)
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
-            if (GetSkipCutscenesSetting())
-                ApplySkipStartMinimal();
+            // SkipCutscenes no longer changes start state.
             return 3;
         default:
             break;
@@ -659,31 +658,9 @@ static void HandleDifficultySelection(void)
 // and all main-story missions are complete. Spawn in Team Base Inside,
 // seed basic items/news, and clear any pending GO flags.
 // (skipCutscenes postgame bootstrap removed)
-static void ApplySkipStartMinimal(void)
+UNUSED static void ApplySkipStartMinimal(void)
 {
-    // Minimal start override for skip mode: spawn at Team Base Inside free‑roam
-    // and clamp main scenario to postgame to avoid early flows.
-    SetScriptVarValue(NULL, START_MODE, 2); // MODE_GROUND
-    SetScriptVarValue(NULL, SCENARIO_MAIN, 0x12); // Post-Rayquaza baseline
-    SetScriptVarValue(NULL, GROUND_ENTER, MAP_TEAM_BASE_INSIDE);
-    SetScriptVarValue(NULL, GROUND_ENTER_LINK, 0);
-    SetScriptVarValue(NULL, GROUND_GETOUT, MAP_TEAM_BASE_INSIDE);
-    SetScriptVarValue(NULL, DUNGEON_SELECT, -1);
-
-    // Seed mailbox/news and a small starter kit so base menus and
-    // inventory are available immediately (Toolbox/rescue kit vibe).
-    sub_8096488();   // Put Pokémon News (floor 0) in mailbox
-    sub_80961B4();   // Enable news generation pipeline
-
-    // Light starter item set if inventory is empty of basics.
-    if (FindItemInInventory(ITEM_ORAN_BERRY) < 0 && FindItemInInventory(ITEM_REVIVER_SEED) < 0) {
-        AddItemIdToInventory(ITEM_ORAN_BERRY, FALSE);
-        AddItemIdToInventory(ITEM_PECHA_BERRY, FALSE);
-        AddItemIdToInventory(ITEM_RAWST_BERRY, FALSE);
-        AddItemIdToInventory(ITEM_REVIVER_SEED, FALSE);
-        AddItemIdToInventory(ITEM_PECHA_SCARF, FALSE);
-        FillInventoryGaps();
-    }
+    // Intentionally no-op: SkipCutscenes no longer alters start state.
 }
 
 static void RevealStarter(void)

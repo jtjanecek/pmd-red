@@ -9,6 +9,7 @@
 #include "pokemon.h"
 #include "strings.h"
 #include "dungeon_data.h"
+#include "mgba_log.h"
 
 EWRAM_DATA static bool8 sBoughtFriendAreas[NUM_FRIEND_AREAS] = {0};
 
@@ -131,6 +132,7 @@ const u8 *GetFriendAreaDescription(u8 index)
 void UnlockFriendArea(u8 index)
 {
     gFriendAreas[index] = TRUE;
+    MGBA_Warnf("[FA] unlock id=%d", index);
 }
 
 bool8 GetFriendAreaStatus(u8 index)

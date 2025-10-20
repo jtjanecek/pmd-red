@@ -252,3 +252,49 @@ Logging quick reference
 - `[GS] enforce TB|SQ: …` — scene‑aware GO corrections
 - `[GS] skip … end` — end‑room skip progression
 - `[WM] allow … / print …` — Dungeons list gating and rendering traces
+
+
+# Examples:
+POSTGAME:
+Leaving base:
+[WARN] GBA Debug: [GS] dump(pre-station): scen=19 start=2 GE=9 GEL=0 GO=12 GM=9 GP=10 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[0,0,0,0]
+[WARN] GBA Debug: [GS] exec station map=11 group=7 sector=0 set=1 place=10
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=19 start=2 GE=9 GEL=0 GO=12 GM=9 GP=10 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[0,0,0,0]
+[WARN] GBA Debug: [GS] dump(post-exec): scen=19 start=2 GE=9 GEL=0 GO=12 GM=9 GP=10 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[0,0,0,0]
+
+There were no GS updates on saving.
+
+
+After completing a random dungeon in post game:
+Waking up in post game (no cutscene)
+[WARN] GBA Debug: [GS] dump(pre-station): scen=19 start=9 GE=178 GEL=0 GO=9 GM=9 GP=0 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] exec station map=4 group=11 sector=0 set=1 place=4
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=19 start=9 GE=178 GEL=0 GO=9 GM=9 GP=0 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(post-exec): scen=19 start=9 GE=178 GEL=0 GO=9 GM=9 GP=0 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(pre-station): scen=19 start=9 GE=178 GEL=0 GO=9 GM=9 GP=0 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] exec station map=11 group=6 sector=0 set=1 place=10
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=19 start=9 GE=178 GEL=0 GO=9 GM=9 GP=0 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(post-exec): scen=19 start=9 GE=178 GEL=0 GO=9 GM=9 GP=0 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+
+[WARN] GBA Debug: [GS] dump(pre-station): scen=19 start=9 GE=12 GEL=0 GO=12 GM=12 GP=11 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] exec station map=14 group=8 sector=0 set=1 place=11
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=12 GP=11 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(post-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=12 GP=11 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+
+
+
+# Post Game title screen GS sets in postgame loading the save (vanilla)
+[WARN] GBA Debug: [GS] dump(pre-station): scen=19 start=9 GE=12 GEL=0 GO=12 GM=227 GP=37 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] exec station map=226 group=1 sector=0 set=1 place=37
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=227 GP=37 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(post-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=227 GP=37 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(pre-station): scen=19 start=9 GE=12 GEL=0 GO=12 GM=226 GP=37 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] exec station map=5 group=5 sector=0 set=1 place=5
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=226 GP=37 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(post-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=226 GP=37 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(pre-station): scen=19 start=9 GE=12 GEL=0 GO=12 GM=5 GP=5 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] exec station map=224 group=4 sector=0 set=1 place=37
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=5 GP=5 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+[WARN] GBA Debug: [GS] dump(post-exec): scen=19 start=9 GE=12 GEL=0 GO=12 GM=5 GP=5 DS=47 DE=81 DEI=0 DR=9 BK=0 BL=2 WL=0 s1=31 s2=33 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[1,0,0,0]
+
+this is postgame log example above before we even load into base and click continue, just loading the rom

@@ -94,8 +94,8 @@ extern void sub_80973A8(s32, u32);          // set GO flag
 extern void sub_8096488(void);              // seed initial news
 
 // Linear skip mode helpers (alternative to scene-aware skip flow)
-// Temporarily disable all skip-cutscene linear flow; we'll revisit later.
-static inline bool8 IsSkipLinearMode(void) { return FALSE; }
+// Enable linear flow when SkipCutscenes is ON. Keep the legacy per-scene flow disabled.
+static inline bool8 IsSkipLinearMode(void) { return GetSkipCutscenesSetting(); }
 static inline bool8 UseOldSkipCutsceneFlow(void) { return FALSE; }
 
 // Main-story linear progression order for SkipCutscenes=ON
@@ -1875,6 +1875,80 @@ s32 ExecuteScriptCommand(Action *action)
                 map = GetAdjustedGroundMap(map);
                 DebugDumpCoreVars("pre-station");
 
+                // Minimal cutscene skip: postgame and free-roam stabilizers
+                if (GetSkipCutscenesSetting()) {
+                    s32 placeNow = gGroundMapConversionTable[map].groundPlaceId;
+                    // In Team Base Inside, suppress various morning/wake/control stations.
+                    // Known stations from logs to suppress: g41 (wake), g42 (dream), g45 (postgame morning),
+                    // and 6/8/11 control stations that run on postgame wake without visible cutscenes.
+                    if (placeNow == GROUND_PLACE_TEAM_BASE_INSIDE) {
+                        if (group == 45 && sector == 0) {
+                            // Redirect postgame morning to free-roam (g16 s0) and preselect Lives/Objects
+                            // so the map is populated immediately, avoiding black screens and loops.
+                        MGBA_Warnf("[GS] skip: TB Inside g45 s0 -> redirect to g16 s1 (free-roam)");
+                        // Normalize scenario to post‑Rayquaza baseline so g16 free‑roam stations populate
+                        // correctly (some TB INSIDE setups expect scen≈0x12, not later postgame values).
+                        if ((s16)GetScriptVarValue(NULL, SCENARIO_MAIN) > 0x12) {
+                            SetScriptVarValue(NULL, SCENARIO_MAIN, 0x12);
+                        }
+                        SetScriptVarValue(NULL, GROUND_GETOUT, map);
+                            // Align current map globals for correct script file/entity resolution.
+                            gUnknown_2039A32 = map;
+                            gUnknown_2039A34 = map;
+                            SetScriptVarValue(NULL, GROUND_MAP, map);
+                            SetScriptVarValue(NULL, GROUND_PLACE, gGroundMapConversionTable[map].groundPlaceId);
+                            group = 16;
+                            sector = 1;
+                            // Ensure the ground map resources are active for this map before entity selection.
+                            GroundMap_Select(map);
+                            GroundLives_Select(map, group, sector);
+                            GroundObject_Select(map, group, sector);
+                            GroundEffect_Select(map, group, sector);
+                            GroundEvent_Select(map, group, sector);
+                            // Also ensure door/bed events from sector 0 are active for leaving/sleeping.
+                            GroundEvent_Select(map, group, 0);
+                            // Do not execute inline; allow the normal exec path below to run.
+                            // This avoids script engine stalls after SAVE.
+                        } else if ((group == 17 || group == 18 || group == 19) && sector == 0) {
+                            // Early-morning variants inside the base. Redirect to free‑roam and run it.
+                            MGBA_Warnf("[GS] skip: TB Inside g%d s0 -> redirect to g16 s0 (free-roam)", group);
+                            // Normalize to true postgame after a save when skipping cutscenes
+                            // so story wake sequences don’t advance SCENARIO_MAIN back to early scenes.
+                            if ((s16)GetScriptVarValue(NULL, SCENARIO_MAIN) < 19)
+                                SetScriptVarValue(NULL, SCENARIO_MAIN, 19);
+                            // Stabilize start mode and base enter/exit to inside
+                            SetScriptVarValue(NULL, START_MODE, 2); // MODE_GROUND
+                            SetScriptVarValue(NULL, GROUND_ENTER, MAP_TEAM_BASE_INSIDE);
+                            SetScriptVarValue(NULL, GROUND_ENTER_LINK, 0);
+                            // Set a one-shot postgame guard used by some resume paths
+                            SetScriptVarArrayValue(NULL, EVENT_S08E01, 0, 1);
+                            SetScriptVarValue(NULL, GROUND_GETOUT, map);
+                            gUnknown_2039A32 = map;
+                            gUnknown_2039A34 = map;
+                            SetScriptVarValue(NULL, GROUND_MAP, map);
+                            SetScriptVarValue(NULL, GROUND_PLACE, gGroundMapConversionTable[map].groundPlaceId);
+                            group = 16;
+                            sector = 0;
+                            // Schedule a clean warp back inside; free‑roam station selection
+                            // will be handled by the normal ground init, avoiding post‑save stalls.
+                            GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                            break;
+                        } else if (group == 41 || group == 42 || group == 6 || group == 8 || group == 11) {
+                            MGBA_Warnf("[GS] skip: TB Inside g%d s%d -> warp inside free-roam", group, sector);
+                            GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                            break;
+                        }
+                    } else if (placeNow == GROUND_PLACE_TEAM_BASE) {
+                        // Team Base (outside) first-day station — suppress when skipping cutscenes
+                        if (group == 18 && sector == 0) {
+                            MGBA_Warnf("[GS] skip: TB Outside g18 s0 -> warp inside free-roam");
+                            GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
+                            break;
+                        }
+                    }
+                    // Do not globally warp from Tiny Woods entry here; routing is handled upstream.
+                }
+
                 // In full skip/postgame mode, clamp scenario forward so early-story
                 // stations cannot reschedule prologue and first-mission flows.
                 if (IsSkipLinearMode()) {
@@ -1903,14 +1977,32 @@ s32 ExecuteScriptCommand(Action *action)
                     }
 
                     // If entering Team Base INSIDE at the default enter station (g0 s0)
-                    // during postgame skip, jump directly to free‑roam (g16 s0).
+                    // during postgame skip, jump directly to free‑roam (g16 s1).
                     if (gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
                         && group == 0 && sector == 0 && (s16)GetScriptVarValue(NULL, SCENARIO_MAIN) >= 0x12) {
                         MGBA_Warnf("[GS] linear-skip: reroute TB INSIDE g0 s0 -> g16 s0 (postgame)");
                         // Ensure getout points to the current inside map to avoid stale returns.
                         SetScriptVarValue(NULL, GROUND_GETOUT, map);
+                        // Align current map globals so SELECT_ENTITIES resolves against the right script file.
+                        gUnknown_2039A32 = map;
+                        gUnknown_2039A34 = map;
+                        SetScriptVarValue(NULL, GROUND_MAP, map);
+                        SetScriptVarValue(NULL, GROUND_PLACE, gGroundMapConversionTable[map].groundPlaceId);
                         group = 16;
                         sector = 0;
+                        // Ensure the ground map resources are active for this map before entity selection.
+                        GroundMap_Select(map);
+                        // Proactively select Lives/Objects/Effects/Events for the free‑roam sector
+                        // to avoid blank screen when arriving via redirect.
+                        GroundLives_Select(map, group, sector);
+                        GroundObject_Select(map, group, sector);
+                        GroundEffect_Select(map, group, sector);
+                        GroundEvent_Select(map, group, sector);
+                        // Load door/bed events from sector 0 as well so the player can leave/sleep.
+                        GroundEvent_Select(map, group, 0);
+                        // Execute the free‑roam station immediately to drive wake/init.
+                        GroundMap_ExecuteStation(map, group, sector, 0);
+                        break;
                     }
 
                     // Suppress Team Base INSIDE “Dream Eater” (Team Meanies/Gengar) cutscene
@@ -1933,16 +2025,28 @@ s32 ExecuteScriptCommand(Action *action)
                         GroundMainGroundRequest(MAP_TEAM_BASE_INSIDE, 0, 30);
                         break;
                     }
-                    // Postgame morning chatter at Team Base INSIDE (group 45 sector 0).
-                    // Redirect in-place to the inside free-roam station (g46 s0) to avoid
-                    // re-scheduling this station and causing loops/black screens.
+                    // Postgame morning chatter at Team Base INSIDE (group 45 sector 0) -> inline redirect to free‑roam
                     if (gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE
                         && group == 45 && sector == 0) {
-                        MGBA_Warnf("[GS] linear-skip: suppress Team Base g45 (postgame morning) -> inside RET_DIRECT (g46 s0)");
+                        MGBA_Warnf("[GS] linear-skip: suppress Team Base g45 (postgame morning) -> redirect to g16 s1");
+                        if ((s16)GetScriptVarValue(NULL, SCENARIO_MAIN) > 0x12) {
+                            SetScriptVarValue(NULL, SCENARIO_MAIN, 0x12);
+                        }
                         SetScriptVarValue(NULL, GROUND_GETOUT, map);
-                        group = 46; // STATION_CONTROL RET_DIRECT
-                        sector = 0;
-                        // Do not break; let GroundMap_ExecuteStation run with updated group/sector.
+                        // Align current map globals so SELECT_ENTITIES resolves against the right script file.
+                        gUnknown_2039A32 = map;
+                        gUnknown_2039A34 = map;
+                        SetScriptVarValue(NULL, GROUND_MAP, map);
+                        SetScriptVarValue(NULL, GROUND_PLACE, gGroundMapConversionTable[map].groundPlaceId);
+                        group = 16;
+                        sector = 1;
+                        // Ensure the ground map resources are active for this map.
+                        GroundMap_Select(map);
+                        GroundLives_Select(map, group, sector);
+                        GroundObject_Select(map, group, sector);
+                        GroundEffect_Select(map, group, sector);
+                        GroundEvent_Select(map, group, sector);
+                        // Do not execute inline; allow the normal exec path below to run.
                     }
                     if (SkipLinear_HandleClearAndWarp())
                         break;
@@ -2678,6 +2782,13 @@ s32 ExecuteScriptCommand(Action *action)
                 }
 
                 res = curCmd.op == 0x1e;
+                // Safety: after save in skip-cutscene postgame, executing TB Inside free‑roam (g16 s0)
+                // with `set=1` can stall the script engine. Force normal station mode.
+                if (GetSkipCutscenesSetting() &&
+                    gGroundMapConversionTable[map].groundPlaceId == GROUND_PLACE_TEAM_BASE_INSIDE &&
+                    group == 16 && sector == 0) {
+                    res = 0;
+                }
                 MGBA_Warnf("[GS] exec station map=%d group=%d sector=%d set=%d place=%d", map, group, sector, res, gGroundMapConversionTable[map].groundPlaceId);
                 DebugDumpCoreVars("pre-exec");
                 GroundMap_ExecuteStation(map, group, sector, res);
@@ -3687,6 +3798,12 @@ s32 ExecuteScriptCommand(Action *action)
                 bool8 setGo = ((u8)curCmd.argByte) > 0;
                 s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
                 MGBA_Warnf("[GS] script GO op id=%d set=%d scen=%d", scriptDungeonId, setGo, scen);
+                if (GetSkipCutscenesSetting()) {
+                    if (scriptDungeonId == SCRIPT_DUNGEON_TINY_WOODS) {
+                        MGBA_Warnf("[GS] skip: block script GO for Tiny Woods at scen=%d", scen);
+                        break;
+                    }
+                }
                 if (UseOldSkipCutsceneFlow() && GetSkipCutscenesSetting() && scriptDungeonId == SCRIPT_DUNGEON_SILENT_CHASM) {
                     if (scen == 5 && !RescueScenarioConquered(SCRIPT_DUNGEON_SINISTER_WOODS)) {
                         MGBA_Warnf("[GS] block script GO for Silent Chasm (scene 5; SW incomplete)");

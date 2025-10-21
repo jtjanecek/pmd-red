@@ -6,7 +6,6 @@
 #include "code_80958E8.h"
 #include "code_80972F4.h"
 #include "code_80A26CC.h"
-#include "mgba_log.h"
 
 #include "data/story_missions.h"
 
@@ -19,7 +18,6 @@ void sub_80972F4(void)
     ClearScriptVarArray(NULL, RESCUE_SCENARIO_ORDER_LIST);
     ClearScriptVarArray(NULL, RESCUE_SCENARIO_JOB_LIST);
     ClearScriptVarArray(NULL, RESCUE_SCENARIO_CONQUEST_LIST);
-    MGBA_Warnf("[GO] reset scenario lists");
 }
 
 void nullsub_128(void)
@@ -57,7 +55,6 @@ void sub_809733C(s16 param_1,u32 param_2)
     uVar2_u16 = uVar2;
     if (GetScriptVarArrayValue(NULL,RESCUE_SCENARIO_JOB_LIST, (u16) uVar2_u16) == 0) {
       SetScriptVarArrayValue(NULL,RESCUE_SCENARIO_ORDER_LIST,uVar2_u16,param_2_u8);
-      MGBA_Warnf("[GO] order id=%d set=%d scen=%d", uVar2, param_2_u8, (s16)GetScriptVarValue(NULL, SCENARIO_MAIN));
       if (param_2_u8) {
         switch(uVar2)
         {
@@ -99,7 +96,6 @@ void sub_80973A8(s32 param_1,u32 param_2)
       }
     }
     SetScriptVarArrayValue(NULL,RESCUE_SCENARIO_JOB_LIST,(u16)param_1_s32,param_2_u32);
-    MGBA_Warnf("[GO] job id=%d set=%d scen=%d", param_1_s32, param_2_u32, (s16)GetScriptVarValue(NULL, SCENARIO_MAIN));
   }
 }
 
@@ -134,7 +130,6 @@ void sub_8097418(s32 index,bool32 param_2)
       sub_8097FF8();
     }
     SetScriptVarArrayValue(NULL,RESCUE_SCENARIO_CONQUEST_LIST,(u16)index_s32,param_2_u8);
-    MGBA_Warnf("[GO] conquered id=%d set=%d scen=%d", index_s32, param_2_u8, (s16)GetScriptVarValue(NULL, SCENARIO_MAIN));
   }
 }
 

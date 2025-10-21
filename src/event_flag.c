@@ -6,7 +6,6 @@
 #include "items.h"
 #include "event_flag.h"
 #include "debug.h"
-#include "mgba_log.h"
 #include "memory.h"
 #include "friend_area.h"
 #include "rescue_team_info.h"
@@ -14,11 +13,11 @@
 #include "friend_area.h"
 #include "code_80972F4.h"
 #include "code_8097670.h"
-#include "save.h"
 #include "pokemon.h"
 #include "pokemon_3.h"
 #include "ground_place.h"
 #include "script_vars_info.h"
+#include "save.h" // GetSkipBasicRescuesSetting
 
 EWRAM_DATA u8 gScriptVarBuffer[SCRIPT_VAR_BUFFER_LEN] = {0}; // NDS=020876DC
 
@@ -26,28 +25,10 @@ EWRAM_DATA u8 gScriptVarBuffer[SCRIPT_VAR_BUFFER_LEN] = {0}; // NDS=020876DC
 
 extern bool8 GetScriptMode(void);
 extern bool8 HasCompletedAllMazes(void);
-extern void sub_809733C(u32, u32);
+extern void sub_809733C(s16, u32);
 extern void sub_80973A8(s32, u32);
 extern void sub_80972F4(void);
 extern void nullsub_128(void);
-
-// Helper: print a script var write in a readable, centralized format.
-static void DebugLogScriptVarWrite(u8 *localVarBuf, s32 varId, s32 idx, s32 val, bool8 isArray)
-{
-    const struct ScriptVarInfo *infoPtr;
-    const char *name;
-    if (varId < LOCAL0) {
-        infoPtr = &gScriptVarInfo[varId];
-    } else {
-        infoPtr = &sLocalScriptVarInfo[varId - LOCAL0];
-    }
-    name = infoPtr->name ? infoPtr->name : "(unnamed)";
-    if (isArray)
-        MGBA_Warnf("[SV] %s[%d] = %d", name, (int)idx, (int)val);
-    else
-        MGBA_Warnf("[SV] %s = %d", name, (int)val);
-    (void)localVarBuf; // silence unused warning for matching
-}
 
 // arm9.bin::0200FF68
 void ThoroughlyResetScriptVars(void)
@@ -91,12 +72,11 @@ void ThoroughlyResetScriptVars(void)
     SetScriptVarValue(NULL,DUNGEON_ENTER_INDEX,-1);
     SetScriptVarValue(NULL,DUNGEON_RESULT,0);
     SetScriptVarValue(NULL,START_MODE,0);
-    // Set CLEAR_COUNT based on skipBasicRescues setting
-    if (GetSkipBasicRescuesSetting()) {
-        SetScriptVarValue(NULL,CLEAR_COUNT,90); // High value to bypass all requirements
-    } else {
-        SetScriptVarValue(NULL,CLEAR_COUNT,0); // Vanilla behavior
-    }
+    // If skip-basic-rescues is ON, bump CLEAR_COUNT high to bypass basics
+    if (GetSkipBasicRescuesSetting())
+        SetScriptVarValue(NULL,CLEAR_COUNT,100);
+    else
+        SetScriptVarValue(NULL,CLEAR_COUNT,0);
     SetScriptVarValue(NULL,WEATHER_KIND,-1);
     SetScriptVarValue(NULL,PLAYER_KIND,0);
     SetScriptVarValue(NULL,PARTNER1_KIND,0);
@@ -328,8 +308,6 @@ void SetScriptVarValue(u8 *localVarBuf, s32 varId_, s32 val)
             }
         }
     }
-    // Debug log every write for visibility of story/progression state
-    DebugLogScriptVarWrite(localVarBuf, varID, -1, val, FALSE);
 }
 
 // arm9.bin::0200F5A8
@@ -392,8 +370,6 @@ void SetScriptVarArrayValue(u8 *localVarBuf, s32 varId_, s32 idx_, s32 val)
             }
         }
     }
-    // Debug log every write for visibility of story/progression state
-    DebugLogScriptVarWrite(localVarBuf, varID, idx, val, TRUE);
 }
 
 #if (GAME_VERSION == VERSION_RED)
@@ -491,12 +467,11 @@ void ScenarioCalc(s16 param_1,s32 param_2,s32 param_3)
   GetScriptVarScenario(param_1_s32,&local_18,&local_14);
   Log(6,"SCENARIO CALC [%3d] %4d %4d -> %4d %4d",param_1_s32,local_18,local_14,param_2,param_3);
   if ((param_1_s32 == 3) && ((param_2 != local_18 || (param_3 != local_14)))) {
-    // Reset CLEAR_COUNT based on skipBasicRescues setting
-    if (GetSkipBasicRescuesSetting()) {
-        SetScriptVarValue(NULL,CLEAR_COUNT,90); // High value to bypass all requirements
-    } else {
-        SetScriptVarValue(NULL,CLEAR_COUNT,0); // Vanilla behavior
-    }
+    // On main scenario changes, re-apply skip-basic-rescues CLEAR_COUNT policy
+    if (GetSkipBasicRescuesSetting())
+        SetScriptVarValue(NULL,CLEAR_COUNT,100);
+    else
+        SetScriptVarValue(NULL,CLEAR_COUNT,0);
   }
   SetScriptVarArrayValue(NULL,param_1_s32,0,param_2);
   SetScriptVarArrayValue(NULL,param_1_s32,1,param_3);

@@ -649,9 +649,6 @@ static const struct ScriptCommand s_gs12_g9_s0_lives0_dlg0[] = { /* 0x81e2ec0 */
     VARIANT_DEFAULT(_(" We should go!\nTo the {COLOR YELLOW_D}Great Canyon{RESET}!")),
     TEXTBOX_CLEAR,
     ALERT_CUE(3),
-    // After Spinda gives the Clear Wing, mark Great Canyon as GO so the
-    // Dungeons list shows the intended next step in the chain.
-    { 0xaf, 0x01,  0x000f,  0x00000000,  0x00000000, NULL },
     HALT,
 };
 

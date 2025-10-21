@@ -172,7 +172,7 @@ static void InitializeTestStats(void)
     SetPlaySoloSetting(0);
     SetRecruitAllSetting(2);
     SetSkipBasicRescuesSetting(1);
-    SetSkipCutscenesSetting(1);
+    SetSkipCutscenesSetting(0);
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     
     // Level up team to 100 in dev mode

@@ -96,7 +96,11 @@ void SetGameDifficultySetting(u32 value)
 
 u8 GetSkipCutscenesSetting(void)
 {
-    return gSkipCutscenesSetting;
+    // Make SkipCutscenes a hard no-op across the codebase.
+    // Keep the flag, persistence, and debug statements, but never
+    // allow runtime behavior to trigger off this setting.
+    (void)gSkipCutscenesSetting; // preserve symbol, avoid unused warnings
+    return 0;
 }
 
 void SetSkipCutscenesSetting(u8 value)

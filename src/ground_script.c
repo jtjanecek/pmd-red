@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "ground_script.h"
+#include "mgba_log.h"
 #include "constants/dungeon.h"
 #include "constants/friend_area.h"
 #include "constants/item.h"
@@ -50,6 +51,8 @@
 #include "ground_map_conversion_table.h"
 #include "unk_ds_only_feature.h"
 #include "textbox.h"
+#include "ground_map_conversion_table.h"
+#include "story_debug.h"
 
 void GroundMap_Select(s16);
 void GroundMap_SelectDungeon(s32, DungeonLocation*, u32);
@@ -118,6 +121,41 @@ void DeleteGroundEffects(void);
 s32 ExecuteScriptCommand(Action *action);
 bool8 sub_8099B94(void);
 PixelPos SetVecFromDirectionSpeed(s8, s32);
+
+// Debug: dump core script variables for station routing visibility
+static void GS_DumpCoreVars(const char *tag)
+{
+    s32 scen = (s16)GetScriptVarValue(NULL, SCENARIO_MAIN);
+    s32 start = (s16)GetScriptVarValue(NULL, START_MODE);
+    s32 ge = (s16)GetScriptVarValue(NULL, GROUND_ENTER);
+    s32 gel = (u8)GetScriptVarValue(NULL, GROUND_ENTER_LINK);
+    s32 go = (s16)GetScriptVarValue(NULL, GROUND_GETOUT);
+    s32 gm = (s16)GetScriptVarValue(NULL, GROUND_MAP);
+    s32 gp = (s16)GetScriptVarValue(NULL, GROUND_PLACE);
+    s32 ds = (s16)GetScriptVarValue(NULL, DUNGEON_SELECT);
+    s32 de = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+    s32 dei = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
+    s32 dr = (u8)GetScriptVarValue(NULL, DUNGEON_RESULT);
+    s32 baseK = (s8)GetScriptVarValue(NULL, BASE_KIND);
+    s32 baseL = (s8)GetScriptVarValue(NULL, BASE_LEVEL);
+    s32 warpL = (s8)GetScriptVarValue(NULL, WARP_LOCK);
+    s32 s1 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB1);
+    s32 s2 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB2);
+    s32 s3 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB3);
+    s32 s4 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB4);
+    s32 s5 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB5);
+    s32 s6 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB6);
+    s32 s7 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB7);
+    s32 s8 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB8);
+    s32 s9 = (u8)GetScriptVarValue(NULL, SCENARIO_SUB9);
+    s32 e8_0 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 0);
+    s32 e8_1 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 1);
+    s32 e8_2 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 2);
+    s32 e8_3 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 3);
+    MGBA_Warnf("[GS] dump(%s): scen=%d start=%d GE=%d GEL=%d GO=%d GM=%d GP=%d DS=%d DE=%d DEI=%d DR=%d BK=%d BL=%d WL=%d s1=%d s2=%d s3=%d s4=%d s5=%d s6=%d s7=%d s8=%d s9=%d E8=[%d,%d,%d,%d]",
+               tag, scen, start, ge, gel, go, gm, gp, ds, de, dei, dr, baseK, baseL, warpL,
+               s1, s2, s3, s4, s5, s6, s7, s8, s9, e8_0, e8_1, e8_2, e8_3);
+}
 bool8 sub_8098DCC(u32 speed);
 
 void sub_8099220(void *param_1, s32 param_2);
@@ -1710,7 +1748,15 @@ s32 ExecuteScriptCommand(Action *action)
                 }
                 map = GetAdjustedGroundMap(map);
                 res = curCmd.op == 0x1e;
+                GS_DumpCoreVars("pre-station");
+                DumpStoryFlags("pre-station");
+                MGBA_Warnf("[GS] exec station map=%d group=%d sector=%d set=%d place=%d",
+                           map, group, sector, res, gGroundMapConversionTable[map].groundPlaceId);
+                GS_DumpCoreVars("pre-exec");
+                DumpStoryFlags("pre-exec");
                 GroundMap_ExecuteStation(map, group, sector, res);
+                GS_DumpCoreVars("post-exec");
+                DumpStoryFlags("post-exec");
                 if (gUnknown_2039A34 != map) {
                     gUnknown_2039A34 = map;
                     GroundCancelAllEntities();

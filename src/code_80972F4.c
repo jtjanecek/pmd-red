@@ -6,6 +6,8 @@
 #include "code_80958E8.h"
 #include "code_80972F4.h"
 #include "code_80A26CC.h"
+#include "mgba_log.h"
+#include "story_debug.h"
 
 #include "data/story_missions.h"
 
@@ -96,6 +98,10 @@ void sub_80973A8(s32 param_1,u32 param_2)
       }
     }
     SetScriptVarArrayValue(NULL,RESCUE_SCENARIO_JOB_LIST,(u16)param_1_s32,param_2_u32);
+    MGBA_Warnf("[GO] job id=%d set=%d scen=%d DS=%d", param_1_s32, param_2_u32,
+               (s16)GetScriptVarValue(NULL, SCENARIO_MAIN),
+               (s16)GetScriptVarValue(NULL, DUNGEON_SELECT));
+    DumpStoryFlags("go-set");
   }
 }
 
@@ -130,6 +136,10 @@ void sub_8097418(s32 index,bool32 param_2)
       sub_8097FF8();
     }
     SetScriptVarArrayValue(NULL,RESCUE_SCENARIO_CONQUEST_LIST,(u16)index_s32,param_2_u8);
+    MGBA_Warnf("[GO] conquered id=%d set=%d scen=%d DS=%d", index_s32, param_2_u8,
+               (s16)GetScriptVarValue(NULL, SCENARIO_MAIN),
+               (s16)GetScriptVarValue(NULL, DUNGEON_SELECT));
+    DumpStoryFlags("conq-set");
   }
 }
 

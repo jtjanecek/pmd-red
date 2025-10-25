@@ -1284,7 +1284,9 @@ bool8 sub_80A27CC(s16 r0)
     s32 temp2;
     const DungeonInfo *t;
 
-    // SkipCutscenes no longer changes dungeon list visibility.
+    // If SkipCutscenes is ON, always list dungeons whose entries are valid.
+    // This makes all story + postgame dungeons visible without relying on
+    // story flags. The list builder still filters special cases (e.g. 0x13, 0x1D).
 
     // Same dumbness as above to get a match
     temp2 = r0;
@@ -1293,6 +1295,8 @@ bool8 sub_80A27CC(s16 r0)
     t = sub_80A2620(r0);
     if (t->unk0 == -1)
         return FALSE;
+    if (GetSkipCutscenesSetting())
+        return TRUE;
     if (sub_80023E4(5))
         return FALSE;
     if (sub_8097384(r0))
@@ -1309,7 +1313,9 @@ bool8 sub_80A2824(u8 index)
     s32 i;
     const DungeonInfo *temp;
 
-    // SkipCutscenes no longer changes dungeon selection gating.
+    // If SkipCutscenes is ON, allow selecting any visible dungeon.
+    if (GetSkipCutscenesSetting())
+        return TRUE;
 
     if (sub_80023E4(5))
         return FALSE;

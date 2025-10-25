@@ -96,11 +96,10 @@ void SetGameDifficultySetting(u32 value)
 
 u8 GetSkipCutscenesSetting(void)
 {
-    // Make SkipCutscenes a hard no-op across the codebase.
-    // Keep the flag, persistence, and debug statements, but never
-    // allow runtime behavior to trigger off this setting.
-    (void)gSkipCutscenesSetting; // preserve symbol, avoid unused warnings
-    return 0;
+    // Return the persisted SkipCutscenes flag selected in the personality quiz.
+    // Other systems that previously reacted to this flag were disabled in-code,
+    // so this now only drives the post-quiz bootstrap behavior we implement.
+    return gSkipCutscenesSetting;
 }
 
 void SetSkipCutscenesSetting(u8 value)

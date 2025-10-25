@@ -17,7 +17,8 @@
 #include "pokemon_3.h"
 #include "ground_place.h"
 #include "script_vars_info.h"
-#include "save.h" // GetSkipBasicRescuesSetting
+#include "save.h" // GetSkipBasicRescuesSetting, GetSkipCutscenesSetting
+#include "constants/script_dungeon_id.h" // SCRIPT_DUNGEON_COUNT
 
 EWRAM_DATA u8 gScriptVarBuffer[SCRIPT_VAR_BUFFER_LEN] = {0}; // NDS=020876DC
 
@@ -569,7 +570,7 @@ void sub_8001D88(void)
   u32 auStack8;
 
   GetScriptVarScenario(3, &auStack8, &local_c);
-  if (auStack8 - 1 < 0x1b) {
+    if (auStack8 - 1 < 0x1b) {
     if (ScriptVarScenarioBefore(SCENARIO_SUB1,0x1f,0) != 0) {
       if (ScriptVarScenarioAfter(SCENARIO_MAIN,0xf,7) != 0) {
         ScenarioCalc(SCENARIO_SUB1,0x1f,0);
@@ -582,6 +583,10 @@ void sub_8001D88(void)
         }
       }
     }
+    
+    // Keep GO arrays untouched here to avoid per-ground performance cost.
+    // Visibility and gating are overridden directly in code_80A26CC when
+    // SkipCutscenes is enabled.
     if ((ScriptVarScenarioEqual(SCENARIO_SUB1,0x1f,0)) && (GetFriendAreaStatus(SKY_BLUE_PLAINS))) {
       ScenarioCalc(SCENARIO_SUB1,0x1f,1);
       sub_809733C(0xf,1);

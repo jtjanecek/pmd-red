@@ -21,8 +21,11 @@
 #include "text_1.h"
 #include "text_2.h"
 #include "text_util.h"
-#include "event_flag.h" // SetScriptVarValue
+#include "event_flag.h" // SetScriptVarValue, ScenarioCalc
 #include "constants/ground_map.h" // MAP_TEAM_BASE_INSIDE
+#include "ground_place.h" // GROUND_PLACE_TEAM_BASE_INSIDE
+#include "save_write.h" // Prepare/Write/Finish save
+#include "ground_main.h" // GroundMainGameEndRequest
 #include "constants/script_dungeon_id.h"
 #include "constants/event_flag.h" // SCENARIO_MAIN, GROUND_ENTER, GROUND_ENTER_LINK
 #include "code_80972F4.h"
@@ -66,6 +69,9 @@ enum
     PERSONALITY_END_INTRO,
     PERSONALITY_ADVANCE_TO_TEST_END,
     PERSONALITY_TEST_END,
+    // Bootstrap flow when SkipCutscenes is ON
+    PERSONALITY_SKIP_BOOTSTRAP_SAVE_INIT,
+    PERSONALITY_SKIP_BOOTSTRAP_SAVING,
 };
 
 static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
@@ -122,6 +128,7 @@ static void CleanupNamingScreen(void);
 static void HandleDifficultySelection(void);
 UNUSED static void ApplySkipStartMinimal(void);
 // Skip-cutscene override is disabled for now; no postgame force.
+static void ApplySkipPostgameBootstrap(void);
 
 bool8 CreateTestTracker(void)
 {
@@ -167,12 +174,12 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.playSolo = 0; // Solo: Yes
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.skipCutscenes = 0; // Yes
+    sPersonalityTestTracker->unk4.skipCutscenes = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
     SetPlaySoloSetting(0);
     SetRecruitAllSetting(2);
     SetSkipBasicRescuesSetting(1);
-    SetSkipCutscenesSetting(0);
+    SetSkipCutscenesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     
     // Level up team to 100 in dev mode
@@ -277,8 +284,32 @@ u32 HandleTestTrackerState(void)
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
-            // SkipCutscenes no longer changes start state.
+            // Commit the chosen starter/partner/team-name into global state
+            // so subsequent systems (and DEV mode) don't fall back to defaults.
+            sub_8001044(&sPersonalityTestTracker->unk4);
+            // If SkipCutscenes is ON, bootstrap to postgame, save, and return to title.
+            if (GetSkipCutscenesSetting()) {
+                // Apply postgame flags and team initialization, then start save UI.
+                ApplySkipPostgameBootstrap();
+                // Mark continue mode for resume from title.
+                SetScriptVarValue(NULL, START_MODE, 1); // MODE_CONTINUE_GAME
+                // Persist to save so Continue is available on title.
+                // Also ensure the save uses the neutral portrait.
+                sub_8011C28(1);
+                PrepareSavePakWrite(MONSTER_NONE);
+                sPersonalityTestTracker->TestState = PERSONALITY_SKIP_BOOTSTRAP_SAVING;
+                return 0;
+            }
+            // Otherwise, continue into the normal new-game flow.
             return 3;
+        case PERSONALITY_SKIP_BOOTSTRAP_SAVING:
+            // Drive the save UI to completion; then return to title.
+            if (WriteSavePak())
+                return 0;
+            FinishWriteSavePak();
+            // End game and kick back to the title screen; Continue will be available.
+            GroundMainGameEndRequest(60);
+            return 0;
         default:
             break;
     }
@@ -661,6 +692,71 @@ static void HandleDifficultySelection(void)
 UNUSED static void ApplySkipStartMinimal(void)
 {
     // Intentionally no-op: SkipCutscenes no longer alters start state.
+}
+
+// Minimal state setup to mirror a "postgame" start, used when SkipCutscenes=ON
+// after finishing the personality quiz. This marks the main scenario as
+// postgame, spawns the player inside the Team Base, and seeds some initial
+// mailbox/news so the world looks sane on first load.
+static void ApplySkipPostgameBootstrap(void)
+{
+    // Ensure the chosen hero/partner/team-name are committed to the global
+    // personality state used by team creation, then materialize the team.
+    // This mirrors what DeleteTestTracker() would do in the normal flow.
+    sub_8001044(&sPersonalityTestTracker->unk4);
+    sub_8001064();
+
+    // Scenario: set main scenario & sub-scenarios to match the
+    // story_flow.md "Vanilla Post Game Example" snapshot.
+    // Main: SCEN=[19,2]
+    ScenarioCalc(SCENARIO_MAIN, 19, 2);
+    // Subs: S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0]
+    //       S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+    ScenarioCalc(SCENARIO_SUB1, 31, 1);
+    ScenarioCalc(SCENARIO_SUB2, 35, 0);
+    ScenarioCalc(SCENARIO_SUB3, 37, 0);
+    ScenarioCalc(SCENARIO_SUB4, 43, 2);
+    ScenarioCalc(SCENARIO_SUB5, 45, 0);
+    ScenarioCalc(SCENARIO_SUB6, 48, 0);
+    ScenarioCalc(SCENARIO_SUB7, 50, 0);
+    ScenarioCalc(SCENARIO_SUB8, 52, 0);
+    ScenarioCalc(SCENARIO_SUB9, 55, 3);
+
+    // Use the final base interior for postgame look-and-feel.
+    SetScriptVarValue(NULL, BASE_LEVEL, 2);
+
+    // Enter: resume into the Team Base (inside) when continuing from title.
+    SetScriptVarValue(NULL, GROUND_ENTER, MAP_TEAM_BASE_INSIDE);
+    SetScriptVarValue(NULL, GROUND_ENTER_LINK, 0);
+    SetScriptVarValue(NULL, GROUND_GETOUT, MAP_TEAM_BASE_INSIDE);
+    SetScriptVarValue(NULL, GROUND_MAP, -1);
+    SetScriptVarValue(NULL, GROUND_PLACE, GROUND_PLACE_TEAM_BASE_INSIDE);
+
+    // Clear any dungeon selection/resolution state. Use the DS observed in
+    // story_flow for the postgame snapshot (DS=50), which is harmless.
+    SetScriptVarValue(NULL, DUNGEON_SELECT, 50);
+    SetScriptVarValue(NULL, DUNGEON_ENTER, 0);
+    SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
+    SetScriptVarValue(NULL, DUNGEON_RESULT, 0);
+
+    // For initial dev convenience, mark ALL dungeons seen/open.
+    // Set both job-present and conquered for every script dungeon (except
+    // index 13 which is reserved by the engine helpers). This ensures
+    // Tiny Woods, Thunderwave Cave, etc., all show without further story
+    // logic.
+    {
+        s32 i;
+        for (i = 0; i < SCRIPT_DUNGEON_COUNT; i++) {
+            if (i == 13) // reserved slot per engine checks
+                continue;
+            sub_80973A8(i, 1);   // mark job present (reveals in list)
+            sub_8097418(i, 1);   // mark conquered (unlocks selection gates)
+        }
+    }
+
+    // Basic QoL: seed Pelipper jobs and Pokémon News so the mailbox isn't empty.
+    sub_80961B4();     // seed Pelipper jobs
+    sub_8096488();     // seed Pokémon News
 }
 
 static void RevealStarter(void)

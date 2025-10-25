@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "palette_util.h"
+#include "save.h" // GetSkipCutscenesSetting
 #include "bg_palette_buffer.h"
 #include "palette_fade_util.h"
 
@@ -311,6 +312,10 @@ void sub_8099AFC(s32 a0, s32 a1, RGB_Array a2)
 
 bool8 sub_8099B94(void)
 {
+    // In SkipCutscenes mode, report no pending fades to avoid blocking
+    // the ground->dungeon handoff on the first entry after Continue.
+    if (GetSkipCutscenesSetting())
+        return FALSE;
     if (gUnknown_2039990)
         return TRUE;
     if (gUnknown_2039978.unk0 != 0) {

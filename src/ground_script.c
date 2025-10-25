@@ -1778,7 +1778,11 @@ s32 ExecuteScriptCommand(Action *action)
                         }
                         // Defensive: clear transient enter-index before requesting the dungeon
                         SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
-                        GroundMainRescueRequest(a, -1);
+                        // Use a sane fade speed when SkipCutscenes is ON to avoid first-entry stall
+                        if (GetSkipCutscenesSetting())
+                            GroundMainRescueRequest(a, 0x1e);
+                        else
+                            GroundMainRescueRequest(a, -1);
                     } else {
                         GroundMap_ExecuteEvent(thing, 0);
                         break;
@@ -1786,7 +1790,10 @@ s32 ExecuteScriptCommand(Action *action)
                 } else {
                     // Defensive: clear transient enter-index before requesting the dungeon
                     SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
-                    GroundMainRescueRequest(a, -1);
+                    if (GetSkipCutscenesSetting())
+                        GroundMainRescueRequest(a, 0x1e);
+                    else
+                        GroundMainRescueRequest(a, -1);
                 }
                 break;
             }

@@ -429,6 +429,8 @@ SECTIONS {
         *libc.a:lseekr.o(.text);
         *libc.a:readr.o(.text);
         *libgcc.a:_udivsi3.o(.text);
+        /* include BIOS syscall stubs (SoftReset, RegisterRamReset, etc.) */
+        *libagbsyscall.a:*.o(.text);
     }  > ROM =0
 
     .rodata :

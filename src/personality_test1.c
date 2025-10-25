@@ -26,6 +26,7 @@
 #include "ground_place.h" // GROUND_PLACE_TEAM_BASE_INSIDE
 #include "save_write.h" // Prepare/Write/Finish save
 #include "ground_main.h" // GroundMainGameEndRequest
+#include "gba/syscall.h" // SoftReset, RESET_ALL
 #include "constants/script_dungeon_id.h"
 #include "constants/event_flag.h" // SCENARIO_MAIN, GROUND_ENTER, GROUND_ENTER_LINK
 #include "code_80972F4.h"
@@ -307,8 +308,9 @@ u32 HandleTestTrackerState(void)
             if (WriteSavePak())
                 return 0;
             FinishWriteSavePak();
-            // End game and kick back to the title screen; Continue will be available.
-            GroundMainGameEndRequest(60);
+            // Perform a full soft reset so post-save behavior exactly matches
+            // a fresh emulator boot. Continue will be available on the title.
+            SoftReset(RESET_ALL);
             return 0;
         default:
             break;

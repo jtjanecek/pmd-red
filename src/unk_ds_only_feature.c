@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "unk_ds_only_feature.h"
+#include "save.h" // GetSkipCutscenesSetting
 #include "memory.h"
 #include "game_options.h"
 #include "event_flag.h"
@@ -145,6 +146,9 @@ bool8 sub_809C730(void)
 
 bool8 sub_809C740(void)
 {
+    // In SkipCutscenes mode, do not block on transition ticker; proceed immediately.
+    if (GetSkipCutscenesSetting())
+        return TRUE;
     if (sUnknown_3001B68->unk0 == 0)
         return TRUE;
     else

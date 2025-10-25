@@ -546,6 +546,14 @@ void sub_80847D4(void)
     // In PlaySolo mode, we skip running the pre-fight setup + dialogues,
     // but we keep gDungeon->unk3A0D intact so post-battle triggers work.
     sub_8097FF8();
+
+    // If SkipCutscenes is enabled, aggressively disable dungeon cutscene
+    // triggers by clearing the selector. This suppresses both pre-fight and
+    // post-battle dialogue dispatch later.
+    if (GetSkipCutscenesSetting()) {
+        gDungeon->unk3A0D = 0;
+        gDungeon->unk1356C = 0;
+    }
 }
 
 static void sub_8084854(const struct unkData_8107234 *param_1)
@@ -577,7 +585,7 @@ bool8 ShouldShowDungeonBanner(void)
 
 void sub_80848F0(void)
 {
-  if (GetPlaySoloSetting()) {
+  if (GetPlaySoloSetting() || GetSkipCutscenesSetting()) {
     // Normalize boss room layout (enemies to top row+1; leader 3 rows below)
     SoloNormalizeBossRoomLayout();
     // Skip pre-fight setup in PlaySolo (keep unk3A0D for victory triggers)
@@ -757,7 +765,7 @@ void sub_80848F0(void)
 
 void DisplayPreFightDialogue(void)
 {
-  if (GetPlaySoloSetting()) {
+  if (GetPlaySoloSetting() || GetSkipCutscenesSetting()) {
     // Skip dialogue in PlaySolo; triggers still work based on unk3A0D
     return;
   }

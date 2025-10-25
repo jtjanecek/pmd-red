@@ -1776,12 +1776,16 @@ s32 ExecuteScriptCommand(Action *action)
                         if (ScriptLoggingEnabled(TRUE)) {
                             Log(1, "    dungeon rescue select %3d", a);
                         }
+                        // Defensive: clear transient enter-index before requesting the dungeon
+                        SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
                         GroundMainRescueRequest(a, -1);
                     } else {
                         GroundMap_ExecuteEvent(thing, 0);
                         break;
                     }
                 } else {
+                    // Defensive: clear transient enter-index before requesting the dungeon
+                    SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
                     GroundMainRescueRequest(a, -1);
                 }
                 break;

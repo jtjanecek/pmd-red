@@ -732,9 +732,9 @@ static void ApplySkipPostgameBootstrap(void)
     SetScriptVarValue(NULL, GROUND_MAP, -1);
     SetScriptVarValue(NULL, GROUND_PLACE, GROUND_PLACE_TEAM_BASE_INSIDE);
 
-    // Clear any dungeon selection/resolution state. Use the DS observed in
-    // story_flow for the postgame snapshot (DS=50), which is harmless.
-    SetScriptVarValue(NULL, DUNGEON_SELECT, 50);
+    // Clear any dungeon selection/resolution state. Use the neutral default
+    // (-1) so world-map/dungeon selection logic can set it explicitly.
+    SetScriptVarValue(NULL, DUNGEON_SELECT, -1);
     SetScriptVarValue(NULL, DUNGEON_ENTER, 0);
     SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
     SetScriptVarValue(NULL, DUNGEON_RESULT, 0);
@@ -752,6 +752,18 @@ static void ApplySkipPostgameBootstrap(void)
             sub_80973A8(i, 1);   // mark job present (reveals in list)
             sub_8097418(i, 1);   // mark conquered (unlocks selection gates)
         }
+    }
+
+    // Mark all dungeons as already entered and cleared so intro/outro
+    // story beats in early-story dungeons are skipped.
+    {
+        s32 i;
+        for (i = 0; i < SCRIPT_DUNGEON_COUNT; i++) {
+            SetScriptVarArrayValue(NULL, DUNGEON_ENTER_LIST, (u16)i, 1);
+            SetScriptVarArrayValue(NULL, DUNGEON_CLEAR_LIST, (u16)i, 1);
+        }
+        // Ensure the general frequency is treated as repeat visits.
+        SetScriptVarValue(NULL, DUNGEON_ENTER_FREQUENCY, 2);
     }
 
     // Basic QoL: seed Pelipper jobs and Pokémon News so the mailbox isn't empty.

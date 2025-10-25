@@ -1255,6 +1255,12 @@ s16 sub_80A2750(s16 r0)
     temp_32 = r0;
     temp_2 = temp_32;
 
+    // In SkipCutscenes mode, always prefer the direct entry path
+    // (case 2 in callers), bypassing story/event gate checks. This helps
+    // eliminate inconsistent transitions from overworld -> dungeon.
+    if (GetSkipCutscenesSetting())
+        return 2;
+
     if (r0 == 80)
         return 3;
     if (r0 == 81)

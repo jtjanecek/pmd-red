@@ -741,36 +741,39 @@ static void ApplySkipPostgameBootstrap(void)
     SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
     SetScriptVarValue(NULL, DUNGEON_RESULT, 0);
 
-    // For initial dev convenience, mark ALL dungeons seen/open.
-    // Set both job-present and conquered for every script dungeon (except
-    // index 13 which is reserved by the engine helpers). This ensures
-    // Tiny Woods, Thunderwave Cave, etc., all show without further story
-    // logic.
-    {
-        s32 i;
-        for (i = 0; i < SCRIPT_DUNGEON_COUNT; i++) {
-            if (i == 13) // reserved slot per engine checks
-                continue;
-            sub_80973A8(i, 1);   // mark job present (reveals in list)
-            sub_8097418(i, 1);   // mark conquered (unlocks selection gates)
-        }
-    }
-
-    // Mark all dungeons as already entered and cleared so intro/outro
-    // story beats in early-story dungeons are skipped.
-    {
-        s32 i;
-        for (i = 0; i < SCRIPT_DUNGEON_COUNT; i++) {
-            SetScriptVarArrayValue(NULL, DUNGEON_ENTER_LIST, (u16)i, 1);
-            SetScriptVarArrayValue(NULL, DUNGEON_CLEAR_LIST, (u16)i, 1);
-        }
-        // Ensure the general frequency is treated as repeat visits.
-        SetScriptVarValue(NULL, DUNGEON_ENTER_FREQUENCY, 2);
-    }
+    // Do not force-open or pre-clear every dungeon. Let the world
+    // behave like vanilla postgame: Pelipper jobs and normal story
+    // checks will populate GO lists and dungeon availability.
 
     // Basic QoL: seed Pelipper jobs and Pokémon News so the mailbox isn't empty.
     sub_80961B4();     // seed Pelipper jobs
     sub_8096488();     // seed Pokémon News
+
+    // Early-story boss/event flags: mark as completed so dungeons/rooms
+    // naturally route to their postgame branches without custom gating.
+    // This mirrors a file that has finished the main story and avoids
+    // re-triggering fights like Skarmory at Mt. Steel.
+    {
+        // All "post" flags used by the fixed-room cutscene selector table
+        // (gUnknown_8107234[].unk4). Marking these ensures param_1->unk5
+        // (post branch) is selected everywhere relevant.
+        static const u8 kPostgameExclusiveFlags[] = {
+            0x01, 0x03, 0x05, 0x07, 0x09, 0x0A, 0x0C, 0x0D,
+            0x0F, 0x11, 0x13, 0x15, 0x17, 0x19, 0x1A, 0x1C,
+            0x1E, 0x20, 0x21
+        };
+        s32 i;
+        for (i = 0; i < (s32)(sizeof(kPostgameExclusiveFlags)/sizeof(kPostgameExclusiveFlags[0])); i++) {
+            sub_8097FD0(kPostgameExclusiveFlags[i]);
+        }
+    }
+
+    // Continue-screen legendary icon: mark Purity Forest (Celebi) as conquered
+    // so the Celebi mini-portrait appears alongside the others, matching
+    // the postgame example.
+    // Mapping: load_screen uses sub_80023E4(0x1B) which checks
+    // RescueScenarioConquered(0x29). 0x29 corresponds to Purity Forest.
+    sub_8097418(0x29, 1);
 }
 
 static void RevealStarter(void)

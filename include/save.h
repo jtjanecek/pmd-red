@@ -41,7 +41,6 @@ struct UnkStruct_sub_8011DAC
     u8 skipCutscenes;
     u8 skipBasicRescues;
     u8 recruitAll;
-    u8 playSolo;
     u32 savedRecruitedPokemon;
     u32 unk428;
     u8 fill42C[0x4];
@@ -97,8 +96,6 @@ u8 GetSkipBasicRescuesSetting(void);
 void SetSkipBasicRescuesSetting(u8 in);
 u8 GetRecruitAllSetting(void);
 void SetRecruitAllSetting(u8 in);
-u8 GetPlaySoloSetting(void);
-void SetPlaySoloSetting(u8 in);
 void sub_8011CA8(u32 *out, s32 size);
 u32 ReadSaveFromPak(u32 *a);
 u32 WriteSavetoPak(s32 *param_1, u32 param_2);

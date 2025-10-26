@@ -57,7 +57,6 @@ enum
     PERSONALITY_ADVANCE_TO_STARTER_NICKNAME,
     PERSONALITY_STARTER_NICKNAME,
     PERSONALITY_STARTER_REVEAL,
-    PERSONALITY_PLAY_SOLO_SELECTION,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_2,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_3,
@@ -101,7 +100,6 @@ static void StartSkipBasicRescuesSelection(void);
 static void HandleSkipBasicRescuesSelection(void);
 static void StartRecruitAllSelection(void);
 static void HandleRecruitAllSelection(void);
-static void HandlePlaySoloSelection(void);
 static void StartDifficultySelection(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
@@ -154,7 +152,6 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.skipCutscenes = 0; // Default to No
     sPersonalityTestTracker->unk4.skipBasicRescues = 0; // Default to No
     sPersonalityTestTracker->unk4.recruitAll = 0; // Default to No
-    sPersonalityTestTracker->unk4.playSolo = 0; // Default to No
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
     
@@ -172,12 +169,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
-    sPersonalityTestTracker->unk4.playSolo = 0; // Solo: Yes
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.skipCutscenes = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
-    SetPlaySoloSetting(0);
     SetRecruitAllSetting(2);
     SetSkipBasicRescuesSetting(1);
     SetSkipCutscenesSetting(1);
@@ -219,9 +214,6 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_RECRUIT_ALL_SELECTION:
             HandleRecruitAllSelection();
-            break;
-        case PERSONALITY_PLAY_SOLO_SELECTION:
-            HandlePlaySoloSelection();
             break;
         case PERSONALITY_DIFFICULTY_SELECTION:
             HandleDifficultySelection();
@@ -444,29 +436,7 @@ static void StartRecruitAllSelection(void)
     sPersonalityTestTracker->TestState = PERSONALITY_RECRUIT_ALL_SELECTION;
 }
 
-static void HandlePlaySoloSelection(void)
-{
-    s32 selection;
-
-    if (sub_80144A4(&selection) != 0)
-        return;
-
-    if (selection < 0 || selection > 1)
-        selection = 0; // Default to No
-
-    sPersonalityTestTracker->unk4.playSolo = (u8)selection;
-    SetPlaySoloSetting((u8)selection);
-    
-    if (selection == 1) {
-        // If playSolo is Yes, automatically set Magikarp as partner and skip partner selection
-        sPersonalityTestTracker->unk4.PartnerID = MONSTER_MAGIKARP;
-        CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, MONSTER_MAGIKARP);
-        sPersonalityTestTracker->TestState = PERSONALITY_TEAM_NAME_PROMPT;
-    } else {
-        // If playSolo is No, proceed to partner selection
-        sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1;
-    }
-}
+// PlaySolo selection removed; always proceed to partner selection.
 
 static void StartDifficultySelection(void)
 {
@@ -783,8 +753,7 @@ static void RevealStarter(void)
     if (sub_80144A4(&temp) == 0) {
         CreateDialogueBoxAndPortrait(gStarterReveal, 0, 0, 0x101);
         PersonalityTest_DisplayStarterSprite();
-        CreateMenuDialogueBoxAndPortrait(gPlaySoloPrompt, 0, 0, gPlaySoloMenu, 0, 3, 0, 0, 0x101);
-        sPersonalityTestTracker->TestState = PERSONALITY_PLAY_SOLO_SELECTION;
+        sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1;
     }
 }
 

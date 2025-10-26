@@ -1030,7 +1030,6 @@ void sub_8001024(PersonalityRelated *dst)
     sPersonalityRelated_203B040.skipCutscenes = GetSkipCutscenesSetting();
     sPersonalityRelated_203B040.skipBasicRescues = GetSkipBasicRescuesSetting();
     sPersonalityRelated_203B040.recruitAll = GetRecruitAllSetting();
-    sPersonalityRelated_203B040.playSolo = GetPlaySoloSetting();
     *dst = sPersonalityRelated_203B040;
 }
 
@@ -1044,7 +1043,6 @@ void sub_8001044(PersonalityRelated *src)
     SetSkipCutscenesSetting(sPersonalityRelated_203B040.skipCutscenes);
     SetSkipBasicRescuesSetting(sPersonalityRelated_203B040.skipBasicRescues);
     SetRecruitAllSetting(sPersonalityRelated_203B040.recruitAll);
-    SetPlaySoloSetting(sPersonalityRelated_203B040.playSolo);
 }
 
 // arm9.bin::0200CE48

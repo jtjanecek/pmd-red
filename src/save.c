@@ -30,7 +30,6 @@ struct unk_struct
     u8 skipCutscenes;
     u8 skipBasicRescues;
     u8 recruitAll;
-    u8 playSolo;
     u32 padding[500];
 };
 
@@ -39,7 +38,6 @@ EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_VANILLA};
 EWRAM_DATA u8 gSkipCutscenesSetting = {0};
 EWRAM_DATA u8 gSkipBasicRescuesSetting = {0};
 EWRAM_DATA u8 gRecruitAllSetting = {0};
-EWRAM_DATA u8 gPlaySoloSetting = {0};
 
 EWRAM_INIT u32 gUnknown_203B17C = {0};
 EWRAM_INIT const char *gUnknown_203B180 = {"POKE_DUNGEON__05"};
@@ -133,17 +131,6 @@ void SetRecruitAllSetting(u8 value)
     gRecruitAllSetting = value;
 }
 
-u8 GetPlaySoloSetting(void)
-{
-    return gPlaySoloSetting;
-}
-
-void SetPlaySoloSetting(u8 value)
-{
-    if (value > 1)
-        value = 0;
-    gPlaySoloSetting = value;
-}
 
 static const char *GetGameInternalName(void)
 {
@@ -284,7 +271,6 @@ u32 ReadSaveFromPak(u32 *a)
             SetSkipCutscenesSetting(playerSave->skipCutscenes);
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
-            SetPlaySoloSetting(playerSave->playSolo);
         }
         else {
             gUnknown_203B184->unk054 = playerSave->unk41C;
@@ -295,7 +281,6 @@ u32 ReadSaveFromPak(u32 *a)
             SetSkipCutscenesSetting(playerSave->skipCutscenes);
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
-            SetPlaySoloSetting(playerSave->playSolo);
         }
     }
     if (!saveStatus)
@@ -386,7 +371,6 @@ u32 sub_8011FA8(void)
             SetSkipCutscenesSetting(r5->skipCutscenes);
             SetSkipBasicRescuesSetting(r5->skipBasicRescues);
             SetRecruitAllSetting(r5->recruitAll);
-            SetPlaySoloSetting(r5->playSolo);
         }
     }
     MemoryFree(r5);
@@ -429,7 +413,6 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->skipCutscenes = GetSkipCutscenesSetting();
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
-    playerSave->playSolo = GetPlaySoloSetting();
   }
   else {
     playerSave->unk41C = gUnknown_203B184->unk054;
@@ -439,7 +422,6 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->skipCutscenes = GetSkipCutscenesSetting();
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
-    playerSave->playSolo = GetPlaySoloSetting();
   }
    playerSave->checksum = 0x5071412;
   gameName = GetGameInternalName();
@@ -500,7 +482,6 @@ u32 sub_80121E0(u32 r0)
     r4->skipCutscenes = GetSkipCutscenesSetting();
     r4->skipBasicRescues = GetSkipBasicRescuesSetting();
     r4->recruitAll = GetRecruitAllSetting();
-    r4->playSolo = GetPlaySoloSetting();
 
     gameName = GetGameInternalName();
     strncpy(r4->gameInternalName, gameName, ARRAY_COUNT(r4->gameInternalName));

@@ -42,15 +42,6 @@ static const MenuItem gRecruitAllMenu[] = {
     { _("No Recruitable"), 2 },
     { NULL, -1 },
 };
-ALIGNED(4) static const u8 gPlaySoloPrompt[] = _(
-    "{CENTER_ALIGN}Force all dungeons to be Leader Only?\n"
-    "{CENTER_ALIGN}(can still recruit in-dungeon)"
-);
-static const MenuItem gPlaySoloMenu[] = {
-    { _("No"), 0 },
-    { _("Yes"), 1 },
-    { NULL, -1 },
-};
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
     "{CENTER_ALIGN}Vanilla: Similar difficulty to the base game.\n"
     "{CENTER_ALIGN}Hard: Stronger enemies. More bosses.\n"

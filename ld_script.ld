@@ -97,7 +97,6 @@ SECTIONS {
         src/effect_anim_file.o(.text);
         src/dungeon_pokemon_sprites.o(.text);
         src/friend_areas_map.o(.text);
-        src/world_map.o(.text);
         src/friend_areas_map_util.o(.text);
         src/world_map_sound.o(.text);
         src/music_util.o(.text);
@@ -471,7 +470,6 @@ SECTIONS {
         src/effect_anim_file.o(.rodata);
         src/dungeon_pokemon_sprites.o(.rodata);
         src/friend_areas_map.o(.rodata);
-        src/world_map.o(.rodata);
         src/friend_areas_map_util.o(.rodata);
         src/world_map_sound.o(.rodata);
         src/music_util.o(.rodata);

@@ -50,7 +50,7 @@
 #include "text_util.h"
 #include "mgba_log.h"
 #include "decompress_at.h"
-#include "world_map.h"
+#include "menu_input.h"
 #include "friend_areas_map.h"
 #include "structs/str_dungeon_setup.h"
 #include "constants/friend_area.h"
@@ -650,7 +650,6 @@ static u32 RunGameMode_Async(u32 a0)
     while (1) {
         s32 r5;
         struct FriendAreasMapSetupStruct friendAreasSetup;
-        struct WorldMapSetupStruct worldMapSetup;
         DungeonSetupStruct dungeonSetup;
         s16 sp552;
 
@@ -678,46 +677,14 @@ static u32 RunGameMode_Async(u32 a0)
             continue;
         }
         else if (mode == MODE_DUNGEON_FROM_WORLD_MAP) {
-            s32 i;
-
             s32 scriptDungeonId = (s16) GetScriptVarValue(NULL, DUNGEON_SELECT);
             u8 dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonId);
-            for (i = 0; i < WORLD_MAP_UNK_6D_COUNT; i++) {
-                worldMapSetup.info.unk6D[i] = sub_80A28F0(i);
-            }
-
             if (dungeonId == DUNGEON_INVALID) {
                 mode = MODE_GROUND;
                 continue;
             }
-
-            worldMapSetup.info.startLocation.id = DUNGEON_OUT_ON_RESCUE;
-            sub_80011CC(&worldMapSetup.info.unk4, dungeonId);
-            worldMapSetup.info.unk6C = worldMapSetup.info.unk4.unk5;
-            switch ((s16) sub_80A2750(scriptDungeonId)) {
-                case 1:
-                    if (sub_80990EC(&dungeonSetup.info, scriptDungeonId)) {
-                        worldMapSetup.info.unk4.unkC = dungeonSetup.info.sub0.unkC;
-                        worldMapSetup.info.mon = dungeonSetup.info.mon;
-                    }
-                    break;
-                case 2:
-                    if (sub_8096A08(worldMapSetup.info.unk4.unk0.id, &worldMapSetup.info.mon)) {
-                        worldMapSetup.info.unk4.unkC = 1;
-                    }
-                    else {
-                        worldMapSetup.info.unk4.unkC = 0;
-                    }
-                    break;
-            }
-
-            worldMapSetup.worldMap = MemoryAlloc(sizeof(*worldMapSetup.worldMap), 8);
-            ShowWorldMap_Async(&worldMapSetup);
-            MemoryFree(worldMapSetup.worldMap);
-            if (!worldMapSetup.dungeonEntered) {
-                mode = MODE_GROUND;
-                continue;
-            }
+            // Directly enter the selected dungeon without showing a world map
+            sub_80011CC(&dungeonSetup.info.sub0, dungeonId);
             SetScriptVarValue(NULL, DUNGEON_ENTER, scriptDungeonId);
             sUnknown_203B03C = 2;
             sub_800A8F8(4);

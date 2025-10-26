@@ -18,7 +18,6 @@
 .include "src/effect_sub_2.o"
 .include "src/dungeon_pokemon_sprites.o"
 .include "src/friend_areas_map.o"
-.include "src/world_map.o"
 .include "src/debug.o"
 .include "src/save.o"
 .include "src/save_read.o"

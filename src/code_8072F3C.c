@@ -240,7 +240,7 @@ s32 sub_802FBF4(void)
     s32 index;
 
     counter = 0;
-    for(index = 0; index  < 0x2E; index++)
+    for(index = 0; index  < GetDungeonListCount(); index++)
     {
         iVar6 = iVar6 = (s16)index; // NOTE: LOLOL
         if (((sub_80A27CC(index) != 0) && (iVar6 != 0x13)) && (iVar6 != 0x1d)) {
@@ -283,11 +283,10 @@ bool8 sub_802FCF0(void)
 {
     s32 i;
 
-    for (i = 0; i < 0x2E; i++) {
+    for (i = 0; i < GetDungeonListCount(); i++) {
         if (sub_80A27CC(i))
             return FALSE;
     }
 
     return TRUE;
 }
-

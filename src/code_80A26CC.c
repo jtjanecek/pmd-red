@@ -282,7 +282,8 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_21] = {
-        .unk0 = 9,
+        // Mark as invalid to fully remove from selection/listing
+        .unk0 = -1,
         .unk2 = 12,
         .unk4 = 12,
         .unk6 = -1,
@@ -724,7 +725,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_NORMAL_MAZE_2] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -737,7 +738,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_FIRE_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -750,7 +751,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_WATER_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -763,7 +764,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_GRASS_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -776,7 +777,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_ELECTRIC_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -789,7 +790,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_ICE_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -802,7 +803,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_FIGHTING_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -815,7 +816,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_GROUND_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -828,7 +829,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_FLYING_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -841,7 +842,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_PSYCHIC_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -854,7 +855,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_POISON_MAZE_2] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -867,7 +868,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_BUG_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -880,7 +881,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_ROCK_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -893,7 +894,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_GHOST_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -906,7 +907,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_DRAGON_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -919,7 +920,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_DARK_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -932,7 +933,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_STEEL_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -945,7 +946,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_TEAM_SHIFTY] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -958,7 +959,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_TEAM_CONSTRICTOR] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -971,7 +972,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_TEAM_HYDRO] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -984,7 +985,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_TEAM_RUMBLEROCK] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -997,7 +998,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_RESCUE_TEAM_2] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -1010,7 +1011,7 @@ static const DungeonInfo gUnknown_81168A8[SCRIPT_DUNGEON_COUNT] = {
         .unk11 = 1,
     },
     [SCRIPT_DUNGEON_RESCUE_TEAM_MAZE] = {
-        .unk0 = -1,
+        .unk0 = 0,
         .unk2 = -1,
         .unk4 = -1,
         .unk6 = -1,
@@ -1112,6 +1113,8 @@ static const s16 gUnknown_8116F9A[] = {
     [10]             	= SCRIPT_DUNGEON_MT_FREEZE,
     [11]             	= SCRIPT_DUNGEON_MAGMA_CAVERN,
     [12]             	= SCRIPT_DUNGEON_SKY_TOWER,
+    // Keep slot 13 as the scenario dummy placeholder so it never shows
+    // and does not render as "Scenario try dummy" in the list
     [13]                = SCRIPT_DUNGEON_21,
     [14]            	= SCRIPT_DUNGEON_UPROAR_FOREST,
     [15]              	= SCRIPT_DUNGEON_HOWLING_FOREST,
@@ -1145,6 +1148,30 @@ static const s16 gUnknown_8116F9A[] = {
     [43]               	= SCRIPT_DUNGEON_REMAINS_ISLAND,
     [44]            	= SCRIPT_DUNGEON_MARVELOUS_SEA,
     [45]             	= SCRIPT_DUNGEON_FANTASY_STRAIT,
+    // Maze dungeons (selectable from main list)
+    [46]                = SCRIPT_DUNGEON_NORMAL_MAZE_2,
+    [47]                = SCRIPT_DUNGEON_FIRE_MAZE,
+    [48]                = SCRIPT_DUNGEON_WATER_MAZE,
+    [49]                = SCRIPT_DUNGEON_GRASS_MAZE,
+    [50]                = SCRIPT_DUNGEON_ELECTRIC_MAZE,
+    [51]                = SCRIPT_DUNGEON_ICE_MAZE,
+    [52]                = SCRIPT_DUNGEON_FIGHTING_MAZE,
+    [53]                = SCRIPT_DUNGEON_GROUND_MAZE,
+    [54]                = SCRIPT_DUNGEON_FLYING_MAZE,
+    [55]                = SCRIPT_DUNGEON_PSYCHIC_MAZE,
+    [56]                = SCRIPT_DUNGEON_POISON_MAZE_2,
+    [57]                = SCRIPT_DUNGEON_BUG_MAZE,
+    [58]                = SCRIPT_DUNGEON_ROCK_MAZE,
+    [59]                = SCRIPT_DUNGEON_GHOST_MAZE,
+    [60]                = SCRIPT_DUNGEON_DRAGON_MAZE,
+    [61]                = SCRIPT_DUNGEON_DARK_MAZE,
+    [62]                = SCRIPT_DUNGEON_STEEL_MAZE,
+    [63]                = SCRIPT_DUNGEON_TEAM_SHIFTY,
+    [64]                = SCRIPT_DUNGEON_TEAM_CONSTRICTOR,
+    [65]                = SCRIPT_DUNGEON_TEAM_HYDRO,
+    [66]                = SCRIPT_DUNGEON_TEAM_RUMBLEROCK,
+    [67]                = SCRIPT_DUNGEON_RESCUE_TEAM_2,
+    [68]                = SCRIPT_DUNGEON_RESCUE_TEAM_MAZE,
 };
 
 const DungeonInfo *GetDungeonInfo_80A2608(s32 _index)
@@ -1229,6 +1256,17 @@ u8 sub_80A270C(s16 index)
     return temp->dungeonIndex;
 }
 
+// Expose the number of entries in the visible dungeon list mapping
+s16 GetDungeonListCount(void)
+{
+    //return sizeof(gUnknown_8116F9A) / sizeof(gUnknown_8116F9A[0]);
+    // Keep the main dungeon selection menu at its original size.
+    // The extended mapping includes mazes and special slots, but those are
+    // not part of the default list UI and crowd the layout. Matching
+    // master, only the first 0x2E entries are used here.
+    return 0x2E; // 46
+}
+
 u8 sub_80A2728(s16 index)
 {
     const DungeonInfo *temp;
@@ -1301,6 +1339,9 @@ bool8 sub_80A27CC(s16 r0)
     t = sub_80A2620(r0);
     if (t->unk0 == -1)
         return FALSE;
+    // Always allow mazes to appear in the list
+    if (DUNGEON_IS_MAZE(t->dungeonIndex))
+        return TRUE;
     if (GetSkipCutscenesSetting())
         return TRUE;
     if (sub_80023E4(5))

@@ -32,5 +32,7 @@ bool8 sub_80A27CC(s16);
 bool8 sub_80A2824(u8 index);
 bool8 sub_80A28F0(u8 index);
 s32 sub_80A29B0(u8 *);
+// Number of entries in the main dungeon selection list mapping
+s16 GetDungeonListCount(void);
 
 #endif // GUARD_CODE_80A26CC_H

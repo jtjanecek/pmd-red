@@ -5,10 +5,9 @@
 #include "constants/weather.h"
 #include "dungeon_vram.h"
 #include "dungeon_message.h"
-#include "code_806CD90.h"
+#include "dungeon_mon_sprite_render.h"
 #include "structs/str_dungeon.h"
-#include "code_8077274_1.h"
-#include "dungeon_ai.h"
+#include "dungeon_entity_movement.h"
 #include "run_dungeon.h"
 #include "dungeon_generation.h"
 #include "dungeon_logic.h"
@@ -16,10 +15,10 @@
 #include "dungeon_map_access.h"
 #include "dungeon_util.h"
 #include "math.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "moves.h"
 #include "move_util.h"
-#include "code_8041AD0.h"
+#include "dungeon_8041AD0.h"
 #include "weather.h"
 #include "dungeon_config.h"
 #include "dungeon_tilemap.h"
@@ -28,9 +27,8 @@
 #include "dungeon_strings.h"
 #include "dungeon_kecleon_shop.h"
 #include "dungeon_range.h"
-
-void sub_80421AC(Entity * pokemon, Entity * target);
-void sub_807BB78(Entity *pokemon);
+#include "move_orb_effects_5.h"
+#include "dungeon_ai_movement.h"
 
 void WarpTarget(Entity *pokemon, Entity *target, u32 param_3, DungeonPos *pos)
 {
@@ -138,5 +136,5 @@ void WarpTarget(Entity *pokemon, Entity *target, u32 param_3, DungeonPos *pos)
         sub_807EC28(0);
     }
     sub_806A5B8(target);
-    sub_8075900(target,gDungeon->forceMonsterHouse);
+    TryTriggerMonsterHouseWithMsg(target,gDungeon->forceMonsterHouse);
 }

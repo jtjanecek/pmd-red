@@ -19,13 +19,13 @@
 #include "bg_control.h"
 #include "dungeon_move_util.h"
 #include "code_800D090.h"
-#include "code_801602C.h"
+#include "confirm_name_menu.h"
 #include "code_801B3C0.h"
 #include "dungeon_vram.h"
 #include "dungeon_tilemap.h"
 #include "dungeon_action.h"
-#include "code_8066D04.h"
-#include "code_806CD90.h"
+#include "dungeon_action_handler.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_action.h"
 #include "dungeon_ai_movement.h"
 #include "dungeon_logic.h"
@@ -68,24 +68,10 @@
 #include "dungeon_engine.h"
 #include "dungeon_item_action.h"
 #include "dungeon_strings.h"
-
-extern void HandleUnsetItemAction(Entity *,bool8);
-extern void TryTriggerTrap(Entity *pokemon, DungeonPos *pos, int param_3, char param_4);
-void TryPointCameraToMonster(Entity *a0, u8 a1);
-bool8 sub_80701A4(Entity *a0);
-void sub_8075680(u32);
-void ClearUnpaidFlagFromAllItems(void);
-void sub_806A914(u8 a0, u8 a1, u8 a2);
-u16 GetLeaderActionId(void);
-void sub_80978C8(s16 a0);
-void HandleTalkFieldAction(Entity *);
-s32 GetTeamMemberEntityIndex(Entity *pokemon);
-bool8 sub_8070F80(Entity * pokemon, s32 direction);
-void sub_806752C(ActionContainer *a0);
-void sub_8067768(ActionContainer *a0);
-extern bool8 sub_8071A8C(Entity *pokemon);
-extern void sub_8041AD0(Entity *pokemon);
-extern void sub_8041AE0(Entity *pokemon);
+#include "dungeon_entity_movement.h"
+#include "dungeon_8041AD0.h"
+#include "status_checks.h"
+#include "adventure_info.h"
 
 static EWRAM_DATA bool8 sInDiagonalMode = 0;
 static EWRAM_DATA bool8 sInRotateMode = 0;
@@ -847,7 +833,7 @@ void DungeonHandlePlayerInput(void)
             }
 
             if (var_38 != 0 && --var_38 == 0) {
-                sub_8075680(0);
+                sub_8075680(FALSE);
             }
 
             TryCreateModeArrows(leader);
@@ -1815,7 +1801,7 @@ void sub_805F02C(void)
     else if (PlayerHasItemWithFlag(ITEM_FLAG_IN_SHOP) || sub_807EF48()) {
         DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C08);
     }
-    else if (gDungeon->unk644.unk2A) {
+    else if (gDungeon->unk644.stoleFromKecleon) {
         DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C2C);
     }
     else {
@@ -1974,7 +1960,7 @@ static void ShowMainMenu(bool8 fromBPress, bool8 a1)
             }
             else if (action == ACTION_USE_LINK_BOX) {
                 item = sub_8044D90(GetLeader(), 0, 15);
-                if (!sub_8048B9C(GetLeader(), item)) {
+                if (!HandleLinkBoxAction(GetLeader(), item)) {
                     SetLeaderActionToNothing(TRUE);
                 }
             }
@@ -2186,7 +2172,7 @@ static void ShowMainMenu(bool8 fromBPress, bool8 a1)
                     }
                     else if (action == ACTION_USE_LINK_BOX) {
                         item = sub_8044D90(GetLeader(), 0, 0x13);
-                        if (!sub_8048B9C(GetLeader(), item)) {
+                        if (!HandleLinkBoxAction(GetLeader(), item)) {
                             SetLeaderActionToNothing(TRUE);
                         }
                     }

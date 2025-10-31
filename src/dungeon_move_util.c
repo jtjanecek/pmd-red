@@ -11,9 +11,8 @@
 #include "effect_sub_1.h"
 #include "dungeon_vram.h"
 #include "dungeon_tilemap.h"
-#include "code_8041AD0.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
+#include "dungeon_8041AD0.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_random.h"
 #include "dungeon_logic.h"
 #include "dungeon_config.h"
@@ -27,15 +26,17 @@
 #include "dungeon_strings.h"
 #include "dungeon_util.h"
 #include "math.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "move_util.h"
 #include "moves.h"
 #include "position_util.h"
 #include "sprite.h"
-#include "status.h"
 #include "move_orb_actions_4.h"
+#include "move_orb_effects_2.h"
+#include "move_orb_effects_3.h"
+#include "move_orb_effects_5.h"
 #include "weather.h"
-#include "targeting_flags.h"
+#include "dungeon_ai_attack.h"
 #include "pokemon_types.h"
 #include "dungeon_run_end.h"
 #include "dungeon_pos_data.h"
@@ -43,15 +44,9 @@
 #include "dungeon_damage.h"
 #include "dungeon_leveling.h"
 
-extern void sub_80429C8(Entity *r0);
-extern void sub_806A1E8(Entity *pokemon);
-extern void sub_804178C(u32);
-extern void sub_80428A0(Entity *r0);
 extern bool8 sub_8040BB0(Entity *entity, Move *move, bool8);
 extern void sub_8040DA0(Entity *entity, Move *move);
 extern u16 GetEffectiveMoveId(u16 moveId, u8 weather, u8 hasSpecialEffect);
-extern void sub_800EF10(u16 r0);
-extern void sub_800E3AC(s32 a0, DungeonPos *pos, s32 a2);
 extern void sub_8041168(Entity *entity, Entity *entity2, Move *,DungeonPos *);
 
 static u8 ToItemID(u32 itemID);

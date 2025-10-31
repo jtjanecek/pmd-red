@@ -5,7 +5,7 @@
 #include "code_800D090.h"
 #include "code_802F204.h"
 #include "code_8094F88.h"
-#include "code_8097670.h"
+#include "adventure_info.h"
 #include "code_8099360.h"
 #include "event_flag.h"
 #include "game_options.h"
@@ -18,6 +18,7 @@
 #include "save_write.h"
 #include "string_format.h"
 #include "text_1.h"
+#include "ground_main.h"
 
 struct unkStruct_203B2C8
 {

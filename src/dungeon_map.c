@@ -29,7 +29,6 @@ extern bool8 ShouldMinimapDisplayEntity(Entity *ent);
 extern bool8 gAutoExploreActive;
 extern DungeonPos gAutoCrawlTargetPos;
 // Junction storage variables removed - using A* pathfinding instead
-
 struct UnkStruct1
 {
     u32 **unk0;

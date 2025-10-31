@@ -3,7 +3,7 @@
 #include "constants/emotions.h"
 #include "constants/monster.h"
 #include "bg_palette_buffer.h"
-#include "code_801602C.h"
+#include "confirm_name_menu.h"
 #include "random_mersenne_twister.h"
 #include "code_8099360.h"
 #include "game_options.h"
@@ -142,7 +142,9 @@ bool8 CreateTestTracker(void)
 
 static void InitializeTestStats(void)
 {
-    sub_8001024(&sPersonalityTestTracker->unk4);
+    // s32 i; // unused
+
+    ReadTeamBasicInfo(&sPersonalityTestTracker->unk4);
     sPersonalityTestTracker->FrameCounter = 0;
     sPersonalityTestTracker->playerGender = 0;
     sPersonalityTestTracker->rngSeed = 0;
@@ -279,7 +281,7 @@ u32 HandleTestTrackerState(void)
             sub_8011C40(sPersonalityTestTracker->rngSeed);
             // Commit the chosen starter/partner/team-name into global state
             // so subsequent systems (and DEV mode) don't fall back to defaults.
-            sub_8001044(&sPersonalityTestTracker->unk4);
+            WriteTeamBasicInfo(&sPersonalityTestTracker->unk4);
             // If SkipCutscenes is ON, bootstrap to postgame, save, and return to title.
             if (GetSkipCutscenesSetting()) {
                 // Apply postgame flags and team initialization, then start save UI.
@@ -312,7 +314,7 @@ u32 HandleTestTrackerState(void)
 
 void DeleteTestTracker(void)
 {
-    sub_8001044(&sPersonalityTestTracker->unk4);
+    WriteTeamBasicInfo(&sPersonalityTestTracker->unk4);
     MemoryFree(sPersonalityTestTracker);
     sPersonalityTestTracker = NULL;
 }
@@ -675,7 +677,7 @@ static void ApplySkipPostgameBootstrap(void)
     // Ensure the chosen hero/partner/team-name are committed to the global
     // personality state used by team creation, then materialize the team.
     // This mirrors what DeleteTestTracker() would do in the normal flow.
-    sub_8001044(&sPersonalityTestTracker->unk4);
+    WriteTeamBasicInfo(&sPersonalityTestTracker->unk4);
     sub_8001064();
 
     // Scenario: set main scenario & sub-scenarios to match the
@@ -794,8 +796,8 @@ static void PromptForPartnerNickname(void)
     if (selectedPartner != 0xFFFF) {
         if (selectedPartner != 0xFFFE) {
             sub_803CE6C();
-            sPersonalityTestTracker->unk4.PartnerID = selectedPartner;
-            CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, selectedPartner);
+    sPersonalityTestTracker->unk4.PartnerID = selectedPartner;
+    CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, selectedPartner);
             CreateDialogueBoxAndPortrait(gPartnerNickPrompt, 0, 0, 0x301);
             sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_2;
         }

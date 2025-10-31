@@ -30,11 +30,9 @@
 #include "dungeon_config.h"
 #include "dungeon_pos_data.h"
 #include "dungeon_data.h"
+#include "dungeon_8041AD0.h"
 
 // This file deals with things like controlling movement, walkable tiles, ai targeting, status checks and pokemon attributes.
-
-extern void sub_80429B4(Entity *r0);
-extern void ShowVisualFlags(Entity *r0);
 
 EWRAM_DATA u8 gWalkableTileToCrossableTerrain[8] = {0};
 
@@ -354,7 +352,7 @@ s32 CalcSpeedStage(Entity *pokemon)
     speed++;
   }
   if ((entityInfo->id == MONSTER_KECLEON) && entityInfo->isNotTeamMember &&
-     gDungeon->unk644.unk2A) {
+     gDungeon->unk644.stoleFromKecleon) {
     speed++;
   }
   if (speed < 0) {
@@ -1178,34 +1176,29 @@ u8 GetTreatmentBetweenMonsters(Entity *pokemon, Entity *targetPokemon, bool8 ign
     return gTreatmentData[decoyAITracker][pokemonIsEnemy][targetIsEnemy][targetIsDecoy];
 }
 
-u8 sub_807167C(Entity * pokemon, Entity * target)
+u8 GetTreatmentBetweenMonstersIgnoreStatus(Entity *monster1, Entity *monster2)
 {
-  bool8 cannotUseItems;
-  EntityInfo * targetEntityInfo;
-  EntityInfo * pokemonEntityData;
+    EntityInfo *monster1Info = GetEntInfo(monster1);
+    EntityInfo *monster2Info = GetEntInfo(monster2);
 
-  pokemonEntityData = GetEntInfo(pokemon);
-  targetEntityInfo = GetEntInfo(target);
-  if (pokemonEntityData->monsterBehavior != BEHAVIOR_RESCUE_TARGET) {
-    cannotUseItems = IsExperienceLocked(pokemonEntityData->joinedAt.id);
-    if (!cannotUseItems && (pokemonEntityData->shopkeeper == SHOPKEEPER_MODE_NORMAL) && (targetEntityInfo->monsterBehavior != BEHAVIOR_RESCUE_TARGET)) {
-      cannotUseItems = IsExperienceLocked(targetEntityInfo->joinedAt.id);
-      if (cannotUseItems || (targetEntityInfo->shopkeeper != SHOPKEEPER_MODE_NORMAL)) {
-error:
-          return TREATMENT_IGNORE;
-      }
-      else
-      {
-        if ((pokemonEntityData->isNotTeamMember) != (targetEntityInfo->isNotTeamMember)) {
-          return TREATMENT_TREAT_AS_ENEMY;
-        }
-        else {
-          return TREATMENT_TREAT_AS_ALLY;
-        }
-      }
-    }
-  }
-  goto error;
+    if (monster1Info->monsterBehavior == BEHAVIOR_RESCUE_TARGET)
+        return TREATMENT_IGNORE;
+    if (IsExperienceLocked(monster1Info->joinedAt.id))
+        return TREATMENT_IGNORE;
+    if (monster1Info->shopkeeper != SHOPKEEPER_MODE_NORMAL)
+        return TREATMENT_IGNORE;
+
+    if (monster2Info->monsterBehavior == BEHAVIOR_RESCUE_TARGET)
+        return TREATMENT_IGNORE;
+    if (IsExperienceLocked(monster2Info->joinedAt.id))
+        return TREATMENT_IGNORE;
+    if (monster2Info->shopkeeper != SHOPKEEPER_MODE_NORMAL)
+        return TREATMENT_IGNORE;
+
+    if (monster1Info->isNotTeamMember != monster2Info->isNotTeamMember)
+        return TREATMENT_TREAT_AS_ENEMY;
+    else
+        return TREATMENT_TREAT_AS_ALLY;
 }
 
 bool8 HasSafeguardStatus(Entity * pokemon, Entity * target, bool8 displayMessage)

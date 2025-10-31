@@ -11,8 +11,7 @@
 #include "structs/str_dungeon.h"
 #include "dungeon_vram.h"
 #include "code_805D8C8.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_config.h"
 #include "run_dungeon.h"
 #include "dungeon_range.h"
@@ -25,7 +24,7 @@
 #include "dungeon_util.h"
 #include "exclusive_pokemon.h"
 #include "file_system.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "moves.h"
 #include "number_util.h"
 #include "pokemon.h"
@@ -37,19 +36,9 @@
 #include "dungeon_tilemap.h"
 #include "dungeon_engine.h"
 #include "dungeon_leveling.h"
-
-extern void sub_8042900(Entity *r0);
-extern void sub_8042968(Entity *r0);
-void sub_8041BBC(Entity *r0);
-extern void sub_804178C(u32);
-extern void sub_8042B20(Entity *entity);
-extern void sub_8042B0C(Entity *entity);
-extern bool8 sub_80860A8(u8 id);
-extern u8 gUnknown_202F32C;
-extern void sub_80429E8(Entity *r0);
-extern Entity *sub_804550C(s16 a);
-extern Entity *sub_80453AC(s16 id);
-extern void EntityUpdateStatusSprites(Entity *);
+#include "dungeon_8041AD0.h"
+#include "dungeon_cutscene.h"
+#include "dungeon_action_execution.h"
 
 static s32 CalcSpeciesHPAtLevel(s32 species, s32 level);
 static s32 CalcSpeciesAtkAtLevel(s32 species, s32 level, s32 categoryIndex);
@@ -629,7 +618,7 @@ bool8 SpawnTeamMember(s16 _species, s32 x, s32 y, DungeonMon *monPtr, Entity **a
 
     // Pickup Check
     if (gDungeon->unk644.dungeonLocation.id != DUNGEON_TINY_WOODS
-        && !IsBossFight()
+        && !IsFloorwideFixedRoom()
         && (entityInfo->abilities[0] == ABILITY_PICKUP || entityInfo->abilities[1] == ABILITY_PICKUP)
         && !ItemExists(&entityInfo->heldItem))
     {
@@ -720,7 +709,7 @@ static void InitEntityFromSpawnInfo(bool8 a0, Entity *entity, struct MonSpawnInf
 
     if (!a0) {
         if (monSpawnInfo->species == MONSTER_KECLEON
-            && !gDungeon->unk644.unk2A
+            && !gDungeon->unk644.stoleFromKecleon
             && gDungeon->unk3A0A
             && !monSpawnInfo->unk2)
         {

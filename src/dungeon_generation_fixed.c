@@ -9,13 +9,13 @@
 #include "dungeon_util.h"
 #include "dungeon_items.h"
 #include "dungeon_message.h"
+#include "dungeon_strings.h"
 #include "dungeon_floor_spawns.h"
 #include "constants/monster.h"
 #include "constants/trap.h"
 #include "constants/item.h"
 #include "dungeon_mon_spawn.h"
-
-extern void sub_80429FC(DungeonPos *r0);
+#include "dungeon_8041AD0.h"
 
 static bool8 sub_805210C(u8 itemId);
 
@@ -982,9 +982,6 @@ void sub_8051E3C(void)
         }
     }
 }
-
-extern const u8 *const gUnknown_80FDDF0;
-extern const u8 *const gUnknown_80FDDD0;
 
 void sub_8051E7C(Entity *pokemon)
 {

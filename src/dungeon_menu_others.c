@@ -5,9 +5,9 @@
 #include "dungeon_vram.h"
 #include "dungeon_tilemap.h"
 #include "dungeon_action.h"
-#include "code_8097DD0.h"
+#include "status_strings.h"
 #include "dungeon_info.h"
-#include "dungeon_8083AB0.h"
+#include "dungeon_exit.h"
 #include "dungeon_action.h"
 #include "dungeon_range.h"
 #include "dungeon_main.h"
@@ -31,10 +31,6 @@
 #include "text_2.h"
 #include "text_3.h"
 #include "run_dungeon.h"
-
-extern bool8 IsBossFight(void);
-extern u16 GetLeaderActionId(void);
-
 
 static void PrintOthersMenuOptions(void);
 static void ShowGameOptionsMenu(void);
@@ -96,7 +92,7 @@ void ShowDungeonOthersMenu(void)
             }
 
             if ((gRealInputs.pressed & A_BUTTON) || gDungeonMenu.touchScreen.a_button) {
-                if (gDungeonMenu.menuIndex != OTHERS_RECRUITMENT_SEARCH || (gDungeon->unk644.canRecruit && !IsBossFight())) {
+                if (gDungeonMenu.menuIndex != OTHERS_RECRUITMENT_SEARCH || (gDungeon->unk644.canRecruit && !IsFloorwideFixedRoom())) {
                     PlayDungeonConfirmationSE();
                 }
                 else {
@@ -131,7 +127,7 @@ void ShowDungeonOthersMenu(void)
         if (sOthersCursorId == OTHERS_MISSION_OBJECTIVES) {
             ShowMissionObjectivesMenu();
         }
-        if (gDungeon->unk644.canRecruit && !IsBossFight() && sOthersCursorId == OTHERS_RECRUITMENT_SEARCH) {
+        if (gDungeon->unk644.canRecruit && !IsFloorwideFixedRoom() && sOthersCursorId == OTHERS_RECRUITMENT_SEARCH) {
             ShowRecruitmentSearchMenu();
         }
         if (sOthersCursorId == hintsMenuId) {
@@ -443,7 +439,7 @@ static bool8 AskToGiveUp(void)
         return TRUE;
     }
     SetMonsterActionFields(GetLeaderActionContainer(), ACTION_GIVE_UP);
-    sub_8083AB0(DUNGEON_EXIT_GAVE_UP_EXPLORATION, NULL, GetLeader());
+    SetUpDungeonExitData(DUNGEON_EXIT_GAVE_UP_EXPLORATION, NULL, GetLeader());
     gDungeon->unk644.unk10 = 1;
     return FALSE;
 }
@@ -499,7 +495,7 @@ static void PrintOthersMenuOptions(void)
     PrintFormattedStringOnWindow(8, GetMenuEntryYCoord(&gDungeonMenu, currOptionId++), gUnknown_80FE9F8, 0, '\0');
     PrintFormattedStringOnWindow(8, GetMenuEntryYCoord(&gDungeonMenu, currOptionId++), gUnknown_80FEA10, 0, '\0');
     if (gDungeon->unk644.canRecruit) {
-        if (!IsBossFight()) {
+        if (!IsFloorwideFixedRoom()) {
             PrintFormattedStringOnWindow(8, GetMenuEntryYCoord(&gDungeonMenu, currOptionId++), gUnknown_80FEA28, 0, '\0');
         }
         else {

@@ -1,17 +1,46 @@
 #include "global.h"
 #include "globaldata.h"
+#include "ground_sprite.h"
 #include "structs/axdata.h"
 #include "effect_main.h"
 #include "debug.h"
 #include "def_filearchives.h"
 #include "file_system.h"
 #include "ground_map.h"
-#include "ground_sprite.h"
 #include "ground_sprite_data.h"
+#include "ground_lives.h"
 #include "memory.h"
 #include "sprite.h"
 #include "effect_sub_1.h"
 #include "pokemon.h"
+#include "ground_effect.h"
+#include "ground_object.h"
+#include "code_809D148.h"
+
+// size: 0xC
+typedef struct unkStruct_3001B7C_sub0
+{
+    u32 unk0;
+    s32 unk4;
+    struct UnkGroundSpriteStruct *unk8;
+} unkStruct_3001B7C_sub0;
+
+// size: 0x4
+typedef struct unkStruct_3001B7C_sub108
+{
+    u16 unk0;
+    s16 unk2;
+} unkStruct_3001B7C_sub108;
+
+#define UNK_3001B7C_SUB0_COUNT 22
+#define UNK_3001B7C_SUB108_COUNT 2
+
+// size: 0x110
+typedef struct unkStruct_3001B7C
+{
+    unkStruct_3001B7C_sub0 unk0[UNK_3001B7C_SUB0_COUNT];
+    unkStruct_3001B7C_sub108 unk108[UNK_3001B7C_SUB108_COUNT];
+} unkStruct_3001B7C;
 
 static IWRAM_INIT unkStruct_3001B7C *gUnknown_3001B7C = {NULL};
 
@@ -29,11 +58,7 @@ static EWRAM_INIT OpenedFile *gUnknown_203B4B4 = {NULL};
 // code_8098BDC.s
 extern void sub_809971C(u16, const u8 *, s16);
 extern void sub_80997F4(u16, u16);
-extern void sub_80ABA7C(void);
-extern void sub_80ACAD4(void);
-extern void sub_80AD7AC(void);
 extern void sub_800E970(void);
-extern u8 sub_809D248(PixelPos *r0);
 
 static bool8 sub_80A68F8(struct UnkGroundSpriteStruct *ptr, struct UnkGroundSpriteSubStructx48 *a1, s32 a2);
 static bool8 sub_80A6CF4(struct UnkGroundSpriteSubStructx48 *a0);

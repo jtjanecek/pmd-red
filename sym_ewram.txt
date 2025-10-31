@@ -49,13 +49,12 @@
 	.space 4
     .include "src/dungeon_menu_others.o"
     .include "src/dungeon_menu_recruitment.o"
-    .include "src/code_8066D04.o"
-    .include "src/dungeon_8067A80.o"
+    .include "src/dungeon_recruit_release_menu.o"
     .include "src/dungeon_logic.o"
     .include "src/dungeon_leveling.o"
     .include "src/dungeon_action_execution.o"
     .include "src/dungeon_ai_items.o"
-    .include "src/code_8075708.o"
+    .include "src/dungeon_entity_movement.o"
 	.space 4
     .include "src/dungeon_ai_attack.o"
     .include "src/dungeon_cutscene.o"
@@ -72,7 +71,7 @@
     .space 4
     .include "src/code_80958E8.o"
     .space 4
-    .include "src/code_8097670.o"
+    .include "src/adventure_info.o"
     .space 4
     .include "src/exclusive_pokemon.o"
     .space 4

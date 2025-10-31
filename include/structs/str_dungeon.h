@@ -25,7 +25,7 @@
 typedef struct Weather // 0xE264
 {
     /* 0x0 */ u8 weather; // Uses the weather constants in weather.h.
-    /* 0x1 */ u8 unkE265; // Uses the weather constants in weather.h
+    /* 0x1 */ u8 unkE265; // Uses the weather constants in weather.h.
     /* 0x2 */ u8 weatherDamageCounter; // Timer for applying sandstorm/hail damage periodically.
     /* 0x3 */ u8 unkE267[8];
     /* 0xB */ u8 naturalWeather[8]; // The weather at the start of the floor. If the weather changes, then expires, revert back to the starting weather.
@@ -120,12 +120,12 @@ typedef struct UnkDungeonGlobal_unk181E8_sub
 typedef struct FloorProperties
 {
     u8 layout;
-    s8 roomDensity;
-    u8 unk2;
-    u8 unk3;
-    u8 unk4;
+    s8 roomDensity; // If positive, allow variance. If negative, use exact value of abs(roomDensity).
+    u8 tileset;
+    u8 bgMusic;
+    u8 weather; // Uses the weather constants in weather.h.
     u8 floorConnectivity;
-    u8 enemyDensity;
+    u8 enemyDensity; // Game treats this as signed. See SpawnEnemies in src/dungeon_generation.asm for details.
     u8 kecleonShopChance; // Percentage chance 0-100%
     u8 monsterHouseChance; // Percentage chance 0-100%
     u8 mazeRoomChance; // Percentage chance 0-100%
@@ -133,19 +133,20 @@ typedef struct FloorProperties
     bool8 allowDeadEnds;
     u8 secondaryStructuresBudget; // Maximum number of secondary structures that can be generated
     u8 roomFlags; // See ROOM_FLAG_
-    u8 unkE;
+    bool8 unkE; // Unreferenced flag
     u8 itemDensity;
     u8 trapDensity;
-    u8 unk11;
-    u8 unk12;
+    u8 floorNumber; // Unreferenced
+    u8 fixedRoomNumber;
     u8 numExtraHallways;
     u8 buriedItemDensity; // Density of buried items (in walls)
-    u8 unk15;
-    u8 unk16;
-    u8 unk17;
-    u8 unk18;
-    u8 itemlessMonsterHouseChance; // Chance that a monster house will be itemless
-    u8 unk1A;
+    u8 standaloneLakeDensity; // Density of a mass of secondary tiles replacing a wall (i.e. a lake)
+    u8 visibilityRange;
+    u8 moneyUpperBound; // Generated money stacks cannot exceed this amount (multiplied by 40)
+    u8 kecleonShopLayout;
+    u8 itemlessMonsterHouseChance; // Chance that a monster house will be itemless (always 0)
+    u8 unk1A; // Unreferenced (always 0)
+    u8 unk1B; // Unreferenced (always 0)
 } FloorProperties;
 
 enum {
@@ -253,14 +254,14 @@ typedef struct unkDungeon644
     /* 0x19 */ u8 unk19;
     /* 0x1A */ u8 fill1A[2];
     /* 0x1C */ s16 fractionalTurn; // Handles turn order when Pokémon have different movement speeds.
-    /* 0x1E */ s16 unk1E;
-    /* 0x20 */ s16 unk20;
+    /* 0x1E */ s16 wildMonSpawnFrames;
+    /* 0x20 */ s16 enemyDensity; // Taken directly from FloorProperties. Checked only once, if 0 there will be no wild Pokemon in dungeon.
     /* 0x22 */ s16 windTurns; // Turns remaining before getting swept out of the dungeon.
     /* 0x24 */ u16 unk24;
     /* 0x26 */ u16 bossSongIndex;
     /* 0x28 */ u8 unk28;
     /* 0x29 */ u8 unk29;
-    /* 0x2A */ u8 unk2A;
+    /* 0x2A */ bool8 stoleFromKecleon;
     /* 0x2B */ u8 unk2B;
     /* 0x2C */ u8 unk2C;
     /* 0x2D */ bool8 monsterHouseTriggered;
@@ -272,7 +273,7 @@ typedef struct unkDungeon644
     /* 0x33 */ u8 unk33;
     /* 0x34 */ u8 unk34;
     /* 0x35 */ u8 emptyBellyAlert; // which alert message to show when belly gets empty.
-    /* 0x36 */ u8 unk36;
+    /* 0x36 */ u8 windPhase;
     /* 0x37 */ s8 unk37;
     /* 0x38 */ u32 unk38;
     /* 0x3C */ u32 unk3C;
@@ -467,10 +468,10 @@ typedef struct Dungeon
     /* 0x15E2C */ Entity trapEntites[DUNGEON_MAX_TRAPS];
     /* 0x17B2C */ Entity *lightningRodPokemon;
     /* 0x17B30 */ Entity *snatchPokemon;
-    /* 0x17B34 */ Entity *unk17B34;
+    /* 0x17B34 */ Entity *illuminatePokemon;
     /* 0x17B38 */ u32 unk17B38;
     /* 0x17B3C */ u32 unk17B3C;
-    /* 0x17B3C */ u32 unk17B40;
+    /* 0x17B3C */ u32 illuminateMonSpawnGenID;
     /* 0x17B44 */ OpenedFile *sprites[MONSTER_MAX];
     /* 0x181E4 */ OpenedFile *paletFile;
     /* 0x181E8 */ UnkDungeonGlobal_unk181E8_sub unk181e8;

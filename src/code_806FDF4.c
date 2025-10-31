@@ -1,3 +1,4 @@
+#if 0  // Disabled in this fork; replaced by dungeon_mon_recruit.c
 #include "global.h"
 #include "globaldata.h"
 #include "constants/dungeon_exit.h"
@@ -7,28 +8,21 @@
 #include "dungeon_misc.h"
 #include "music_util.h"
 #include "dungeon_message.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
-#include "code_8097670.h"
-#include "dungeon_info.h"
-#include "dungeon_items.h"
-#include "dungeon_logic.h"
-#include "dungeon_random.h"
-#include "dungeon_vram.h"
-#include "dungeon_util.h"
-#include "friend_area.h"
-#include "pokemon.h"
-#include "save.h"
-#include "pokemon_3.h"
-#include "position_util.h"
-#include "text_util.h"
-#include "math.h"
-#include "dungeon_config.h"
+#include "dungeon_mon_sprite_render.h"
+#include "move_orb_effects_5.h"
+#include "adventure_info.h"
 #include "dungeon_strings.h"
-#include "dungeon_music.h"
-#include "dungeon_cutscene.h"
-#include "string_format.h"
-#include "dungeon_mon_spawn.h"
+
+// Map legacy message symbols to current dungeon_strings names
+#define gUnknown_80FA004 gText_Pokemon0WentAway
+#define gUnknown_80FA030 gText_ThePokemonCouldntJoinTeam
+#define gUnknown_80FA058 gText_ButItCouldntJoinTheTeam
+#define gUnknown_80FA090 gText_NewMemberJoinedGiveItNickname
+#define gUnknown_80FA0C8 gText_PleaseGiveNicknameNewMember
+#define gUnknown_80FA0F0 gText_Pokemon0JoinedToGoOnAdventures
+#define gUnknown_80FA120 gText_Pokemon0GainedAccessToFriendArea
+
+//
 
 void nullsub_96(Entity *pokemon,Entity *target);
 u8 sub_8097900(s16);
@@ -485,3 +479,5 @@ bool8 sub_806FDF4(Entity *entity1,Entity *entity2,Entity **entityPtr)
    return TRUE;
   }
 }
+
+#endif

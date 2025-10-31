@@ -17,7 +17,6 @@
 #include "constants/iq_skill.h"
 #include "math.h"
 #include "number_util.h"
-#include "status.h"
 #include "dungeon_random.h"
 #include "dungeon_items.h"
 #include "dungeon_info.h"
@@ -28,17 +27,15 @@
 #include "dungeon_leveling.h"
 #include "weather.h"
 #include "game_options.h"
-#include "code_8077274_1.h"
-#include "code_806CD90.h"
+#include "dungeon_mon_sprite_render.h"
 #include "constants/direction.h"
 #include "constants/dungeon.h"
 #include "dungeon_vram.h"
-#include "code_8041AD0.h"
-#include "code_804267C.h"
+#include "dungeon_8041AD0.h"
 #include "code_805D8C8.h"
 #include "dungeon_map_access.h"
 #include "dungeon_data.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "pokemon.h"
 #include "position_util.h"
 #include "random.h"
@@ -46,33 +43,12 @@
 #include "exclusive_pokemon.h"
 #include "hurl_orb.h"
 #include "dungeon_mon_spawn.h"
+#include "dungeon_mon_recruit.h"
 #include "move_orb_actions_1.h"
-
-extern void sub_8041B18(Entity *pokemon);
-extern void sub_8041B90(Entity *pokemon);
-extern void sub_8041D00(Entity *pokemon, Entity *target);
-extern void sub_8042238(Entity *pokemon, Entity *target);
-extern void sub_803ED30(s32, Entity *r0, u8, s32);
-extern bool8 sub_806A458(Entity *);
-extern bool8 TryRecruitMonster(Entity *attacker, Entity *target);
-extern bool8 sub_806A58C(s16 a0);
-extern void sub_8042148(Entity *pokemon);
-extern void sub_8042A24(Entity *r0);
-extern void sub_806A390(Entity *r0);
-extern void sub_8078084(Entity * pokemon);
-extern void sub_800DBBC(void);
-extern bool8 sub_806FA5C(Entity *, Entity *, struct unkStruct_8069D4C *);
-extern void EntityUpdateStatusSprites(Entity *);
-extern void PointCameraToMonster(Entity *);
-extern void sub_8041B74(Entity *pokemon);
-extern void sub_8041B5C(Entity *pokemon);
-extern void sub_8042940(Entity *r0);
-extern void sub_80428B0(Entity *r0);
-extern void sub_80428C4(Entity *r0);
-extern void sub_80428D8(Entity *);
-extern void sub_8042978(Entity *);
-extern void sub_804298C(Entity *);
-extern void sub_80428EC(Entity *);
+#include "move_orb_effects_2.h"
+#include "move_orb_effects_5.h"
+#include "dungeon_tilemap.h"
+#include "effect_main.h"
 
 static bool8 HandleDealingDamageInternal(Entity *attacker, Entity *target, struct DamageStruct *r5, bool32 isFalseSwipe, bool32 giveExp, s16 dungeonExitReason_, s32 arg8);
 static bool8 sub_806E100(s48_16 *param_1, Entity *pokemon, Entity *target, u8 type, DamageStruct *dmgStruct);
@@ -738,7 +714,7 @@ static bool8 HandleDealingDamageInternal(Entity *attacker, Entity *target, struc
 
         sub_8069D4C(&sp, target);
         if (TryRecruitMonster(attacker, target)) {
-            if (!sub_806FA5C(attacker, target, &sp)) {
+            if (!HandleMonsterJoinSequence(attacker, target, &sp)) {
                 HandleFaint(target, DUNGEON_EXIT_LEFT_WITHOUT_BEING_BEFRIENDED, attacker);
             }
             else {
@@ -938,159 +914,104 @@ static bool8 sub_806E100(s48_16 *param_1, Entity *pokemon, Entity *target, u8 ty
 s32 WeightWeakTypePicker(Entity *user, Entity *target, u8 moveType)
 {
     s32 weight = 1;
+    s32 i;
     bool8 checkExposed = FALSE;
     EntityInfo *userData;
     EntityInfo *targetData;
-    u8 *targetTypes;
-    u8 *targetType;
-    u32 moveTypeOffset;
+
     if (!EntityIsValid(target))
-    {
         return 1;
-    }
+
     if (moveType == TYPE_NORMAL || moveType == TYPE_FIGHTING)
-    {
         checkExposed = TRUE;
-    }
+
     userData = GetEntInfo(user);
     targetData = GetEntInfo(target);
+
     if (moveType == TYPE_FIRE && GetFlashFireStatus(target) != FLASH_FIRE_STATUS_NONE)
-    {
         return 0;
-    }
     if (moveType == TYPE_ELECTRIC && AbilityIsActive(target, ABILITY_VOLT_ABSORB))
-    {
         return 0;
-    }
     if (moveType == TYPE_WATER && AbilityIsActive(target, ABILITY_WATER_ABSORB))
-    {
         return 0;
-    }
     if (moveType == TYPE_GROUND && AbilityIsActive(target, ABILITY_LEVITATE))
-    {
         return 1;
-    }
-    targetTypes = targetData->types;
-    moveTypeOffset = moveType * NUM_TYPES * sizeof(s16);
-    targetType = targetData->types;
-    do
-    {
+
+    for (i = 0; i < 2; i++) {
         s32 effectiveness;
         u32 typeEffectivenessMultipliers[NUM_EFFECTIVENESS] = {0, 1, 2, 4};
-        if (checkExposed && *targetType == TYPE_GHOST && !targetData->exposed)
-        {
+        if (checkExposed && targetData->types[i] == TYPE_GHOST && !targetData->exposed) {
             effectiveness = 0;
             gDungeon->unk134.pokemonExposed = TRUE;
         }
-        else
-        {
-            effectiveness = gTypeEffectivenessChart[moveType][*targetType];
-            // Used to swap variable initialization order at the loop start.
-            effectiveness = *(s16*)(((s8*) gTypeEffectivenessChart) + moveTypeOffset + *targetType * 2);
+        else {
+            effectiveness = gTypeEffectivenessChart[moveType][targetData->types[i]];
         }
+
         if (weight == 0)
-        {
-            goto breakLoop;
-        }
+            break;
+
         weight *= typeEffectivenessMultipliers[effectiveness];
         weight /= 2;
         if (weight == 0)
-        {
             // BUG: If the Pokémon's first type resists the move, the second type is ignored.
             // This calculates type effectiveness incorrectly if the first type resists the move and the second type is weak to the move.
             // For example, a Fire-type move is considered not very effective against a Rock/Bug-type like Anorith.
             return 2;
-        }
-    } while ((s32)(++targetType) <= (s32)(targetTypes + 1));
-    breakLoop:
+    }
+
     if ((moveType == TYPE_FIRE || moveType == TYPE_ICE) && AbilityIsActive(target, ABILITY_THICK_FAT))
-    {
         return 2;
-    }
-    if (moveType == TYPE_WATER && AbilityIsActive(user, ABILITY_TORRENT))
-    {
+
+    if (moveType == TYPE_WATER && AbilityIsActive(user, ABILITY_TORRENT)) {
         s32 maxHPStat = userData->maxHPStat;
-        if (maxHPStat < 0)
-        {
-            maxHPStat += 3;
-        }
-        if (maxHPStat >> 2 >= userData->HP)
-        {
+        if (maxHPStat / 4 >= userData->HP)
             weight *= 2;
-        }
     }
-    if (moveType == TYPE_GRASS && AbilityIsActive(user, ABILITY_OVERGROW))
-    {
+
+    if (moveType == TYPE_GRASS && AbilityIsActive(user, ABILITY_OVERGROW)) {
         s32 maxHPStat = userData->maxHPStat;
-        if (maxHPStat < 0)
-        {
-            maxHPStat += 3;
-        }
-        if (maxHPStat >> 2 >= userData->HP)
-        {
+        if (maxHPStat / 4 >= userData->HP)
             weight *= 2;
-        }
     }
-    if (moveType == TYPE_BUG && AbilityIsActive(user, ABILITY_SWARM))
-    {
+
+    if (moveType == TYPE_BUG && AbilityIsActive(user, ABILITY_SWARM)) {
         s32 maxHPStat = userData->maxHPStat;
-        if (maxHPStat < 0)
-        {
-            maxHPStat += 3;
-        }
-        if (maxHPStat >> 2 >= userData->HP)
-        {
+        if (maxHPStat / 4 >= userData->HP)
             weight *= 2;
-        }
     }
-    if (moveType == TYPE_FIRE && AbilityIsActive(user, ABILITY_BLAZE))
-    {
+
+    if (moveType == TYPE_FIRE && AbilityIsActive(user, ABILITY_BLAZE)) {
         s32 maxHPStat = userData->maxHPStat;
-        if (maxHPStat < 0)
-        {
-            maxHPStat += 3;
-        }
-        if (maxHPStat >> 2 >= userData->HP)
-        {
+        if (maxHPStat / 4 >= userData->HP)
             weight *= 2;
-        }
     }
+
     if (weight == 0)
-    {
         return 2;
-    }
+
     if (MonsterIsType(user, moveType))
-    {
         weight *= 2;
-    }
-    targetTypes = targetData->types;
-    if (GetApparentWeather(user) == WEATHER_SUNNY)
-    {
+
+    if (GetApparentWeather(user) == WEATHER_SUNNY) {
         if (moveType == TYPE_FIRE)
-        {
             weight *= 2;
-        }
         else if (moveType == TYPE_WATER)
-        {
             return 2;
-        }
     }
+
     if (gDungeon->weather.mudSportTurns != 0 && moveType == TYPE_ELECTRIC)
-    {
         return 2;
-    }
+
     if (gDungeon->weather.waterSportTurns != 0 && moveType == TYPE_FIRE)
-    {
         return 2;
-    }
+
     if (moveType == TYPE_ELECTRIC && userData->bideClassStatus.status == STATUS_CHARGING)
-    {
         weight *= 2;
-    }
-    if (weight > 2)
-    {
+
+    if (weight >= 3)
         weight = 3;
-    }
+
     return weight + 2;
 }
 
@@ -1281,30 +1202,30 @@ void CalcDamage(Entity *attacker, Entity *target, u8 moveType, s32 movePower, s3
         rand = DungeonRandInt(100);
         if (splitIndex == 0) {
             if (HasHeldItem(attacker, ITEM_POWER_BAND)) {
-                atkStat += gUnknown_810AC60;
-                gDungeon->unk134.unk160 += gUnknown_810AC60;
+                atkStat += gPowerBandBoost;
+                gDungeon->unk134.unk160 += gPowerBandBoost;
             }
             if (HasHeldItem(attacker, ITEM_MUNCH_BELT)) {
-                atkStat += gUnknown_810AC68;
-                gDungeon->unk134.unk160 += gUnknown_810AC68;
+                atkStat += gMunchBeltBoost;
+                gDungeon->unk134.unk160 += gMunchBeltBoost;
             }
             if (arg_10 && HasHeldItem(target, ITEM_DEF_SCARF)) {
-                defStat += gUnknown_810AC64;
-                gDungeon->unk134.unk162 += gUnknown_810AC64;
+                defStat += gDefScarfBoost;
+                gDungeon->unk134.unk162 += gDefScarfBoost;
             }
         }
         else {
             if (arg_10 && HasHeldItem(target, ITEM_ZINC_BAND)) {
-                defStat += gUnknown_810AC66;
-                gDungeon->unk134.unk163 += gUnknown_810AC66;
+                defStat += gZincBandBoost;
+                gDungeon->unk134.unk163 += gZincBandBoost;
             }
             if (HasHeldItem(attacker, ITEM_SPECIAL_BAND)) {
-                atkStat += gUnknown_810AC62;
-                gDungeon->unk134.unk161 += gUnknown_810AC62;
+                atkStat += gSpecialBandBoost;
+                gDungeon->unk134.unk161 += gSpecialBandBoost;
             }
             if (HasHeldItem(attacker, ITEM_MUNCH_BELT)) {
-                atkStat += gUnknown_810AC68;
-                gDungeon->unk134.unk161 += gUnknown_810AC68;
+                atkStat += gMunchBeltBoost;
+                gDungeon->unk134.unk161 += gMunchBeltBoost;
             }
         }
 

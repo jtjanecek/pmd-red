@@ -1,11 +1,12 @@
 #include "global.h"
 #include "globaldata.h"
 #include "dungeon_cutscene.h"
-#include "constants/weather.h"
 #include "constants/dungeon.h"
 #include "constants/direction.h"
 #include "constants/dungeon.h"
 #include "constants/dungeon_exit.h"
+#include "constants/fixed_rooms.h"
+#include "constants/weather.h"
 #include "structs/str_dungeon.h"
 #include "structs/sprite_oam.h"
 #include "dungeon_cutscenes.h"
@@ -18,7 +19,7 @@
 #include "dungeon_map_access.h"
 #include "dungeon_misc.h"
 #include "dungeon_vram.h"
-#include "code_806CD90.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_range.h"
 #include "random.h"
 #include "math.h"
@@ -36,6 +37,8 @@
 #include "dungeon_tilemap.h"
 #include "dungeon_map.h"
 #include "dungeon_mon_spawn.h"
+#include "dungeon_message.h"
+#include "direction_util.h"
 
 struct RgbS16
 {
@@ -48,15 +51,9 @@ extern OpenedFile *gDungeonPaletteFile;
 extern RGB gUnknown_202ECA4[];
 
 extern bool8 sub_8004C00(unkStruct_202EE8C *a0, s32 a1, s32 a2, s32 brightness, const RGB *ramp, struct RgbS16 *a5);
-extern void sub_803F878(s32, s32);
-extern bool8 sub_800E90C(DungeonPos *);
 extern void sub_8088EE8(void);
 extern void sub_8088848(void);
 extern void sub_808A718(void);
-extern s32 sub_800E700(s32);
-extern void sub_8052FB8(const u8 *);
-extern u32 sub_8002A70(u32, s32, u8);
-extern s8 sub_8002984(s8, u8);
 
 struct unkData_8107234
 {
@@ -136,8 +133,9 @@ void sub_80847D4(void)
     UpdateMinimap();
     for(index = 0; index < 0x3e7 && gUnknown_8107234[index].unk0 != 0;  index++) {
         fixedRoomNumber = gDungeon->fixedRoomNumber;
-        if (fixedRoomNumber - 0x1c < 0x16) {
-            fixedRoomNumber = 0x1b;
+        // Dojo maze bosses all use the same cutscene data
+        if (fixedRoomNumber - (FIRST_DOJO_MAZE_BOSS_ROOM+1) < NUM_MAZE_BOSS_ROOMS) {
+            fixedRoomNumber = FIRST_DOJO_MAZE_BOSS_ROOM;
         }
         if (fixedRoomNumber == gUnknown_8107234[index].unk0)
         {
@@ -1924,25 +1922,14 @@ void sub_808692C(void)
 
 void SpriteLookAroundEffect(Entity *entity)
 {
-    s8 r4;
-    s8 r3;
+    s8 dir = sub_8002984((s8) GetEntInfo(entity)->action.direction, 4);
 
-    r4 = sub_8002984(GetEntInfo(entity)->action.direction, 4);
-
-    sub_80869E4(entity, 4, 2, r4);
-
+    sub_80869E4(entity, 4, 2, dir);
     sub_803E708(15, 70);
-
-    r4 = sub_8002984(r4, 5);
-
-    sub_80869E4(entity, 4, 1, r4);
-
+    dir = sub_8002984(dir, 5);
+    sub_80869E4(entity, 4, 1, dir);
     sub_803E708(15, 70);
-
-    r3 = sub_8002984(r4, 4);
-
-    sub_80869E4(entity, 4, 2, r3);
-
+    sub_80869E4(entity, 4, 2, (s8) sub_8002984(dir, 4));
     sub_803E708(15, 70);
 }
 

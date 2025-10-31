@@ -30,12 +30,14 @@
 #include "dungeon_util.h"
 #include "dungeon_pokemon_sprites.h"
 #include "menu_input.h"
-#include "code_801602C.h"
+#include "confirm_name_menu.h"
 #include "dungeon_tilemap.h"
 #include "dungeon_name_banner.h"
 #include "dungeon_engine.h"
 #include "dungeon_cutscene.h"
 #include "effect_main.h"
+#include "dungeon_mon_sprite_render.h"
+#include "dungeon_8041AD0.h"
 
 // File split is correct. This technical file deals with windows, advancing frames(v-blanks) and vram / pal set-up.
 
@@ -49,10 +51,6 @@ extern struct DungeonPalFile *gDungeonPaletteFile;
 extern struct DungeonPalFile *gUnknown_202EC94;
 extern RGB gUnknown_202ECA4[];
 extern OpenedFile *gUnknown_202EC9C;
-
-void sub_806CC10();
-void sub_804522C();
-void sub_8042E5C();
 
 static void sub_803E490(u32);
 static void sub_803EC94(void);

@@ -20,11 +20,9 @@
 #include "menu_input.h"
 #include "weather.h"
 #include "input.h"
-
-extern void sub_807E378(void);
-extern u8 DisplayActions(u32);
-extern void sub_805F02C(void);
-extern void sub_8071B48(void);
+#include "dungeon_wild_mon_spawn.h"
+#include "dungeon_entity_movement.h"
+#include "dungeon_wind.h"
 
 static void sub_8044454(void);
 static bool8 RunLeaderTurn(bool8);
@@ -54,7 +52,7 @@ void RunFractionalTurn(bool8 param_1)
     cVar2 = RunLeaderTurn(param_1);
     if (IsFloorOver()) return;
     if (cVar2) {
-        sub_807E378();
+        UpdateWindTurns();
         if (IsFloorOver()) return;
     }
     if (IsFloorOver()) return;
@@ -419,7 +417,7 @@ static void TrySpawnMonsterAndActivatePlusMinus(void)
   s32 index;
 
   if (gSpeedTurns[1][gDungeon->unk644.fractionalTurn] != 0) {
-    sub_8071B48();
+    TrySpawnWildMonster();
     gDungeon->plusIsActive[0] = FALSE;
     gDungeon->plusIsActive[1] = FALSE;
     gDungeon->minusIsActive[0] = FALSE;

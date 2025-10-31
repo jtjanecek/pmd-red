@@ -3,7 +3,7 @@
 #include "dungeon_ai_attack.h"
 #include "dungeon_move_util.h"
 #include "dungeon_message.h"
-#include "code_806CD90.h"
+#include "dungeon_mon_sprite_render.h"
 #include "constants/direction.h"
 #include "constants/dungeon_action.h"
 #include "constants/iq_skill.h"
@@ -27,13 +27,15 @@
 #include "position_util.h"
 #include "status_checks.h"
 #include "structs/str_dungeon.h"
-#include "targeting_flags.h"
 #include "dungeon_misc.h"
 #include "dungeon_pos_data.h"
 #include "dungeon_engine.h"
 #include "dungeon_damage.h"
+#include "dungeon_leveling.h"
+#include "dungeon_items.h"
 #include "dungeon_kecleon_shop.h"
 #include "dungeon_strings.h"
+#include "dungeon_entity_movement.h"
 
 #define REGULAR_ATTACK_INDEX 4
 
@@ -41,11 +43,6 @@ EWRAM_DATA bool8 gCanAttackInDirection[NUM_DIRECTIONS] = {0};
 EWRAM_DATA u8 gPotentialAttackTargetDirections[NUM_DIRECTIONS] = {0};
 EWRAM_DATA s32 gPotentialAttackTargetWeights[NUM_DIRECTIONS] = {0};
 EWRAM_DATA Entity *gPotentialTargets[NUM_DIRECTIONS] = {0};
-
-extern void sub_806A1B0(Entity *);
-extern void sub_8045BF8(u8 *, struct Item *);
-extern void EnemyEvolution(struct Entity *);
-extern void DiscoverMinimap(DungeonPos *);
 
 void ChooseAIMove(Entity *pokemon)
 {
@@ -964,7 +961,7 @@ void HandleUseOrbAction(Entity *pokemon)
 
     act = entityInfo->action;
 
-    if (IsBossFight()) {
+    if (IsFloorwideFixedRoom()) {
         LogMessageByIdWithPopupCheckUser(pokemon, gPtrMysteriousPowerPreventedUseMessage);
         r4 = TRUE;
     }
@@ -1035,7 +1032,7 @@ void HandleUseOrbAction(Entity *pokemon)
         }
 
         sub_806A5B8(pokemon);
-        sub_8075900(pokemon, gDungeon->forceMonsterHouse);
+        TryTriggerMonsterHouseWithMsg(pokemon, gDungeon->forceMonsterHouse);
     }
     else if (r4)
         sub_8044D40(&act, 0);

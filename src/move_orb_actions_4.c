@@ -3,12 +3,12 @@
 #include "move_orb_actions_4.h"
 #include "move_orb_actions_2.h"
 #include "move_orb_actions_1.h"
+#include "move_orb_effects_2.h"
 #include "dungeon_ai.h"
 #include "dungeon_move_util.h"
 #include "dungeon_message.h"
 #include "dungeon_move.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_random.h"
 #include "constants/ability.h"
 #include "constants/dungeon_exit.h"
@@ -24,12 +24,11 @@
 #include "dungeon_map_access.h"
 #include "dungeon_misc.h"
 #include "dungeon_util.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "move_util.h"
 #include "moves.h"
 #include "number_util.h"
 #include "pokemon.h"
-#include "status.h"
 #include "structs/map.h"
 #include "structs/str_dungeon.h"
 #include "text_util.h"
@@ -49,6 +48,8 @@
 #include "drought_orb.h"
 #include "switcher_orb.h"
 #include "trawl_orb.h"
+#include "move_orb_effects_3.h"
+#include "move_orb_effects_4.h"
 
 bool8 ProtectMoveAction(Entity * pokemon,Entity * target,Move *move, s32 itemId)
 {
@@ -633,7 +634,7 @@ bool8 TrawlOrbAction(Entity * pokemon, Entity * target, Move *move, s32 itemId)
 bool8 EscapeOrbAction(Entity * pokemon, Entity * target, Move *move, s32 itemId)
 {
     SubstitutePlaceholderStringTags(gFormatBuffer_Monsters[0],pokemon,0);
-    if (gDungeon->unk644.unk2A != 0) {
+    if (gDungeon->unk644.stoleFromKecleon != 0) {
         TryDisplayDungeonLoggableMessage3(pokemon,target,gUnknown_80FD4DC); // $m0 can't escape!
     }
     else {
@@ -662,7 +663,7 @@ bool8 TrapbustOrbAction(Entity * pokemon,Entity * target, Move *move, s32 itemId
     DungeonPos pos;
     bool8 foundTrap = FALSE;
     tile = GetTileAtEntitySafe(target);
-    if (IsBossFight()) {
+    if (IsFloorwideFixedRoom()) {
         LogMessageByIdWithPopupCheckUser(pokemon,gUnknown_80FD1EC);
         return FALSE;
     }

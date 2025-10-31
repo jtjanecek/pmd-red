@@ -11,9 +11,8 @@
 #include "effect_data.h"
 #include "dungeon_vram.h"
 #include "dungeon_tilemap.h"
-#include "code_8041AD0.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
+#include "dungeon_8041AD0.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_random.h"
 #include "dungeon_logic.h"
 #include "dungeon_config.h"
@@ -27,7 +26,8 @@
 #include "dungeon_util.h"
 #include "dungeon_damage.h"
 #include "math.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
+#include "move_orb_effects_5.h"
 #include "move_orb_actions_1.h"
 #include "move_orb_actions_2.h"
 #include "move_orb_actions_3.h"
@@ -37,30 +37,14 @@
 #include "moves.h"
 #include "position_util.h"
 #include "sprite.h"
-#include "status.h"
 #include "weather.h"
-#include "targeting_flags.h"
 #include "text_util.h"
 #include "dungeon_pos_data.h"
 #include "dungeon_engine.h"
 #include "warp_target.h"
+#include "dungeon_ai_attack.h"
 
-extern void sub_80429C8(Entity *r0);
-extern s16 GetDungeonExitReasonFromMoveOrItem(Move *move, s32 itemID);
-extern void sub_8042238(Entity *pokemon, Entity *target);
-extern void sub_806A1E8(Entity *pokemon);
-extern void sub_804178C(u32);
-extern void sub_80428A0(Entity *r0);
-extern bool8 sub_8040BB0(Entity *entity, Move *move, bool8);
-extern void sub_8040DA0(Entity *entity, Move *move);
-extern u16 GetEffectiveMoveId(u16 moveId, u8 weather, u8 hasSpecialEffect);
-extern void sub_800EF10(u16 r0);
-extern void sub_800E3AC(s32 a0, DungeonPos *pos, s32 a2);
 extern void sub_8041168(Entity *entity, Entity *entity2, Move *,DungeonPos *);
-extern void sub_8042930(Entity *r0);
-extern void sub_8041B48(Entity *pokemon);
-extern void sub_8041BA8(Entity *pokemon);
-extern void sub_8042950(Entity *r0);
 
 static s32 TryHitTarget(Entity *attacker, Entity *target, Move *move, struct DamageStruct *dmgStruct, s16 unk_);
 
@@ -142,7 +126,7 @@ void UseMoveAgainstTargets(Entity **targetsArray, Entity *attacker, Move *move, 
                 {
                     s32 direction1 = targetInfo->action.direction;
                     s32 direction2 = targetInfo->action.direction;
-                    if (IsBossFight()) {
+                    if (IsFloorwideFixedRoom()) {
                         TryDisplayDungeonLoggableMessage3(attacker, currTarget, gUnknown_80FDD88); // A mysterious force prevents moves from being passed off!
                     }
                     else {
@@ -1382,9 +1366,9 @@ static s32 TryHitTarget(Entity *attacker, Entity *target, Move *move, struct Dam
         bool32 isFalseSwipe = (move->id == MOVE_FALSE_SWIPE);
 
         if (AbilityIsActive(target, ABILITY_ILLUMINATE)) {
-            gDungeon->unk644.unk1E = 999;
-            gDungeon->unk17B34 = target;
-            gDungeon->unk17B40 = target->spawnGenID;
+            gDungeon->unk644.wildMonSpawnFrames = 999;
+            gDungeon->illuminatePokemon = target;
+            gDungeon->illuminateMonSpawnGenID = target->spawnGenID;
         }
 
         HandleDealingDamage(attacker, target, dmgStruct, isFalseSwipe, TRUE, dungeonExitReason, TRUE, 0);

@@ -2,11 +2,9 @@
 #include "globaldata.h"
 #include "hurl_orb.h"
 #include "dungeon_vram.h"
-#include "code_8041AD0.h"
-#include "code_804267C.h"
+#include "dungeon_8041AD0.h"
 #include "code_805D8C8.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
+#include "dungeon_mon_sprite_render.h"
 #include "constants/ability.h"
 #include "constants/dungeon_exit.h"
 #include "constants/monster.h"
@@ -14,7 +12,7 @@
 #include "constants/type.h"
 #include "constants/weather.h"
 #include "dungeon_info.h"
-#include "dungeon_ai.h"
+#include "dungeon_entity_movement.h"
 #include "dungeon_config.h"
 #include "dungeon_generation.h"
 #include "dungeon_items.h"
@@ -30,7 +28,7 @@
 #include "dungeon_util.h"
 #include "math.h"
 #include "moves.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "move_util.h"
 #include "pokemon.h"
 #include "position_util.h"
@@ -244,6 +242,6 @@ static void sub_807F9BC(Entity *entity)
             sub_807EC28(FALSE);
         }
         sub_806A5B8(entity);
-        sub_8075900(entity, gDungeon->forceMonsterHouse);
+        TryTriggerMonsterHouseWithMsg(entity, gDungeon->forceMonsterHouse);
     }
 }

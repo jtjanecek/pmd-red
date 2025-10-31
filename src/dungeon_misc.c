@@ -12,7 +12,7 @@
 #include "string_format.h"
 #include "friend_area.h"
 #include "run_dungeon.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "dungeon_map_access.h"
 #include "dungeon_map.h"
 #include "dungeon_range.h"
@@ -20,16 +20,16 @@
 #include "dungeon_message_log.h"
 #include "save.h"
 #include "dungeon_logic.h"
-#include "constants/dungeon.h"
-#include "constants/friend_area.h"
-#include "constants/status.h"
 #include "constants/ability.h"
+#include "constants/dungeon.h"
 #include "constants/dungeon_exit.h"
+#include "constants/fixed_rooms.h"
+#include "constants/friend_area.h"
 #include "constants/iq_skill.h"
+#include "constants/status.h"
 #include "constants/type.h"
 #include "constants/weather.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_util.h"
 #include "exclusive_pokemon.h"
 #include "dungeon_config.h"
@@ -43,7 +43,7 @@
 #include "def_filearchives.h"
 #include "code_803D110.h"
 #include "dungeon_strings.h"
-#include "dungeon_8083AB0.h"
+#include "dungeon_exit.h"
 #include "dungeon_pos_data.h"
 #include "dungeon_data.h"
 #include "dungeon_tilemap.h"
@@ -51,35 +51,15 @@
 #include "dungeon_cutscene.h"
 #include "dungeon_mon_spawn.h"
 #include "dungeon_info.h"
+#include "dungeon_monster_house.h"
+#include "move_orb_effects_2.h"
+#include "move_orb_effects_5.h"
+#include "dungeon_recruit_release_menu.h"
+#include "dungeon_8041AD0.h"
+#include "dungeon_pokemon_sprites.h"
 
 static void EnsureCastformLoaded(void);
 static void EnsureDeoxysLoaded(void);
-
-extern bool8 sub_806A58C(s16 r0);
-extern void sub_8078084(Entity * pokemon);
-extern void sub_8067A80(u8 a0, s32 a1, s32 a2, Pokemon **a3);
-extern bool8 sub_8070F80(Entity * pokemon, s32 direction);
-extern s32 sub_806A4DC(EntityInfo *info);
-extern void sub_8042900(Entity *r0);
-extern void sub_8042968(Entity *r0);
-extern void sub_8041BBC(Entity *r0);
-extern void sub_804178C(u32);
-extern void sub_8042B20(Entity *entity);
-extern void sub_8042B0C(Entity *entity);
-extern s16 sub_803D970(u32);
-extern bool8 sub_80860A8(u8 id);
-extern u8 sub_803D73C(s32 a0);
-extern void DeletePokemonDungeonSprite(s32 id);
-extern void sub_80429E8(Entity *r0);
-extern s32 sub_803DA20(s32 param_1);
-extern void sub_8042EC8(Entity *a0, s32 a1);
-extern Entity *sub_804550C(s16 a);
-extern Entity *sub_80453AC(s16 id);
-extern void EntityUpdateStatusSprites(Entity *);
-
-extern u8 gUnknown_202F32C;
-
-bool8 sub_806A564(s16 r0);
 static bool8 sub_806A5A4(s16 r0);
 
 void OpenDungeonPaletteFile(void)
@@ -116,7 +96,7 @@ void LoadDungeonPokemonSprites(void)
             if(PokemonFlag2Struct2(ptr))
                 LoadPokemonSprite(ptr->speciesNum, FALSE);
     }
-    if(gDungeon->fixedRoomNumber == 0x31)
+    if(gDungeon->fixedRoomNumber == FIXED_ROOM_RESCUE_TEAM_MAZE_BOSS)
     {
         for(index = 0; index < MAX_TEAM_MEMBERS; index++)
         {
@@ -390,7 +370,7 @@ void sub_8068BDC(bool8 a0)
             WriteFriendAreaName(gFormatBuffer_Items[0], friendAreaId, FALSE);
             DisplayDungeonMessage(NULL, gUnknown_80FE1A4, TRUE); // The Friend Area is full, a friend must be released.
             while (1) {
-                sub_8067A80(friendAreaId, j - areaCapacity.maxPokemon, j, monPointers);
+                ShowRecruitReleaseMenu(friendAreaId, j - areaCapacity.maxPokemon, j, monPointers);
                 for (id = 0; id < j; id++) {
                     Pokemon *monPtr = monPointers[id];
                     if (PokemonExists(monPtr) && (monPtr->flags & POKEMON_FLAG_x8000)) {
@@ -519,7 +499,7 @@ void HandleFaint(Entity *entity, s32 dungeonExitReason_, Entity *param_3)
         sub_803E708(0x3c,0x49);
         DisplayMessageLog();
         if (gDungeon->unk6 == 0) {
-            if (gDungeon->unk644.unk2A == 0
+            if (gDungeon->unk644.stoleFromKecleon == 0
                 && dungeonExitReason != DUNGEON_EXIT_DELETED_FOR_EVENT
                 && dungeonExitReason != DUNGEON_EXIT_FAILED_TO_PROTECT_CLIENT
                 && dungeonExitReason != DUNGEON_EXIT_BLOWN_OUT_UNSEEN_FORCE
@@ -549,7 +529,7 @@ void HandleFaint(Entity *entity, s32 dungeonExitReason_, Entity *param_3)
             return;
         }
 
-        sub_8083AB0(dungeonExitReason,param_3,entity);
+        SetUpDungeonExitData(dungeonExitReason,param_3,entity);
         if (dungeonExitReason == DUNGEON_EXIT_RETURNED_WITH_FALLEN_PARTNER) {
             EntityInfo *partnerInfo = NULL;
             for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
@@ -597,7 +577,7 @@ void HandleFaint(Entity *entity, s32 dungeonExitReason_, Entity *param_3)
 
     if (GetLeader() != NULL && dungeonExitReason != DUNGEON_EXIT_DELETED_FOR_EVENT && !entInfo->isTeamLeader && !gDungeon->unk10) {
         sub_8084E00(entity,entInfo->monsterBehavior, dungeonExitReason == DUNGEON_EXIT_TRANSFORMED_INTO_FRIEND);
-        if (IS_DEOXYS_FORM_MONSTER(entInfo->apparentID) && !IsBossFight() && entInfo->isNotTeamMember) {
+        if (IS_DEOXYS_FORM_MONSTER(entInfo->apparentID) && !IsFloorwideFixedRoom() && entInfo->isNotTeamMember) {
             gDungeon->deoxysDefeat = 1;
             DisplayDungeonLoggableMessageTrue(entity,gUnknown_80FA580);
             sub_803E178();
@@ -838,22 +818,22 @@ void SetMonSummaryInfoFromEntity(struct MonSummaryInfo *param_1, Entity *target)
     *spDefBoost = 0;
     if ((info->heldItem.flags & ITEM_FLAG_EXISTS) && ((info->heldItem.flags & ITEM_FLAG_STICKY) == 0)) {
         if (info->heldItem.id == ITEM_POWER_BAND) {
-            *atkPtr += gUnknown_810AC60;
+            *atkPtr += gPowerBandBoost;
         }
         if (info->heldItem.id == ITEM_MUNCH_BELT) {
-            *atkPtr += gUnknown_810AC68;
+            *atkPtr += gMunchBeltBoost;
         }
         if (info->heldItem.id == ITEM_SPECIAL_BAND) {
-            *spAtkPtr += gUnknown_810AC62;
+            *spAtkPtr += gSpecialBandBoost;
         }
         if (info->heldItem.id == ITEM_MUNCH_BELT) {
-            *spAtkPtr += gUnknown_810AC68;
+            *spAtkPtr += gMunchBeltBoost;
         }
         if (info->heldItem.id == ITEM_DEF_SCARF) {
-            *defPtr += gUnknown_810AC64;
+            *defPtr += gDefScarfBoost;
         }
         if (info->heldItem.id == ITEM_ZINC_BAND) {
-            *spDefBoost += gUnknown_810AC66;
+            *spDefBoost += gZincBandBoost;
         }
     }
     param_1->tactic = info->tactic;
@@ -1285,7 +1265,7 @@ void TryPointCameraToMonster(Entity *pokemon, u8 param_2)
   }
 }
 
-void nullsub_95(void)
+void nullsub_95(Entity *pokemon)
 {}
 
 void ReevaluateSnatchMonster(void)
@@ -1517,7 +1497,7 @@ void sub_806A6E8(Entity *entity)
                 UpdateMinimap();
             }
         }
-        sub_807AA30();
+        TryWakeSleepingWildPokemon();
     }
 
     if (ItemExists(&info->heldItem)) {
@@ -1527,8 +1507,6 @@ void sub_806A6E8(Entity *entity)
         info->unk64 = ITEM_NOTHING;
     }
 }
-
-void DisplayMsgIfNewIqSkillLearned(EntityInfo *info, s32 pokeIq);
 
 UNUSED static void DisplayMsgIfTeamMonsLearnedNewIqSkill(void)
 {

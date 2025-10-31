@@ -43,11 +43,11 @@ extern const s32 gUnknown_810A3F0[100];
 extern const s16 gTypeGummiIQBoost[NUM_TYPES][NUMBER_OF_GUMMIS];
 extern const s16 gUnknown_810A808[NUM_TYPES][NUMBER_OF_GUMMIS];
 extern const FriendAreaSettings gFriendAreaSettings[NUM_FRIEND_AREAS];
-extern const s16 gUnknown_810AC60;
-extern const s16 gUnknown_810AC62;
-extern const s16 gUnknown_810AC64;
-extern const s16 gUnknown_810AC66;
-extern const s16 gUnknown_810AC68;
+extern const s16 gPowerBandBoost;
+extern const s16 gSpecialBandBoost;
+extern const s16 gDefScarfBoost;
+extern const s16 gZincBandBoost;
+extern const s16 gMunchBeltBoost;
 extern const u8 gBestResistTypeTable[NUM_TYPES];
 extern const bool8 gIsTypePhysicalTable[NUM_TYPES];
 extern const s32 gUnknown_810AC90[10];
@@ -57,5 +57,7 @@ extern const s16 gBlastBurnIQReq;
 extern const s16 gVoltTackleIQReq;
 extern const u8 gDungeonWaterType[76];
 extern const struct ExclusivePokemon gExclusivePokemon[NUM_EXCLUSIVE_POKEMON];
+
+bool8 IsWaterDungeon(u32 r0);
 
 #endif // GUARD_DUNGEON_DATA_H

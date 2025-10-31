@@ -4,99 +4,82 @@
 #include "dungeon_util.h"
 #include "dungeon_move_util.h"
 #include "dungeon_message.h"
-#include "code_8077274_1.h"
 #include "constants/direction.h"
 #include "constants/dungeon_action.h"
 #include "constants/status.h"
 #include "dungeon_action.h"
+#include "dungeon_strings.h"
 #include "dungeon_ai_attack.h"
 #include "dungeon_random.h"
 #include "dungeon_logic.h"
 #include "moves.h"
-
-extern const char *gPtrFrozenMessage[];
-extern const char *gPtrWrappedAroundMessage[];
-extern const char *gPtrWrappedByMessage[];
-extern const char *gPtrBideMessage[];
-extern const char *gPtrPausedMessage[];
-extern const char *gPtrInfatuatedMessage[];
-extern u8 *gUnknown_80F95EC[];
-extern char *gPtrMoveInterruptedMessage[];
+#include "move_orb_effects_3.h"
 
 bool8 HasStatusThatPreventsActing(Entity *pokemon)
 {
     EntityInfo *pokemonInfo = GetEntInfo(pokemon);
     SubstitutePlaceholderStringTags(gFormatBuffer_Monsters[0], pokemon, 0);
     SetMonsterActionFields(&pokemonInfo->action, ACTION_PASS_TURN);
-    switch (pokemonInfo->sleepClassStatus.status)
-    {
+    switch (pokemonInfo->sleepClassStatus.status) {
         case STATUS_NIGHTMARE:
         case STATUS_SLEEP:
         case STATUS_NAPPING:
             return TRUE;
     }
-    switch (pokemonInfo->frozenClassStatus.status)
-    {
+
+    switch (pokemonInfo->frozenClassStatus.status) {
         case STATUS_FROZEN:
-            LogMessageByIdWithPopupCheckUser(pokemon, *gPtrFrozenMessage);
+            LogMessageByIdWithPopupCheckUser(pokemon, gPtrFrozenMessage);
             return TRUE;
         case STATUS_WRAP:
-            LogMessageByIdWithPopupCheckUser(pokemon, *gPtrWrappedAroundMessage);
+            LogMessageByIdWithPopupCheckUser(pokemon, gPtrWrappedAroundMessage);
             return TRUE;
         case STATUS_WRAPPED:
-            LogMessageByIdWithPopupCheckUser(pokemon, *gPtrWrappedByMessage);
+            LogMessageByIdWithPopupCheckUser(pokemon, gPtrWrappedByMessage);
             return TRUE;
         case STATUS_PETRIFIED:
             return TRUE;
     }
-    switch (pokemonInfo->cringeClassStatus.status)
-    {
+
+    switch (pokemonInfo->cringeClassStatus.status) {
         case STATUS_PAUSED:
-            LogMessageByIdWithPopupCheckUser(pokemon, *gPtrPausedMessage);
+            LogMessageByIdWithPopupCheckUser(pokemon, gPtrPausedMessage);
             return TRUE;
         case STATUS_INFATUATED:
-            LogMessageByIdWithPopupCheckUser(pokemon, *gPtrInfatuatedMessage);
+            LogMessageByIdWithPopupCheckUser(pokemon, gPtrInfatuatedMessage);
             return TRUE;
     }
-    if (pokemonInfo->bideClassStatus.status == STATUS_BIDE)
-    {
-        LogMessageByIdWithPopupCheckUser(pokemon, *gPtrBideMessage);
+
+    if (pokemonInfo->bideClassStatus.status == STATUS_BIDE) {
+        LogMessageByIdWithPopupCheckUser(pokemon, gPtrBideMessage);
         return TRUE;
     }
-    if (pokemonInfo->curseClassStatus.status == STATUS_DECOY)
-    {
+    if (pokemonInfo->curseClassStatus.status == STATUS_DECOY) {
         SetActionPassTurnOrWalk(&pokemonInfo->action, pokemonInfo->id);
         pokemonInfo->action.direction = DungeonRandInt(NUM_DIRECTIONS);
         pokemonInfo->targetPos.x = pokemon->pos.x;
         pokemonInfo->targetPos.y = pokemon->pos.y - 1;
         return TRUE;
     }
-    if (pokemonInfo->shopkeeper == SHOPKEEPER_MODE_SHOPKEEPER)
-    {
+    if (pokemonInfo->shopkeeper == SHOPKEEPER_MODE_SHOPKEEPER) {
         return TRUE;
     }
-    if (pokemonInfo->blinkerClassStatus.status == STATUS_BLINKER)
-    {
-        if (!CanMoveInDirection(pokemon, pokemonInfo->action.direction))
-        {
-            if (DungeonRandInt(2) != 0)
-            {
-                pokemonInfo->action.direction = DungeonRandInt(NUM_DIRECTIONS);
-                pokemonInfo->action.direction = pokemonInfo->action.direction & DIRECTION_MASK;
-                goto walk;
-            }
-        }
-        else
-        {
-            walk:
+    if (pokemonInfo->blinkerClassStatus.status == STATUS_BLINKER) {
+        if (CanMoveInDirection(pokemon, pokemonInfo->action.direction)) {
             SetActionPassTurnOrWalk(&pokemonInfo->action, pokemonInfo->id);
-            return TRUE;
         }
-        ChooseAIMove(pokemon);
+        else if (DungeonRandInt(2) != 0) {
+            pokemonInfo->action.direction = DungeonRandInt(NUM_DIRECTIONS);
+            pokemonInfo->action.direction = pokemonInfo->action.direction & DIRECTION_MASK;
+            SetActionPassTurnOrWalk(&pokemonInfo->action, pokemonInfo->id);
+        }
+        else {
+            ChooseAIMove(pokemon);
+        }
+
         return TRUE;
     }
-    if (pokemonInfo->blinkerClassStatus.status == STATUS_CROSS_EYED)
-    {
+    if (pokemonInfo->blinkerClassStatus.status == STATUS_CROSS_EYED) {
         SetActionPassTurnOrWalk(&pokemonInfo->action, pokemonInfo->id);
         pokemonInfo->action.direction = DungeonRandInt(NUM_DIRECTIONS);
         return TRUE;
@@ -123,20 +106,20 @@ bool8 sub_80701A4(Entity *pokemon)
       case STATUS_SLEEP:
       case STATUS_NIGHTMARE:
       case STATUS_NAPPING:
-          LogMessageByIdWithPopupCheckUser(pokemon,*gUnknown_80F95EC);
+          LogMessageByIdWithPopupCheckUser(pokemon, gUnknown_80F95EC);
           return TRUE;
   }
 
   switch(pokemonInfo->frozenClassStatus.status)
   {
     case STATUS_FROZEN:
-        LogMessageByIdWithPopupCheckUser(pokemon,*gPtrFrozenMessage);
+        LogMessageByIdWithPopupCheckUser(pokemon,gPtrFrozenMessage);
         return TRUE;
     case STATUS_WRAP:
-        LogMessageByIdWithPopupCheckUser(pokemon,*gPtrWrappedAroundMessage);
+        LogMessageByIdWithPopupCheckUser(pokemon,gPtrWrappedAroundMessage);
         return TRUE;
     case STATUS_WRAPPED:
-        LogMessageByIdWithPopupCheckUser(pokemon,*gPtrWrappedByMessage);
+        LogMessageByIdWithPopupCheckUser(pokemon,gPtrWrappedByMessage);
         return TRUE;
     case STATUS_PETRIFIED:
         return TRUE;
@@ -145,25 +128,25 @@ bool8 sub_80701A4(Entity *pokemon)
   switch(pokemonInfo->cringeClassStatus.status) {
     case STATUS_CONFUSED:
         flag = TRUE;
-        goto _0807026C;
+        goto CRINGE_STATUS;
     case STATUS_PAUSED:
-        LogMessageByIdWithPopupCheckUser(pokemon,*gPtrPausedMessage);
+        LogMessageByIdWithPopupCheckUser(pokemon,gPtrPausedMessage);
         return TRUE;
     case STATUS_INFATUATED:
-        LogMessageByIdWithPopupCheckUser(pokemon,*gPtrInfatuatedMessage);
+        LogMessageByIdWithPopupCheckUser(pokemon,gPtrInfatuatedMessage);
         return TRUE;
     default:
     case STATUS_NONE:
     case STATUS_CRINGE:
     case 8:
-    _0807026C:
+    CRINGE_STATUS:
         if (pokemonInfo->bideClassStatus.status == STATUS_BIDE) {
-             LogMessageByIdWithPopupCheckUser(pokemon,*gPtrBideMessage);
+             LogMessageByIdWithPopupCheckUser(pokemon,gPtrBideMessage);
              return TRUE;
         }
         else if (((pokemonInfo->bideClassStatus.status != STATUS_NONE) && (pokemonInfo->bideClassStatus.status != STATUS_CHARGING)) && (pokemonInfo->bideClassStatus.status != STATUS_ENRAGED)) {
             if (flag) {
-                LogMessageByIdWithPopupCheckUser(pokemon,*gPtrMoveInterruptedMessage);
+                LogMessageByIdWithPopupCheckUser(pokemon,gPtrMoveInterruptedMessage);
             }
             else {
                 for(index = 0, move = pokemonInfo->moves.moves; index < MAX_MON_MOVES; move++, index++) {

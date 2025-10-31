@@ -13,7 +13,6 @@
 #include "move_checks.h"
 #include "moves.h"
 #include "number_util.h"
-#include "status.h"
 #include "text_util.h"
 #include "trap.h"
 #include "weather.h"
@@ -386,7 +385,7 @@ bool8 CanUseOnSelfWithStatusChecker(Entity *pokemon, Move *move)
         case MOVE_VITAL_THROW:
         case MOVE_WARP:
         case MOVE_WHIRLWIND:
-            if (IsBossFight())
+            if (IsFloorwideFixedRoom())
             {
                 return FALSE;
             }

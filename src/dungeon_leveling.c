@@ -5,8 +5,7 @@
 #include "dungeon_config.h"
 #include "dungeon_range.h"
 #include "dungeon_message.h"
-#include "code_8041AD0.h"
-#include "code_8077274_1.h"
+#include "dungeon_8041AD0.h"
 #include "constants/dungeon.h"
 #include "dungeon_map_access.h"
 #include "dungeon_misc.h"
@@ -20,7 +19,7 @@
 #include "dungeon_logic.h"
 #include "dungeon_strings.h"
 #include "dungeon_menu_moves.h"
-#include "code_806CD90.h"
+#include "dungeon_mon_sprite_render.h"
 #include "moves.h"
 #include "structs/dungeon_entity.h"
 #include "structs/map.h"
@@ -28,11 +27,10 @@
 #include "dungeon_pos_data.h"
 #include "dungeon_music.h"
 #include "dungeon_mon_spawn.h"
+#include "move_orb_effects_3.h"
 
 static EWRAM_DATA s32 sNewAtkStats[2] = {0, 0};
 static EWRAM_DATA s32 sNewDefStats[2] = {0, 0};
-
-void sub_8042A44(Entity *r0);
 
 static const u8 gUnknown_8107010[8] = {0, 1, 1, 2, 1, 1, 0, 0};
 static const u8 * const gUnknown_8107018[3] = {

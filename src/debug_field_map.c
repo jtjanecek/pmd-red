@@ -10,7 +10,6 @@
 #include "text_2.h"
 #include "text_3.h"
 #include "ground_map.h"
-#include "ground_map_1.h"
 #include "palette_util.h"
 #include "string_format.h"
 #include "sprite.h"
@@ -18,18 +17,10 @@
 #include "ground_lives_helper.h"
 #include "input.h"
 #include "structs/str_position.h"
-
-extern void sub_809D0AC(void);
-extern void sub_8012A18(s32 unused);
-extern void sub_809D0BC(void);
-extern bool8 sub_80A579C(PixelPos *a0, PixelPos *a1);
-extern void GroundMap_Select(s16);
-extern void sub_80999E8(s32 a0);
-extern void nullsub_120(void);
-extern void sub_80A59DC(void);
-extern void sub_809D25C(void);
-extern PixelPos SetVecFromDirectionSpeed(s8 r1, u32 r2);
-extern void sub_809D158(s32, PixelPos*);
+#include "code_809D148.h"
+#include "direction_util.h"
+#include "menu_input.h"
+#include "constants/input.h"
 
 UNUSED static void DebugMapViewer(void)
 {
@@ -60,10 +51,10 @@ UNUSED static void DebugMapViewer(void)
                 sub_8005838(NULL, 0);
                 sub_8012A18(0);
                 switch (DebugFieldMapWindow_GetInput()) {
-                    case DEBUG_INPUT_A_PRESS:
+                    case MENU_INPUT_A_PRESS:
                         mapId = DebugFieldMapWindow_GetCurrentIndex();
                         break;
-                    case DEBUG_INPUT_B_PRESS:
+                    case MENU_INPUT_B_PRESS:
                         mapId = -1;
                         break;
                     default:
@@ -165,4 +156,3 @@ UNUSED static void DebugMapViewer(void)
     sub_8099768();
     nullsub_103();
 }
-

@@ -2,11 +2,12 @@
 #include "globaldata.h"
 #include "dungeon_config.h"
 #include "math.h"
-#include "constants/weather.h"
-#include "constants/type.h"
-#include "constants/monster.h"
+#include "constants/bg_music.h"
 #include "constants/dungeon_action.h"
+#include "constants/monster.h"
 #include "constants/move_id.h"
+#include "constants/type.h"
+#include "constants/weather.h"
 #include "dungeon_move.h"
 #include "move_orb_actions_1.h"
 #include "move_orb_actions_2.h"
@@ -19,11 +20,10 @@
 const s16 gMonsterHouseMaxItemsTraps = 7; // Items and traps are included together
 const s16 gMonsterHouseMinMons = 8;
 const s16 gMonsterHouseMaxMons = 12;
-// ? See sub_8071B48
-const s16 gUnknown_80F4DA6 = 10;
-const s16 gUnknown_80F4DA8 = 4;
-const s16 gUnknown_80F4DAA = 36;
-const s16 gUnknown_80F4DAC = 5;
+const s16 gMaxWildMonsInMonsterHouse = 10;
+const s16 gMaxWildMonsInRoom = 4;
+const s16 gWildSpawnIntervalFrames = 36;
+const s16 gKecleonSpawnIntervalFrames = 5;
 const s16 gCritOddsScopeLensPatsyBand = 40;
 const s16 gCritOddsIqAdvantageMaster = 40;
 
@@ -568,15 +568,26 @@ const u8 gDungeonCamouflageTypes[76] = {
     TYPE_ROCK
 };
 
-// Todo: Use music song constants
 const s16 gDungeonMusic[76] = {
-    114, 125, 14, 120, 15, 113, 111, 20, 102, 25, 104,
-    115, 108, 22, 125, 125, 125, 125, 13, 21, 15, 126,
-    33, 39, 123, 124, 23, 125, 125, 125, 125, 125, 125,
-    125, 125, 125, 125, 125, 125, 125, 26, 110, 110, 125,
-    125, 125, 125, 125, 125, 125, 125, 125, 125, 125, 125,
-    125, 125, 125, 125, 125, 125, 125, 125, 125, 125, 26,
-    127, 35, 35, 35, 125, 125, 125, 125, 125, 125
+    MUS_IN_THE_DEPTHS_OF_THE_PIT, MUS_TINY_WOODS, MUS_THUNDERWAVE_CAVE, MUS_MT_STEEL,
+    MUS_SINISTER_WOODS, MUS_SILENT_CHASM, MUS_MT_THUNDER, MUS_GREAT_CANYON,
+    MUS_LAPIS_CAVE, MUS_MT_BLAZE, MUS_FROSTY_FOREST, MUS_MT_FREEZE,
+    MUS_MAGMA_CAVERN, MUS_SKY_TOWER, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_A_NEW_ADVENTURE, MUS_STORMY_SEA,
+    MUS_SINISTER_WOODS, MUS_MT_THUNDER_PEAK, MUS_MT_BLAZE_PEAK, MUS_FROSTY_GROTTO,
+    MUS_MT_FREEZE_PEAK, MUS_MAGMA_CAVERN_PIT, MUS_SKY_TOWER_SUMMIT, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_RAYQUAZAS_DOMAIN, MUS_MAKUHITA_DOJO, MUS_MAKUHITA_DOJO, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_RAYQUAZAS_DOMAIN, MUS_FRIEND_AREA_HEALING_FOREST, MUS_FRIEND_AREA_CRYPTIC_CAVE,
+    MUS_FRIEND_AREA_CRYPTIC_CAVE, MUS_FRIEND_AREA_CRYPTIC_CAVE, MUS_TINY_WOODS, MUS_TINY_WOODS,
+    MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS, MUS_TINY_WOODS
 };
 
 const s16 gRecruitRateByLevel[101] = {
@@ -597,7 +608,7 @@ const s16 gMoltresConfigLevel = 20;
 const s16 gArticunoConfigLevel = 20;
 const s16 gGroudonConfigLevel = 10;
 
-// Dimensions are [floorProperty unk18][y][x] See sub_8051654
+// Dimensions are [floorProperty kecleonShopLayout][y][x] See sub_8051654
 const s16 sKecleonShopItemSpawnChances[16][3][3] = {
     [0] = {
         {57, 57, 57},

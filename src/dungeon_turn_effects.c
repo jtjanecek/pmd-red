@@ -3,7 +3,6 @@
 #include "dungeon_turn_effects.h"
 #include "dungeon_util.h"
 #include "items.h"
-#include "status.h"
 #include "weather.h"
 #include "structs/dungeon_entity.h"
 #include "structs/map.h"
@@ -12,7 +11,7 @@
 #include "dungeon_music.h"
 #include "dungeon_map_access.h"
 #include "dungeon_vram.h"
-#include "code_806CD90.h"
+#include "dungeon_mon_sprite_render.h"
 #include "game_options.h"
 #include "dungeon_items.h"
 #include "moves.h"
@@ -28,7 +27,6 @@
 #include "constants/weather.h"
 #include "number_util.h"
 #include "dungeon_message.h"
-#include "code_8077274_1.h"
 #include "dungeon_logic.h"
 #include "math.h"
 #include "dungeon_config.h"
@@ -38,13 +36,13 @@
 #include "dungeon_misc.h"
 #include "dungeon_range.h"
 #include "dungeon_move_util.h"
+#include "move_orb_effects_2.h"
+#include "move_orb_effects_1.h"
 #include "warp_target.h"
-
-extern void sub_805229C(void);
-extern void sub_80420B8(Entity *pokemon);
-extern void sub_8041C4C(Entity *pokemon, u32 r1);
-extern void sub_805E804(void);
-extern bool8 DisplayActions(Entity *a0);
+#include "move_orb_effects_5.h"
+#include "dungeon_8041AD0.h"
+#include "dungeon_entity_movement.h"
+#include "dungeon_main.h"
 
 void ApplyEndOfTurnEffects(Entity *entity)
 {

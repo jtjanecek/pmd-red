@@ -3,8 +3,7 @@
 #include "dungeon_vram.h"
 #include "move_orb_actions_3.h"
 #include "dungeon_tilemap.h"
-#include "code_806CD90.h"
-#include "code_8077274_1.h"
+#include "dungeon_mon_sprite_render.h"
 #include "dungeon_random.h"
 #include "constants/ability.h"
 #include "constants/dungeon_exit.h"
@@ -14,7 +13,7 @@
 #include "constants/targeting.h"
 #include "constants/type.h"
 #include "constants/weather.h"
-#include "dungeon_ai.h"
+#include "dungeon_entity_movement.h"
 #include "dungeon_logic.h"
 #include "dungeon_config.h"
 #include "run_dungeon.h"
@@ -28,13 +27,13 @@
 #include "dungeon_strings.h"
 #include "dungeon_util.h"
 #include "moves.h"
-#include "move_effects_target.h"
+#include "move_orb_effects_1.h"
 #include "move_util.h"
 #include "number_util.h"
 #include "pokemon.h"
-#include "status.h"
 #include "move_orb_actions_4.h"
 #include "move_orb_actions_1.h"
+#include "move_orb_effects_2.h"
 #include "structs/dungeon_entity.h"
 #include "structs/map.h"
 #include "dungeon_damage.h"
@@ -46,6 +45,9 @@
 #include "dungeon_kecleon_shop.h"
 #include "blow_away.h"
 #include "warp_target.h"
+#include "move_orb_effects_3.h"
+#include "move_orb_effects_4.h"
+#include "move_orb_effects_5.h"
 
 static void sub_805A7D4(Entity *, Entity *, Item *, DungeonPos *);
 
@@ -653,7 +655,7 @@ _0805AA5E:
         sub_807EC28(FALSE);
       }
       sub_806A5B8(target);
-      sub_8075900(target,gDungeon->forceMonsterHouse);
+      TryTriggerMonsterHouseWithMsg(target,gDungeon->forceMonsterHouse);
     }
   }
   return TRUE;
@@ -905,7 +907,7 @@ bool8 GlareMoveAction(Entity * pokemon,Entity * target,Move *move,s32 itemId)
 
 bool8 TransformMoveAction(Entity * pokemon, Entity * target, Move *move, s32 itemId)
 {
-  if (IsBossFight()) {
+  if (IsFloorwideFixedRoom()) {
     TryDisplayDungeonLoggableMessage3(pokemon,target,gUnknown_80FEFF4);
     return FALSE;
   }

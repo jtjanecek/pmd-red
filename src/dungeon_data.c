@@ -4,6 +4,11 @@
 #include "dungeon_map_access.h"
 #include "constants/walkable_tile.h"
 
+bool8 IsWaterDungeon(u32 r0)
+{
+    return gDungeonWaterType[r0] == DUNGEON_WATER_TYPE_WATER;
+}
+
 // TODO: gDungeons from `dungeon/dungeon_data.inc`
 
 const u8 gInvalidDungeonIDs[11] =
@@ -455,11 +460,11 @@ const FriendAreaSettings gFriendAreaSettings[NUM_FRIEND_AREAS] =
     },
 };
 
-const s16 gUnknown_810AC60 = 12;
-const s16 gUnknown_810AC62 = 12;
-const s16 gUnknown_810AC64 = 8;
-const s16 gUnknown_810AC66 = 8;
-const s16 gUnknown_810AC68 = 8;
+const s16 gPowerBandBoost = 12;
+const s16 gSpecialBandBoost = 12;
+const s16 gDefScarfBoost = 8;
+const s16 gZincBandBoost = 8;
+const s16 gMunchBeltBoost = 8;
 
 const u8 gBestResistTypeTable[NUM_TYPES] =
 {

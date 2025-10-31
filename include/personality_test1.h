@@ -17,7 +17,7 @@ typedef struct PersonalityQuestion
 } PersonalityQuestion;
 
 // size: 0x45
-typedef struct PersonalityRelated
+typedef struct TeamBasicInfo
 {
     /* 0x0 */ u32 unk0;
     /* 0x4 */ s16 StarterID;
@@ -30,7 +30,9 @@ typedef struct PersonalityRelated
     /* 0x41 */ u8 skipCutscenes;
     /* 0x42 */ u8 skipBasicRescues;
     /* 0x43 */ u8 recruitAll;
-} PersonalityRelated;
+} TeamBasicInfo;
+
+typedef TeamBasicInfo PersonalityRelated;
 
 // size: 0x74
 #define PERSONALITY_TEST_SEED_BUFFER_SIZE 12

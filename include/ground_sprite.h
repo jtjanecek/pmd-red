@@ -38,40 +38,26 @@ struct UnkGroundSpriteStruct
     s32 unk7C;
 };
 
-// size: 0xC
-typedef struct unkStruct_3001B7C_sub0
-{
-    u32 unk0;
-    s32 unk4;
-    struct UnkGroundSpriteStruct *unk8;
-} unkStruct_3001B7C_sub0;
-
-// size: 0x4
-typedef struct unkStruct_3001B7C_sub108
-{
-    u16 unk0;
-    s16 unk2;
-} unkStruct_3001B7C_sub108;
-
-#define UNK_3001B7C_SUB0_COUNT 22
-#define UNK_3001B7C_SUB108_COUNT 2
-
-// size: 0x110
-typedef struct unkStruct_3001B7C
-{
-    unkStruct_3001B7C_sub0 unk0[UNK_3001B7C_SUB0_COUNT];
-    unkStruct_3001B7C_sub108 unk108[UNK_3001B7C_SUB108_COUNT];
-} unkStruct_3001B7C;
-
-void GroundSprite_Reset(s32);
-void GroundSprite_ExtendPaletteAdd(struct UnkGroundSpriteStruct *ptr, u16);
-void GroundSprite_ExtendPaletteDelete(struct UnkGroundSpriteStruct *ptr);
+void sub_80A62F0(void);
+void GroundSprite_Reset(s32 a0);
+void sub_80A658C(void);
+void sub_80A6688(struct UnkGroundSpriteStruct *ptr, s32 a0);
+bool8 SpriteHasPokemonSize_80A66A4(struct UnkGroundSpriteStruct *ptr);
+bool8 sub_80A66D4(struct UnkGroundSpriteStruct *ptr);
+bool8 sub_80A66F8(struct UnkGroundSpriteStruct *ptr);
+bool8 sub_80A671C(struct UnkGroundSpriteStruct *ptr);
 bool8 IsOnscreen_80A675C(struct UnkGroundSpriteStruct *ptr, PixelPos *pixPosArg);
 void sub_80A67CC(struct UnkGroundSpriteStruct *ptr, struct UnkGroundSpriteSubStructx48 *a1, s32 a2);
 void sub_80A68A0(struct UnkGroundSpriteStruct *ptr);
+void GroundSprite_ExtendPaletteAdd(struct UnkGroundSpriteStruct *ptr, u16 a1);
+void GroundSprite_ExtendPaletteDelete(struct UnkGroundSpriteStruct *ptr);
+void sub_80A6E68(void);
+void sub_80A6E80(void);
+void sub_80A6EC8(struct UnkGroundSpriteStruct *ptr, s32 a1);
 void sub_80A6EFC(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 a2_);
 void sub_80A7040(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 a2_, s32 a3);
 bool8 sub_80A7094(struct UnkGroundSpriteStruct *ptr, PixelPos *r10, PixelPos *posArg, s32 a3);
 bool8 sub_80A7310(struct UnkGroundSpriteStruct *ptr, PixelPos *posArg1, PixelPos *posArg2, s32 a3);
+void sub_80A73EC(void);
 
 #endif // GUARD_GROUND_SPRITE_H

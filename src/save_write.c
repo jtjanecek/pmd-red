@@ -11,6 +11,7 @@
 #include "string_format.h"
 #include "story_debug.h"
 #include "menu_input.h"
+#include "ground_main.h"
 
 // size: 0x20
 typedef struct SavePakWrite

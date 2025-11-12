@@ -31,6 +31,7 @@
 #include "dungeon_mon_spawn.h"
 #include "move_orb_effects_5.h"
 #include "adventure_info.h"
+#include "save.h"
 
 static void nullsub_96(Entity *pokemon,Entity *target);
 static void sub_806F910(void);
@@ -44,6 +45,17 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     EntityInfo *targetInfo = GetEntInfo(target);
     s32 foundIndex = -1;
     s32 size = GetBodySize(targetInfo->apparentID);
+    u8 recruitSetting = GetRecruitAllSetting();
+
+#ifdef DEV
+    if (recruitSetting == 2) {
+        if (size <= 1)
+            return FALSE;
+    }
+#else
+    if (recruitSetting == 2)
+        return FALSE;
+#endif
 
     if (gDungeon->fixedRoomNumber != FIXED_ROOM_FROSTY_GROTTO_ARTICUNO
         && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_BLAZE_PEAK_MOLTRES
@@ -330,6 +342,9 @@ bool8 CanEntityBeRecruited(Entity *param_1)
     EntityInfo *info = GetEntInfo(param_1);
     s32 validIndex = -1;
     s32 size = GetBodySize(info->apparentID);
+
+    if (GetRecruitAllSetting() == 2)
+        return FALSE;
     if (!IsMonsterRecruitable(info->id))
         return FALSE;
 

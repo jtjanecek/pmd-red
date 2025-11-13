@@ -2387,11 +2387,17 @@ const u8 gUnknown_8108EC0[] = {
 
 const u8 *GetDungeonName1(u8 dungeon)
 {
+    const u8 *seededName = DungeonSeedOverrides_GetDungeonName(dungeon, FALSE);
+    if (seededName != NULL)
+        return seededName;
     return gDungeonNames[dungeon].name1;
 }
 
 const u8 *GetDungeonName2(u8 dungeon)
 {
+    const u8 *seededName = DungeonSeedOverrides_GetDungeonName(dungeon, TRUE);
+    if (seededName != NULL)
+        return seededName;
     return gDungeonNames[dungeon].name2;
 }
 
@@ -2525,8 +2531,8 @@ s32 GetDungeonFloorCount(u8 dungeon)
         return 1;
 
     {
-        s32 seed = sub_8011C34();
-        if (seed != -1)
+        s32 seed;
+        if (DungeonSeedOverrides_IsEnabled(&seed))
             return DungeonSeedOverrides_GetFloorCount(seed, dungeon);
     }
 

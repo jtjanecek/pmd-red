@@ -20,6 +20,7 @@ SECTIONS {
 
         data/sound_data.o(.bss);
         src/dungeon_astar.o(.bss);
+        src/dungeon_seed_overrides.o(.bss);
         INCLUDE "sym_ewram.ld"
         *libgcc.a:fp-bit.o(.bss);
         *libgcc.a:dp-bit.o(.bss);
@@ -928,6 +929,7 @@ SECTIONS {
 
 		INCLUDE "sym_ewram_init.ld"
 		src/dungeon_astar.o(.data);
+		src/dungeon_seed_overrides.o(.data);
 		*libc.a:impure.o(.data);
 		*libc.a:locale.o(.data);
 		*libc.a:mallocr.o(.data);

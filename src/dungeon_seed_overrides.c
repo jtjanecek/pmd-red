@@ -1,14 +1,20 @@
 #include "global.h"
 #include "dungeon_seed_overrides.h"
 
+#include "constants/dungeon.h"
 #include "constants/monster.h"
 #include "pokemon_3.h"
+#include "save.h"
+#include "code_800D090.h"
+#include "strings.h"
 
 #define SEEDED_TILESET_COUNT 80
 #define SEEDED_MIN_FLOORS 3
 #define SEEDED_MAX_FLOORS 60
 #define SEEDED_MIN_SPAWNS 6
 #define SEEDED_MAX_SPAWNS 16
+#define SEEDED_DUNGEON_NAME_MAX_LEN 32
+#define SEEDED_PREFIX_BUFFER_LEN 16
 
 typedef struct DungeonSeedRng {
     u32 state;
@@ -49,6 +55,58 @@ static const SeedSpeciesPool sSpeciesPools[] = {
 
 static const s32 sFloorBandTable[] = {5, 7, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 50};
 
+static const char *const sSeededPrefixTable[] = {
+    "Tiny",
+    "Ancient",
+    "Misty",
+    "Shocking",
+    "Blazing",
+    "Shadow",
+    "Azure",
+    "Verdant",
+    "Howling",
+    "Radiant",
+    "Dusky",
+    "Rustic",
+    "Obsidian",
+    "Gleaming",
+    "Stormy",
+    "Frosted",
+};
+
+static const char *const sSeededSuffixTable[] = {
+    "Woods",
+    "Forest",
+    "Cavern",
+    "Depths",
+    "Blaze",
+    "Sea",
+    "Grove",
+    "Range",
+    "Hollows",
+    "Marsh",
+    "Abyss",
+    "Spire",
+    "Pass",
+    "Valley",
+    "Peak",
+    "Gale",
+    "Gorge",
+    "Shore",
+    "Fens",
+    "Wilds",
+};
+
+static u8 sSeededDungeonName1[NUM_DUNGEONS][SEEDED_DUNGEON_NAME_MAX_LEN];
+static u8 sSeededDungeonName2[NUM_DUNGEONS][SEEDED_DUNGEON_NAME_MAX_LEN];
+static bool8 sSeededDungeonNameValid[NUM_DUNGEONS];
+static s32 sSeededDungeonNameSeed = -2;
+
+static void ResetSeededDungeonNameCache(void);
+static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed);
+static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize);
+static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize);
+
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result)
 {
     DungeonSeedRng rng;
@@ -83,6 +141,42 @@ u32 DungeonSeedOverrides_GetDungeonRngSeed(s32 seed, u8 dungeonId, s32 floorId)
 {
     DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0x5EED5EED);
     return DungeonSeedRng_Next(&rng) | 1;
+}
+
+bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
+{
+    s32 seed = sub_8011C34();
+
+    if (seed == -1)
+        return FALSE;
+    if (seedOut != NULL)
+        *seedOut = seed;
+    return TRUE;
+}
+
+const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)
+{
+    s32 seed;
+
+    if (dungeonId >= NUM_DUNGEONS)
+        return NULL;
+    if (dungeonId > DUNGEON_PURITY_FOREST)
+        return NULL;
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return NULL;
+
+    if (sSeededDungeonNameSeed != seed) {
+        sSeededDungeonNameSeed = seed;
+        ResetSeededDungeonNameCache();
+    }
+
+    if (!sSeededDungeonNameValid[dungeonId])
+        GenerateSeededDungeonNames(dungeonId, seed);
+
+    if (secondLine)
+        return sSeededDungeonName2[dungeonId];
+    else
+        return sSeededDungeonName1[dungeonId];
 }
 
 static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
@@ -178,4 +272,70 @@ static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result)
         result->spawns[i].randNum[0] = (s16)cumulative;
         result->spawns[i].randNum[1] = (s16)cumulative;
     }
+}
+
+static void ResetSeededDungeonNameCache(void)
+{
+    s32 i;
+
+    for (i = 0; i < NUM_DUNGEONS; i++) {
+        sSeededDungeonNameValid[i] = FALSE;
+        sSeededDungeonName1[i][0] = '\0';
+        sSeededDungeonName2[i][0] = '\0';
+    }
+}
+
+static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
+{
+    DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0xB16B00B);
+    const char *prefix;
+    const char *suffixPrimary;
+    const char *suffixSecondary;
+    char prefixBuffer[SEEDED_PREFIX_BUFFER_LEN];
+
+    prefix = SelectPrefixForDungeon(dungeonId, &rng, prefixBuffer, ARRAY_COUNT(prefixBuffer));
+    suffixPrimary = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
+    suffixSecondary = suffixPrimary;
+
+    if (ARRAY_COUNT(sSeededSuffixTable) > 1) {
+        do {
+            suffixSecondary = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
+        } while (suffixSecondary == suffixPrimary);
+    }
+
+    sprintfStatic((char *)sSeededDungeonName1[dungeonId], "%s %s", prefix, suffixPrimary);
+    sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffixSecondary);
+    sSeededDungeonNameValid[dungeonId] = TRUE;
+}
+
+static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize)
+{
+    if (scratch != NULL && scratchSize > 1 && CopyFirstTokenFromBaseName(dungeonId, scratch, scratchSize))
+        return scratch;
+
+    return sSeededPrefixTable[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sSeededPrefixTable))];
+}
+
+static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize)
+{
+    const u8 *baseName;
+    s32 i;
+
+    if (buffer == NULL || bufferSize <= 1)
+        return FALSE;
+    if (dungeonId >= NUM_DUNGEONS)
+        return FALSE;
+
+    baseName = gDungeonNames[dungeonId].name1;
+    if (baseName == NULL)
+        return FALSE;
+
+    for (i = 0; i < bufferSize - 1; i++) {
+        u8 ch = baseName[i];
+        if (ch == '\0' || ch == ' ' || ch == '\n' || ch == '\t')
+            break;
+        buffer[i] = ch;
+    }
+    buffer[i] = '\0';
+    return (i != 0);
 }

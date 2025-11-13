@@ -21,23 +21,18 @@
 #include "dungeon_config.h"
 #include "structs/dungeon_mapparam.h"
 #include "dungeon_seed_overrides.h"
-#include "save.h"
 
 static bool8 TryGetSeedOverrideValue(s32 *seedOut);
 static void ApplySeedOverridesToCurrentFloor(void);
 
 static bool8 TryGetSeedOverrideValue(s32 *seedOut)
 {
-    s32 seed = sub_8011C34();
-
-    if (seed == -1)
+    if (!DungeonSeedOverrides_IsEnabled(seedOut))
         return FALSE;
     if (gDungeon == NULL)
         return FALSE;
     if (gDungeon->unk644.dungeonLocation.id > DUNGEON_PURITY_FOREST)
         return FALSE;
-    if (seedOut != NULL)
-        *seedOut = seed;
     return TRUE;
 }
 

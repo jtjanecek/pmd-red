@@ -20,6 +20,50 @@
 #include "text_3.h"
 #include "dungeon_config.h"
 #include "structs/dungeon_mapparam.h"
+#include "dungeon_seed_overrides.h"
+#include "save.h"
+
+static bool8 TryGetSeedOverrideValue(s32 *seedOut);
+static void ApplySeedOverridesToCurrentFloor(void);
+
+static bool8 TryGetSeedOverrideValue(s32 *seedOut)
+{
+    s32 seed = sub_8011C34();
+
+    if (seed == -1)
+        return FALSE;
+    if (gDungeon == NULL)
+        return FALSE;
+    if (gDungeon->unk644.dungeonLocation.id > DUNGEON_PURITY_FOREST)
+        return FALSE;
+    if (seedOut != NULL)
+        *seedOut = seed;
+    return TRUE;
+}
+
+static void ApplySeedOverridesToCurrentFloor(void)
+{
+    DungeonSeedFloorOverrides overrides;
+    s32 seed;
+    s32 i;
+
+    if (!TryGetSeedOverrideValue(&seed))
+        return;
+
+    DungeonSeedOverrides_GenerateFloorConfig(seed, gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, &overrides);
+    gDungeon->floorProperties.tileset = overrides.tileset;
+
+    for (i = 0; i < overrides.spawnCount && i < MONSTER_SPAWNS_ARR_COUNT; i++) {
+        gDungeon->fileMonsterSpawns[i] = overrides.spawns[i];
+    }
+
+    while (i < MONSTER_SPAWNS_ARR_COUNT) {
+        SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[i], 0);
+        gDungeon->fileMonsterSpawns[i].randNum[0] = 0;
+        gDungeon->fileMonsterSpawns[i].randNum[1] = 0;
+        i++;
+    }
+}
 
 void sub_803D4AC(void)
 {
@@ -90,6 +134,7 @@ void SetFloorItemMonsterSpawns(void)
     }
 
     CloseFile(file);
+    ApplySeedOverridesToCurrentFloor();
 }
 
 u8 GetRandomFloorTrap(void)

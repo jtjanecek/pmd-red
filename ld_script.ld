@@ -285,6 +285,7 @@ SECTIONS {
         src/dungeon_exit.o(.text);
         src/dungeon_music.o(.text);
         src/dungeon_random.o(.text);
+        src/dungeon_seed_overrides.o(.text);
         src/dungeon_cleared_window.o(.text);
         src/dungeon_jobs.o(.text);
         src/dungeon_cutscene.o(.text);
@@ -677,6 +678,7 @@ SECTIONS {
         src/dungeon_exit.o(.rodata);
         src/dungeon_music.o(.rodata);
         src/dungeon_random.o(.rodata);
+        src/dungeon_seed_overrides.o(.rodata);
         src/dungeon_cleared_window.o(.rodata);
         src/dungeon_jobs.o(.rodata);
         src/dungeon_cutscene.o(.rodata);

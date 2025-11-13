@@ -13,6 +13,8 @@
 #include "string_format.h"
 #include "strings.h"
 #include "dungeon_data.h"
+#include "save.h"
+#include "dungeon_seed_overrides.h"
 
 static void AppendWithNewLines(u8 *dst, const u8 *src);
 
@@ -2521,8 +2523,14 @@ s32 GetDungeonFloorCount(u8 dungeon)
         return 4;
     else if (dungeon > DUNGEON_PURITY_FOREST)
         return 1;
-    else
-        return sDungeonFloorCount[dungeon];
+
+    {
+        s32 seed = sub_8011C34();
+        if (seed != -1)
+            return DungeonSeedOverrides_GetFloorCount(seed, dungeon);
+    }
+
+    return sDungeonFloorCount[dungeon];
 }
 
 s32 GetDungeonStartingFloor(u8 dungeon)

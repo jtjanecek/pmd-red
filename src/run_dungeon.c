@@ -65,6 +65,8 @@
 #include "ground_main.h"
 #include "dungeon_mon_sprite_render.h"
 #include "adventure_info.h"
+#include "dungeon_seed_overrides.h"
+#include "save.h"
 
 EWRAM_INIT struct UnkStruct_203B414 *gUnknown_203B414 = NULL;
 EWRAM_INIT Dungeon *gDungeon = NULL;
@@ -78,6 +80,15 @@ extern void sub_80840A4(void);
 extern void sub_806AB2C(void);
 extern void sub_807E5AC(void);
 extern void nullsub_16(void);
+
+static u32 GetDungeonSeededRng(void)
+{
+    s32 seed = sub_8011C34();
+
+    if (seed == -1 || gDungeon == NULL || gDungeon->unk644.dungeonLocation.id > DUNGEON_PURITY_FOREST)
+        return YetAnotherRandom24();
+    return DungeonSeedOverrides_GetDungeonRngSeed(seed, gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor);
+}
 extern void sub_80521D0(void);
 extern void sub_8068A84(Pokemon *pokemon);
 extern void sub_806AA70(void);
@@ -256,7 +267,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         gLeaderPointer = NULL;
         gDungeon->unk0 = 0;
         if (!r6) {
-            gDungeon->unk644.unk3C = YetAnotherRandom24();
+            gDungeon->unk644.unk3C = GetDungeonSeededRng();
             gDungeon->unk644.unk24 = 10;
             InitDungeonRNG(gDungeon->unk644.unk3C);
         }

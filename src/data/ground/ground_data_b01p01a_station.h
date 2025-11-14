@@ -518,31 +518,20 @@ static const struct ScriptCommand s_gs9_g0_s0_obj0_dlg2[] = { /* 0x819c378 */
     SELECT_ANIMATION(2),
     { 0x2d, 0x07,  0x0000,  0x00000000,  0x00000000, NULL },
     WAIT(1),
-    CJUMP_DIR_TO_LINK(0),
-    COND_EQUAL(0, /* to label */ 0),
-    JUMPIF_SCENE_EQ(SCENARIO_SUB7, 49, 1, /* to label */ 1),
-  LABEL(2), /* = 0x02 */
-    SPECIAL_TEXT(SPECIAL_TEXT_BULLETIN_BOARD, 0, 0),
-    JUMP_SCRIPT(END_TALK),
-  LABEL(0), /* = 0x00 */
-    MSG_INSTANT(_("{CENTER_ALIGN}There is a warning tag\n{CENTER_ALIGN}on the side of the Mailbox.")),
-    MSG_INSTANT(_("{CENTER_ALIGN}- Open the Mailbox at the front -")),
-    JUMP_SCRIPT(END_TALK),
-    EXECUTE_FUNCTION(EVENT_S01E02A_L001),
+    MSG_INSTANT(_(" A Kangaskhan statue now guards\n the old mailbox.")),
+    ASK3(FALSE, /*default*/ 0, /* speaker */ -1, _(" What should the statue protect?")),
+    CHOICE(/* label */  1, _("Items")),
+    CHOICE(/* label */  2, _("Money")),
+    CHOICE(/* label */  3, _("Nothing")),
+  LABEL(3), /* = 0x03 */
     JUMP_SCRIPT(END_TALK),
   LABEL(1), /* = 0x01 */
-    { 0x3b, 0x08,  0x0000,  0x00000000,  0x00000000, NULL },
-    COND_EQUAL(0, /* to label */ 2),
-    MSG_LETTER(_("{CENTER_ALIGN}<Pokémon News>\n{CENTER_ALIGN}= Extra! =")),
-    MSG_LETTER(_("{CENTER_ALIGN}Buried Relic Discovered!")),
-    MSG_LETTER(_("{CENTER_ALIGN}Mystery ruin\n{CENTER_ALIGN}found underground!")),
-    MSG_LETTER(_("{CENTER_ALIGN}Its site had been hidden by the crater\n{CENTER_ALIGN}of a meteor strike in ancient times.")),
-    MSG_LETTER(_("{CENTER_ALIGN}The Buried Relic is thought to date\n{CENTER_ALIGN}back beyond recorded history.")),
-    MSG_LETTER(_("{CENTER_ALIGN}There are rumors of treasures...")),
-    MSG_LETTER(_("{CENTER_ALIGN}And perhaps even Pokémon\n{CENTER_ALIGN}that lived in ancient times.")),
-    MSG_LETTER(_("{CENTER_ALIGN}The Buried Relic is the main\n{CENTER_ALIGN}topic in Pokémon Square.")),
     TEXTBOX_CLEAR,
-    SCENARIO_CALC(SCENARIO_SUB7, 49,  2),
+    SPECIAL_TEXT(SPECIAL_TEXT_STORAGE_WITH_DIALOG, 0, 0),
+    JUMP_SCRIPT(END_TALK),
+  LABEL(2), /* = 0x02 */
+    TEXTBOX_CLEAR,
+    SPECIAL_TEXT(SPECIAL_TEXT_BANK, 0, 0),
     JUMP_SCRIPT(END_TALK),
 };
 

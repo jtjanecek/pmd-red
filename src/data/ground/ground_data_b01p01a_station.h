@@ -518,7 +518,6 @@ static const struct ScriptCommand s_gs9_g0_s0_obj0_dlg2[] = { /* 0x819c378 */
     SELECT_ANIMATION(2),
     { 0x2d, 0x07,  0x0000,  0x00000000,  0x00000000, NULL },
     WAIT(1),
-    MSG_INSTANT(_(" A Kangaskhan statue now guards\n the old mailbox.")),
     ASK3(FALSE, /*default*/ 0, /* speaker */ -1, _(" What should the statue protect?")),
     CHOICE(/* label */  1, _("Items")),
     CHOICE(/* label */  2, _("Money")),
@@ -15458,6 +15457,8 @@ static const struct GroundObjectData s_gs9_g0_s0_objs[] = { /* 0x81df628 */
     } },
     /*  6 */ {  64,   0,   2,   2, {  59,  34, 0, 0 }, {
         [0] = s_gs9_g0_s0_obj6_dlg0,
+    } },
+    /*  7 */ {  67,   0,   3,   4, {  31,  34, CPOS_HALFTILE, 0 }, {
     } },
 };
 

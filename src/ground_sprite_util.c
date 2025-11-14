@@ -5,6 +5,7 @@
 #include "file_system.h"
 #include "ground_sprite.h"
 #include "ground_sprite_data.h"
+#include "monster_gfx.h"
 
 void sub_80A75CC(struct UnkGroundSpriteStruct *ptr, s32 unused, s32 a2_, s32 a3)
 {
@@ -19,6 +20,9 @@ void sub_80A75CC(struct UnkGroundSpriteStruct *ptr, s32 unused, s32 a2_, s32 a3)
         file = OpenFile(objKind->fileName, &gOrnamentFileArchive);
         GetFileDataPtr(file, 0);
         sp.axmain = (axmain *) file->data;
+    }
+    else if (a2 == GROUND_OBJECT_KIND_STATUE) {
+        sp.axmain = (axmain *) gAxStatue.data;
     }
     else {
         sp.axmain = NULL;

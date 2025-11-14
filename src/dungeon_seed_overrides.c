@@ -29,7 +29,7 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result);
 static DungeonSeedRng DungeonSeedRng_Init(s32 seed, u8 dungeonId, s32 floorId, u32 salt);
 static u32 DungeonSeedRng_Next(DungeonSeedRng *rng);
 static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max);
-static u8 SelectTileset(DungeonSeedRng *rng);
+static u8 SelectTileset(s32 floorId);
 static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
 static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result);
 
@@ -116,7 +116,7 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
 
     ClearFloorOverrides(result);
     rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xC0FFEE);
-    result->tileset = SelectTileset(&rng);
+    result->tileset = SelectTileset(floorId);
     PopulateSpawnTable(result, &rng, dungeonId, floorId);
     FinalizeSpawnWeights(result);
 }
@@ -129,6 +129,9 @@ s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
     s32 swing = DungeonSeedRng_NextRange(&rng, 0, 5);
     s32 extra = dungeonId % 4;
     s32 total = baseFloors + swing + extra;
+
+    if (dungeonId == DUNGEON_TINY_WOODS)
+        return 99;
 
     if (total < SEEDED_MIN_FLOORS)
         total = SEEDED_MIN_FLOORS;
@@ -222,9 +225,11 @@ static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max)
     return min + (DungeonSeedRng_Next(rng) % span);
 }
 
-static u8 SelectTileset(DungeonSeedRng *rng)
+static u8 SelectTileset(s32 floorId)
 {
-    return (u8)DungeonSeedRng_NextRange(rng, 0, SEEDED_TILESET_COUNT);
+    if (floorId < 0)
+        floorId = 0;
+    return (u8)(floorId % SEEDED_TILESET_COUNT);
 }
 
 static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId)

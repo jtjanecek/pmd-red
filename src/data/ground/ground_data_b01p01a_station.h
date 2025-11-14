@@ -519,11 +519,12 @@ static const struct ScriptCommand s_gs9_g0_s0_obj0_dlg2[] = { /* 0x819c378 */
     SELECT_ANIMATION(2),
     { 0x2d, 0x07,  0x0000,  0x00000000,  0x00000000, NULL },
     WAIT(1),
-    ASK3(FALSE, /*default*/ 0, /* speaker */ -1, _(" What should the statue protect?")),
+    ASK3(FALSE, /*default*/ 0, /* speaker */ -1, _(" What would you like to do?")),
     CHOICE(/* label */  1, _("Items")),
     CHOICE(/* label */  2, _("Money")),
-    CHOICE(/* label */  3, _("Nothing")),
-  LABEL(3), /* = 0x03 */
+    CHOICE(/* label */  3, _("Save adventure")),
+    CHOICE(/* label */  4, _("Nothing")),
+  LABEL(4), /* = 0x04 */
     JUMP_SCRIPT(END_TALK),
   LABEL(1), /* = 0x01 */
     TEXTBOX_CLEAR,
@@ -533,6 +534,8 @@ static const struct ScriptCommand s_gs9_g0_s0_obj0_dlg2[] = { /* 0x819c378 */
     TEXTBOX_CLEAR,
     SPECIAL_TEXT(SPECIAL_TEXT_BANK, 0, 0),
     JUMP_SCRIPT(END_TALK),
+  LABEL(3), /* = 0x03 */
+    JUMP_SCRIPT(SAVE_POINT),
 };
 
 

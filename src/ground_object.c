@@ -288,7 +288,14 @@ s32 GroundObject_Add(s32 id_, const GroundObjectData *objectData, s32 group_, s3
 
       kind = objectData->kind;
       if (kind == 0x1a) {
-        if (GetScriptVarValue(NULL,BASE_LEVEL) < 2) {
+        s32 baseLevel = GetScriptVarValue(NULL, BASE_LEVEL);
+
+        if (baseLevel >= 2) {
+          // Force the base object fallback so the post-upgrade statue stays the generic design.
+          baseLevel = 0;
+        }
+
+        if (baseLevel < 2) {
           kind = 0x1b;
         }
         else {

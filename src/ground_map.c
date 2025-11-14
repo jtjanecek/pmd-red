@@ -374,9 +374,18 @@ s16 GetAdjustedGroundMap(s32 mapId)
 
     switch (retMapId) {
         case MAP_TEAM_BASE:
-        case MAP_TEAM_BASE_INSIDE:
-            retMapId = (s16)(retMapId + ((GetScriptVarValue(NULL, BASE_KIND) * TEAM_BASE_MAPS_PER_SPECIES) + GetScriptVarValue(NULL, BASE_LEVEL)));
+        case MAP_TEAM_BASE_INSIDE: {
+            s32 baseKind = GetScriptVarValue(NULL, BASE_KIND);
+            s32 baseLevel = GetScriptVarValue(NULL, BASE_LEVEL);
+
+            if (baseLevel >= 2) {
+                // Keep the neutral/base silhouette even after the script bumps the base to level 2.
+                baseLevel = 0;
+            }
+
+            retMapId = (s16)(retMapId + ((baseKind * TEAM_BASE_MAPS_PER_SPECIES) + baseLevel));
             break;
+        }
         case MAP_WHISCASH_POND:
             if (sub_80023E4(6)) {
                 retMapId = MAP_WHISCASH_POND_OPEN;

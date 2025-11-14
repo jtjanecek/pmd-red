@@ -429,8 +429,9 @@ static const struct ScriptRef s_gs9_g0_s0_station_sref = { 404, 1, NULL /* ENTER
 static const struct ScriptCommand s_gs9_g0_s0_evt0_sref_script[] = { /* 0x819bed4 */
     DEBUGINFO_O(430),
     JUMPIF_SCENE_LT(SCENARIO_MAIN, 4, 3, /* to label */ 0),
-    { 0x01, 0x00, -0x0001,  0x00000001,  0x00000000, NULL },
-    HALT,
+    MSG_INSTANT(_("Nothing is that way.")),
+    TEXTBOX_CLEAR,
+    RET,
   LABEL(0), /* = 0x00 */
     EXECUTE_STATION(-1, 22, 1),
     HALT,

@@ -24,7 +24,6 @@ static EWRAM_DATA OpenedFile *sMonsterParametersFile = {NULL};
 static EWRAM_DATA SpriteOAM sShadowSprites[3] = {0};
 static EWRAM_DATA RecruitedMon sRecruitedPokemon = {0}; // B=02135560
 static EWRAM_DATA s16 sLevelCurrentPokeId = {0};
-UNUSED static EWRAM_DATA u16 unused_data[3] = {0};
 static EWRAM_DATA LevelData sLevelCurrentData[0x64] = {0}; // TODO: Add MAX_LEVEL define
 
 EWRAM_INIT RecruitedMon *gRecruitedPokemonRef = {NULL}; // B=020EAF94

@@ -58,9 +58,7 @@ struct unkMemoryStruct
 
 static EWRAM_DATA HeapDescriptor *sHeapDescriptorList[8] = {0};
 static EWRAM_DATA s32 sHeapCount = {0};
-UNUSED static EWRAM_DATA u32 sUnused1 = 0;
 static EWRAM_DATA HeapDescriptor sMainHeapDescriptor = {0};
-UNUSED static EWRAM_DATA u32 sUnused2 = 0;
 static EWRAM_DATA struct HeapFreeListElement sMainHeapFreeList[32] = {0};
 static EWRAM_DATA u8 sMainHeap[HEAP_SIZE] = {0};
 

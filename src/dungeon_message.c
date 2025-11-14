@@ -31,7 +31,6 @@
 #include "save.h" // GetSkipCutscenesSetting
 
 static EWRAM_DATA Entity *sLastLogMsgEntity = NULL;
-static UNUSED EWRAM_DATA u8 sUnused = 0;
 static EWRAM_DATA SpriteOAM sUnknown_202F1F0 = {0};
 EWRAM_INIT bool8 gUnknown_203B434 = TRUE;
 

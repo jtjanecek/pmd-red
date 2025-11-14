@@ -55,7 +55,6 @@ static void PrintHintsMenu(void);
 static void ShowChosenHintWindow(s32 hintId);
 
 EWRAM_DATA static s32 sOthersCursorId = 0;
-UNUSED EWRAM_DATA static u8 sUnused[4] = {0};
 EWRAM_DATA static GameOptions sChangedGameOptions = {0};
 
 enum {

@@ -45,7 +45,6 @@ typedef struct unkStruct_3001B7C
 static IWRAM_INIT unkStruct_3001B7C *gUnknown_3001B7C = {NULL};
 
 static EWRAM_DATA unkStruct_2039DB0 gUnknown_2039DB0 = {0};
-UNUSED static EWRAM_DATA u32 sUnknown_2039DBC = {0}; // Unused, for alignment
 static EWRAM_DATA unkStruct_2039DB0 gUnknown_2039DC0 = {0};
 static EWRAM_DATA u16 gUnknown_2039DCC = {0};
 static EWRAM_DATA u16 gUnknown_2039DCE = {0};

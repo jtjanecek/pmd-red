@@ -28,7 +28,6 @@ static EWRAM_DATA struct UnkStruct_2039958 gUnknown_2039968 = {0};
 static EWRAM_DATA struct UnkStruct_2039978 gUnknown_2039978 = {0};
 static EWRAM_DATA u8 gUnknown_2039990 = FALSE;
 static EWRAM_DATA s16 gUnknown_2039992 = 0;
-UNUSED static EWRAM_DATA s32 sUnused = 0;
 #define ARR_COUNT_2039998 33
 static EWRAM_DATA u16 gUnknown_2039998[ARR_COUNT_2039998] = {0};
 

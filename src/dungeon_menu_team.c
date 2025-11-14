@@ -47,7 +47,6 @@
 #include "weather.h"
 
 EWRAM_DATA s32 gTeamMenuChosenId = 0;
-static UNUSED EWRAM_DATA u8 sUnused[4] = {0};
 EWRAM_DATA static SpriteOAM sOAMStatusDescriptionArrow = {0};
 EWRAM_DATA static WindowHeader sTeamWindowHeader = {0};
 

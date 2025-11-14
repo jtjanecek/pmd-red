@@ -19,7 +19,6 @@ EWRAM_INIT unkStruct_203B48C *gUnknown_203B48C = {NULL};
 
 EWRAM_DATA unkStruct_203B480 gUnknown_2038C88[0x20] = {0};
 EWRAM_DATA unkStruct_203B484 gUnknown_2039288 = {0};
-EWRAM_DATA UNUSED static u32 fill0 = {0}; // 203B484 is size 0x5C and I need to fill a gap of 0x4
 EWRAM_DATA u32 gUnknown_20392E8[0x36] = {0};
 EWRAM_DATA unkStruct_203B48C gUnknown_20393C0 = {0};
 

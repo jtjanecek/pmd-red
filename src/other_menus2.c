@@ -22,7 +22,6 @@ typedef struct unkStruct_800D670
 extern s32 gCommsTimeout; // Counts to 100 and then errors if other player hasn't connected
 
 EWRAM_DATA static s32 gUnknown_202EC38 = 0;
-UNUSED EWRAM_DATA static u8 sUnused = 0;
 EWRAM_DATA static s32 gUnknown_202EC40[2] = {0};
 EWRAM_DATA static s32 gUnknown_202EC48 = 0;
 

@@ -41,7 +41,6 @@ EWRAM_DATA u32 gUnknown_20398B4 = {0};
 EWRAM_DATA u8 gUnknown_20398B8 = {0};
 EWRAM_DATA bool8 gUnknown_20398B9 = {0};
 EWRAM_DATA bool8 gScriptMode = {0};
-UNUSED EWRAM_DATA static u8 gUnknown_20398BB = {0};
 EWRAM_DATA u16 gUnknown_20398BC = {0};
 EWRAM_DATA s16 gUnknown_20398BE = {0};
 EWRAM_DATA u32 gUnknown_20398C0 = {0};

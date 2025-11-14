@@ -5859,7 +5859,6 @@ static void CreateRoomsAndAnchorsForFixedFloor(struct GridCell grid[GRID_CELL_LE
 static EWRAM_DATA u8 *gUnknown_202F1DC = NULL;
 static EWRAM_DATA u8 gUnknown_202F1E0 = 0;
 static EWRAM_DATA u8 gUnknown_202F1E1 = 0;
-static UNUSED EWRAM_DATA s32 sUnusedEwram = 0;
 
 static u8 sub_80511F0(void)
 {

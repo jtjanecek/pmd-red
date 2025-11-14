@@ -33,7 +33,6 @@
 
 static EWRAM_DATA ActionParameter sUnknownActionUnk4 = {0};
 static EWRAM_DATA s32 sUnknown_202F240 = 0;
-static UNUSED EWRAM_DATA u8 sUnused[4] = {0};
 static EWRAM_DATA s16 sUnknown_202F248[8] = {0};
 static EWRAM_DATA s32 sUnknown_202F258 = 0;
 

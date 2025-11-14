@@ -14,7 +14,6 @@ EWRAM_DATA s16 gUnknown_2026E4E = 0;
 EWRAM_DATA static bool32 sUnknown_2026E50 = FALSE;
 EWRAM_DATA static bool32 sUnknown_2026E54 = FALSE;
 EWRAM_DATA static s16 *sUnknown_2026E58 = NULL;
-UNUSED EWRAM_DATA static u32 sUnused0 = 0;
 EWRAM_DATA static s16 sUnknown_2026E60[324] = {0}; // These might be [2][162]
 EWRAM_DATA static s16 sUnknown_20270E8[324] = {0};
 

@@ -67,7 +67,6 @@ EWRAM_DATA s32 gUnknown_202EDD0 = 0;
 static EWRAM_DATA s32 sUnknown_202EDD4 = 0;
 static EWRAM_DATA s32 sUnknown_202EDD8 = 0;
 static EWRAM_DATA SpriteOAM gUnknown_202EDDC = {0};
-UNUSED static EWRAM_DATA s32 sUnused = 0;
 EWRAM_DATA struct UnkStruct_202EDE8 gUnknown_202EDE8 = {0};
 
 EWRAM_INIT u8 gUnknown_203B40C = 0;

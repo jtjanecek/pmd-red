@@ -11,18 +11,15 @@ EWRAM_DATA static s16 sUnknown_2025672[8] = {0};
 EWRAM_DATA static s16 sUnknown_2025682[9] = {0};
 EWRAM_DATA static DungeonPos sUnknown_2025694 = {0};
 EWRAM_DATA static u32 sUnknown_2025698 = {0};
-UNUSED EWRAM_DATA static u32 sUnused1 = {0}; // R=202569C
 EWRAM_DATA static SpriteList sSpriteList = {0}; // B=20ED4C0
 EWRAM_DATA static UnkSpriteLink sUnknown_2025EA8[128] = {0};
 EWRAM_DATA static SpriteOAM sUnknown_20262A8[128] = {0};
 EWRAM_DATA static s32 sSpriteCount = {0}; // R=20266A8
-UNUSED EWRAM_DATA static u32 sUnused2 = {0}; // R=20266AC
 
 #define UNK_20266B0_ARR_COUNT 160
 EWRAM_DATA static unkStruct_20266B0 sUnknown_20266B0[UNK_20266B0_ARR_COUNT] = {0};
 
 EWRAM_DATA static void *sCharMemCursor = { NULL }; // R=2026E30
-UNUSED EWRAM_DATA static u32 sUnused3 = {0}; // R=2026E34
 
 EWRAM_INIT static unkStruct_20266B0 *sUnknown_203B074 = {0};
 

@@ -108,7 +108,6 @@ struct NeverWrittenToStruct202EC20
     const u8 *unk18;
 };
 static EWRAM_DATA struct NeverWrittenToStruct202EC20 *sNeverWrittenToUnknownStructPtr = NULL;
-static UNUSED EWRAM_DATA u8 sUnusedEwram1[4] = {0};
 
 static EWRAM_DATA TouchScreenMenuInput sDialogueMenuTouchScreenInput = {0};
 

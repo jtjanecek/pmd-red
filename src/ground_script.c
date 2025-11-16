@@ -1435,19 +1435,19 @@ static s32 ExecuteScriptCommand(Action *action)
                 }
             }
             case 0x08: case 0x09: {
-                if (curCmd.op == 0x08) {
-                    gCurrentMap = curCmd.arg1;
-                    gUnknown_2039A32 = GetAdjustedGroundMap((s16)curCmd.arg1);
-                    gUnknown_2039A34 = gUnknown_2039A32;
-                    if (ScriptLoggingEnabled(TRUE)) {
-                        Log(1,"    map select %3d %3d[%s]",gCurrentMap,gUnknown_2039A32,
+                s16 requestedMap = (s16)curCmd.arg1;
+                s16 normalizedMap = GetAdjustedGroundMap(requestedMap);
+
+                gUnknown_2039A32 = normalizedMap;
+                gUnknown_2039A34 = normalizedMap;
+                gCurrentMap = normalizedMap;
+
+                if (ScriptLoggingEnabled(TRUE)) {
+                    if (curCmd.op == 0x08) {
+                        Log(1,"    map select %3d %3d[%s]", requestedMap, normalizedMap,
                             gGroundMapConversionTable[gCurrentMap].text);
-                    }
-                } else {
-                    gUnknown_2039A32 = gCurrentMap = curCmd.arg1;
-                    gUnknown_2039A34 = curCmd.arg1;
-                    if (ScriptLoggingEnabled(TRUE)) {
-                        Log(1,"    ground select %3d %3d[%s]",gCurrentMap,gUnknown_2039A32,
+                    } else {
+                        Log(1,"    ground select %3d %3d[%s]", requestedMap, normalizedMap,
                             gGroundMapConversionTable[gCurrentMap].text);
                     }
                 }
@@ -1470,9 +1470,9 @@ static s32 ExecuteScriptCommand(Action *action)
                 const DungeonInfo *tmp;
                 DungeonLocation loc;
                 tmp = GetDungeonInfo_80A2608((s16)curCmd.arg1);
-                gUnknown_2039A34 = gUnknown_2039A32 = gCurrentMap = (s16)curCmd.arg2;
+                gUnknown_2039A34 = gUnknown_2039A32 = gCurrentMap = GetAdjustedGroundMap((s16)curCmd.arg2);
                 if (ScriptLoggingEnabled(TRUE)) {
-                    Log(1, "    dungeon select %3d %3d[%s]", gCurrentMap,gUnknown_2039A32,
+                    Log(1, "    dungeon select %3d %3d[%s]", (s16)curCmd.arg2, gUnknown_2039A32,
                         gGroundMapConversionTable[gCurrentMap].text);
                 }
                 GroundSprite_Reset(gUnknown_2039A32);

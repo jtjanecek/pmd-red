@@ -15,8 +15,8 @@ const GroundConversionStruct gGroundMapConversionTable[MAP_COUNT] = {
     },
     [MAP_POKEMON_SQUARE] = {
         .unk0 = 1,
-        .groundPlaceId = GROUND_PLACE_POKEMON_SQUARE,
-        .mapFileTableId = MAP_FILE_ID_POKEMON_SQUARE,
+        .groundPlaceId = GROUND_PLACE_SQUARE,
+        .mapFileTableId = MAP_FILE_ID_SQUARE,
         .unk6 = 9,
         .text = _("__ground_amd_conversion_00001"),
     },

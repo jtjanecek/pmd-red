@@ -87,7 +87,7 @@ struct GroundLive
     struct UnkGroundSpriteStruct unk170;
 };
 
-#define UNK_3001B84_ARR_COUNT 0x18
+#define UNK_3001B84_ARR_COUNT 12
 
 struct GroundLives
 {
@@ -742,6 +742,7 @@ static s32 GroundLives_Add(s32 id_, const GroundLivesData *ptr, s32 group_, s32 
         }
 
         if (id < 0) {
+            Log(0, "GroundLive overflow(kind=%d)", sp12);
             return -1;
         }
     }

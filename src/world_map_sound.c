@@ -12,7 +12,7 @@ void PlayFriendAreasMapBGM(void)
     if (sub_80023E4(13))
         StartNewBGM(MUS_WORLD_CALAMITY);
     else if (sub_80023E4(12))
-        StartNewBGM(MUS_POKEMON_SQUARE);
+        StartNewBGM(MUS_RESCUE_TEAM_BASE);
 }
 
 void PlayWorldMapBGM(void)
@@ -20,7 +20,7 @@ void PlayWorldMapBGM(void)
     if (sub_80023E4(13))
         StartNewBGM(MUS_WORLD_CALAMITY);
     else
-        StartNewBGM(MUS_POKEMON_SQUARE);
+        StartNewBGM(MUS_RESCUE_TEAM_BASE);
 }
 
 void FadeOutFriendAreasMapBGM(void)

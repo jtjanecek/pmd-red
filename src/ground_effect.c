@@ -37,8 +37,8 @@ typedef struct GroundEffect {
 } GroundEffect;
 
 
-IWRAM_INIT GroundEffect* gGroundEffects = NULL;  // size 16 array
-#define NUM_GROUND_EFFECTS 0x10
+IWRAM_INIT GroundEffect* gGroundEffects = NULL;  // trimmed for roguelike hub
+#define NUM_GROUND_EFFECTS 4
 
 
 struct GroundEffectTypeData
@@ -254,7 +254,7 @@ s32 GroundEffect_Add(s32 _id, const GroundEffectData *effectData, s32 _group, s3
     puVar4 = &gGroundEffectTypes[effectData->kind];
 
     if (id < 0) {
-        for(index = 0, parent = gGroundEffects; index < 0x10; index = (s16)(index + 1), parent++)
+        for(index = 0, parent = gGroundEffects; index < NUM_GROUND_EFFECTS; index = (s16)(index + 1), parent++)
         {
             if(parent->kind == -1)
             {
@@ -265,6 +265,7 @@ s32 GroundEffect_Add(s32 _id, const GroundEffectData *effectData, s32 _group, s3
 
     }
     if (id < 0) {
+        Log(0, "GroundEffect overflow(kind=%d)", effectData->kind);
         return -1;
     }
 

@@ -40,7 +40,7 @@ typedef struct GroundObject {
 } GroundObject;
 
 IWRAM_INIT GroundObject *gGroundObjects = NULL;
-#define NUM_GROUND_OBJECTS 0x10
+#define NUM_GROUND_OBJECTS 8
 
 struct GroundObjectTypeData
 {
@@ -335,7 +335,8 @@ s32 GroundObject_Add(s32 id_, const GroundObjectData *objectData, s32 group_, s3
 
         }
         if (id < 0) {
-                return -1;
+            Log(0, "GroundObject overflow(kind=%d)", kind);
+            return -1;
         }
       }
       parent = &gGroundObjects[id];

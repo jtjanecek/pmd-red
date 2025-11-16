@@ -234,7 +234,7 @@ extern const struct GroundScriptHeader gGroundScript_gs228;
 
 const struct GroundScriptHeader *const gMapScriptTable[MAP_COUNT] = {
     [MAP_SQUARE] = &gGroundScript_gs0,
-    [MAP_POKEMON_SQUARE] = &gGroundScript_gs1,
+    [MAP_POKEMON_SQUARE] = &gGroundScript_gs0,
     [MAP_WHISCASH_POND] = &gGroundScript_gs2,
     [MAP_WHISCASH_POND_OPEN] = &gGroundScript_gs2,
     [MAP_PELIPPER_POST_OFFICE] = &gGroundScript_gs4,

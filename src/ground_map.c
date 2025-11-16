@@ -25,6 +25,7 @@ IWRAM_INIT GroundBg *gGroundMapDungeon_3001B70 = {NULL};
 
 static void sub_80A5204(void *, const void *, BmaHeader *, s32);
 static void sub_80A56D8(const PixelPos *pos);
+static s16 NormalizeGroundMapId(s16 mapId);
 
 static const SubStruct_52C gUnknown_8117324 = {
     .unk0 = 0,
@@ -370,7 +371,7 @@ bool8 sub_80A4D48(s16 index)
 
 s16 GetAdjustedGroundMap(s32 mapId)
 {
-    s32 retMapId = (s16) mapId;
+    s32 retMapId = NormalizeGroundMapId((s16) mapId);
 
     switch (retMapId) {
         case MAP_TEAM_BASE:
@@ -399,8 +400,12 @@ s16 GetAdjustedGroundMap(s32 mapId)
 void GroundMap_Select(s32 mapId_)
 {
     const GroundConversionStruct *ptr;
-    s32 mapId = (s16) mapId_;
+    s32 originalMapId = (s16) mapId_;
+    s32 mapId = NormalizeGroundMapId(originalMapId);
 
+    if (mapId != originalMapId) {
+        Log(0, "GroundMap Redirect %3d -> %3d", originalMapId, mapId);
+    }
     Log(0, "GroundMap Select %3d", mapId);
     ClearScriptVarArray(NULL, MAP_LOCAL);
     ClearScriptVarArray(NULL, MAP_LOCAL_DOOR);
@@ -547,6 +552,17 @@ void GroundMap_SelectDungeon(s32 mapId_, const DungeonLocation *loc, u32 param_2
     gGroundMapAction->unk100 = gGroundMapAction->unk104 = gGroundMapAction->unk108 = gGroundMapAction->unk10C = 0;
 
     sub_80A56D8(&(const PixelPos) {0, 0});
+}
+
+static s16 NormalizeGroundMapId(s16 mapId)
+{
+    switch (mapId) {
+        case MAP_POKEMON_SQUARE:
+            // Pokémon Square is disabled in the roguelike; reuse the base exterior instead.
+            return MAP_SQUARE;
+        default:
+            return mapId;
+    }
 }
 
 NAKED

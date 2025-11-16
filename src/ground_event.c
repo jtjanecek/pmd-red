@@ -20,6 +20,7 @@ typedef struct GroundEvent
 } GroundEvent;
 
 IWRAM_INIT GroundEvent *gGroundEvents = NULL;
+#define NUM_GROUND_EVENTS 8
 
 static s32 GroundEvent_Add(s32 id, const GroundEventData *eventData, s32 group, s32 sector);
 static void GroundEvent_Delete(s32 id);
@@ -28,9 +29,9 @@ void AllocGroundEvents(void)
 {
     s32 ind;
     GroundEvent *ptr;
-    gGroundEvents = MemoryAlloc(sizeof(GroundEvent) * 0x20, 0x6);
+    gGroundEvents = MemoryAlloc(sizeof(GroundEvent) * NUM_GROUND_EVENTS, 0x6);
 
-    for(ind = 0, ptr = &gGroundEvents[ind]; ind < 0x20; ind = (s16)(ind + 1), ptr++)
+    for(ind = 0, ptr = &gGroundEvents[ind]; ind < NUM_GROUND_EVENTS; ind = (s16)(ind + 1), ptr++)
     {
         ptr->unk2 |= -1;
     }
@@ -43,7 +44,7 @@ void DeleteGroundEvents(void)
     GroundEvent* current;
 
     current = &gGroundEvents[0];
-    for (v1 = 0; v1 < 0x20; v1 = (s16) (v1 + 0x1), current++) {
+    for (v1 = 0; v1 < NUM_GROUND_EVENTS; v1 = (s16) (v1 + 0x1), current++) {
         if(current->unk2 != -1)
             GroundEvent_Delete(v1);
     }
@@ -109,7 +110,7 @@ void GroundEvent_Cancel(s32 scriptID, s32 sector)
 
     index = 0;
     ptr = &gGroundEvents[0];
-    for(; index < 0x20; index = (s16)(index + 1), ptr++)
+    for(; index < NUM_GROUND_EVENTS; index = (s16)(index + 1), ptr++)
     {
         if((ptr->unk2 != -1) && (ptr->unk4 == scriptID_s32))
             if(sector_s32 < 0 || ptr->unk6 == sector_s32)
@@ -134,13 +135,14 @@ static s32 GroundEvent_Add(s32 id, const GroundEventData *eventData, s32 group, 
 
     if (scriptID_s32 < 0) {
         ptr = &gGroundEvents[0];
-        for (i = 0; i < 0x20; i = (s16)(i + 1), ptr++) {
+        for (i = 0; i < NUM_GROUND_EVENTS; i = (s16)(i + 1), ptr++) {
             if (ptr->unk2 == -1) {
                 scriptID_s32 = i;
                 break;
             }
         }
         if (scriptID_s32 < 0) {
+            Log(0, "GroundEvent overflow(kind=%d)", script->id);
             return -1;
         }
     }
@@ -207,7 +209,7 @@ s16 FindGroundEvent(u32 flags, PixelPos *arg1, PixelPos *arg2)
 {
     s32 i;
     GroundEvent *ptr = &gGroundEvents[0];
-    for (i = 0; i < 0x20; i = (s16)(i + 1), ptr++) {
+    for (i = 0; i < NUM_GROUND_EVENTS; i = (s16)(i + 1), ptr++) {
         if (ptr->unk2 != -1
             && (ptr->unk8 & flags)
             && ptr->unkC.x < arg2->x
@@ -226,7 +228,7 @@ UNUSED static s16 UnusedFindGroundEvent(u32 flags, PixelPos *arg1, PixelPos *arg
 {
     s32 i;
     GroundEvent *ptr = &gGroundEvents[0];
-    for (i = 0; i < 0x20; i = (s16)(i + 1), ptr++) {
+    for (i = 0; i < NUM_GROUND_EVENTS; i = (s16)(i + 1), ptr++) {
         if (ptr->unk2 != -1 && (ptr->unk8 & flags)) {
             PixelPos resultPos = {0};
             resultPos.x = (ptr->unkC.x + ptr->unk14.x) / 2;

@@ -1,0 +1,102 @@
+Log created on: Sun Nov 16 21:50:06 MST 2025
+
+[WARN] GBA Debug: 
+[WARN] GBA Debug: [BOOT] After basic init
+[WARN] GBA Debug: [BOOT] File system ready
+[WARN] GBA Debug: mGBA logger initialized
+[WARN] GBA Debug: [BOOT] Charmaps loaded
+[WARN] GBA Debug: [BOOT] Graphics initialized
+[WARN] GBA Debug: [BOOT] Entering GameLoop
+[WARN] GBA Debug: [demo] GameLoop start
+[WARN] GBA Debug: SCENARIO CALC [  2]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  3]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  4]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  5]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  6]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  7]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  8]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  9]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [ 10]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [ 11]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [ 12]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  2]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  3]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  4]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  5]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  6]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  7]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  8]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [  9]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [ 10]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [ 11]    0    0 ->    0    0
+[WARN] GBA Debug: SCENARIO CALC [ 12]    0    0 ->    0    0
+[WARN] GBA Debug: GroundSprite Reset
+[WARN] GBA Debug: GroundSprite Reset
+[WARN] GBA Debug: [TitleFlow] ExecuteEvent req=115 param=0 map=-1 place=36 allow=1 demo=1 skip=1 handled=0
+[WARN] GBA Debug: [TitleFlow] First demo event 115 (script will run)
+[WARN] GBA Debug: [SquareGuard] Allow square event 115: map=-1 fillE6=1 demo=1
+[WARN] GBA Debug: GroundMap ExecuteEvent 115 0 ==================
+[WARN] GBA Debug: [GS] dump(pre-station): scen=0 start=0 GE=162 GEL=0 GO=162 GM=-1 GP=36 DS=-1 DE=0 DEI=-1 DR=0 BK=0 BL=0 WL=0 s1=0 s2=0 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[0,0,0,0]
+[WARN] GBA Debug: [STATE pre-station] SCEN=[0,0] S1=[0,0] S2=[0,0] S3=[0,0] S4=[0,0] S5=[0,0] S6=[0,0] S7=[0,0] S8=[0,0] S9=[0,0]
+[WARN] GBA Debug: [STATE pre-station] MODE=0 GE=162 GEL=0 GO=162 DS=-1 DE=0 DEI=-1 DR=0 WL=0
+[WARN] GBA Debug: [GS] exec station map=224 group=3 sector=0 set=1 place=37
+[WARN] GBA Debug: [GS] dump(pre-exec): scen=0 start=0 GE=162 GEL=0 GO=162 GM=-1 GP=36 DS=-1 DE=0 DEI=-1 DR=0 BK=0 BL=0 WL=0 s1=0 s2=0 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[0,0,0,0]
+[WARN] GBA Debug: [STATE pre-exec] SCEN=[0,0] S1=[0,0] S2=[0,0] S3=[0,0] S4=[0,0] S5=[0,0] S6=[0,0] S7=[0,0] S8=[0,0] S9=[0,0]
+[WARN] GBA Debug: [STATE pre-exec] MODE=0 GE=162 GEL=0 GO=162 DS=-1 DE=0 DEI=-1 DR=0 WL=0
+[WARN] GBA Debug: [TitleFlow] ExecuteStation map=224 group=3 sector=0 set=1
+[WARN] GBA Debug: GroundMap ExecuteStation 224   3   0 1 ==================
+[WARN] GBA Debug: GroundMap ExecuteStation 224   3   0
+[WARN] GBA Debug: [GS] dump(post-exec): scen=0 start=0 GE=162 GEL=0 GO=162 GM=-1 GP=36 DS=-1 DE=0 DEI=-1 DR=0 BK=0 BL=0 WL=0 s1=0 s2=0 s3=0 s4=0 s5=0 s6=0 s7=0 s8=0 s9=0 E8=[0,0,0,0]
+[WARN] GBA Debug: [STATE post-exec] SCEN=[0,0] S1=[0,0] S2=[0,0] S3=[0,0] S4=[0,0] S5=[0,0] S6=[0,0] S7=[0,0] S8=[0,0] S9=[0,0]
+[WARN] GBA Debug: [STATE post-exec] MODE=0 GE=162 GEL=0 GO=162 DS=-1 DE=0 DEI=-1 DR=0 WL=0
+[WARN] GBA Debug:     map select 224 224[__ground_amd_conversion_00233]
+[WARN] GBA Debug: GroundSprite Reset
+[WARN] GBA Debug: [TitleFlow] GroundMap_Select request orig=224 normalized=224
+[WARN] GBA Debug: GroundMap Select 224
+[WARN] GBA Debug: [TitleFlow] UpdateSquareEventAllowance map=224 allow=0
+[WARN] GBA Debug: GroundLives Select 224    0    0
+[WARN] GBA Debug: GroundObject Select 224    0    0
+[WARN] GBA Debug: GroundLives Select 224    1    0
+[WARN] GBA Debug: GroundObject Select 224    1    0
+[WARN] GBA Debug: GroundObject Add id   0  kind  61[ 61]  type  10  group   1  sector   0
+[WARN] GBA Debug: extend palette   0[ 29] 000d set 0121 0000
+[WARN] GBA Debug: GroundEffect Select 224    1    0
+[WARN] GBA Debug: GroundEvent Select 224    1    0
+[WARN] GBA Debug: GroundLives Select 224    3    0
+[WARN] GBA Debug: GroundObject Select 224    3    0
+[WARN] GBA Debug: GroundEffect Select 224    3    0
+[WARN] GBA Debug: GroundEffect Add id   0  kind   0  type   1  group   3  sector   0
+[WARN] GBA Debug: GroundEvent Select 224    3    0
+[WARN] GBA Debug: GroundLives Select 224    3    1
+[WARN] GBA Debug: GroundLive Add id   3  kind  55  type   5  group   3  sector   1
+[WARN] GBA Debug: GroundObject Select 224    3    1
+[WARN] GBA Debug: GroundObject Add id   1  kind  59[ 59]  type  14  group   3  sector   1
+[WARN] GBA Debug: extend palette   1[ 30] 000e set 0120 0000
+[WARN] GBA Debug: GroundEffect Select 224    3    1
+[WARN] GBA Debug: GroundEvent Select 224    3    1
+[WARN] GBA Debug: GroundLives Select 224    3    2
+[WARN] GBA Debug: GroundObject Select 224    3    2
+[WARN] GBA Debug: GroundObject Add id   2  kind  60[ 60]  type  14  group   3  sector   2
+[WARN] GBA Debug: extend palette   1[ 30] 000e up 0120
+[WARN] GBA Debug: GroundEffect Select 224    3    2
+[WARN] GBA Debug: GroundEvent Select 224    3    2
+[WARN] GBA Debug: GroundScript unlock   5
+[WARN] GBA Debug: GroundLives Delete id   3
+[WARN] GBA Debug: GroundScript unlock   6
+[WARN] GBA Debug: GroundObject Delete id   2
+[WARN] GBA Debug: GroundObject Delete id   1
+[WARN] GBA Debug: extend palette   1  delete 0120
+[WARN] GBA Debug: GroundScript unlock   3
+[WARN] GBA Debug: GroundScript unlock   4
+[WARN] GBA Debug: [TitleFlow] ExecuteEvent req=114 param=0 map=224 place=37 allow=0 demo=0 skip=0 handled=1
+[WARN] GBA Debug: [TitleFlow] Allowing DEMO_CANCEL on title screen
+[WARN] GBA Debug: [TitleFlow] SquareGuard_DisableDemos
+[WARN] GBA Debug: GroundMap ExecuteEvent 114 0 ==================
+[WARN] GBA Debug: GroundMain game cancel request  30
+[WARN] GBA Debug: GroundObject Delete id   0
+[WARN] GBA Debug: extend palette   0  delete 0121
+[WARN] GBA Debug: GroundEffect Delete id   0
+[WARN] GBA Debug: GroundSprite Reset
+[WARN] GBA Debug: GroundSprite Reset
+[WARN] GBA Debug: [TitleFlow] ExecuteEvent req=116 param=0 map=-1 place=37 allow=0 demo=0 skip=0 handled=1
+[WARN] GBA Debug: GroundMap ExecuteEvent 116 0 (skipped)

@@ -38,7 +38,6 @@ struct UnkStruct_sub_8011DAC
     u32 unk41C;
     u32 RngState;
     u32 difficulty;
-    u8 skipCutscenes;
     u8 skipBasicRescues;
     u8 recruitAll;
     u32 savedRecruitedPokemon;
@@ -90,8 +89,6 @@ s32 sub_8011C34(void);
 void sub_8011C40(s32 in);
 u32 GetGameDifficultySetting(void);
 void SetGameDifficultySetting(u32 in);
-u8 GetSkipCutscenesSetting(void);
-void SetSkipCutscenesSetting(u8 in);
 u8 GetSkipBasicRescuesSetting(void);
 void SetSkipBasicRescuesSetting(u8 in);
 u8 GetRecruitAllSetting(void);

@@ -2,7 +2,6 @@
 #include "globaldata.h"
 #include "rescue_scenario.h"
 #include "code_80A26CC.h"
-#include "save.h" // GetSkipCutscenesSetting
 #include "event_flag.h"
 #include "constants/dungeon.h"
 #include "constants/script_dungeon_id.h"
@@ -1272,110 +1271,24 @@ u8 ScriptDungeonIdToDungeonId(s16 scriptDungeonId_)
 
 s16 sub_80A2750(s16 r0)
 {
-    const DungeonInfo *temp;
-    s32 temp_32;
-    s32 temp_2;
-
-    // so dumb but it matches
-    temp_32 = r0;
-    temp_2 = temp_32;
-
-    // In SkipCutscenes mode, always prefer the direct entry path
-    // (case 2 in callers), bypassing story/event gate checks. This helps
-    // eliminate inconsistent transitions from overworld -> dungeon.
-    if (GetSkipCutscenesSetting())
-        return 2;
-
-    if (r0 == 80)
-        return 3;
-    if (r0 == 81)
-        return 2;
-    if (r0 == 82)
-        return 4;
-    if ((u16)(r0 - 40) <= 14)
-        return 2;
-    if ((u16)(r0 - 55) <= 24)
-        return 4;
-
-    temp = GetDungeonInfo_80A2608(temp_2);
-    if (temp->unkE == -1)
-        return 1;
-    if (sub_80023E4(5))
-        return 1;
-    if (!RescueScenarioConquered((s16) temp->unkE))
-        return 1;
-    if (!sub_80023E4(1))
-        return 1;
+    (void)r0;
+    // SkipCutscenes is always enabled, so we permanently select the
+    // direct-entry branch.
     return 2;
 }
 
 bool8 IsRescueDungeonAvailable(s16 _rescueDungeonId)
 {
-    const DungeonInfo *t;
-    // If SkipCutscenes is ON, always list dungeons whose entries are valid.
-    // This makes all story + postgame dungeons visible without relying on
-    // story flags. The list builder still filters special cases (e.g. 0x13, 0x1D).
-    // Same dumbness as above to get a match
-    s32 _rescueDungeonIdMatch = _rescueDungeonId;
-    s32 rescueDungeonId = _rescueDungeonIdMatch;
-
-    t = GetRescueDungeonInfo(_rescueDungeonId);
+    const DungeonInfo *t = GetRescueDungeonInfo(_rescueDungeonId);
     if (t->unk0 == -1)
-        return FALSE;
-    // Always allow mazes to appear in the list
-    if (DUNGEON_IS_MAZE(t->dungeonIndex))
-        return TRUE;
-    if (GetSkipCutscenesSetting())
-        return TRUE;
-    if (sub_80023E4(5))
-        return FALSE;
-    if (sub_8097384(_rescueDungeonId))
-        return TRUE;
-    if (!sub_80023E4(1))
-        return FALSE;
-    if (!RescueScenarioConquered((s16) rescueDungeonId))
         return FALSE;
     return TRUE;
 }
 
 bool8 sub_80A2824(u8 index)
 {
-    s32 i;
-    const DungeonInfo *temp;
-
-    // If SkipCutscenes is ON, allow selecting any visible dungeon.
-    if (GetSkipCutscenesSetting())
-        return TRUE;
-
-    if (sub_80023E4(5))
-        return FALSE;
-
-    if (sub_80023E4(1)) {
-        for (i = 0; i < RESCUE_DUNGEON_COUNT; i++) {
-            temp = GetRescueDungeonInfo(i);
-
-            if (temp->unk11 != 0) {
-                if (temp->dungeonIndex == index) {
-                    if (sub_8097384((s16) i))
-                        return TRUE;
-                    if (RescueScenarioConquered((s16) i))
-                        return TRUE;
-                }
-            }
-        }
-    }
-    else {
-        for (i = 0; i < RESCUE_DUNGEON_COUNT; i++) {
-            temp = GetRescueDungeonInfo(i);
-
-            if (temp->unk11 != 0)
-                if (temp->dungeonIndex == index)
-                    if (sub_8097384((s16) i))
-                        return TRUE;
-        }
-    }
-
-    return FALSE;
+    (void)index;
+    return TRUE;
 }
 
 UNUSED static bool8 sub_80A28B4(s16 r0)

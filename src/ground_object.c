@@ -40,7 +40,7 @@ typedef struct GroundObject {
 } GroundObject;
 
 IWRAM_INIT GroundObject *gGroundObjects = NULL;
-#define NUM_GROUND_OBJECTS 8
+#define NUM_GROUND_OBJECTS 16
 
 struct GroundObjectTypeData
 {

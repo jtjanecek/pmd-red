@@ -18,7 +18,7 @@
 #include "ground_place.h"
 #include "ground_main.h"
 #include "script_vars_info.h"
-#include "save.h" // GetSkipBasicRescuesSetting, GetSkipCutscenesSetting
+#include "save.h" // GetSkipBasicRescuesSetting
 #include "constants/script_dungeon_id.h" // SCRIPT_DUNGEON_COUNT
 #include "training_maze.h"
 

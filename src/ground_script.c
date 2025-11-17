@@ -49,6 +49,7 @@
 #include "friend_area_dialogue.h"
 #include "structs/str_dungeon_setup.h"
 #include "ground_map_conversion_table.h"
+#include "ground_place.h"
 #include "unk_ds_only_feature.h"
 #include "textbox.h"
 #include "ground_map_conversion_table.h"
@@ -84,9 +85,9 @@ static void GS_DumpCoreVars(const char *tag)
     s32 e8_1 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 1);
     s32 e8_2 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 2);
     s32 e8_3 = GetScriptVarArrayValue(NULL, EVENT_S08E01, 3);
-    MGBA_Warnf("[GS] dump(%s): scen=%d start=%d GE=%d GEL=%d GO=%d GM=%d GP=%d DS=%d DE=%d DEI=%d DR=%d BK=%d BL=%d WL=%d s1=%d s2=%d s3=%d s4=%d s5=%d s6=%d s7=%d s8=%d s9=%d E8=[%d,%d,%d,%d]",
-               tag, scen, start, ge, gel, go, gm, gp, ds, de, dei, dr, baseK, baseL, warpL,
-               s1, s2, s3, s4, s5, s6, s7, s8, s9, e8_0, e8_1, e8_2, e8_3);
+    Log(0, "[GS] dump(%s): scen=%d start=%d GE=%d GEL=%d GO=%d GM=%d GP=%d DS=%d DE=%d DEI=%d DR=%d BK=%d BL=%d WL=%d s1=%d s2=%d s3=%d s4=%d s5=%d s6=%d s7=%d s8=%d s9=%d E8=[%d,%d,%d,%d]",
+        tag, scen, start, ge, gel, go, gm, gp, ds, de, dei, dr, baseK, baseL, warpL,
+        s1, s2, s3, s4, s5, s6, s7, s8, s9, e8_0, e8_1, e8_2, e8_3);
 }
 bool8 sub_8098DCC(u32 speed);
 #include "ground_event.h"
@@ -1676,11 +1677,7 @@ static s32 ExecuteScriptCommand(Action *action)
                         }
                         // Defensive: clear transient enter-index before requesting the dungeon
                         SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
-                        // Use a sane fade speed when SkipCutscenes is ON to avoid first-entry stall
-                        if (GetSkipCutscenesSetting())
-                            GroundMainRescueRequest(a, 0x1e);
-                        else
-                            GroundMainRescueRequest(a, -1);
+                        GroundMainRescueRequest(a, 0x1e);
                     } else {
                         GroundMap_ExecuteEvent(thing, 0);
                         break;
@@ -1688,10 +1685,7 @@ static s32 ExecuteScriptCommand(Action *action)
                 } else {
                     // Defensive: clear transient enter-index before requesting the dungeon
                     SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
-                    if (GetSkipCutscenesSetting())
-                        GroundMainRescueRequest(a, 0x1e);
-                    else
-                        GroundMainRescueRequest(a, -1);
+                    GroundMainRescueRequest(a, 0x1e);
                 }
                 break;
             }

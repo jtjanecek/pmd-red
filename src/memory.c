@@ -4,7 +4,7 @@
 #include "cpu.h"
 #include "debug.h"
 
-#define HEAP_SIZE 0x24000
+#define HEAP_SIZE 0x22000
 
 // size: 0x8
 struct HeapSettings

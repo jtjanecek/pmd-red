@@ -12,15 +12,6 @@ static const MenuItem gSeedModeMenu[] = {
 };
 
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the dungeon seed\n{CENTER_ALIGN}using the number pad.");
-ALIGNED(4) static const u8 gSkipCutscenesPrompt[] = _(
-    "{CENTER_ALIGN}Skip cutscenes?\n"
-    "{CENTER_ALIGN}This will skip non-dungeon cutscenes."
-);
-static const MenuItem gSkipCutscenesMenu[] = {
-    { _("No"), 0 },
-    { _("Yes"), 1 },
-    { NULL, -1 },
-};
 ALIGNED(4) static const u8 gSkipBasicRescuesPrompt[] = _(
     "{CENTER_ALIGN}Skip Basic Rescues between Story Missions?\n"
     "{CENTER_ALIGN}This will skip the requirement to complete\n"

@@ -27,9 +27,8 @@ typedef struct TeamBasicInfo
     /* 0x30 */ u8 TeamName[TEAM_NAME_LENGTH + 1];
     /* 0x3C */ s32 customSeed;
     /* 0x40 */ u8 difficulty;
-    /* 0x41 */ u8 skipCutscenes;
-    /* 0x42 */ u8 skipBasicRescues;
-    /* 0x43 */ u8 recruitAll;
+    /* 0x41 */ u8 skipBasicRescues;
+    /* 0x42 */ u8 recruitAll;
 } TeamBasicInfo;
 
 typedef TeamBasicInfo PersonalityRelated;

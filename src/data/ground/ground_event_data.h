@@ -1825,32 +1825,24 @@ static const struct ScriptCommand s_script_DEMO_CANCEL[] = { /* 0x8125070 */
 
 static const struct ScriptCommand s_script_DEMO_01[] = { /* 0x8125090 */
     DEBUGINFO_O(1827),
-    EXECUTE_SUBSTATION(227, 1, 0),
-    { 0x3b, 0x41,  0x003c,  0x00000000,  0x00000000, NULL },
+    EXECUTE_SUBSTATION(224, 3, 0),
     HALT,
 };
 
 static const struct ScriptCommand s_script_DEMO_02[] = { /* 0x81250d0 */
     DEBUGINFO_O(1834),
-    EXECUTE_SUBSTATION(226, 1, 0),
-    { 0x3b, 0x41,  0x003c,  0x00000000,  0x00000000, NULL },
     HALT,
 };
 
 static const struct ScriptCommand s_script_DEMO_03[] = { /* 0x8125110 */
     DEBUGINFO_O(1841),
-    EXECUTE_SUBSTATION(5, 5, 0),
-    EXECUTE_SUBSTATION(4, 29, 0),
-    EXECUTE_SUBSTATION(225, 1, 0),
     EXECUTE_SUBSTATION(224, 3, 0),
-    { 0x3b, 0x41,  0x003c,  0x00000000,  0x00000000, NULL },
     HALT,
 };
 
 static const struct ScriptCommand s_script_DEMO_04[] = { /* 0x8125180 */
     DEBUGINFO_O(1851),
-    EXECUTE_SUBSTATION(224, 4, 0),
-    { 0x3b, 0x41,  0x003c,  0x00000000,  0x00000000, NULL },
+    HALT,
     HALT,
 };
 
@@ -5670,4 +5662,3 @@ static const struct ScriptCommand s_script_MOVE_DEBUG_CAMERA[] = { /* 0x812f198 
     { 405, 7, _("SETUP_DEBUG_CAMERA"), s_script_SETUP_DEBUG_CAMERA },
     { 406, 5, _("MOVE_DEBUG_CAMERA"), s_script_MOVE_DEBUG_CAMERA },
 };
-

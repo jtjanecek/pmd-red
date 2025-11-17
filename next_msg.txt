@@ -1,0 +1,15 @@
+Boot Flow Overview
+
+We stripped the Pokémon Square demo loop by stubbing DEMO_01/03 to jump straight into the title station (map 224) and letting DEMO_02/04 halt immediately. None of these scripts load Square assets; they only use the title tilemaps.
+GroundMap_Select() now logs whenever the logo/title/intro maps run and UpdateSquareEventAllowance() disables Square events once the title map finishes. Most Square-only scripts are blocked by ShouldSkipSquareEvent() as soon as sSquareDemoEnabled flips off.
+Title Screen Guardrails
+
+We added fine-grained guards in src/ground_map.c: the first Square-only script runs so the title map can boot, and DEMO_CANCEL plus one DEMO_02 pass are allowed while MAP_TITLE_SCREEN is active. After those complete we call SquareGuard_DisableDemos(), log it, and set permanent flags (sTitleFlowComplete, sSkipFutureDemoEvents) so every later DEMO_* event is skipped without touching Square memory.
+mGBA Logging
+
+Early boot and title flow logs use MGBA_Warnf, so execution.log shows [BOOT] …, [demo] GameLoop start, [TitleFlow] … for every event/station and whether it was allowed or skipped. This makes it easy to spot when the guard stops processing events.
+With this setup the ROM boots straight into the Continue/New Game menu after the logos, zero Pokémon Square allocations occur, and subsequent demo events are blocked once the title scene hands control back to the main loop.
+
+Our goal is to lower EWRAM usage by removing town square. But we are having problems loading in. Specifically black screen after the "title" screen before getting to main menu.
+
+Read agents.md

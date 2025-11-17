@@ -28,7 +28,6 @@
 #include "dungeon_strings.h"
 #include "dungeon_cutscene.h"
 #include "dungeon_portrait_placement.h"
-#include "save.h" // GetSkipCutscenesSetting
 
 static EWRAM_DATA Entity *sLastLogMsgEntity = NULL;
 static EWRAM_DATA SpriteOAM sUnknown_202F1F0 = {0};

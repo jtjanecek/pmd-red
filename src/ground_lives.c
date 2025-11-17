@@ -87,7 +87,7 @@ struct GroundLive
     struct UnkGroundSpriteStruct unk170;
 };
 
-#define UNK_3001B84_ARR_COUNT 12
+#define UNK_3001B84_ARR_COUNT 0x18
 
 struct GroundLives
 {

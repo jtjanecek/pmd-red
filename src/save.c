@@ -31,7 +31,6 @@ struct unk_struct
     u32 unk20;
     s32 customSeed;
     u32 difficulty;
-    u8 skipCutscenes;
     u8 skipBasicRescues;
     u8 recruitAll;
     u32 padding[500];
@@ -39,7 +38,6 @@ struct unk_struct
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
 EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_VANILLA};
-EWRAM_DATA u8 gSkipCutscenesSetting = {0};
 EWRAM_DATA u8 gSkipBasicRescuesSetting = {0};
 EWRAM_DATA u8 gRecruitAllSetting = {0};
 
@@ -92,21 +90,6 @@ void SetGameDifficultySetting(u32 value)
     if (value >= NUM_DIFFICULTY_SETTINGS)
         value = DIFFICULTY_VANILLA;
     gUnknown_202DE2C = value;
-}
-
-u8 GetSkipCutscenesSetting(void)
-{
-    // Return the persisted SkipCutscenes flag selected in the personality quiz.
-    // Other systems that previously reacted to this flag were disabled in-code,
-    // so this now only drives the post-quiz bootstrap behavior we implement.
-    return gSkipCutscenesSetting;
-}
-
-void SetSkipCutscenesSetting(u8 value)
-{
-    if (value > 1)
-        value = 0;
-    gSkipCutscenesSetting = value;
 }
 
 u8 GetSkipBasicRescuesSetting(void)
@@ -270,7 +253,6 @@ u32 ReadSaveFromPak(u32 *a)
             sub_8011C40(playerSave->unk418);
             SetRNGSeed(playerSave->RngState);
             SetGameDifficultySetting(playerSave->difficulty);
-            SetSkipCutscenesSetting(playerSave->skipCutscenes);
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
         }
@@ -280,7 +262,6 @@ u32 ReadSaveFromPak(u32 *a)
             gUnknown_203B184->difficulty = playerSave->difficulty;
             gUnknown_203B184->RngState = playerSave->RngState;
             SetGameDifficultySetting(playerSave->difficulty);
-            SetSkipCutscenesSetting(playerSave->skipCutscenes);
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
         }
@@ -295,7 +276,6 @@ u32 ReadSaveFromPak(u32 *a)
         else {
             MemoryCopy8(gUnknown_203B184->unk04C, playerSave->unk004, ARRAY_COUNT(playerSave->unk004));
         }
-        // SkipCutscenes no longer normalizes post-load state.
     }
     if (!saveStatus)
     {
@@ -370,7 +350,6 @@ u32 sub_8011FA8(void)
         if (temp3 == 0xF1207) {
             sub_8011C40(r5->customSeed);
             SetGameDifficultySetting(r5->difficulty);
-            SetSkipCutscenesSetting(r5->skipCutscenes);
             SetSkipBasicRescuesSetting(r5->skipBasicRescues);
             SetRecruitAllSetting(r5->recruitAll);
         }
@@ -412,7 +391,6 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->unk418 = sub_8011C34();
     playerSave->RngState = GetRNGState();
     playerSave->difficulty = GetGameDifficultySetting();
-    playerSave->skipCutscenes = GetSkipCutscenesSetting();
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
   }
@@ -421,7 +399,6 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->unk418 = gUnknown_203B184->unk050;
     playerSave->difficulty = gUnknown_203B184->difficulty;
     playerSave->RngState = gUnknown_203B184->RngState;
-    playerSave->skipCutscenes = GetSkipCutscenesSetting();
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
   }
@@ -481,7 +458,6 @@ u32 sub_80121E0(u32 r0)
     r4->checksum = 0x5071412;
     r4->customSeed = sub_8011C34();
     r4->difficulty = GetGameDifficultySetting();
-    r4->skipCutscenes = GetSkipCutscenesSetting();
     r4->skipBasicRescues = GetSkipBasicRescuesSetting();
     r4->recruitAll = GetRecruitAllSetting();
 

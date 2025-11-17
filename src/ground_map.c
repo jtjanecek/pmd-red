@@ -11,7 +11,6 @@
 #include "memory.h"
 #include "ground_map_conversion_table.h"
 #include "ground_place.h"
-#include "save.h" // GetSkipCutscenesSetting
 #include "code_80972F4.h" // GO helpers
 #include "code_80A26CC.h" // sub_80A26B8
 #include "code_800558C.h"
@@ -19,13 +18,146 @@
 #include "constants/script_dungeon_id.h"
 #include "constants/ground_map.h"
 #include "code_809D148.h"
+#include "data_script.h"
+#include "mgba_log.h"
 
 IWRAM_INIT GroundMapAction *gGroundMapAction = {NULL};
 IWRAM_INIT GroundBg *gGroundMapDungeon_3001B70 = {NULL};
+IWRAM_INIT static bool8 sSquareDemoEnabled = TRUE;
+IWRAM_INIT static bool8 sSkipTitleDemos = TRUE;
+IWRAM_INIT static bool8 sTitleDemoHandled = FALSE;
+IWRAM_INIT static bool8 sDemoCancelHandled = FALSE;
+IWRAM_INIT static bool8 sDemoSecondaryHandled = FALSE;
+IWRAM_INIT static bool8 sTitleFlowComplete = FALSE;
+IWRAM_INIT static bool8 sSkipFutureDemoEvents = FALSE;
 
 static void sub_80A5204(void *, const void *, BmaHeader *, s32);
 static void sub_80A56D8(const PixelPos *pos);
 static s16 NormalizeGroundMapId(s16 mapId);
+static bool8 ShouldAllowSquareEventsForMap(s16 mapId);
+static void UpdateSquareEventAllowance(s16 mapId);
+static bool8 ShouldBypassTitleDemo(s16 scriptIndex);
+
+static bool8 IsSquarePlaceId(s16 placeId)
+{
+    switch (placeId) {
+        case GROUND_PLACE_SQUARE:
+        case GROUND_PLACE_SQUARE_2:
+        case GROUND_PLACE_POKEMON_SQUARE:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+static bool8 IsSquareOnlyEvent(s16 scriptIndex)
+{
+    switch (scriptIndex) {
+        case 114:
+        case 115:
+        case 116:
+        case 117:
+        case 118:
+            break;
+        default:
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+static bool8 IsCurrentPlaceSquare(void)
+{
+    return IsSquarePlaceId((s16)GetScriptVarValue(NULL, GROUND_PLACE));
+}
+
+static bool8 ShouldSkipSceneStation(s16 mapId)
+{
+    switch (mapId) {
+        case MAP_LOGO_POKEMON_COMPANY:
+        case MAP_LOGO_WARNING:
+        case MAP_INTRO:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+static bool8 ShouldBypassTitleDemo(s16 scriptIndex)
+{
+    if (!sSkipTitleDemos) {
+        return FALSE;
+    }
+    if (sSkipFutureDemoEvents) {
+        return TRUE;
+    }
+    if (!IsSquareOnlyEvent(scriptIndex)) {
+        return FALSE;
+    }
+
+    if (!sTitleDemoHandled) {
+        sTitleDemoHandled = TRUE;
+        sSkipTitleDemos = FALSE;
+        MGBA_Warnf("[TitleFlow] First demo event %d (script will run)", scriptIndex);
+    }
+    return FALSE;
+}
+
+bool8 ShouldSkipSquareEvent(s16 scriptIndex)
+{
+    if (!IsSquareOnlyEvent(scriptIndex)) {
+        return FALSE;
+    }
+
+    if (sSkipFutureDemoEvents && scriptIndex != DEMO_CANCEL) {
+        return TRUE;
+    }
+
+    if (sTitleFlowComplete && scriptIndex != DEMO_CANCEL) {
+        return TRUE;
+    }
+
+    if (scriptIndex == DEMO_CANCEL) {
+        if (!sDemoCancelHandled
+            && gGroundMapAction != NULL
+            && gGroundMapAction->groundMapId == MAP_TITLE_SCREEN) {
+            sDemoCancelHandled = TRUE;
+            MGBA_Warnf("[TitleFlow] Allowing DEMO_CANCEL on title screen");
+            return FALSE;
+        }
+    }
+
+    if (scriptIndex == DEMO_02) {
+        if (!sDemoSecondaryHandled
+            && gGroundMapAction != NULL
+            && gGroundMapAction->groundMapId == MAP_TITLE_SCREEN) {
+            sDemoSecondaryHandled = TRUE;
+            MGBA_Warnf("[TitleFlow] Allowing DEMO_02 on title screen");
+            SquareGuard_DisableDemos();
+            return FALSE;
+        }
+    }
+
+    if (!sTitleDemoHandled) {
+        // Allow the very first demo script to run so it can boot the title menu.
+        return FALSE;
+    }
+
+    if (gGroundMapAction == NULL) {
+        // Ground map hasn't initialized yet (title boot). Let the intro scripts run.
+        return FALSE;
+    }
+
+    if (sSquareDemoEnabled) {
+        Log(0, "[SquareGuard] Allow square event %d: map=%d fillE6=%d demo=%d", scriptIndex,
+            gGroundMapAction->groundMapId, gGroundMapAction->fillE6, sSquareDemoEnabled);
+        return FALSE;
+    }
+
+    Log(0, "[SquareGuard] ShouldSkipSquareEvent(%d): map=%d fillE6=%d demo=%d", scriptIndex,
+        gGroundMapAction->groundMapId, gGroundMapAction->fillE6, sSquareDemoEnabled);
+    return TRUE;
+}
 
 static const SubStruct_52C gUnknown_8117324 = {
     .unk0 = 0,
@@ -226,6 +358,22 @@ void AllocGroundMapAction(void)
 {
     gGroundMapAction = MemoryAlloc(sizeof(GroundMapAction), 6);
     gGroundMapAction->groundMapId = -1;
+    gGroundMapAction->fillE6 = TRUE;
+    if (sTitleFlowComplete) {
+        sSquareDemoEnabled = FALSE;
+        sSkipTitleDemos = FALSE;
+        sTitleDemoHandled = TRUE;
+        sDemoCancelHandled = TRUE;
+        sDemoSecondaryHandled = TRUE;
+        gGroundMapAction->fillE6 = FALSE;
+    }
+    else {
+        sSquareDemoEnabled = TRUE;
+        sSkipTitleDemos = TRUE;
+        sTitleDemoHandled = FALSE;
+        sDemoCancelHandled = FALSE;
+        sDemoSecondaryHandled = FALSE;
+    }
     InitActionWithParams(&gGroundMapAction->action, &sGroundScriptNullCallbacks, 0, -1, -1);
     sub_80A5E8C(0);
     GroundMap_Reset();
@@ -301,9 +449,43 @@ void GroundMap_ExecuteEvent(s16 scriptIndex, u32 param_2)
     ScriptInfoSmall script;
     s32 index_s32;
     u8 iVar2;
+    s16 currentPlace;
+    s16 currentMap;
+    s16 allow;
+    bool8 logTitleMap;
 
     index_s32 = scriptIndex;
     iVar2 = param_2;
+
+    currentPlace = (s16)GetScriptVarValue(NULL, GROUND_PLACE);
+    currentMap = (gGroundMapAction != NULL) ? gGroundMapAction->groundMapId : -1;
+    allow = (gGroundMapAction != NULL) ? gGroundMapAction->fillE6 : -1;
+    logTitleMap =
+        currentMap == MAP_LOGO_POKEMON_COMPANY
+        || currentMap == MAP_LOGO_WARNING
+        || currentMap == MAP_TITLE_SCREEN
+        || currentMap == MAP_INTRO;
+
+    if (IsSquareOnlyEvent(index_s32) || logTitleMap) {
+        MGBA_Warnf("[TitleFlow] ExecuteEvent req=%3d param=%d map=%d place=%d allow=%d demo=%d skip=%d handled=%d",
+            index_s32, iVar2, currentMap, currentPlace, allow, sSquareDemoEnabled, sSkipTitleDemos, sTitleDemoHandled);
+    }
+
+    if (ShouldBypassTitleDemo(index_s32)) {
+        return;
+    }
+
+    if (IsCurrentPlaceSquare()
+        && (gGroundMapAction == NULL
+            || (gGroundMapAction->groundMapId != MAP_TITLE_SCREEN
+                && gGroundMapAction->groundMapId != MAP_INTRO))) {
+        Log(0, "[SquareGuard] Non-square event %3d invoked while GROUND_PLACE is still square", index_s32);
+    }
+
+    if (ShouldSkipSquareEvent(index_s32)) {
+        Log(0, "GroundMap ExecuteEvent %3d %d (skipped)", index_s32, iVar2);
+        return;
+    }
 
     Log(0, "GroundMap ExecuteEvent %3d %d ==================", index_s32, iVar2);
     GetFunctionScript(NULL, &script, index_s32);
@@ -325,6 +507,18 @@ void GroundMap_ExecuteStation(s32 _map, s32 _group, s32 _sector, bool32 _setScri
     group = (s16)_group;
     sector = (s8)_sector;
     setScriptState = (bool8)_setScriptState;
+
+    if (map == MAP_LOGO_POKEMON_COMPANY
+        || map == MAP_LOGO_WARNING
+        || map == MAP_TITLE_SCREEN
+        || map == MAP_INTRO) {
+        MGBA_Warnf("[TitleFlow] ExecuteStation map=%d group=%d sector=%d set=%d", map, group, sector, setScriptState);
+    }
+
+    if (ShouldSkipSceneStation(map)) {
+        Log(0, "[SquareGuard] Skipping scene station map=%d group=%d sector=%d", map, group, sector);
+        return;
+    }
 
     Log(0, "GroundMap ExecuteStation %3d %3d %3d %d ==================", map, group, sector, setScriptState);
     GroundMap_GetStationScript(&script, map, group, sector);
@@ -403,6 +597,13 @@ void GroundMap_Select(s32 mapId_)
     s32 originalMapId = (s16) mapId_;
     s32 mapId = NormalizeGroundMapId(originalMapId);
 
+    if (originalMapId == MAP_LOGO_POKEMON_COMPANY
+        || originalMapId == MAP_LOGO_WARNING
+        || originalMapId == MAP_TITLE_SCREEN
+        || originalMapId == MAP_INTRO) {
+        MGBA_Warnf("[TitleFlow] GroundMap_Select request orig=%d normalized=%d", originalMapId, mapId);
+    }
+
     if (mapId != originalMapId) {
         Log(0, "GroundMap Redirect %3d -> %3d", originalMapId, mapId);
     }
@@ -416,6 +617,7 @@ void GroundMap_Select(s32 mapId_)
     }
     gGroundMapDungeon_3001B70 = MemoryAlloc(sizeof(*gGroundMapDungeon_3001B70),6);
     gGroundMapAction->groundMapId = mapId;
+    UpdateSquareEventAllowance(mapId);
     if (mapId == -1) {
         GroundBg_Init(gGroundMapDungeon_3001B70, &gUnknown_8117324);
         sub_80A2FBC(gGroundMapDungeon_3001B70, mapId);
@@ -423,6 +625,9 @@ void GroundMap_Select(s32 mapId_)
     }
 
     ptr = &gGroundMapConversionTable[mapId];
+    if (IsSquarePlaceId(ptr->groundPlaceId)) {
+        Log(0, "[SquareGuard] THIS SHOULDN'T BE CALLED - TOWN SQUARE (map=%d text=%s)", mapId, ptr->text);
+    }
     switch (ptr->unk0) {
         case 5:
         case 6:
@@ -518,6 +723,13 @@ void GroundMap_SelectDungeon(s32 mapId_, const DungeonLocation *loc, u32 param_2
     const GroundConversionStruct *ptr;
     s32 mapId = (s16) mapId_;
 
+    if (mapId == MAP_LOGO_POKEMON_COMPANY
+        || mapId == MAP_LOGO_WARNING
+        || mapId == MAP_TITLE_SCREEN
+        || mapId == MAP_INTRO) {
+        MGBA_Warnf("[TitleFlow] GroundMap_SelectDungeon map=%d dungeon=%d floor=%d", mapId, loc->id, loc->floor);
+    }
+
     Log('\0', "GroundMap SelectDungeon %3d", mapId);
     ClearScriptVarArray(NULL, MAP_LOCAL);
     ClearScriptVarArray(NULL, MAP_LOCAL_DOOR);
@@ -529,6 +741,7 @@ void GroundMap_SelectDungeon(s32 mapId_, const DungeonLocation *loc, u32 param_2
 
     gGroundMapDungeon_3001B70 = MemoryAlloc(sizeof(*gGroundMapDungeon_3001B70),6);
     gGroundMapAction->groundMapId = mapId;
+    UpdateSquareEventAllowance(mapId);
     if (mapId == -1 || loc->id == DUNGEON_INVALID) {
         GroundBg_Init(gGroundMapDungeon_3001B70, &gUnknown_8117324);
         sub_80A2FBC(gGroundMapDungeon_3001B70,-1);
@@ -564,6 +777,46 @@ static s16 NormalizeGroundMapId(s16 mapId)
             return mapId;
     }
 }
+
+static bool8 ShouldAllowSquareEventsForMap(s16 mapId)
+{
+    switch (mapId) {
+        case MAP_LOGO_POKEMON_COMPANY:
+        case MAP_LOGO_WARNING:
+        case MAP_INTRO:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+static void UpdateSquareEventAllowance(s16 mapId)
+{
+    if (gGroundMapAction == NULL) {
+        return;
+    }
+    if (mapId >= 0) {
+        bool8 allowSquareEvents = ShouldAllowSquareEventsForMap(mapId);
+        MGBA_Warnf("[TitleFlow] UpdateSquareEventAllowance map=%d allow=%d", mapId, allowSquareEvents);
+        gGroundMapAction->fillE6 = allowSquareEvents;
+        sSquareDemoEnabled = allowSquareEvents;
+    }
+}
+
+void SquareGuard_DisableDemos(void)
+{
+    sSquareDemoEnabled = FALSE;
+    if (gGroundMapAction != NULL) {
+        gGroundMapAction->fillE6 = FALSE;
+    }
+    sSkipTitleDemos = FALSE;
+    sTitleDemoHandled = TRUE;
+    sDemoCancelHandled = TRUE;
+    sTitleFlowComplete = TRUE;
+    sSkipFutureDemoEvents = TRUE;
+    MGBA_Warnf("[TitleFlow] SquareGuard_DisableDemos");
+}
+
 
 NAKED
 static void sub_80A5204(void *a, const void *b, BmaHeader *c, s32 d)

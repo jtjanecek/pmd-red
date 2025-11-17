@@ -47,7 +47,6 @@ enum
     PERSONALITY_SEED_CUSTOM_MESSAGE,
     PERSONALITY_SEED_BEGIN_INPUT,
     PERSONALITY_SEED_CUSTOM_INPUT,
-    PERSONALITY_SKIP_CUTSCENES_SELECTION,
     PERSONALITY_SKIP_BASIC_RESCUES_SELECTION,
     PERSONALITY_RECRUIT_ALL_SELECTION,
     PERSONALITY_DIFFICULTY_SELECTION,
@@ -69,8 +68,6 @@ enum
     PERSONALITY_END_INTRO,
     PERSONALITY_ADVANCE_TO_TEST_END,
     PERSONALITY_TEST_END,
-    // Bootstrap flow when SkipCutscenes is ON
-    PERSONALITY_SKIP_BOOTSTRAP_SAVE_INIT,
     PERSONALITY_SKIP_BOOTSTRAP_SAVING,
 };
 
@@ -94,8 +91,6 @@ static void AdvanceToPickPartnerPrompt(void);
 static void AdvanceToTestEnd(void);
 static void CallCreatePartnerSelectionMenu(void);
 static void InitializeTestStats(void);
-static void StartSkipCutscenesSelection(void);
-static void HandleSkipCutscenesSelection(void);
 static void StartSkipBasicRescuesSelection(void);
 static void HandleSkipBasicRescuesSelection(void);
 static void StartRecruitAllSelection(void);
@@ -151,7 +146,6 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->seedChosen = FALSE;
     sPersonalityTestTracker->usingCustomSeed = FALSE;
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
-    sPersonalityTestTracker->unk4.skipCutscenes = 0; // Default to No
     sPersonalityTestTracker->unk4.skipBasicRescues = 0; // Default to No
     sPersonalityTestTracker->unk4.recruitAll = 0; // Default to No
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
@@ -173,11 +167,9 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.skipCutscenes = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
     SetRecruitAllSetting(2);
     SetSkipBasicRescuesSetting(1);
-    SetSkipCutscenesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_VANILLA);
     
     // Level up team to 100 in dev mode
@@ -207,9 +199,6 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_SEED_CUSTOM_INPUT:
             HandleCustomSeedInput();
-            break;
-        case PERSONALITY_SKIP_CUTSCENES_SELECTION:
-            HandleSkipCutscenesSelection();
             break;
         case PERSONALITY_SKIP_BASIC_RESCUES_SELECTION:
             HandleSkipBasicRescuesSelection();
@@ -280,23 +269,16 @@ u32 HandleTestTrackerState(void)
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
             // Commit the chosen starter/partner/team-name into global state
-            // so subsequent systems (and DEV mode) don't fall back to defaults.
             WriteTeamBasicInfo(&sPersonalityTestTracker->unk4);
-            // If SkipCutscenes is ON, bootstrap to postgame, save, and return to title.
-            if (GetSkipCutscenesSetting()) {
-                // Apply postgame flags and team initialization, then start save UI.
-                ApplySkipPostgameBootstrap();
-                // Mark continue mode for resume from title.
-                SetScriptVarValue(NULL, START_MODE, 1); // MODE_CONTINUE_GAME
-                // Persist to save so Continue is available on title.
-                // Also ensure the save uses the neutral portrait.
-                sub_8011C28(1);
-                PrepareSavePakWrite(MONSTER_NONE);
-                sPersonalityTestTracker->TestState = PERSONALITY_SKIP_BOOTSTRAP_SAVING;
-                return 0;
-            }
-            // Otherwise, continue into the normal new-game flow.
-            return 3;
+            // Apply postgame flags and team initialization, then start save UI.
+            ApplySkipPostgameBootstrap();
+            // Mark continue mode for resume from title.
+            SetScriptVarValue(NULL, START_MODE, 1); // MODE_CONTINUE_GAME
+            // Persist to save so Continue is available on title.
+            sub_8011C28(1);
+            PrepareSavePakWrite(MONSTER_NONE);
+            sPersonalityTestTracker->TestState = PERSONALITY_SKIP_BOOTSTRAP_SAVING;
+            return 0;
         case PERSONALITY_SKIP_BOOTSTRAP_SAVING:
             // Drive the save UI to completion; then return to title.
             if (WriteSavePak())
@@ -339,7 +321,7 @@ static void HandleSeedSelection(void)
             sPersonalityTestTracker->unk4.customSeed = -1;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
-            StartSkipCutscenesSelection();
+            StartSkipBasicRescuesSelection();
             break;
         }
         case SEED_MENU_RANDOM:
@@ -349,7 +331,7 @@ static void HandleSeedSelection(void)
             sPersonalityTestTracker->unk4.customSeed = generatedSeed;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
-            StartSkipCutscenesSelection();
+            StartSkipBasicRescuesSelection();
             break;
         }
         case SEED_MENU_CUSTOM:
@@ -401,7 +383,7 @@ static void HandleCustomSeedInput(void)
         case 3:
             if (TryStoreCustomSeed()) {
                 CleanupNamingScreen();
-                StartSkipCutscenesSelection();
+                StartSkipBasicRescuesSelection();
             }
             break;
     }
@@ -418,12 +400,6 @@ static void StartGenderSelection(void)
 {
     CreateMenuDialogueBoxAndPortrait(sGender0, 0, 0, gGenderMenu, 0, 3, 0, 0, 0x101);
     sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_GENDER;
-}
-
-static void StartSkipCutscenesSelection(void)
-{
-    CreateMenuDialogueBoxAndPortrait(gSkipCutscenesPrompt, 0, 0, gSkipCutscenesMenu, 0, 3, 0, 0, 0x101);
-    sPersonalityTestTracker->TestState = PERSONALITY_SKIP_CUTSCENES_SELECTION;
 }
 
 static void StartSkipBasicRescuesSelection(void)
@@ -597,21 +573,6 @@ static void SetPlayerGender(void)
     sub_8099690(0);
     CreateDialogueBoxAndPortrait(gStarterPrompt, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
-}
-
-static void HandleSkipCutscenesSelection(void)
-{
-    s32 selection;
-
-    if (sub_80144A4(&selection) != 0)
-        return;
-
-    if (selection < 0 || selection > 1)
-        selection = 0; // Default to No
-
-    sPersonalityTestTracker->unk4.skipCutscenes = (u8)selection;
-    SetSkipCutscenesSetting((u8)selection);
-    StartSkipBasicRescuesSelection();
 }
 
 static void HandleSkipBasicRescuesSelection(void)

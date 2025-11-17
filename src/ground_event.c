@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "memory.h"
 #include "ground_script_file.h"
+#include "ground_map.h"
 
 typedef struct GroundEvent
 {
@@ -20,7 +21,7 @@ typedef struct GroundEvent
 } GroundEvent;
 
 IWRAM_INIT GroundEvent *gGroundEvents = NULL;
-#define NUM_GROUND_EVENTS 8
+#define NUM_GROUND_EVENTS 0x10
 
 static s32 GroundEvent_Add(s32 id, const GroundEventData *eventData, s32 group, s32 sector);
 static void GroundEvent_Delete(s32 id);
@@ -82,6 +83,10 @@ void GroundEvent_Select(s32 scriptID, s32 group, s32 sector)
     scriptID_s32 = (s16)scriptID;
     group_s32 = (s16)group;
     sector_s32 = (s8)sector;
+    if (ShouldSkipSquareEvent(scriptID_s32)) {
+        Log(0,"GroundEvent Select %3d  %3d  %3d (skipped)", scriptID_s32, group_s32, sector_s32);
+        return;
+    }
     scriptPtr = GetGroundScript(scriptID_s32, &sGroundEvent_DebugLoc);
     Log('\0',"GroundEvent Select %3d  %3d  %3d", scriptID_s32, group_s32, sector_s32);
 

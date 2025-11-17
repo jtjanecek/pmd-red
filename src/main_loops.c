@@ -25,6 +25,7 @@
 #include "friend_area.h"
 #include "game_options.h"
 #include "ground_main.h"
+#include "ground_map.h"
 #include "main_loops.h"
 #include "main_menu1.h"
 #include "main_menu2.h"
@@ -77,7 +78,6 @@ static EWRAM_INIT TeamBasicInfo sTeamBasicInfo_203B040 = {
     .TeamName = {""},
     .customSeed = 0,
     .difficulty = DIFFICULTY_VANILLA,
-    .skipCutscenes = 0,
     .skipBasicRescues = 0,
     .recruitAll = 0,
 };
@@ -227,6 +227,7 @@ void GameLoop(void)
         sub_800CDA8(2);
         ShowWindows(NULL, TRUE, TRUE);
         gUnknown_2026E4E = 0x1000;
+        MGBA_Warnf("[TitleFlow] Starting title loop iteration");
         LoadTitleScreen();
         SetBG2RegOffsets(0, 0);
         SetBG3RegOffsets(0, 0);
@@ -255,6 +256,7 @@ void GameLoop(void)
         StartNewBGM(MUS_FILE_SELECT);
         flag = TRUE;
         sub_80095CC(0, 20);
+        MGBA_Warnf("[TitleFlow] InitMainMenu");
         InitMainMenu();
 
         while (TRUE) {
@@ -278,6 +280,7 @@ void GameLoop(void)
             MainLoops_RunFrameActions(0);
             nextMenu = UpdateMenu();
             CleanUpMenu();
+            MGBA_Warnf("[TitleFlow] Title menu selection nextMenu=%d", nextMenu);
 
             if (nextMenu == 2)
                 break;
@@ -306,6 +309,7 @@ void GameLoop(void)
         switch (nextMenu) {
             case 2: {
                 s32 mailIndex = GetFirstIndexofMailType(7);
+                MGBA_Warnf("[TitleFlow] Selected menu option=Continue mailIndex=%d", mailIndex);
                 if (mailIndex != -1) {
                     DeleteMailAtIndex(mailIndex);
                     tmp3 = RunGameMode_Async(2);
@@ -316,12 +320,14 @@ void GameLoop(void)
                 break;
             }
             case 4: {
+                MGBA_Warnf("[TitleFlow] Selected menu option=Options");
                 tmp3 = RunGameMode_Async(3);
                 break;
             }
             case MENU_NEW_GAME: {
                 sub_80122A8();
                 nullsub_33();
+                MGBA_Warnf("[TitleFlow] Selected menu option=New Game");
                 tmp3 = RunGameMode_Async(0);
                 break;
             }
@@ -624,6 +630,7 @@ static u32 RunGameMode_Async(u32 a0)
     s32 mode = GetScriptVarValue(NULL, START_MODE);
     bool8 ret = FALSE;
 
+    MGBA_Warnf("[TitleFlow] RunGameMode start scriptStartMode=%d arg=%u", mode, a0);
     ResetSoundEffectCounters();
     FadeOutAllMusic(0x10);
     if (mode == MODE_CONTINUE_QUICKSAVE) {
@@ -641,6 +648,7 @@ static u32 RunGameMode_Async(u32 a0)
         // SkipCutscenes no longer changes resume behavior; default to Continue.
         mode = MODE_CONTINUE_GAME;
     }
+    MGBA_Warnf("[TitleFlow] RunGameMode resolved mode=%d", mode);
 
     ClearScriptVarArray(NULL, EVENT_S08E01);
     while (1) {

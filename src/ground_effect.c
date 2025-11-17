@@ -38,7 +38,7 @@ typedef struct GroundEffect {
 
 
 IWRAM_INIT GroundEffect* gGroundEffects = NULL;  // trimmed for roguelike hub
-#define NUM_GROUND_EFFECTS 4
+#define NUM_GROUND_EFFECTS 8
 
 
 struct GroundEffectTypeData

@@ -43,6 +43,7 @@ void AgbMain(void)
 {
     ALIGNED(4) u8 value[4];
 
+    MGBA_Warnf("[BOOT] AgbMain start");
     REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
 
     DmaStop(0);
@@ -95,7 +96,9 @@ void AgbMain(void)
     InitInput();
     InitBGPaletteBuffer();
     sub_80057E8();
+    MGBA_Warnf("[BOOT] After basic init");
     InitFileSystem();
+    MGBA_Warnf("[BOOT] File system ready");
     #ifdef DEV
     MGBA_Init();
     MGBA_Warnf("mGBA logger initialized");
@@ -103,9 +106,12 @@ void AgbMain(void)
     #endif
     LoadCharmaps();
     ResetScheduledMemCopies();
+    MGBA_Warnf("[BOOT] Charmaps loaded");
     InitGraphics();
+    MGBA_Warnf("[BOOT] Graphics initialized");
     SetInterruptCallback(1, VBlank_CB);
     REG_DISPCNT = DISPCNT_WIN1_ON | DISPCNT_WIN0_ON | DISPCNT_OBJ_ON | DISPCNT_BG_ALL_ON | DISPCNT_OBJ_1D_MAP; // 32576
+    MGBA_Warnf("[BOOT] Entering GameLoop");
     GameLoop();
     Hang();
 }

@@ -9,6 +9,8 @@ make clean && make
 echo "Log created on: $(date)" > execution.log
 echo "" >> execution.log
 
+sleep 1
+
 echo
 
 gba() {

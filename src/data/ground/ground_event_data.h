@@ -1825,7 +1825,10 @@ static const struct ScriptCommand s_script_DEMO_CANCEL[] = { /* 0x8125070 */
 
 static const struct ScriptCommand s_script_DEMO_01[] = { /* 0x8125090 */
     DEBUGINFO_O(1827),
-    EXECUTE_SUBSTATION(224, 3, 0),
+    // Set groundMapId then immediately trigger DEMO_CANCEL to exit GroundMain
+    SELECT_MAP(224),
+    BGM_STOP,
+    EXECUTE_FUNCTION(DEMO_CANCEL),
     HALT,
 };
 
@@ -1836,7 +1839,10 @@ static const struct ScriptCommand s_script_DEMO_02[] = { /* 0x81250d0 */
 
 static const struct ScriptCommand s_script_DEMO_03[] = { /* 0x8125110 */
     DEBUGINFO_O(1841),
-    EXECUTE_SUBSTATION(224, 3, 0),
+    // Set groundMapId then immediately trigger DEMO_CANCEL to exit GroundMain
+    SELECT_MAP(224),
+    BGM_STOP,
+    EXECUTE_FUNCTION(DEMO_CANCEL),
     HALT,
 };
 

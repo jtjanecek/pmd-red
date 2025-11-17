@@ -28,6 +28,7 @@
 #include "ground_event.h"
 #include "ground_sprite.h"
 #include "ground_effect.h"
+#include "mgba_log.h"
 #include "ground_object.h"
 #include "ground_script.h"
 #include "code_809D148.h"
@@ -91,7 +92,9 @@ u32 xxx_script_related_8098468(s32 param_1)
 {
     s32 r7;
     s32 varE;
+    s32 loopCount;
 
+    MGBA_Warnf("[GroundMain] Called with param_1=%d (0x%x)", param_1, param_1);
     gUnknown_20398B4 = param_1;
     gUnknown_20398B9 = 0;
     gUnknown_20398B8 = 1;
@@ -276,14 +279,22 @@ u32 xxx_script_related_8098468(s32 param_1)
         sub_8005838(0,0);
         sub_80060EC();
         xxx_call_update_bg_sound_input();
+        MGBA_Warnf("[GroundMain] Entering main loop, B9=%d A8=%d", gUnknown_20398B9, gUnknown_20398A8);
+        loopCount = 0;
         while ( 1 ) {
             xxx_call_update_bg_sound_input();
             sub_80A6E68();
+            if (++loopCount % 1000 == 0) {
+                MGBA_Warnf("[GroundMain] Loop iteration %d, B9=%d A8=%d AC=%d", loopCount, gUnknown_20398B9, gUnknown_20398A8, gUnknown_20398AC);
+            }
             if (gUnknown_20398A8 != 0) {
                 if (gUnknown_20398AC > 0) {
                     gUnknown_20398AC--;
                     if (gUnknown_20398AC < 1) {
-                        sub_80999D4(gUnknown_20398B0);
+                        // Skip fade on title screen cancel (gUnknown_20398B9==0 means title mode)
+                        if (!(gUnknown_20398B9 == 0 && gUnknown_20398A8 == 10)) {
+                            sub_80999D4(gUnknown_20398B0);
+                        }
                     }
                 }
                 else if (!sub_8099B94()) {

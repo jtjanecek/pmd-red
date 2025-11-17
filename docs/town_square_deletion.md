@@ -23,9 +23,13 @@ This file tracks everything we have tried so far to lower EWRAM usage and what r
 9. **Hard-wired SkipCutscenes behavior** (`src/personality_test1.c`, `src/save.c`, `src/code_80A26CC.c`).
     - Removed the selectable SkipCutscenes flag entirely: the quiz no longer prompts for it, saves don’t persist it, and dungeon selection/rescue entry paths always use the cutscene-skipping branches. All references now assume the guard is permanently enabled, which simplified the Square filters but did **not** eliminate the Tiny Woods black screen.
 10. **Short-circuited the title demo loop entirely** (`src/data/ground/ground_event_data.h`, `src/ground_map.c`, `src/main_loops.c`).
-    - `s_script_DEMO_01`/`DEMO_03` now jump straight to the title station (`MAP_TITLE_SCREEN`, group 3) while `DEMO_02`/`DEMO_04` immediately halt, so the Pelipper/Square fly-through never plays. `UpdateSquareEventAllowance()` keeps Square events disabled for the title map so the demo scheduler never relaunches. `GroundMap_ExecuteEvent()` still sees the initial demo trigger, but it just flips the Square demo guard off so subsequent demo calls are ignored. The RunGameMode title loop now boots straight into the Continue/New Game menu after the logos.
+    - `s_script_DEMO_01`/`DEMO_03` now just `HALT` immediately without loading any map. `DEMO_02`/`DEMO_04` also immediately halt. Modified `ShouldSkipSquareEvent()` to allow DEMO_CANCEL to run even when `groundMapId == -1` (no map loaded). This avoids loading MAP_TITLE_SCREEN inside GroundMain which would cause shifted graphics and no input handling. After DEMO_CANCEL runs, GroundMain exits and main_loops.c shows the proper title menu.
+11. **Fixed title screen black screen bug** (`src/ground_map.c`, `src/data/ground/ground_event_data.h`).
+    - `DEMO_CANCEL` now calls `SquareGuard_DisableDemos()` to prevent DEMO_02 and subsequent demo events from running after the first demo is canceled.
+    - Modified GroundMain's inner loop to skip the fade (`sub_80999D4()`) when exiting from title screen mode (`gUnknown_20398B9 == 0` and `gUnknown_20398A8 == 10`). Previously, the fade flag would be set but never cleared because the fade structures weren't properly initialized on the title screen, causing an infinite loop that prevented GroundMain from exiting back to the title menu.
+    - Changed `s_script_DEMO_01` and `s_script_DEMO_03` to just `SELECT_MAP(224)` + `BGM_STOP` instead of executing station scripts. This sets `groundMapId` so DEMO_CANCEL can run, without loading the map fully (which would cause shifted graphics and no input since GroundMain isn't the proper context for showing the title menu).
 
-## What’s Left
+## What's Left
 
 1. **Lower `HEAP_SIZE` again** once we capture the new peak usage numbers.
    - Instrument allocations or use MGBA to ensure enough headroom remains before settling on a smaller heap.

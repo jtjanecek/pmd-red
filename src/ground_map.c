@@ -110,6 +110,13 @@ bool8 ShouldSkipSquareEvent(s16 scriptIndex)
     }
 
     if (sSkipFutureDemoEvents && scriptIndex != DEMO_CANCEL) {
+        // Demo events are disabled, but we're being asked to run one (DEMO_02/03/04)
+        // This means we're in a subsequent GroundMain call during boot sequence
+        // Auto-exit GroundMain so boot can continue to the title menu
+        if (scriptIndex == DEMO_02 || scriptIndex == DEMO_03 || scriptIndex == DEMO_04) {
+            MGBA_Warnf("[TitleFlow] Demo event %d skipped, auto-exiting GroundMain", scriptIndex);
+            GroundMainGameCancelRequest(0);
+        }
         return TRUE;
     }
 
@@ -118,12 +125,22 @@ bool8 ShouldSkipSquareEvent(s16 scriptIndex)
     }
 
     if (scriptIndex == DEMO_CANCEL) {
-        if (!sDemoCancelHandled
-            && gGroundMapAction != NULL
-            && gGroundMapAction->groundMapId == MAP_TITLE_SCREEN) {
-            sDemoCancelHandled = TRUE;
-            MGBA_Warnf("[TitleFlow] Allowing DEMO_CANCEL on title screen");
-            return FALSE;
+        MGBA_Warnf("[SquareGuard] DEMO_CANCEL requested, handled=%d, mapAction=%p", sDemoCancelHandled, gGroundMapAction);
+        if (!sDemoCancelHandled && gGroundMapAction != NULL) {
+            // Allow DEMO_CANCEL during title flow even if no map is loaded yet
+            // groundMapId will be -1 if DEMO_01 didn't load a map
+            MGBA_Warnf("[SquareGuard] DEMO_CANCEL check: groundMapId=%d", gGroundMapAction->groundMapId);
+            if (gGroundMapAction->groundMapId == MAP_TITLE_SCREEN || gGroundMapAction->groundMapId == -1) {
+                sDemoCancelHandled = TRUE;
+                MGBA_Warnf("[TitleFlow] Allowing DEMO_CANCEL (groundMapId=%d)", gGroundMapAction->groundMapId);
+                SquareGuard_DisableDemos();
+                // Trigger GroundMain exit by setting gUnknown_20398A8=10
+                MGBA_Warnf("[TitleFlow] Calling GroundMainGameCancelRequest to exit");
+                GroundMainGameCancelRequest(0x1e);
+                return FALSE;
+            } else {
+                MGBA_Warnf("[SquareGuard] DEMO_CANCEL blocked: wrong map %d", gGroundMapAction->groundMapId);
+            }
         }
     }
 
@@ -492,7 +509,9 @@ void GroundMap_ExecuteEvent(s16 scriptIndex, u32 param_2)
     if (iVar2 != 0)
         script.state = 5;
 
+    MGBA_Warnf("[ExecuteEvent] About to execute script for event %d", index_s32);
     GroundScript_ExecutePP(&gGroundMapAction->action, 0, &script, DEBUG_LOC_PTR("../ground/ground_map.c", 0x17D, "GroundMap_ExecuteEvent"));
+    MGBA_Warnf("[ExecuteEvent] Completed script for event %d", index_s32);
 }
 
 void GroundMap_ExecuteStation(s32 _map, s32 _group, s32 _sector, bool32 _setScriptState)

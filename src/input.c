@@ -8,7 +8,7 @@
 
 EWRAM_DATA Inputs gRealInputs = {0}; // R=20255F0 | B=20F5CC0
 static EWRAM_DATA UnusedInputStruct sUnusedInputsRelated = {0}; // R=2025600 | B=020F5CD0
-static EWRAM_DATA u32 sUnusedScrambledInputJunk[3] = {0}; // R=202562C | B=020F5C88
+// Deleted: sUnusedScrambledInputJunk[3] (write-only scrambling, never read) - saves 12 bytes EWRAM
 static EWRAM_DATA Inputs sBufferedInputs = {0}; // R=2025638 | B=020F5C90
 static EWRAM_DATA Inputs sCurrentInputs = {0}; // R=2025648 | B=020F5CB0
 static EWRAM_DATA Inputs sPrevInputs = {0}; // R=2025658 | B=020F5CA0
@@ -27,7 +27,7 @@ void InitInput(void)
     sBufferedInputs.repeated = 0;
     sBufferedInputs.shortPress = 0;
 
-    sUnusedScrambledInputJunk[0] = JUNK_INIT;
+    // Deleted: sUnusedScrambledInputJunk[0] = JUNK_INIT;
 
     sUnusedInputsRelated.unk20 = 0;
     sUnusedInputsRelated.unk0 = 0xFFFF; // probably a mask
@@ -216,5 +216,5 @@ void UpdateInput(void)
     sBufferedInputs.repeated |= sCurrentInputs.repeated;
     sBufferedInputs.shortPress |= sCurrentInputs.shortPress;
 
-    sUnusedScrambledInputJunk[0] *= sCurrentInputs.held | JUNK_UPDATE;
+    // Deleted: sUnusedScrambledInputJunk[0] *= sCurrentInputs.held | JUNK_UPDATE;
 }

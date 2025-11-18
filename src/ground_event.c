@@ -21,7 +21,7 @@ typedef struct GroundEvent
 } GroundEvent;
 
 IWRAM_INIT GroundEvent *gGroundEvents = NULL;
-#define NUM_GROUND_EVENTS 0x10
+#define NUM_GROUND_EVENTS 0x4  // Reduced from 0x10 - saves ~0.4KB heap (don't need Town Square events)
 
 static s32 GroundEvent_Add(s32 id, const GroundEventData *eventData, s32 group, s32 sector);
 static void GroundEvent_Delete(s32 id);

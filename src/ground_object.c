@@ -40,7 +40,7 @@ typedef struct GroundObject {
 } GroundObject;
 
 IWRAM_INIT GroundObject *gGroundObjects = NULL;
-#define NUM_GROUND_OBJECTS 16
+#define NUM_GROUND_OBJECTS 4  // Reduced from 16 - saves ~5.4KB heap (don't need Town Square objects)
 
 struct GroundObjectTypeData
 {

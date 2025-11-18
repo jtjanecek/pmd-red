@@ -6,7 +6,7 @@
 #include "random.h"
 #include "sprite.h"
 
-EWRAM_DATA static u16 sOAMSpriteCount = {0}; // R=2025670 | B=20EC504 | Written to but never read
+// Deleted: sOAMSpriteCount (write-only, never read) - saves 2 bytes EWRAM
 EWRAM_DATA static s16 sUnknown_2025672[8] = {0};
 EWRAM_DATA static s16 sUnknown_2025682[9] = {0};
 EWRAM_DATA static DungeonPos sUnknown_2025694 = {0};
@@ -368,7 +368,7 @@ void CopySpritesToOam(void)
         *oam = DISPLAY_HEIGHT;
     }
 
-    sOAMSpriteCount = count;
+    // Deleted: sOAMSpriteCount = count; (variable removed to save EWRAM)
 }
 
 // arm9.bin::02001F64

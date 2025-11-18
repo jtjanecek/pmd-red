@@ -21,7 +21,7 @@ enum NaturePersonalities
     MISC,
 };
 
-#define NUM_PARTNERS NUM_MONSTERS
+// NUM_PARTNERS defined in monster.h
 #define NUM_QUIZ_QUESTIONS 55
 #define MAX_ASKED_QUESTIONS 8
 #define NUM_PERSONALITIES MISC

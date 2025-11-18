@@ -928,18 +928,36 @@ static void LoadAndRunQuickSaveDungeon_Async(DungeonSetupStruct *setupStr)
     s32 quickSaveStatus;
     s32 local_1c; // 0x4800
     s32 dungeonStructSize; // sizeof(Dungeon)
+    extern void *gUnknown_203B0CC;
 
+    MGBA_Warnf("[QuickSave] Entered LoadAndRunQuickSaveDungeon_Async");
     quickSaveValid = TRUE;
     sUnknown_203B03C = 1;
 
+    MGBA_Warnf("[QuickSave] Calling sub_800A8F8(3)");
     sub_800A8F8(3);
+    MGBA_Warnf("[QuickSave] Calling ResetDialogueBox");
     ResetDialogueBox();
+    MGBA_Warnf("[QuickSave] Calling sub_8043D50");
     sub_8043D50(&local_1c, &dungeonStructSize);
+    MGBA_Warnf("[QuickSave] Need to allocate: local_1c=%d dungeonStructSize=%d", local_1c, dungeonStructSize);
 
+    // Temporarily free effect context to make room for dungeon allocation
+    if (gUnknown_203B0CC != NULL) {
+        MGBA_Warnf("[QuickSave] Freeing effect context to make room for dungeon");
+        MemoryFree(gUnknown_203B0CC);
+        gUnknown_203B0CC = NULL;
+    }
+
+    MGBA_Warnf("[QuickSave] Allocating unk74");
     setupStr->info.unk74 = MemoryAlloc(local_1c, 7); // size: 0x4800
+    MGBA_Warnf("[QuickSave] Allocated unk74 at %p", setupStr->info.unk74);
+    MGBA_Warnf("[QuickSave] Allocating dungeon");
     setupStr->info.dungeon = MemoryAlloc(dungeonStructSize, 7); // size: sizeof(Dungeon)
+    MGBA_Warnf("[QuickSave] Allocated dungeon at %p", setupStr->info.dungeon);
 
     if (setupStr->info.sub0.unk4) {
+        MGBA_Warnf("[QuickSave] Loading quicksave (unk4=%d)", setupStr->info.sub0.unk4);
         PrepareQuickSaveRead(setupStr->info.unk74, local_1c);
 
         while (TRUE) {
@@ -949,6 +967,7 @@ static void LoadAndRunQuickSaveDungeon_Async(DungeonSetupStruct *setupStr)
         }
 
         quickSaveValid = IsQuickSaveValid();
+        MGBA_Warnf("[QuickSave] QuickSave valid=%d", quickSaveValid);
         FinishQuickSaveRead();
         StopBGMResetSoundEffectCounters();
 
@@ -960,19 +979,25 @@ static void LoadAndRunQuickSaveDungeon_Async(DungeonSetupStruct *setupStr)
         StartBGMusic();
     }
     else {
+        MGBA_Warnf("[QuickSave] No quicksave, generating new dungeon");
         GeneratePelipperJobs();
         sub_80961B4();
         sub_808ED00();
     }
 
+    MGBA_Warnf("[QuickSave] About to run dungeon, quickSaveValid=%d", quickSaveValid);
     if (quickSaveValid) {
+        MGBA_Warnf("[QuickSave] Calling LoadAndRunDungeon_Async");
         LoadAndRunDungeon_Async(setupStr);
+        MGBA_Warnf("[QuickSave] Returned from LoadAndRunDungeon_Async");
         sub_8099648();
         SetWindowBGColor();
         sub_8099690(0);
     }
-    else
+    else {
+        MGBA_Warnf("[QuickSave] Setting unk7C=5 (invalid quicksave)");
         setupStr->info.unk7C = 5;
+    }
 
     if (setupStr->info.unk7C == -2)
         sub_809542C(&setupStr->info.unk84);
@@ -1003,6 +1028,7 @@ static void LoadAndRunQuickSaveDungeon_Async(DungeonSetupStruct *setupStr)
         MemoryFree(setupStr->info.dungeon);
         MemoryFree(setupStr->info.unk74);
     }
+    MGBA_Warnf("[QuickSave] Exiting LoadAndRunQuickSaveDungeon_Async with unk7C=%d", setupStr->info.unk7C);
 }
 
 // arm9.bin::0200CFF4

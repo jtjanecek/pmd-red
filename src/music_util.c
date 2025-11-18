@@ -4,17 +4,17 @@
 #include "music.h"
 #include "constants/bg_music.h"
 
-static EWRAM_DATA u32 sUnknownUnused = {0}; // Unused, only set in an unused function R=202DE1C | B=2134218
+// Deleted: sUnknownUnused (write-only, never read) - saves 4 bytes EWRAM
 static EWRAM_DATA s16 sSoundEffectCounter1 = {0}; // R=202DE20 | B=213420C
 static EWRAM_DATA s16 sSoundEffectCounter2 = {0}; // R=202DE22 | B=2134210
-static EWRAM_DATA s16 sUnusedCounter = {0}; // Contrary to the variables above, this one is never effectively checked. R=202DE24 | B=2134214
+// Deleted: sUnusedCounter (never checked, only set/decremented) - saves 2 bytes EWRAM
 
 void ResetSoundEffectCounters(void)
 {
-    sUnknownUnused = 0;
+    // Deleted: sUnknownUnused = 0;
     sSoundEffectCounter1 = 0;
     sSoundEffectCounter2 = 0;
-    sUnusedCounter = 0;
+    // Deleted: sUnusedCounter = 0;
 }
 
 void StopBGMResetSoundEffectCounters(void)
@@ -22,7 +22,7 @@ void StopBGMResetSoundEffectCounters(void)
     StopBGMusicVSync();
     sSoundEffectCounter1 = 0;
     sSoundEffectCounter2 = 0;
-    sUnusedCounter = 0;
+    // Deleted: sUnusedCounter = 0;
 }
 
 void StartBGMusic(void)
@@ -39,8 +39,7 @@ void UpdateSoundEffectCounters(void)
     if (sSoundEffectCounter2 > 0)
         sSoundEffectCounter2--;
 
-    if (sUnusedCounter > 0)
-        sUnusedCounter--;
+    // Deleted: if (sUnusedCounter > 0) sUnusedCounter--;
 }
 
 void StopAllMusic_1(void)
@@ -140,5 +139,5 @@ void PlayDialogueTextSound(void)
 
 UNUSED static void sub_8011A2C(u32 a0)
 {
-    sUnknownUnused = a0;
+    // Deleted: sUnknownUnused = a0;
 }

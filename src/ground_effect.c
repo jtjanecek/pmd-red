@@ -38,7 +38,7 @@ typedef struct GroundEffect {
 
 
 IWRAM_INIT GroundEffect* gGroundEffects = NULL;  // trimmed for roguelike hub
-#define NUM_GROUND_EFFECTS 8
+#define NUM_GROUND_EFFECTS 2  // Reduced from 8 - saves ~2.7KB heap (don't need Town Square effects)
 
 
 struct GroundEffectTypeData

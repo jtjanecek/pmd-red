@@ -2505,22 +2505,28 @@ void GeneralizeMazeDungeonLoc(DungeonLocation *dst, const DungeonLocation *src)
 
 void PrintYellowDungeonNametoBuffer(u8 *buffer, DungeonLocation *dungeonLocation)
 {
-    sprintfStatic(buffer, _("{color YELLOW_D}%s{reset}"), gDungeonNames[dungeonLocation->id].name1);
+    const u8 *nameOverride = DungeonSeedOverrides_GetDungeonName(dungeonLocation->id, FALSE);
+    const u8 *name = (nameOverride != NULL) ? nameOverride : gDungeonNames[dungeonLocation->id].name1;
+    sprintfStatic(buffer, _("{color YELLOW_D}%s{reset}"), name);
 }
 
 void PrintDungeonLocationtoBuffer(u8 *buffer, DungeonLocation *dungeonLocation)
 {
+    const u8 *nameOverride = DungeonSeedOverrides_GetDungeonName(dungeonLocation->id, FALSE);
+    const u8 *name = (nameOverride != NULL) ? nameOverride : gDungeonNames[dungeonLocation->id].name1;
     if (gDungeons[dungeonLocation->id].stairDirectionUp){
-        sprintfStatic(buffer, _("{color YELLOW_D}%s{reset}　{color CYAN}%d{reset}F"), gDungeonNames[dungeonLocation->id].name1, dungeonLocation->floor); //_F
+        sprintfStatic(buffer, _("{color YELLOW_D}%s{reset}　{color CYAN}%d{reset}F"), name, dungeonLocation->floor); //_F
     }
     else {
-        sprintfStatic(buffer, _("{color YELLOW_D}%s{reset}　B{color CYAN}%d{reset}F"), gDungeonNames[dungeonLocation->id].name1, dungeonLocation->floor); // B _F
+        sprintfStatic(buffer, _("{color YELLOW_D}%s{reset}　B{color CYAN}%d{reset}F"), name, dungeonLocation->floor); // B _F
     }
 }
 
 void CopyDungeonName1toBuffer(u8 *buffer, DungeonLocation *dungeonLocation)
 {
-    strncpy(buffer, gDungeonNames[dungeonLocation->id].name1, 0x50);
+    const u8 *nameOverride = DungeonSeedOverrides_GetDungeonName(dungeonLocation->id, FALSE);
+    const u8 *name = (nameOverride != NULL) ? nameOverride : gDungeonNames[dungeonLocation->id].name1;
+    strncpy(buffer, name, 0x50);
 }
 
 s32 GetDungeonFloorCount(u8 dungeon)

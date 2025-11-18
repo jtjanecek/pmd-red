@@ -177,21 +177,10 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
 
 s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
 {
-    DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0xF00DBABE);
-    s32 band = DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sFloorBandTable));
-    s32 baseFloors = sFloorBandTable[band];
-    s32 swing = DungeonSeedRng_NextRange(&rng, 0, 5);
-    s32 extra = dungeonId % 4;
-    s32 total = baseFloors + swing + extra;
-
-    if (dungeonId == DUNGEON_TINY_WOODS)
-        return 99;
-
-    if (total < SEEDED_MIN_FLOORS)
-        total = SEEDED_MIN_FLOORS;
-    if (total > SEEDED_MAX_FLOORS)
-        total = SEEDED_MAX_FLOORS;
-    return total;
+    // For testing: all dungeons have 5 floors
+    (void)seed;
+    (void)dungeonId;
+    return 5;
 }
 
 u32 DungeonSeedOverrides_GetDungeonRngSeed(s32 seed, u8 dungeonId, s32 floorId)
@@ -348,22 +337,15 @@ static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
 {
     DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0xB16B00B);
     const char *prefix;
-    const char *suffixPrimary;
-    const char *suffixSecondary;
+    const char *suffix;
     char prefixBuffer[SEEDED_PREFIX_BUFFER_LEN];
 
     prefix = SelectPrefixForDungeon(dungeonId, &rng, prefixBuffer, ARRAY_COUNT(prefixBuffer));
-    suffixPrimary = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
-    suffixSecondary = suffixPrimary;
+    suffix = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
 
-    if (ARRAY_COUNT(sSeededSuffixTable) > 1) {
-        do {
-            suffixSecondary = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
-        } while (suffixSecondary == suffixPrimary);
-    }
-
-    sprintfStatic((char *)sSeededDungeonName1[dungeonId], "%s %s", prefix, suffixPrimary);
-    sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffixSecondary);
+    // Use the same name for both name1 and name2 for consistency
+    sprintfStatic((char *)sSeededDungeonName1[dungeonId], "%s %s", prefix, suffix);
+    sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
     sSeededDungeonNameValid[dungeonId] = TRUE;
 }
 

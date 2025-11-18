@@ -7,15 +7,6 @@ The most recent logs (all the way from boot) with are in `execution.log` in the 
 ## Building the ROM
 After any code changes, build with the command `make` to ensure it compiles.
 
-## Current problem to solve
-We are trying to reduce EWRAM by deleting town square.
- We still need to run some DEMO_ scripts, as long as they don't 
-introduce Town square initialization -- like the pelipper intro cutscene
- that we have removed (one of the DEMOs). Currently we are getting black
- screen after the title screen "Pokemon Red Rescue Team", but it should 
-go to the main manu (continue/new game etc)
-Read docs/town_square_deletion.md
-
 # Rogue Rescue Team
 Information about the project in general.
 

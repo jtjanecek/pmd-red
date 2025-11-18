@@ -15443,7 +15443,7 @@ static const struct GroundLivesData s_gs9_g91_s0_lives[] = { /* 0x81df5e0 */
 };
 
 static const struct GroundObjectData s_gs9_g0_s0_objs[] = { /* 0x81df628 */
-    /*  0 */ {  13,   0,   3,   4, {  31,  34, CPOS_HALFTILE, 0 }, {
+    /*  0 */ {  67,   0,   3,   4, {  31,  34, CPOS_HALFTILE, 0 }, {
         [2] = s_gs9_g0_s0_obj0_dlg2,
     } },
     /*  1 */ {  26,   0,   4,   3, {  27,  16, 0, CPOS_HALFTILE }, {} },
@@ -15473,13 +15473,13 @@ static const struct GroundObjectData s_gs9_g2_s2_objs[] = { /* 0x81df6d0 */
 };
 
 static const struct GroundObjectData s_gs9_g19_s0_objs[] = { /* 0x81df6e8 */
-    /*  0 */ {  13,   0,   3,   4, {  31,  34, CPOS_HALFTILE, 0 }, {
+    /*  0 */ {  67,   0,   3,   4, {  31,  34, CPOS_HALFTILE, 0 }, {
         [2] = s_gs9_g19_s0_obj0_dlg2,
     } },
 };
 
 static const struct GroundObjectData s_gs9_g24_s0_objs[] = { /* 0x81df700 */
-    /*  0 */ {  13,   0,   3,   4, {  31,  34, CPOS_HALFTILE, 0 }, {
+    /*  0 */ {  67,   0,   3,   4, {  31,  34, CPOS_HALFTILE, 0 }, {
         [2] = s_gs9_g24_s0_obj0_dlg2,
     } },
 };

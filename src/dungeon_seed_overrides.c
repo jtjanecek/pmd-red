@@ -18,6 +18,58 @@
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_PREFIX_BUFFER_LEN 16
 
+// List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
+static const s16 sSequentialDungeonList[] = {
+    // Main story dungeons
+    RESCUE_DUNGEON_TINY_WOODS,
+    RESCUE_DUNGEON_THUNDERWAVE_CAVE,
+    RESCUE_DUNGEON_MT_STEEL,
+    RESCUE_DUNGEON_SINISTER_WOODS,
+    RESCUE_DUNGEON_SILENT_CHASM,
+    RESCUE_DUNGEON_MT_THUNDER,
+    RESCUE_DUNGEON_GREAT_CANYON,
+    RESCUE_DUNGEON_LAPIS_CAVE,
+    RESCUE_DUNGEON_MT_BLAZE,
+    RESCUE_DUNGEON_FROSTY_FOREST,
+    RESCUE_DUNGEON_MT_FREEZE,
+    RESCUE_DUNGEON_MAGMA_CAVERN,
+    RESCUE_DUNGEON_SKY_TOWER,
+    // Post-game dungeons
+    RESCUE_DUNGEON_UPROAR_FOREST,
+    RESCUE_DUNGEON_HOWLING_FOREST,
+    RESCUE_DUNGEON_STORMY_SEA,
+    RESCUE_DUNGEON_SILVER_TRENCH,
+    RESCUE_DUNGEON_METEOR_CAVE,
+    RESCUE_DUNGEON_FIERY_FIELD,
+    RESCUE_DUNGEON_LIGHTNING_FIELD,
+    RESCUE_DUNGEON_NORTHWIND_FIELD,
+    RESCUE_DUNGEON_MT_FARAWAY,
+    RESCUE_DUNGEON_WESTERN_CAVE,
+    RESCUE_DUNGEON_NORTHERN_RANGE,
+    RESCUE_DUNGEON_PITFALL_VALLEY,
+    RESCUE_DUNGEON_BURIED_RELIC,
+    RESCUE_DUNGEON_WISH_CAVE,
+    RESCUE_DUNGEON_MURKY_CAVE,
+    RESCUE_DUNGEON_DESERT_REGION,
+    RESCUE_DUNGEON_SOUTHERN_CAVERN,
+    RESCUE_DUNGEON_WYVERN_HILL,
+    RESCUE_DUNGEON_SOLAR_CAVE,
+    RESCUE_DUNGEON_DARKNIGHT_RELIC,
+    RESCUE_DUNGEON_GRAND_SEA,
+    RESCUE_DUNGEON_WATERFALL_POND,
+    RESCUE_DUNGEON_UNOWN_RELIC,
+    RESCUE_DUNGEON_JOYOUS_TOWER,
+    RESCUE_DUNGEON_FAR_OFF_SEA,
+    RESCUE_DUNGEON_PURITY_FOREST,
+    RESCUE_DUNGEON_ODDITY_CAVE,
+    RESCUE_DUNGEON_REMAINS_ISLAND,
+    RESCUE_DUNGEON_MARVELOUS_SEA,
+    RESCUE_DUNGEON_FANTASY_STRAIT,
+    // Note: DUMMY, GREAT_CANYON_2, and MT_FREEZE_2 are excluded (handled specially)
+};
+
+#define SEQUENTIAL_DUNGEON_COUNT ARRAY_COUNT(sSequentialDungeonList)
+
 typedef struct DungeonSeedRng {
     u32 state;
 } DungeonSeedRng;
@@ -345,4 +397,31 @@ static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSi
     }
     buffer[i] = '\0';
     return (i != 0);
+}
+
+// Custom sequential dungeon unlocking logic
+// Returns TRUE if the dungeon can be entered (has GO icon), FALSE otherwise
+bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId)
+{
+    s32 i;
+    s32 dungeonIndex = -1;
+
+    // Find this dungeon in our sequential list
+    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+        if (sSequentialDungeonList[i] == rescueDungeonId) {
+            dungeonIndex = i;
+            break;
+        }
+    }
+
+    // If not in the sequential list, don't allow entry (hide non-story dungeons)
+    if (dungeonIndex == -1)
+        return FALSE;
+
+    // First dungeon is always unlocked
+    if (dungeonIndex == 0)
+        return TRUE;
+
+    // Otherwise, check if the previous dungeon has been conquered
+    return RescueScenarioConquered(sSequentialDungeonList[dungeonIndex - 1]);
 }

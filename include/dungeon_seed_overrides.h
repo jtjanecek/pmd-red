@@ -16,5 +16,6 @@ s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId);
 u32 DungeonSeedOverrides_GetDungeonRngSeed(s32 seed, u8 dungeonId, s32 floorId);
 bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut);
 const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine);
+bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId);
 
 #endif // GUARD_DUNGEON_SEED_OVERRIDES_H

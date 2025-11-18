@@ -13,6 +13,7 @@
 #include "text_1.h"
 #include "text_2.h"
 #include "constants/rescue_dungeon_id.h"
+#include "dungeon_seed_overrides.h"
 
 struct DungeonListMenu {
     // size: 0x15C
@@ -207,6 +208,7 @@ static s32 CountAvailableDungeons(void)
     for (i = 0; i < RESCUE_DUNGEON_COUNT; i++) {
         rescueDungeonId = rescueDungeonId = (s16)i; // NOTE: weirdness needed for matching s16 memes
         if (IsRescueDungeonAvailable(i) && rescueDungeonId != RESCUE_DUNGEON_GREAT_CANYON_2 && rescueDungeonId != RESCUE_DUNGEON_MT_FREEZE_2) {
+            bool8 shouldShowDungeon = FALSE;
             sDungeonListMenu->rescueDungeonIds[counter] = rescueDungeonId;
             sDungeonListMenu->goIcon[counter] = icons;
             sDungeonListMenu->jobInDungeon[counter] = icons;
@@ -214,15 +216,15 @@ static s32 CountAvailableDungeons(void)
                 s32 dungeonIndex = RescueDungeonToDungeonId(rescueDungeonId);
                 bool8 goIcon = FALSE;
                 if (rescueDungeonId < RESCUE_DUNGEON_DESERT_REGION) {
-                    if (!sub_8097384(rescueDungeonId)) {
+                    if (!DungeonSeedOverrides_CanEnterDungeon(rescueDungeonId)) {
                         if (rescueDungeonId == RESCUE_DUNGEON_GREAT_CANYON) {
-                            if (sub_8097384(RESCUE_DUNGEON_GREAT_CANYON_2)) {
+                            if (DungeonSeedOverrides_CanEnterDungeon(RESCUE_DUNGEON_GREAT_CANYON_2)) {
                                 sDungeonListMenu->rescueDungeonIds[counter] = RESCUE_DUNGEON_GREAT_CANYON_2;
                                 goIcon = TRUE;
                             }
                         }
                         else if (rescueDungeonId == RESCUE_DUNGEON_MT_FREEZE) {
-                            if (sub_8097384(RESCUE_DUNGEON_MT_FREEZE_2)) {
+                            if (DungeonSeedOverrides_CanEnterDungeon(RESCUE_DUNGEON_MT_FREEZE_2)) {
                                 sDungeonListMenu->rescueDungeonIds[counter] = RESCUE_DUNGEON_MT_FREEZE_2;
                                 goIcon = TRUE;
                             }
@@ -236,8 +238,19 @@ static s32 CountAvailableDungeons(void)
                 if (!goIcon && CountJobsinDungeon(dungeonIndex) > 0) {
                     sDungeonListMenu->jobInDungeon[counter] = TRUE;
                 }
+                // Only show dungeons with GO icon - hide locked dungeons
+                if (goIcon) {
+                    shouldShowDungeon = TRUE;
+                }
             }
-            counter++;
+            else {
+                // If not showing icons, show all dungeons (compatibility)
+                shouldShowDungeon = TRUE;
+            }
+
+            if (shouldShowDungeon) {
+                counter++;
+            }
         }
     }
 

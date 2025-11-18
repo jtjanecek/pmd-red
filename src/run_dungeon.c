@@ -67,6 +67,9 @@
 #include "adventure_info.h"
 #include "dungeon_seed_overrides.h"
 #include "save.h"
+#include "rescue_scenario.h"
+#include "code_80A26CC.h"
+#include "constants/rescue_dungeon_id.h"
 
 EWRAM_INIT struct UnkStruct_203B414 *gUnknown_203B414 = NULL;
 EWRAM_INIT Dungeon *gDungeon = NULL;
@@ -679,6 +682,19 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             }
         }
         else if (sub_8083C50()) {
+            // Mark dungeon as conquered for seed override progression
+            s32 seed;
+            if (DungeonSeedOverrides_IsEnabled(&seed)) {
+                // Find which rescue dungeon corresponds to the current dungeon ID
+                s32 i;
+                for (i = 0; i < RESCUE_DUNGEON_COUNT; i++) {
+                    if (RescueDungeonToDungeonId(i) == gDungeon->unk644.dungeonLocation.id) {
+                        sub_8097418(i, TRUE);
+                        break;
+                    }
+                }
+            }
+
             if (gDungeon->unk644.unk34 == 1) {
                 setupPtr->info.unk7C = 4;
             }

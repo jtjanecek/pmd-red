@@ -383,6 +383,7 @@ static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSi
 
 // Custom sequential dungeon unlocking logic
 // Returns TRUE if the dungeon can be entered (has GO icon), FALSE otherwise
+// Only shows the NEXT unconquered dungeon, not all unlocked dungeons
 bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId)
 {
     s32 i;
@@ -400,7 +401,11 @@ bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId)
     if (dungeonIndex == -1)
         return FALSE;
 
-    // First dungeon is always unlocked
+    // Don't show if this dungeon has already been conquered
+    if (RescueScenarioConquered(rescueDungeonId))
+        return FALSE;
+
+    // First dungeon is unlocked if not conquered
     if (dungeonIndex == 0)
         return TRUE;
 

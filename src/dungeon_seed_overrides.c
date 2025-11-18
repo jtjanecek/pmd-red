@@ -3,12 +3,14 @@
 
 #include "constants/dungeon.h"
 #include "constants/monster.h"
+#include "constants/rescue_dungeon_id.h"
 #include "pokemon_3.h"
 #include "save.h"
 #include "code_800D090.h"
 #include "strings.h"
+#include "rescue_scenario.h"
 
-#define SEEDED_TILESET_COUNT 80
+#define SEEDED_TILESET_COUNT 75  // Max valid tileset ID (gNaturePowerCalledMoves uses max 74)
 #define SEEDED_MIN_FLOORS 3
 #define SEEDED_MAX_FLOORS 60
 #define SEEDED_MIN_SPAWNS 6

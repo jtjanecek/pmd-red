@@ -47,6 +47,7 @@ static void ApplySeedOverridesToCurrentFloor(void)
 
     DungeonSeedOverrides_GenerateFloorConfig(seed, gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, &overrides);
     gDungeon->floorProperties.tileset = overrides.tileset;
+    gDungeon->floorProperties.fixedRoomNumber = 0;  // Disable boss rooms/cutscenes for randomized dungeons
 
     for (i = 0; i < overrides.spawnCount && i < MONSTER_SPAWNS_ARR_COUNT; i++) {
         gDungeon->fileMonsterSpawns[i] = overrides.spawns[i];

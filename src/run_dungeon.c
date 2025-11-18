@@ -80,6 +80,7 @@ extern void sub_80840A4(void);
 extern void sub_806AB2C(void);
 extern void sub_807E5AC(void);
 extern void nullsub_16(void);
+extern struct unkStruct_203B0CC *gUnknown_203B0CC;
 
 static u32 GetDungeonSeededRng(void)
 {
@@ -130,6 +131,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
     r6 = setupPtr->info.sub0.unk4;
     r9 = setupPtr->info.sub0.unkD;
     r10 = setupPtr->info.sub0.unkC;
+    MGBA_Warnf("[Dungeon] Setup parameters loaded");
     gSerializedData_203B41C = setupPtr->info.unk74;
     gDungeon = setupPtr->info.dungeon;
     if (!r6) {
@@ -141,6 +143,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
     for (i = 0; i < sizeof(Dungeon); i++) {
         dungeonPtr[i] = 0;
     }
+    MGBA_Warnf("[Dungeon] Memory cleared");
 
     gPlayerDotMapPosition.x = 0; // Needed to match
     gPlayerDotMapPosition.x = 100;
@@ -164,21 +167,47 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         gDungeon->unk644.hasInventory = TRUE;
     }
     gDungeon->unk644.unk19 = setupPtr->info.sub0.unkA;
+    MGBA_Warnf("[Dungeon] Dungeon struct initialized");
     StopDungeonBGM();
+    MGBA_Warnf("[Dungeon] BGM stopped");
     sub_803D4AC();
+    MGBA_Warnf("[Dungeon] sub_803D4AC complete");
+    MGBA_Warnf("[Dungeon] Calling sub_804513C");
     sub_804513C();
+    MGBA_Warnf("[Dungeon] Calling sub_8043CD8");
     sub_8043CD8();
+    MGBA_Warnf("[Dungeon] Calling sub_80495E4");
     sub_80495E4();
+    MGBA_Warnf("[Dungeon] Calling sub_803E250");
     sub_803E250();
+    MGBA_Warnf("[Dungeon] Opening dungeon map file");
     OpenDungeonMapFile();
+    MGBA_Warnf("[Dungeon] Setting map to not shown");
     SetDungeonMapToNotShown();
+    MGBA_Warnf("[Dungeon] Calling sub_803F27C");
     sub_803F27C(1);
+    MGBA_Warnf("[Dungeon] sub_803F27C returned, setting globals");
     gUnknown_2026E4E = 2056;
+    MGBA_Warnf("[Dungeon] Calling sub_80095CC");
     sub_80095CC(1, 0x14);
+    MGBA_Warnf("[Dungeon] Freeing previous effect context before dungeon");
+    MGBA_Warnf("[Dungeon] gUnknown_203B0CC = %p", gUnknown_203B0CC);
+    if (gUnknown_203B0CC != NULL) {
+        MGBA_Warnf("[Dungeon] Calling sub_800DB7C to free effect context");
+        sub_800DB7C();
+        MGBA_Warnf("[Dungeon] sub_800DB7C completed, gUnknown_203B0CC = %p", gUnknown_203B0CC);
+    } else {
+        MGBA_Warnf("[Dungeon] gUnknown_203B0CC is NULL, nothing to free");
+    }
+    MGBA_Warnf("[Dungeon] Calling sub_800DAC0");
     sub_800DAC0(0);
+    MGBA_Warnf("[Dungeon] Calling UpdateFadeInTile");
     UpdateFadeInTile(1);
+    MGBA_Warnf("[Dungeon] Calling sub_803DF60");
     sub_803DF60();
+    MGBA_Warnf("[Dungeon] Calling sub_803E02C");
     sub_803E02C();
+    MGBA_Warnf("[Dungeon] Calling sub_8042E98");
     sub_8042E98();
     gUnknown_202F32C = 0;
     if (r6) {

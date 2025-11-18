@@ -13,6 +13,7 @@
 #include "main_loops.h"
 #include "memory.h"
 #include "sprite.h"
+#include "mgba_log.h"
 #include "bg_palette_buffer.h"
 #include "cpu.h"
 #include "effect_data.h"
@@ -69,7 +70,7 @@ struct unkStruct_203B0CC
     u16 unk1A14;
 };
 
-static EWRAM_INIT struct unkStruct_203B0CC *gUnknown_203B0CC = NULL;
+EWRAM_INIT struct unkStruct_203B0CC *gUnknown_203B0CC = NULL;
 
 struct unkStruct_800F18C
 {
@@ -91,6 +92,7 @@ static s32 sub_800E750(s32 a0, s32 a1);
 static s32 sub_800EBBC(s32 param_1);
 static s32 sub_800EC68(s32 param_1);
 static void sub_800DCA8(struct unkStruct_203B0CC_sub *);
+static void CleanupEffectContext(void);
 
 static const unkStruct_2039DB0 sDefaultSpriteMasks = DEFAULT_UNK_2039DB0_MASKS;
 
@@ -100,16 +102,26 @@ void sub_800DAC0(u32 fileSelection)
     OpenedFile *filePtr;
     struct unkStruct_203B0CC_sub *ptr;
 
+    MGBA_Warnf("[Effect] sub_800DAC0 entered with fileSelection=%d", fileSelection);
     if (gUnknown_203B0CC != NULL) {
-        sub_800DB7C();
+        MGBA_Warnf("[Effect] Reusing existing effect context at %p", gUnknown_203B0CC);
+        // Cleanup resources but don't free memory to avoid heap fragmentation
+        CleanupEffectContext();
+        MemoryClear8(gUnknown_203B0CC, sizeof(struct unkStruct_203B0CC));
+    } else {
+        MGBA_Warnf("[Effect] Allocating memory size=%d", sizeof(struct unkStruct_203B0CC));
+        gUnknown_203B0CC = MemoryAlloc(sizeof(struct unkStruct_203B0CC), 0xb);
+        MGBA_Warnf("[Effect] Memory allocated at %p", gUnknown_203B0CC);
+        MemoryClear8(gUnknown_203B0CC, sizeof(struct unkStruct_203B0CC));
     }
-    gUnknown_203B0CC = MemoryAlloc(sizeof(struct unkStruct_203B0CC), 0xb);
-    MemoryClear8(gUnknown_203B0CC, sizeof(struct unkStruct_203B0CC));
+    MGBA_Warnf("[Effect] Memory cleared");
     gUnknown_203B0CC->fileSelection = fileSelection;
     for (i = 0, ptr = &gUnknown_203B0CC->unk0[i]; i < UNK_203B0CC_ARR_COUNT; i++, ptr++) {
         ptr->unk4 = -1;
     }
+    MGBA_Warnf("[Effect] Calling sub_800ED38");
     sub_800ED38(fileSelection);
+    MGBA_Warnf("[Effect] Calling sub_800F034");
     sub_800F034();
 
     switch (gUnknown_203B0CC->fileSelection) {
@@ -130,10 +142,14 @@ void sub_800DAC0(u32 fileSelection)
     }
 }
 
-void sub_800DB7C(void)
+// Cleanup effect context resources without freeing memory
+static void CleanupEffectContext(void)
 {
     s32 i;
     struct unkStruct_203B0CC_sub *ptr;
+
+    if (gUnknown_203B0CC == NULL)
+        return;
 
     for (i = 0, ptr = &gUnknown_203B0CC->unk0[i]; i < UNK_203B0CC_ARR_COUNT; i++, ptr++) {
         if (ptr->unk4 != -1)
@@ -142,6 +158,17 @@ void sub_800DB7C(void)
 
     sub_800F078();
     sub_800ED64();
+}
+
+// Public function to cleanup without freeing - for ground->dungeon transition
+void sub_800DB50(void)
+{
+    CleanupEffectContext();
+}
+
+void sub_800DB7C(void)
+{
+    CleanupEffectContext();
     TRY_FREE_AND_SET_NULL(gUnknown_203B0CC);
 }
 

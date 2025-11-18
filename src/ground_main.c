@@ -13,6 +13,7 @@
 #include "code_80A26CC.h"
 #include "ground_place.h"
 #include "debug.h"
+#include "mgba_log.h"
 #include "event_flag.h"
 #include "ground_map.h"
 #include "play_time.h"
@@ -342,22 +343,29 @@ u32 xxx_script_related_8098468(s32 param_1)
         r7 = -1;
     }
 
+    MGBA_Warnf("[GroundMain] Starting cleanup sequence, state=%d", gUnknown_20398A8);
     FreeGroundMapAction();
     nullsub_118();
+    MGBA_Warnf("[GroundMain] Freeing ground systems");
     FreeGroundLives();
     FreeGroundObjects();
     FreeGroundEffects();
     FreeGroundEvents();
     FreeInternalScriptItemsData();
     TextboxFree();
+    MGBA_Warnf("[GroundMain] Calling sub_809C618");
     sub_809C618();
+    MGBA_Warnf("[GroundMain] Calling sub_80A658C (sprite cleanup)");
     sub_80A658C();
+    MGBA_Warnf("[GroundMain] Calling sub_809D508");
     sub_809D508();
+    MGBA_Warnf("[GroundMain] Calling sub_80A7754");
     sub_80A7754();
     nullsub_119();
     sub_8099768();
     nullsub_103();
     nullsub_16();
+    MGBA_Warnf("[GroundMain] Cleanup complete, checking B9=%d A8=%d", gUnknown_20398B9, gUnknown_20398A8);
     if (gUnknown_20398B9 != 0) {
         if (gUnknown_20398A8 == 9) {
             FadeOutAllMusic(0x1e);
@@ -399,6 +407,7 @@ u32 xxx_script_related_8098468(s32 param_1)
                 return 7;
             }
             case 6:
+                MGBA_Warnf("[GroundMain] State 6: Setting dungeon vars for dungeonId=%d", gUnknown_20398C4);
                 SetScriptVarValue(0,DUNGEON_ENTER,0x51);
                 SetScriptVarValue(0,DUNGEON_ENTER_INDEX,gUnknown_20398C4);
                 SetScriptVarValue(0,START_MODE,7);
@@ -406,6 +415,7 @@ u32 xxx_script_related_8098468(s32 param_1)
                 if ((s16)GetScriptVarValue(0,GROUND_PLACE) == 10) {
                     SetScriptVarValue(0,GROUND_PLACE,0);
                 }
+                MGBA_Warnf("[GroundMain] State 6: Returning 8 to start dungeon");
                 return 8;
             case 7:
                 SetScriptVarValue(0,DUNGEON_ENTER,0x50);
@@ -569,22 +579,39 @@ bool8 GroundMainRescueRequest(s32 dungeonId_, s32 r1)
     s32 _dungeonId = dungeonId;
     if (gUnknown_20398A8 == 0) {
         Log(0, "GroundMain recue request %3d %3d", dungeonId, r1);
+        MGBA_Warnf("[GroundMain] RescueRequest: dungeonId=%d r1=%d", dungeonId, r1);
         if (gUnknown_203B49D != 0) {
+            MGBA_Warnf("[GroundMain] Setting state to 7");
             gUnknown_20398A8 = 7;
         }
         else {
             if (!gUnknown_203B49C) {
                 gUnknown_20398C4 = _dungeonId;
             }
+            MGBA_Warnf("[GroundMain] Calling sub_80A2750 with dungeonId=%d", gUnknown_20398C4);
             switch (sub_80A2750(gUnknown_20398C4)) {
-                case 4: gUnknown_20398A8 = 8; break;
-                case 1: gUnknown_20398A8 = 5; break;
-                case 2: gUnknown_20398A8 = 6; break;
+                case 4:
+                    MGBA_Warnf("[GroundMain] sub_80A2750 returned 4, setting state to 8");
+                    gUnknown_20398A8 = 8;
+                    break;
+                case 1:
+                    MGBA_Warnf("[GroundMain] sub_80A2750 returned 1, setting state to 5");
+                    gUnknown_20398A8 = 5;
+                    break;
+                case 2:
+                    MGBA_Warnf("[GroundMain] sub_80A2750 returned 2, setting state to 6");
+                    gUnknown_20398A8 = 6;
+                    break;
+                default:
+                    MGBA_Warnf("[GroundMain] sub_80A2750 returned unexpected value");
+                    break;
             }
         }
         gUnknown_20398AC = 1;
         gUnknown_20398B0 = r1;
+        MGBA_Warnf("[GroundMain] About to call sub_809C730");
         sub_809C730();
+        MGBA_Warnf("[GroundMain] sub_809C730 returned, exiting RescueRequest");
         return TRUE;
     }
     return FALSE;

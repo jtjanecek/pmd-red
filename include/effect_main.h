@@ -34,6 +34,7 @@ struct UnkStruct_8040094
 };
 
 void sub_800DAC0(u32 fileSelection);
+void sub_800DB50(void);
 void sub_800DB7C(void);
 void sub_800DBBC(void);
 void sub_800DC14(s32 param_1);

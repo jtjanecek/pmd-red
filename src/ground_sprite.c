@@ -203,7 +203,8 @@ UNUSED static void sub_80A64A4(void)
 
 void sub_80A658C(void)
 {
-    sub_800DB7C();
+    // Cleanup effect resources but don't free memory - sub_800DAC0 will reuse it
+    sub_800DB50();
     ResetSprites(FALSE);
     nullsub_10(FALSE);
     sub_8005180();

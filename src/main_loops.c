@@ -19,6 +19,7 @@
 #include "code_80A26CC.h"
 #include "cpu.h"
 #include "debug.h"
+#include "mgba_log.h"
 #include "def_filearchives.h"
 #include "event_flag.h"
 #include "exclusive_pokemon.h"
@@ -280,7 +281,6 @@ void GameLoop(void)
             MainLoops_RunFrameActions(0);
             nextMenu = UpdateMenu();
             CleanUpMenu();
-            MGBA_Warnf("[TitleFlow] Title menu selection nextMenu=%d", nextMenu);
 
             if (nextMenu == 2)
                 break;
@@ -842,8 +842,12 @@ static u32 RunGameMode_Async(u32 a0)
         }
 
         if (r5 == 7 || r5 == 8 || r5 == 9 || r5 == 10 || r5 == 0 || r5 == 2 || r5 == 3) {
+            u8 r6;
+            MGBA_Warnf("[MainLoop] Entering dungeon path with r5=%d", r5);
             if (r5 != 0 && r5 != 2 && r5 != 3) {
-                u8 r6 = sub_8001170();
+                MGBA_Warnf("[MainLoop] Calling sub_8001170");
+                r6 = sub_8001170();
+                MGBA_Warnf("[MainLoop] sub_8001170 returned r6=%d", r6);
 
                 IncrementNumAdventures();
                 if (r5 == 9) {
@@ -855,19 +859,27 @@ static u32 RunGameMode_Async(u32 a0)
                     }
                 }
 
+                MGBA_Warnf("[MainLoop] Checking for QuickSave, r6=%d", r6);
                 if (r6 == 63) {
                     QuickSave_Async(0);
                 }
                 else if (!IsEnterWithoutGameSave(r6)) {
                     QuickSave_Async(0);
                 }
+                MGBA_Warnf("[MainLoop] QuickSave complete");
             }
 
+            MGBA_Warnf("[MainLoop] Setting up dungeon");
             sUnknown_203B03C = 1;
+            MGBA_Warnf("[MainLoop] Calling sub_800A8F8(3)");
             sub_800A8F8(3);
+            MGBA_Warnf("[MainLoop] Setting dungeonSetup.unk0 = 1");
             dungeonSetup.unk0 = 1;
+            MGBA_Warnf("[MainLoop] Calling sub_80011E8");
             sub_80011E8(&dungeonSetup.info.sub0);
+            MGBA_Warnf("[MainLoop] About to call LoadAndRunQuickSaveDungeon_Async");
             LoadAndRunQuickSaveDungeon_Async(&dungeonSetup);
+            MGBA_Warnf("[MainLoop] LoadAndRunQuickSaveDungeon_Async returned");
             if (dungeonSetup.info.unk7C == 3) {
                 ret = TRUE;
                 break;

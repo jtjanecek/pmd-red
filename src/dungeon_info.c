@@ -2413,6 +2413,12 @@ s16 GetTurnLimit(u8 dungeon)
 
 bool8 IsEnterWithoutGameSave(u8 dungeon)
 {
+    s32 seed;
+
+    // Remove forced quicksave when override system is enabled
+    if (DungeonSeedOverrides_IsEnabled(&seed))
+        return TRUE;
+
     // Remove forced quicksave for Level 1 dungeons
     if (IsLevelResetDungeon(dungeon))
         return TRUE;

@@ -5,6 +5,7 @@
 #include "constants/dungeon_exit.h"
 #include "constants/fixed_rooms.h"
 #include "constants/monster.h"
+#include "constants/status.h"
 #include "constants/trap.h"
 #include "structs/rgb.h"
 #include "structs/sprite_oam.h"
@@ -430,6 +431,19 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             sub_806A974();
         }
         sub_8041888(1);
+
+#ifdef DEV
+        // DEV: Apply permanent Protect status to the leader
+        {
+            Entity *leader = GetLeader();
+            if (EntityIsValid(leader)) {
+                EntityInfo *leaderInfo = GetEntInfo(leader);
+                leaderInfo->reflectClassStatus.status = STATUS_PROTECT;
+                leaderInfo->reflectClassStatus.turns = 255; // Max u8 value (won't decrement anyway due to mod above)
+                // Note: Status sprite will update naturally on first turn
+            }
+        }
+#endif
 
         if (!r6) {
             sub_80848F0();

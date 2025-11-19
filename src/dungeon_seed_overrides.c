@@ -388,25 +388,68 @@ static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSi
     return (i != 0);
 }
 
+// Helper function to check if a rescue dungeon is in the sequential list
+static bool8 IsInSequentialList(s16 rescueDungeonId, s32 *indexOut)
+{
+    s32 i;
+    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+        if (sSequentialDungeonList[i] == rescueDungeonId) {
+            if (indexOut != NULL)
+                *indexOut = i;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+// Check if a rescue dungeon is in the sequential list (public version for menu)
+bool8 DungeonSeedOverrides_IsInSequentialList(s16 rescueDungeonId)
+{
+    s32 seed;
+
+    // If overrides aren't enabled, all dungeons are "in the list" (vanilla behavior)
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return TRUE;
+
+    return IsInSequentialList(rescueDungeonId, NULL);
+}
+
+// Get the rescue dungeon ID that should currently be shown (the next unconquered one)
+// Returns -1 if no dungeon should be shown
+s16 DungeonSeedOverrides_GetCurrentDungeon(void)
+{
+    s32 seed;
+    s32 i;
+
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return -1;
+
+    // Find the first unconquered dungeon in the sequential list
+    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+        if (!RescueScenarioConquered(sSequentialDungeonList[i])) {
+            return sSequentialDungeonList[i];
+        }
+    }
+
+    // All dungeons conquered
+    return -1;
+}
+
 // Custom sequential dungeon unlocking logic
 // Returns TRUE if the dungeon can be entered (has GO icon), FALSE otherwise
 // Only shows the NEXT unconquered dungeon, not all unlocked dungeons
 bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId)
 {
-    s32 i;
-    s32 dungeonIndex = -1;
+    s32 dungeonIndex;
+    s32 seed;
 
-    // Find this dungeon in our sequential list
-    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
-        if (sSequentialDungeonList[i] == rescueDungeonId) {
-            dungeonIndex = i;
-            break;
-        }
-    }
+    // Only filter when overrides are enabled
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return TRUE;  // Let vanilla logic handle it
 
-    // If not in the sequential list, don't allow entry (hide non-story dungeons)
-    if (dungeonIndex == -1)
-        return FALSE;
+    // Check if in sequential list
+    if (!IsInSequentialList(rescueDungeonId, &dungeonIndex))
+        return FALSE;  // Hide ALL non-sequential dungeons
 
     // Don't show if this dungeon has already been conquered
     if (RescueScenarioConquered(rescueDungeonId))

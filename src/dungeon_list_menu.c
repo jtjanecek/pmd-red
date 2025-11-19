@@ -202,12 +202,24 @@ static s32 CountAvailableDungeons(void)
     s32 rescueDungeonId;
     s32 counter;
     s32 i;
+    s32 seed;
+    bool8 overridesEnabled;
+    bool8 isAvailable;
     bool8 icons = FALSE; // Variable needed to match.
 
+    overridesEnabled = DungeonSeedOverrides_IsEnabled(&seed);
     counter = 0;
     for (i = 0; i < RESCUE_DUNGEON_COUNT; i++) {
         rescueDungeonId = rescueDungeonId = (s16)i; // NOTE: weirdness needed for matching s16 memes
-        if (IsRescueDungeonAvailable(i) && rescueDungeonId != RESCUE_DUNGEON_GREAT_CANYON_2 && rescueDungeonId != RESCUE_DUNGEON_MT_FREEZE_2) {
+
+        // When overrides are enabled, only process dungeons in the sequential list
+        if (overridesEnabled && !DungeonSeedOverrides_IsInSequentialList(rescueDungeonId))
+            continue;
+
+        // When overrides are enabled, skip vanilla availability check - we control availability through CanEnterDungeon()
+        isAvailable = overridesEnabled ? TRUE : IsRescueDungeonAvailable(i);
+
+        if (isAvailable && rescueDungeonId != RESCUE_DUNGEON_GREAT_CANYON_2 && rescueDungeonId != RESCUE_DUNGEON_MT_FREEZE_2) {
             bool8 shouldShowDungeon = FALSE;
             sDungeonListMenu->rescueDungeonIds[counter] = rescueDungeonId;
             sDungeonListMenu->goIcon[counter] = icons;
@@ -215,22 +227,33 @@ static s32 CountAvailableDungeons(void)
             if (sDungeonListMenu->showIcons && rescueDungeonId != RESCUE_DUNGEON_DUMMY) {
                 s32 dungeonIndex = RescueDungeonToDungeonId(rescueDungeonId);
                 bool8 goIcon = FALSE;
-                if (rescueDungeonId < RESCUE_DUNGEON_DESERT_REGION) {
-                    if (!DungeonSeedOverrides_CanEnterDungeon(rescueDungeonId)) {
-                        if (rescueDungeonId == RESCUE_DUNGEON_GREAT_CANYON) {
-                            if (DungeonSeedOverrides_CanEnterDungeon(RESCUE_DUNGEON_GREAT_CANYON_2)) {
-                                sDungeonListMenu->rescueDungeonIds[counter] = RESCUE_DUNGEON_GREAT_CANYON_2;
-                                goIcon = TRUE;
-                            }
-                        }
-                        else if (rescueDungeonId == RESCUE_DUNGEON_MT_FREEZE) {
-                            if (DungeonSeedOverrides_CanEnterDungeon(RESCUE_DUNGEON_MT_FREEZE_2)) {
-                                sDungeonListMenu->rescueDungeonIds[counter] = RESCUE_DUNGEON_MT_FREEZE_2;
-                                goIcon = TRUE;
-                            }
+                // Check ALL dungeons with CanEnterDungeon, not just pre-Desert Region
+                // When overrides enabled, also explicitly check if dungeon is conquered
+                if (!DungeonSeedOverrides_CanEnterDungeon(rescueDungeonId)) {
+                    if (rescueDungeonId == RESCUE_DUNGEON_GREAT_CANYON) {
+                        if (DungeonSeedOverrides_CanEnterDungeon(RESCUE_DUNGEON_GREAT_CANYON_2)) {
+                            sDungeonListMenu->rescueDungeonIds[counter] = RESCUE_DUNGEON_GREAT_CANYON_2;
+                            goIcon = TRUE;
                         }
                     }
-                    else {
+                    else if (rescueDungeonId == RESCUE_DUNGEON_MT_FREEZE) {
+                        if (DungeonSeedOverrides_CanEnterDungeon(RESCUE_DUNGEON_MT_FREEZE_2)) {
+                            sDungeonListMenu->rescueDungeonIds[counter] = RESCUE_DUNGEON_MT_FREEZE_2;
+                            goIcon = TRUE;
+                        }
+                    }
+                }
+                else {
+                    // When overrides enabled, ONLY show the current unconquered dungeon
+                    // This prevents conquered dungeons from appearing
+                    if (overridesEnabled) {
+                        s16 currentDungeon = DungeonSeedOverrides_GetCurrentDungeon();
+                        if (rescueDungeonId == currentDungeon) {
+                            goIcon = TRUE;
+                        } else {
+                            goIcon = FALSE;
+                        }
+                    } else {
                         goIcon = TRUE;
                     }
                 }

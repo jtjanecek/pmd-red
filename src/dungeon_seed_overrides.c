@@ -7,6 +7,7 @@
 #include "pokemon_3.h"
 #include "save.h"
 #include "code_800D090.h"
+#include "code_80A26CC.h"
 #include "strings.h"
 #include "rescue_scenario.h"
 
@@ -19,53 +20,40 @@
 #define SEEDED_PREFIX_BUFFER_LEN 16
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
+// Exactly 30 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
 static const s16 sSequentialDungeonList[] = {
-    // Main story dungeons
-    RESCUE_DUNGEON_TINY_WOODS,
-    RESCUE_DUNGEON_THUNDERWAVE_CAVE,
-    RESCUE_DUNGEON_MT_STEEL,
-    RESCUE_DUNGEON_SINISTER_WOODS,
-    RESCUE_DUNGEON_SILENT_CHASM,
-    RESCUE_DUNGEON_MT_THUNDER,
-    RESCUE_DUNGEON_GREAT_CANYON,
-    RESCUE_DUNGEON_LAPIS_CAVE,
-    RESCUE_DUNGEON_MT_BLAZE,
-    RESCUE_DUNGEON_FROSTY_FOREST,
-    RESCUE_DUNGEON_MT_FREEZE,
-    RESCUE_DUNGEON_MAGMA_CAVERN,
-    RESCUE_DUNGEON_SKY_TOWER,
-    // Post-game dungeons
-    RESCUE_DUNGEON_UPROAR_FOREST,
-    RESCUE_DUNGEON_HOWLING_FOREST,
-    RESCUE_DUNGEON_STORMY_SEA,
-    RESCUE_DUNGEON_SILVER_TRENCH,
-    RESCUE_DUNGEON_METEOR_CAVE,
-    RESCUE_DUNGEON_FIERY_FIELD,
-    RESCUE_DUNGEON_LIGHTNING_FIELD,
-    RESCUE_DUNGEON_NORTHWIND_FIELD,
-    RESCUE_DUNGEON_MT_FARAWAY,
-    RESCUE_DUNGEON_WESTERN_CAVE,
-    RESCUE_DUNGEON_NORTHERN_RANGE,
-    RESCUE_DUNGEON_PITFALL_VALLEY,
-    RESCUE_DUNGEON_BURIED_RELIC,
-    RESCUE_DUNGEON_WISH_CAVE,
-    RESCUE_DUNGEON_MURKY_CAVE,
-    RESCUE_DUNGEON_DESERT_REGION,
-    RESCUE_DUNGEON_SOUTHERN_CAVERN,
-    RESCUE_DUNGEON_WYVERN_HILL,
-    RESCUE_DUNGEON_SOLAR_CAVE,
-    RESCUE_DUNGEON_DARKNIGHT_RELIC,
-    RESCUE_DUNGEON_GRAND_SEA,
-    RESCUE_DUNGEON_WATERFALL_POND,
-    RESCUE_DUNGEON_UNOWN_RELIC,
-    RESCUE_DUNGEON_JOYOUS_TOWER,
-    RESCUE_DUNGEON_FAR_OFF_SEA,
-    RESCUE_DUNGEON_PURITY_FOREST,
-    RESCUE_DUNGEON_ODDITY_CAVE,
-    RESCUE_DUNGEON_REMAINS_ISLAND,
-    RESCUE_DUNGEON_MARVELOUS_SEA,
-    RESCUE_DUNGEON_FANTASY_STRAIT,
-    // Note: DUMMY, GREAT_CANYON_2, and MT_FREEZE_2 are excluded (handled specially)
+    // Main story dungeons (1-7) - only single-part
+    RESCUE_DUNGEON_TINY_WOODS,           // 1
+    RESCUE_DUNGEON_THUNDERWAVE_CAVE,     // 2
+    RESCUE_DUNGEON_MT_STEEL,             // 3
+    RESCUE_DUNGEON_SINISTER_WOODS,       // 4
+    RESCUE_DUNGEON_SILENT_CHASM,         // 5
+    RESCUE_DUNGEON_GREAT_CANYON,         // 6 (excludes _2)
+    RESCUE_DUNGEON_LAPIS_CAVE,           // 7
+    // Post-game dungeons (8-30) - only single-part
+    RESCUE_DUNGEON_UPROAR_FOREST,        // 8
+    RESCUE_DUNGEON_HOWLING_FOREST,       // 9
+    RESCUE_DUNGEON_STORMY_SEA,           // 10
+    RESCUE_DUNGEON_SILVER_TRENCH,        // 11
+    RESCUE_DUNGEON_JOYOUS_TOWER,         // 12
+    RESCUE_DUNGEON_FIERY_FIELD,          // 13
+    RESCUE_DUNGEON_LIGHTNING_FIELD,      // 14
+    RESCUE_DUNGEON_NORTHWIND_FIELD,      // 15
+    RESCUE_DUNGEON_MT_FARAWAY,           // 16
+    RESCUE_DUNGEON_WESTERN_CAVE,         // 17
+    RESCUE_DUNGEON_NORTHERN_RANGE,       // 18
+    RESCUE_DUNGEON_PITFALL_VALLEY,       // 19
+    RESCUE_DUNGEON_BURIED_RELIC,         // 20
+    RESCUE_DUNGEON_MURKY_CAVE,           // 21
+    RESCUE_DUNGEON_DESERT_REGION,        // 22
+    RESCUE_DUNGEON_SOUTHERN_CAVERN,      // 23
+    RESCUE_DUNGEON_WYVERN_HILL,          // 24
+    RESCUE_DUNGEON_SOLAR_CAVE,           // 25
+    RESCUE_DUNGEON_DARKNIGHT_RELIC,      // 26
+    RESCUE_DUNGEON_GRAND_SEA,            // 27
+    RESCUE_DUNGEON_WATERFALL_POND,       // 28
+    RESCUE_DUNGEON_UNOWN_RELIC,          // 29
+    RESCUE_DUNGEON_PURITY_FOREST,        // 30 - FINAL DUNGEON (credits after)
 };
 
 #define SEQUENTIAL_DUNGEON_COUNT ARRAY_COUNT(sSequentialDungeonList)
@@ -339,13 +327,32 @@ static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
     const char *prefix;
     const char *suffix;
     char prefixBuffer[SEEDED_PREFIX_BUFFER_LEN];
+    s32 dungeonIndex = -1;
+    s32 i;
 
     prefix = SelectPrefixForDungeon(dungeonId, &rng, prefixBuffer, ARRAY_COUNT(prefixBuffer));
     suffix = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
 
-    // Use the same name for both name1 and name2 for consistency
-    sprintfStatic((char *)sSeededDungeonName1[dungeonId], "%s %s", prefix, suffix);
-    sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
+    // Find this dungeon's index in the sequential list by checking each rescue dungeon
+    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+        u8 listDungeonId = RescueDungeonToDungeonId(sSequentialDungeonList[i]);
+        if (listDungeonId == dungeonId) {
+            dungeonIndex = i;
+            break;
+        }
+    }
+
+    // If dungeon is in the sequential list, prepend "Dungeon X/YY" format
+    if (dungeonIndex != -1) {
+        sprintfStatic((char *)sSeededDungeonName1[dungeonId], "Dungeon %d/%d",
+                      dungeonIndex + 1, SEQUENTIAL_DUNGEON_COUNT);
+        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
+    } else {
+        // Not in sequential list, use normal format
+        sprintfStatic((char *)sSeededDungeonName1[dungeonId], "%s %s", prefix, suffix);
+        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
+    }
+
     sSeededDungeonNameValid[dungeonId] = TRUE;
 }
 
@@ -411,4 +418,20 @@ bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId)
 
     // Otherwise, check if the previous dungeon has been conquered
     return RescueScenarioConquered(sSequentialDungeonList[dungeonIndex - 1]);
+}
+
+// Check if this dungeon is the final one (Dungeon 30) to trigger credits
+bool8 DungeonSeedOverrides_ShouldTriggerCredits(s16 rescueDungeonId)
+{
+    s32 seed;
+
+    // Only check if overrides are enabled
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return FALSE;
+
+    // Check if this is the last dungeon in our sequential list (Dungeon 30)
+    if (SEQUENTIAL_DUNGEON_COUNT == 0)
+        return FALSE;
+
+    return (rescueDungeonId == sSequentialDungeonList[SEQUENTIAL_DUNGEON_COUNT - 1]);
 }

@@ -28,6 +28,7 @@
 #include "ground_lives.h"
 #include "ground_event.h"
 #include "ground_sprite.h"
+#include "dungeon_seed_overrides.h"
 #include "ground_effect.h"
 #include "mgba_log.h"
 #include "ground_object.h"
@@ -202,6 +203,11 @@ u32 xxx_script_related_8098468(s32 param_1)
                     r7 = dungInfo->unkA;
                     if (gUnknown_20398B4 == 9) {
                         SetScriptVarArrayValue(0,DUNGEON_CLEAR_LIST,(u16) scriptVar13,1);
+
+                        // Check if this is the final dungeon (Dungeon 30) - trigger credits
+                        if (DungeonSeedOverrides_ShouldTriggerCredits(scriptVar13)) {
+                            SetScriptVarValue(0, GROUND_GETOUT, 2);  // Trigger credits sequence
+                        }
                     }
                     var = sub_8098FCC(gUnknown_20398B4);
                     if (var != -1) {

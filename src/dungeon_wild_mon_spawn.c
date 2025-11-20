@@ -18,6 +18,7 @@
 #include "dungeon_strings.h"
 #include "dungeon_misc.h"
 #include "dungeon_mon_spawn.h"
+#include "dungeon_seed_overrides.h"
 
 void TrySpawnWildMonster(void)
 {
@@ -28,9 +29,16 @@ void TrySpawnWildMonster(void)
     s32 level;
     struct Dungeon *dungeon;
     struct MonSpawnInfo monSpawnInfo;
+    const BossFightConfig *bossFight;
 
     illuminateEntity = NULL;
     dungeon = gDungeon;
+
+    // STEP 1.5: Disable auto-spawn on boss floors
+    bossFight = DungeonFloorSpawns_GetBossFightConfig();
+    if (bossFight != NULL && bossFight->enabled)
+        return;
+
     if (dungeon->unk644.enemyDensity == 0)
         return;
     if (dungeon->unk644.dungeonLocation.id == DUNGEON_METEOR_CAVE && dungeon->unk37FD != 0)

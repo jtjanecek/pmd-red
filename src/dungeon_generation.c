@@ -6186,6 +6186,9 @@ void GenerateBossArena(BossFightConfig *config)
     gDungeon->stairsSpawn.x = stairsX;
     gDungeon->stairsSpawn.y = stairsY;
 
+    // STEP 1.5: Disable enemy auto-spawn by setting runtime enemyDensity to 0
+    gDungeon->unk644.enemyDensity = 0;
+
     // Store stairs position for later spawning after boss defeat
     DungeonSeedOverrides_SetStairsPosition(stairsX, stairsY);
 }

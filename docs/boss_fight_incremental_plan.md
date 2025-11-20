@@ -6,16 +6,25 @@
 
 ---
 
-## Step 1: Arena Generation Only ✅ CURRENTLY IMPLEMENTED - TESTING
+## Step 1: Arena Generation Only ✅ COMPLETE
 
 **What:** Generate empty boss arena with player spawn, NO entity spawning at all.
 
 **Success Criteria:**
-- [ ] Floor loads without freezing ← **TEST THIS FIRST**
-- [ ] Empty 15×10 arena appears
-- [ ] Player spawns at bottom-center of arena
-- [ ] No enemies spawn (neither boss nor normal enemies)
-- [ ] Can move around freely without freezes
+- [x] Floor loads without freezing ✅
+- [x] Empty 15×10 arena appears ✅
+- [x] Player spawns at bottom-center of arena ✅
+- [ ] No enemies spawn (neither boss nor normal enemies) ⚠️ AUTO-SPAWN STILL ACTIVE
+- [ ] Can move around freely without freezes ⚠️ FREEZES WHEN AUTO-SPAWN TRIGGERS
+
+**Test Results:**
+- ✅ Arena generation works perfectly
+- ✅ Player spawns correctly
+- ✅ Can move around initially
+- ❌ Normal enemy auto-spawn still active, causes freeze
+- **Issue:** Despite disabling spawn mechanisms, auto-spawn still triggers after moving around
+
+**Next:** Need Step 1.5 to completely disable auto-spawn
 
 **Implementation Status:**
 - ✅ `GenerateBossArena()` creates arena structure (dungeon_generation.c:6164)
@@ -50,6 +59,43 @@ Memory region         Used Size  Region Size  %age Used
 - `src/dungeon_seed_overrides.c` - Boss config generation
 - `include/dungeon_generation.h` - Function declarations
 - `sym_ewram.txt` - EWRAM linker configuration
+
+---
+
+## Step 1.5: Disable Enemy Auto-Spawn ✅ IMPLEMENTED - TESTING
+
+**What:** Find and disable ALL enemy auto-spawn mechanisms for boss floors.
+
+**Success Criteria:**
+- [ ] Arena loads without freezing ← **TEST THIS**
+- [ ] Player can move around indefinitely ← **TEST THIS**
+- [ ] NO enemies spawn at any time (initial or auto-spawn) ← **TEST THIS**
+- [ ] No freezes when moving around for extended period ← **TEST THIS**
+
+**Root Cause Found:**
+Two separate `enemyDensity` fields exist:
+- `gDungeon->floorProperties.enemyDensity` - Set during floor load ✅
+- `gDungeon->unk644.enemyDensity` - Used at runtime for auto-spawn ❌ WAS NOT SET
+
+**Fixes Implemented:**
+
+1. **Set runtime enemyDensity** (dungeon_generation.c:6190)
+   ```c
+   gDungeon->unk644.enemyDensity = 0;
+   ```
+
+2. **Boss floor check in auto-spawn** (dungeon_wild_mon_spawn.c:37-40)
+   ```c
+   bossFight = DungeonFloorSpawns_GetBossFightConfig();
+   if (bossFight != NULL && bossFight->enabled)
+       return;  // Skip auto-spawn on boss floors
+   ```
+
+**How Auto-Spawn Works:**
+- Main loop calls `TrySpawnMonsterAndActivatePlusMinus()` (dungeon_engine.c:50)
+- Which calls `TrySpawnWildMonster()` (dungeon_wild_mon_spawn.c:23)
+- Checks `gDungeon->unk644.enemyDensity` to decide if spawning should occur
+- We now set this to 0 AND add explicit boss floor check
 
 ---
 

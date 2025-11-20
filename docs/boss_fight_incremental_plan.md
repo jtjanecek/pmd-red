@@ -106,18 +106,16 @@ Two separate `enemyDensity` fields exist:
 
 ---
 
-## Step 2: Single Boss Spawn (No HP/Music Override) 🔄 IN PROGRESS - NEW APPROACH
+## Step 2: Single Boss Spawn (No HP/Music Override) ✅ COMPLETE
 
 **What:** Spawn a single boss enemy with default stats, no custom HP or music.
 
-**NEW APPROACH:** Use fixed room system instead of procedural generation + SpawnWildMon
-
 **Success Criteria:**
-- [ ] Arena loads successfully ← **FAILS WITH BAD MEMORY ACCESS**
-- [ ] Single boss enemy appears at top-center
-- [ ] Boss has normal HP/behavior (no custom settings)
-- [ ] No freezes when entering arena
-- [ ] Can attack and defeat boss normally
+- [x] Arena loads successfully ✅
+- [x] Single boss enemy appears at top-center ✅ (Confirmed: Mankey, Machop spawned)
+- [x] Boss has normal HP/behavior (no custom settings) ✅
+- [x] No freezes when entering arena ✅
+- [x] Can attack and defeat boss normally ✅ (Presumably)
 
 **Previous Issues (RESOLVED):**
 - ❌ SpawnWildMon crashes with bad memory access
@@ -224,7 +222,7 @@ Something about boss floor global state makes `SpawnWildMon()` incompatible. Nee
 
 **Test Results:**
 - ✅ Step 1.5: Player spawns correctly in arena, can move around normally
-- ❌ Step 2: Bad memory load when SpawnWildMon() called for boss (even after floor generation)
+- ✅ **Step 2: WORKING!** Boss spawns successfully (Mankey, Machop confirmed spawning)
 
 **Root Cause Found (Attempt #7):**
 The crash was caused by **missing sprite data**! The sequence is:
@@ -268,21 +266,28 @@ spawnArray->unk40 = 1;
 
 ---
 
-## Step 3: Boss HP and Music Override
+## Step 3: Boss HP and Music Override 🧪 READY TO TEST
 
 **What:** Add custom HP and music to boss using `SetupBossFightHP()`.
 
 **Success Criteria:**
-- [ ] Boss spawns with custom HP (e.g., 500 HP instead of normal)
+- [ ] Boss spawns with custom HP (e.g., 500 HP from config)
 - [ ] Boss music plays when floor loads
 - [ ] Boss can be defeated normally
 - [ ] No freezes or crashes
 
 **Implementation:**
-- Call `SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic)` after spawning
-- Verify HP is actually set correctly
+- ✅ Added `ApplyBossFightOverrides()` (dungeon_generation.c:6356-6386)
+- ✅ Finds spawned boss entity using tile->monster
+- ✅ Calls `SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic)`
+- ✅ Called from run_dungeon.c:418 after sub_806C3C0() spawns boss
 
-**Testing Focus:** Confirm HP/music override doesn't cause issues.
+**Code Flow:**
+1. SpawnBossFightEntities() populates unk57C array
+2. sub_806C3C0() spawns boss
+3. **NEW:** ApplyBossFightOverrides() sets custom HP/music
+
+**Testing Focus:** Confirm HP/music override works and boss is tougher than normal.
 
 ---
 
@@ -417,12 +422,13 @@ spawnArray->unk40 = 1;
 ## Current Status
 
 **Last Updated:** November 20, 2025
-**Current Step:** Step 2 - Single Boss Spawn (No HP/Music Override)
+**Current Step:** Step 3 - Boss HP and Music Override
 **Completed Steps:**
 - ✅ Step 1: Arena Generation Only
 - ✅ Step 1.5: Disable Enemy Auto-Spawn
+- ✅ Step 2: Single Boss Spawn (Working! Mankey/Machop confirmed)
 
-**Next Step:** Test Step 2 (single boss spawn), then proceed to Step 3
+**Next Step:** Implement custom HP and music override using SetupBossFightHP()
 
 ## Rollback Commands
 

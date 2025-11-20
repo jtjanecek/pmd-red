@@ -411,6 +411,14 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             // This will spawn any entities in gDungeon->unk57C (including our boss!)
             sub_806C3C0();
 
+            // STEP 3: Apply boss HP/music override after spawning
+            {
+                const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                if (bossFight != NULL && bossFight->enabled) {
+                    ApplyBossFightOverrides((BossFightConfig*)bossFight);
+                }
+            }
+
             // Spawn normal enemies only on non-boss floors
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();

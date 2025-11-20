@@ -56,7 +56,9 @@ enum SecondaryStructureType {
 extern bool8 gUnknown_202F1A8;
 
 void GenerateFloor(void);
+void GenerateBossArena(BossFightConfig *config);
 void SpawnBossFightEntities(BossFightConfig *config);
+void ApplyBossFightOverrides(BossFightConfig *config);
 bool8 StairsAlwaysReachable(s32 stairsX, s32 stairsY, bool8 markUnreachable);
 void sub_804EB30(void);
 

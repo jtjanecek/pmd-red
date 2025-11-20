@@ -6349,6 +6349,41 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     // sub_806C3C0() will be called immediately after this function
     // and will spawn the boss from the array!
+}
+
+// STEP 3: Apply HP/music overrides to spawned boss
+// Called from run_dungeon.c AFTER sub_806C3C0() spawns the boss
+void ApplyBossFightOverrides(BossFightConfig *config)
+{
+    Entity *bossEntity;
+    Tile *tile;
+    s32 centerX, bossY;
+
+    if (config == NULL || !config->enabled)
+        return;
+
+    // Calculate where we spawned the boss
+    centerX = ARENA_START_X + ARENA_WIDTH / 2;
+    bossY = ARENA_START_Y + 2;
+
+    // Get the tile where boss was spawned
+    tile = GetTileMut(centerX, bossY);
+    if (tile == NULL)
+        return;
+
+    // Get the monster entity on that tile
+    bossEntity = tile->monster;
+    if (bossEntity == NULL)
+        return;
+
+    // STEP 3: Apply custom HP and music
+    if (config->bossHP > 0) {
+        SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
+    }
+
+    // STEP 5: Register this entity as the boss for defeat tracking
+    // DungeonSeedOverrides_RegisterBossEntity(bossEntity);
+    // (Will implement in Step 5)
 
     /* STEP 3+: Will enable later
     if (bossEntity != NULL) {

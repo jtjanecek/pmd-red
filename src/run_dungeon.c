@@ -396,15 +396,25 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         LoadDungeonTilesetAssets();
         if (!r6) {
             sub_806B168();
-            sub_806C3C0();
 
-            // Check if this floor has a boss fight - if so, skip normal enemy spawning
+            // Check if this floor has a boss fight
+            // If so, populate spawn array BEFORE sub_806C3C0() runs
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
                 if (bossFight != NULL && bossFight->enabled) {
-                    // STEP 2: Boss already spawned during GenerateBossArena()
-                    // Skip normal enemy spawning on boss floors
-                } else {
+                    // STEP 2: Populate gDungeon->unk57C array with boss
+                    // sub_806C3C0() will spawn it using the working mechanism
+                    SpawnBossFightEntities((BossFightConfig*)bossFight);
+                }
+            }
+
+            // This will spawn any entities in gDungeon->unk57C (including our boss!)
+            sub_806C3C0();
+
+            // Spawn normal enemies only on non-boss floors
+            {
+                const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                if (bossFight == NULL || !bossFight->enabled) {
                     // Normal floor - spawn regular enemies
                     SpawnWildMonsOnFloor();
                 }

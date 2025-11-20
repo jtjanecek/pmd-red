@@ -139,6 +139,13 @@ In `GenerateBossArena()` (lines 6195-6211):
 - All tiles assigned to room 0
 - This gives `sub_806B168()` valid tiles to spawn player on!
 
+**Entity Spawning Solution:**
+The key insight: `SpawnWildMon()` crashes during generation but works AFTER!
+- Moved entity spawning to run_dungeon.c (line 406)
+- Called AFTER `sub_806B168()` and `sub_806C3C0()` complete
+- Uses same timing as `sub_806C3C0()` which successfully spawns entities
+- `SpawnBossFightEntities()` now works (dungeon_generation.c:6287-6348)
+
 **Debugging Attempts (All Failed):**
 
 ### ❌ Approach A: Timing Fix
@@ -212,15 +219,45 @@ Something about boss floor global state makes `SpawnWildMon()` incompatible. Nee
 **Current State:**
 - ✅ Arena generation creates proper floor tiles
 - ✅ Player spawn positions set correctly
-- 🧪 **READY TO TEST:** Arena should now load with player spawning correctly!
-- ⏸️ Entity spawning still disabled (crashes) - will address after confirming arena works
+- ✅ Player spawns correctly (Step 1.5 COMPLETE)
+- ❌ Boss spawning causes bad memory load (Step 2 BLOCKED)
 
-**Test Plan:**
-1. Boot ROM and enter dungeon
-2. Check if floor 2+ loads without defeat screen
-3. Verify player spawns in arena
-4. Confirm player can move around
-5. Arena should be visible (not grassy dungeon)
+**Test Results:**
+- ✅ Step 1.5: Player spawns correctly in arena, can move around normally
+- ❌ Step 2: Bad memory load when SpawnWildMon() called for boss (even after floor generation)
+
+**Root Cause Found (Attempt #7):**
+The crash was caused by **missing sprite data**! The sequence is:
+1. `LoadDungeonPokemonSprites()` (run_dungeon.c:364) loads sprites for all monsters in spawn table
+2. We set `currFloorMonsterSpawnsCount = 0` for boss floors
+3. Boss sprite never gets loaded!
+4. `SpawnWildMon()` crashes trying to use non-existent sprite
+
+**Solution:**
+- Add boss species to spawn table (dungeon_floor_spawns.c:69-71)
+- Let `SetCurrentMonsterSpawns()` populate it
+- `LoadDungeonPokemonSprites()` will load boss sprite
+- Then spawn using gDungeon->unk57C array mechanism
+
+**Implementation:**
+```c
+// dungeon_floor_spawns.c - Add boss to spawn table:
+SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[0], overrides.bossFight.bossSpecies);
+// Let SetCurrentMonsterSpawns() populate for sprite loading
+
+// dungeon_generation.c - Populate unk57C array:
+spawnArray->unkArray[0].unk0 = config->bossSpecies;
+spawnArray->unkArray[0].unk4 = centerX;
+spawnArray->unkArray[0].unk5 = bossY;
+spawnArray->unkArray[0].unk3 = TRUE;
+spawnArray->unk40 = 1;
+
+// sub_806C3C0() spawns it
+```
+
+**Debug Markers:**
+- gBossArenaDebugMarker: Tracks arena generation (should be 100)
+- gBossSpawnDebugMarker: Tracks spawn function (should be 100 if successful)
 
 **Code Locations:**
 - Arena generation: `src/dungeon_generation.c:6168-6224`

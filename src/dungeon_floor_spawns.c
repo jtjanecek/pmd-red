@@ -62,18 +62,26 @@ static void ApplySeedOverridesToCurrentFloor(void)
     gDungeon->floorProperties.tileset = overrides.tileset;
     gDungeon->floorProperties.fixedRoomNumber = 0;  // Disable boss rooms/cutscenes for randomized dungeons
 
-    // If boss fight is enabled, disable normal monster spawns
+    // If boss fight is enabled, set up boss spawn table (not normal enemies)
     if (overrides.bossFight.enabled) {
-        // Clear all spawn entries for boss floors
-        for (i = 0; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
+        // CRITICAL FIX: Add boss to spawn table so sprite gets loaded!
+        // This prevents LoadDungeonPokemonSprites() crash
+        SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[0], overrides.bossFight.bossSpecies);
+        gDungeon->fileMonsterSpawns[0].randNum[0] = 0;
+        gDungeon->fileMonsterSpawns[0].randNum[1] = 0;
+
+        // Clear remaining entries
+        for (i = 1; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
             SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[i], 0);
             gDungeon->fileMonsterSpawns[i].randNum[0] = 0;
             gDungeon->fileMonsterSpawns[i].randNum[1] = 0;
         }
-        // Aggressively disable all enemy spawning mechanisms
+
+        // Disable auto-spawn but allow spawn initialization (for sprite loading)
         gDungeon->floorProperties.enemyDensity = 0;
-        gDungeon->currFloorMonsterSpawnsCount = 0;  // Prevent auto-spawn
-        gDungeon->monsterSpawnsPopulated = FALSE;   // Block spawn initialization
+        // DON'T set currFloorMonsterSpawnsCount = 0 yet!
+        // Let SetCurrentMonsterSpawns() populate it so sprites load
+        gDungeon->monsterSpawnsPopulated = FALSE;   // Will be populated with boss
     } else {
         // Normal floor - apply monster spawns
         for (i = 0; i < overrides.spawnCount && i < MONSTER_SPAWNS_ARR_COUNT; i++) {

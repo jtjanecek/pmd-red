@@ -6161,8 +6161,9 @@ static void ResetInnerBoundaryTileRows(void)
 // static void MarkSpawnPositions(s32 *playerX, s32 *playerY, s32 *bossX, s32 *bossY,
 //                                 s32 *stairsX, s32 *stairsY, s32 minionPositions[][2], s32 minionCount);
 
-// DEBUG: Global marker to track where we are
+// DEBUG: Global markers to track where we are
 static EWRAM_DATA s32 gBossArenaDebugMarker = {0};
+static EWRAM_DATA s32 gBossSpawnDebugMarker = {0};
 
 // Generate a simple rectangular boss arena using fixed room system
 void GenerateBossArena(BossFightConfig *config)
@@ -6281,48 +6282,73 @@ void GenerateBossArena(BossFightConfig *config)
     gBossArenaDebugMarker = 100;  // DEBUG: Completed successfully
 }
 
-// UNUSED: Now spawning through PlaceFixedRoomTile() in GenerateBossArena()
-#if 0
+// STEP 2: Spawn boss entities using gDungeon->unk57C mechanism
+// This is the EXACT same method as sub_806C3C0() which we know works!
+// Called from run_dungeon.c BEFORE sub_806C3C0() runs
 void SpawnBossFightEntities(BossFightConfig *config)
 {
-    struct MonSpawnInfo spawnInfo;
-    Entity *bossEntity;
-    s32 playerX, playerY, bossX, bossY, stairsX, stairsY;
-    s32 minionPositions[4][2];
-    s32 i;
+    unkDungeon57C *spawnArray;
+    s32 centerX, bossY;
 
-    if (config == NULL || !config->enabled)
+    gBossSpawnDebugMarker = 1;  // DEBUG: Entered function
+
+    if (config == NULL || !config->enabled) {
+        gBossSpawnDebugMarker = -1;  // DEBUG: Config invalid
         return;
+    }
 
-    // Calculate spawn positions
-    MarkSpawnPositions(&playerX, &playerY, &bossX, &bossY,
-                       &stairsX, &stairsY, minionPositions, config->minionCount);
+    gBossSpawnDebugMarker = 2;  // DEBUG: Config valid
 
-    // STEP 2: Validate boss config before spawning
+    // STEP 2: Validate boss species
     if (config->bossSpecies <= 0 || config->bossSpecies >= NUM_MONSTERS) {
-        // Invalid species - skip spawning
+        gBossSpawnDebugMarker = -2;  // DEBUG: Invalid species
         return;
     }
 
-    if (bossX < 0 || bossX >= DUNGEON_MAX_SIZE_X || bossY < 0 || bossY >= DUNGEON_MAX_SIZE_Y) {
-        // Invalid position - skip spawning
+    gBossSpawnDebugMarker = 3;  // DEBUG: Species valid
+
+    // Calculate boss spawn position (top-center of arena)
+    centerX = ARENA_START_X + ARENA_WIDTH / 2;
+    bossY = ARENA_START_Y + 2;
+
+    gBossSpawnDebugMarker = 4;  // DEBUG: Position calculated
+
+    // Validate position is in bounds
+    if (centerX < 0 || centerX >= DUNGEON_MAX_SIZE_X ||
+        bossY < 0 || bossY >= DUNGEON_MAX_SIZE_Y) {
+        gBossSpawnDebugMarker = -3;  // DEBUG: Position out of bounds
         return;
     }
 
-    // Spawn boss at top-center
-    spawnInfo.species = config->bossSpecies;
-    spawnInfo.level = 50;  // Can be made configurable
-    spawnInfo.pos.x = bossX;
-    spawnInfo.pos.y = bossY;
-    spawnInfo.unk2 = 0;
-    spawnInfo.unk4 = 0;
-    spawnInfo.unk10 = 0;
+    gBossSpawnDebugMarker = 5;  // DEBUG: Position valid
 
-    bossEntity = SpawnWildMon(&spawnInfo, TRUE);
+    // Use the EXACT same mechanism as sub_806C3C0()
+    // Populate gDungeon->unk57C array and let sub_806C3C0() spawn it
+    spawnArray = &gDungeon->unk57C;
 
-    // STEP 2: Spawn boss only - no HP setup, no minions yet
-    (void)bossEntity;  // Suppress unused warning
-    (void)i;           // Suppress unused warning (will be used in Step 4)
+    gBossSpawnDebugMarker = 6;  // DEBUG: Got spawn array pointer
+
+    // Add boss to spawn array (index 0)
+    spawnArray->unkArray[0].unk0 = config->bossSpecies;
+
+    gBossSpawnDebugMarker = 7;  // DEBUG: Set species
+
+    spawnArray->unkArray[0].unk2 = 0;       // Normal spawn
+    spawnArray->unkArray[0].unk3 = TRUE;    // Enable this entry
+
+    gBossSpawnDebugMarker = 8;  // DEBUG: Set flags
+
+    spawnArray->unkArray[0].unk4 = centerX;
+    spawnArray->unkArray[0].unk5 = bossY;
+
+    gBossSpawnDebugMarker = 9;  // DEBUG: Set position
+
+    spawnArray->unk40 = 1;  // One entity to spawn
+
+    gBossSpawnDebugMarker = 100;  // DEBUG: Array populated
+
+    // sub_806C3C0() will be called immediately after this function
+    // and will spawn the boss from the array!
 
     /* STEP 3+: Will enable later
     if (bossEntity != NULL) {
@@ -6333,7 +6359,7 @@ void SpawnBossFightEntities(BossFightConfig *config)
         DungeonSeedOverrides_RegisterBossEntity(bossEntity);
     }
 
-    // Spawn minions around boss
+    // STEP 4: Spawn minions around boss
     for (i = 0; i < config->minionCount && i < 4; i++) {
         spawnInfo.species = config->minionSpecies[i];
         spawnInfo.level = 40;  // Minions are weaker than boss
@@ -6347,7 +6373,6 @@ void SpawnBossFightEntities(BossFightConfig *config)
     }
     */
 }
-#endif
 
 // UNUSED: Now using PlaceFixedRoomTile() instead
 /* static void CreateArenaWalls(void)

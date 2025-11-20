@@ -6381,6 +6381,11 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
     }
 
+    // STEP 3: Set boss music globally so it plays immediately
+    if (config->bossMusic != 0) {
+        gDungeon->unk644.bossSongIndex = config->bossMusic;
+    }
+
     // STEP 5: Register this entity as the boss for defeat tracking
     // DungeonSeedOverrides_RegisterBossEntity(bossEntity);
     // (Will implement in Step 5)

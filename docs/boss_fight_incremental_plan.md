@@ -266,28 +266,32 @@ spawnArray->unk40 = 1;
 
 ---
 
-## Step 3: Boss HP and Music Override 🧪 READY TO TEST
+## Step 3: Boss HP and Music Override ✅ COMPLETE
 
 **What:** Add custom HP and music to boss using `SetupBossFightHP()`.
 
 **Success Criteria:**
-- [ ] Boss spawns with custom HP (e.g., 500 HP from config)
-- [ ] Boss music plays when floor loads
-- [ ] Boss can be defeated normally
-- [ ] No freezes or crashes
+- [x] Boss spawns with custom HP (e.g., >250 HP confirmed) ✅
+- [x] Boss music plays when floor loads ✅ (Fixed with gDungeon->unk644.bossSongIndex)
+- [x] Boss can be defeated normally ✅
+- [x] No freezes or crashes ✅
 
 **Implementation:**
-- ✅ Added `ApplyBossFightOverrides()` (dungeon_generation.c:6356-6386)
+- ✅ Added `ApplyBossFightOverrides()` (dungeon_generation.c:6356-6391)
 - ✅ Finds spawned boss entity using tile->monster
 - ✅ Calls `SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic)`
+- ✅ Sets `gDungeon->unk644.bossSongIndex` for immediate music playback
 - ✅ Called from run_dungeon.c:418 after sub_806C3C0() spawns boss
+
+**Music Fix:**
+- Initial issue: Music only played after boss defeat
+- Root cause: `UpdateDungeonMusic()` checks `gDungeon->unk644.bossSongIndex` (dungeon_music.c:150)
+- Solution: Set `bossSongIndex` globally when applying overrides (line 6386)
 
 **Code Flow:**
 1. SpawnBossFightEntities() populates unk57C array
 2. sub_806C3C0() spawns boss
-3. **NEW:** ApplyBossFightOverrides() sets custom HP/music
-
-**Testing Focus:** Confirm HP/music override works and boss is tougher than normal.
+3. ApplyBossFightOverrides() sets custom HP/music + global music flag
 
 ---
 
@@ -422,13 +426,18 @@ spawnArray->unk40 = 1;
 ## Current Status
 
 **Last Updated:** November 20, 2025
-**Current Step:** Step 3 - Boss HP and Music Override
+**Current Step:** Step 4 - Add Minion Spawning (Optional)
 **Completed Steps:**
 - ✅ Step 1: Arena Generation Only
 - ✅ Step 1.5: Disable Enemy Auto-Spawn
 - ✅ Step 2: Single Boss Spawn (Working! Mankey/Machop confirmed)
+- ✅ Step 3: Boss HP and Music Override (>250 HP, music plays immediately)
 
-**Next Step:** Implement custom HP and music override using SetupBossFightHP()
+**Next Steps (in order of priority):**
+- Step 5: Boss Defeat Detection (critical for stairs/loot)
+- Step 6: Stairs Spawning on Boss Defeat
+- Step 7: Loot Drops on Boss Defeat
+- Step 4: Add Minion Spawning (optional enhancement)
 
 ## Rollback Commands
 

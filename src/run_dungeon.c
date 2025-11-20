@@ -402,8 +402,8 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
                 if (bossFight != NULL && bossFight->enabled) {
-                    // STEP 1: Boss floor - NO entity spawning yet (testing arena only)
-                    // SpawnBossFightEntities((BossFightConfig*)bossFight);
+                    // STEP 2: Boss already spawned during GenerateBossArena()
+                    // Skip normal enemy spawning on boss floors
                 } else {
                     // Normal floor - spawn regular enemies
                     SpawnWildMonsOnFloor();

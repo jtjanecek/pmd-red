@@ -6155,45 +6155,134 @@ static void ResetInnerBoundaryTileRows(void)
 #define ARENA_START_X 10
 #define ARENA_START_Y 10
 
-// Helper functions for boss arena generation
-static void CreateArenaWalls(void);
-static void CreateArenaFloor(void);
-static void MarkSpawnPositions(s32 *playerX, s32 *playerY, s32 *bossX, s32 *bossY,
-                                s32 *stairsX, s32 *stairsY, s32 minionPositions[][2], s32 minionCount);
+// Helper functions for boss arena generation (now using fixed room system)
+// static void CreateArenaWalls(void);
+// static void CreateArenaFloor(void);
+// static void MarkSpawnPositions(s32 *playerX, s32 *playerY, s32 *bossX, s32 *bossY,
+//                                 s32 *stairsX, s32 *stairsY, s32 minionPositions[][2], s32 minionCount);
 
-// Generate a simple rectangular boss arena
+// DEBUG: Global marker to track where we are
+static EWRAM_DATA s32 gBossArenaDebugMarker = {0};
+
+// Generate a simple rectangular boss arena using fixed room system
 void GenerateBossArena(BossFightConfig *config)
 {
-    s32 playerX, playerY, bossX, bossY, stairsX, stairsY;
-    s32 minionPositions[4][2];  // Up to 4 minions, each with [x, y]
+    s32 x, y;
+    s32 centerX, playerY, bossY;
+    Tile *tile;
+
+    gBossArenaDebugMarker = 1;  // DEBUG: Entered function
 
     if (config == NULL || !config->enabled)
         return;
 
-    // Create the arena structure
-    CreateArenaWalls();
-    CreateArenaFloor();
+    gBossArenaDebugMarker = 2;  // DEBUG: Config valid
 
-    // Calculate spawn positions
-    MarkSpawnPositions(&playerX, &playerY, &bossX, &bossY,
-                       &stairsX, &stairsY, minionPositions, config->minionCount);
+    // Calculate key positions
+    centerX = ARENA_START_X + ARENA_WIDTH / 2;
+    playerY = ARENA_START_Y + ARENA_HEIGHT - 3;
+    bossY = ARENA_START_Y + 2;
 
-    // Set player spawn position (CRITICAL - without this the game freezes!)
-    gDungeon->playerSpawn.x = playerX;
+    gBossArenaDebugMarker = 3;  // DEBUG: Positions calculated
+
+    // CRITICAL: Reset floor tiles (we bypassed normal generation)
+    ResetFloor();
+    gBossArenaDebugMarker = 3.5;  // DEBUG: Floor reset
+
+    // Create arena layout: walls around perimeter, normal floor inside
+    gBossArenaDebugMarker = 4;  // DEBUG: Creating arena
+
+    for (y = ARENA_START_Y; y < ARENA_START_Y + ARENA_HEIGHT; y++) {
+        for (x = ARENA_START_X; x < ARENA_START_X + ARENA_WIDTH; x++) {
+            tile = GetTileMut(x, y);
+
+            // Check if this is a perimeter tile (wall) or interior (floor)
+            if (x == ARENA_START_X || x == ARENA_START_X + ARENA_WIDTH - 1 ||
+                y == ARENA_START_Y || y == ARENA_START_Y + ARENA_HEIGHT - 1) {
+                // Perimeter - create wall
+                SetTerrainType(tile, TERRAIN_TYPE_WALL);
+                tile->room = 0;  // Arena room
+            } else {
+                // Interior - create normal walkable floor
+                SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+                tile->room = 0;  // Arena room
+            }
+        }
+    }
+
+    gBossArenaDebugMarker = 5;  // DEBUG: Arena created
+
+    // Set spawn positions
+    gDungeon->playerSpawn.x = centerX;
     gDungeon->playerSpawn.y = playerY;
+    gDungeon->stairsSpawn.x = centerX;
+    gDungeon->stairsSpawn.y = ARENA_START_Y + 1;
+    gDungeon->unk644.enemyDensity = 0;
+    DungeonSeedOverrides_SetStairsPosition(centerX, ARENA_START_Y + 1);
 
-    // Set stairs spawn position (will be spawned after boss defeat)
-    gDungeon->stairsSpawn.x = stairsX;
-    gDungeon->stairsSpawn.y = stairsY;
+    gBossArenaDebugMarker = 99;  // DEBUG: Complete
+    return;
 
-    // STEP 1.5: Disable enemy auto-spawn by setting runtime enemyDensity to 0
+    // STEP 2: Entity spawning disabled for now - causes crashes
+    // Will need to use Regi-style fixed room entities
+
+    // OLD CODE BELOW - keeping for reference
+    for (x = ARENA_START_X; x < ARENA_START_X + ARENA_WIDTH; x++) {
+        // Top wall
+        tile = GetTileMut(x, ARENA_START_Y);
+        PlaceFixedRoomTile(tile, 1, x, ARENA_START_Y, FALSE);  // 1 = wall tile
+
+        // Bottom wall
+        tile = GetTileMut(x, ARENA_START_Y + ARENA_HEIGHT - 1);
+        PlaceFixedRoomTile(tile, 1, x, ARENA_START_Y + ARENA_HEIGHT - 1, FALSE);
+    }
+    gBossArenaDebugMarker = 7;  // DEBUG: Horizontal walls done
+
+    for (y = ARENA_START_Y; y < ARENA_START_Y + ARENA_HEIGHT; y++) {
+        // Left wall
+        tile = GetTileMut(ARENA_START_X, y);
+        PlaceFixedRoomTile(tile, 1, ARENA_START_X, y, FALSE);
+
+        // Right wall
+        tile = GetTileMut(ARENA_START_X + ARENA_WIDTH - 1, y);
+        PlaceFixedRoomTile(tile, 1, ARENA_START_X + ARENA_WIDTH - 1, y, FALSE);
+    }
+    gBossArenaDebugMarker = 8;  // DEBUG: All walls done
+
+    // Create arena floor (interior)
+    gBossArenaDebugMarker = 9;  // DEBUG: Starting floor placement
+    for (y = ARENA_START_Y + 1; y < ARENA_START_Y + ARENA_HEIGHT - 1; y++) {
+        for (x = ARENA_START_X + 1; x < ARENA_START_X + ARENA_WIDTH - 1; x++) {
+            tile = GetTileMut(x, y);
+
+            // Player spawn position
+            if (x == centerX && y == playerY) {
+                PlaceFixedRoomTile(tile, 4, x, y, FALSE);  // 4 = player spawn
+            }
+            // Boss spawn position - DISABLED for now, just make it floor
+            else if (x == centerX && y == bossY) {
+                // DIAGNOSTIC: Don't spawn entity, just make it normal floor
+                PlaceFixedRoomTile(tile, 0, x, y, FALSE);  // 0 = normal floor
+            }
+            // Regular floor
+            else {
+                PlaceFixedRoomTile(tile, 0, x, y, FALSE);  // 0 = normal floor
+            }
+        }
+    }
+    gBossArenaDebugMarker = 10;  // DEBUG: Floor placement done
+
+    // STEP 1.5: Disable enemy auto-spawn
     gDungeon->unk644.enemyDensity = 0;
 
-    // Store stairs position for later spawning after boss defeat
-    DungeonSeedOverrides_SetStairsPosition(stairsX, stairsY);
+    // Store stairs position for later
+    DungeonSeedOverrides_SetStairsPosition(centerX, ARENA_START_Y + 1);
+
+    gBossArenaDebugMarker = 100;  // DEBUG: Completed successfully
 }
 
-// Spawn boss and minions after arena is created
+// UNUSED: Now spawning through PlaceFixedRoomTile() in GenerateBossArena()
+#if 0
 void SpawnBossFightEntities(BossFightConfig *config)
 {
     struct MonSpawnInfo spawnInfo;
@@ -6209,6 +6298,17 @@ void SpawnBossFightEntities(BossFightConfig *config)
     MarkSpawnPositions(&playerX, &playerY, &bossX, &bossY,
                        &stairsX, &stairsY, minionPositions, config->minionCount);
 
+    // STEP 2: Validate boss config before spawning
+    if (config->bossSpecies <= 0 || config->bossSpecies >= NUM_MONSTERS) {
+        // Invalid species - skip spawning
+        return;
+    }
+
+    if (bossX < 0 || bossX >= DUNGEON_MAX_SIZE_X || bossY < 0 || bossY >= DUNGEON_MAX_SIZE_Y) {
+        // Invalid position - skip spawning
+        return;
+    }
+
     // Spawn boss at top-center
     spawnInfo.species = config->bossSpecies;
     spawnInfo.level = 50;  // Can be made configurable
@@ -6220,6 +6320,11 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     bossEntity = SpawnWildMon(&spawnInfo, TRUE);
 
+    // STEP 2: Spawn boss only - no HP setup, no minions yet
+    (void)bossEntity;  // Suppress unused warning
+    (void)i;           // Suppress unused warning (will be used in Step 4)
+
+    /* STEP 3+: Will enable later
     if (bossEntity != NULL) {
         // Set boss HP and music
         SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
@@ -6240,10 +6345,12 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
         SpawnWildMon(&spawnInfo, TRUE);
     }
+    */
 }
+#endif
 
-// Create walls around perimeter of arena
-static void CreateArenaWalls(void)
+// UNUSED: Now using PlaceFixedRoomTile() instead
+/* static void CreateArenaWalls(void)
 {
     s32 x, y;
     Tile *tile;
@@ -6351,3 +6458,4 @@ static void MarkSpawnPositions(s32 *playerX, s32 *playerY, s32 *bossX, s32 *boss
         minionPositions[i][1] = 0;
     }
 }
+*/

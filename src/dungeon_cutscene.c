@@ -18,6 +18,7 @@
 #include "dungeon_util.h"
 #include "dungeon_map_access.h"
 #include "dungeon_misc.h"
+#include "dungeon_seed_overrides.h"
 #include "dungeon_vram.h"
 #include "dungeon_mon_sprite_render.h"
 #include "dungeon_range.h"
@@ -538,6 +539,12 @@ void DisplayPreFightDialogue(void)
 
 void sub_8084E00(Entity *entity, u8 param_2, bool8 param_3)
 {
+  // NEW: Check if this is a custom override boss
+  if (DungeonSeedOverrides_IsCustomBoss(entity)) {
+    DungeonSeedOverrides_HandleBossFaint(entity);
+    return;
+  }
+
   if (param_2 != 0) {
     switch(gDungeon->unk3A0D) {
         case 0:

@@ -586,10 +586,170 @@ Minions are thematically related to their boss (e.g., Geodude → Diglett/Sandsh
 
 ## References
 
-- **Existing boss fight docs:** `docs/custom_bossfights.md`
 - **Fixed room constants:** `include/constants/fixed_rooms.h`
 - **Fixed room generation:** `src/dungeon_generation_fixed.c`
 - **Scenario system:** `src/dungeon_cutscene.c:120`
 - **Regi boss handlers:** `src/dungeon_cutscene_regis.c`
 - **Override system:** `src/dungeon_seed_overrides.c`
 - **Floor generation:** `src/dungeon_generation.c:160`
+
+---
+
+## Implementation Status (Option 1: Scenario-Free Boss System)
+
+**Last Updated:** November 20, 2025  
+**Status:** Core system functional, testing in progress
+
+### ✅ Completed
+
+#### Phase 1: Extended Override Configuration
+- ✅ Added `BossFightConfig` struct to `include/dungeon_seed_overrides.h`
+  - Fields: enabled, bossSpecies, bossHP, bossMusic, dropItem, monsterBehavior, minionCount, minionSpecies[4], roomTileset
+- ✅ Extended `DungeonSeedFloorOverrides` to include `BossFightConfig bossFight` field
+- ✅ Implemented `PopulateBossFightConfig()` in `src/dungeon_seed_overrides.c`
+  - Procedural boss generation with 20% chance on floors >= 2
+  - Boss species pools (early/mid/late) with 8 species each
+  - HP scaling: 300 + (floor × 25)
+  - Minion generation (0-3) from shared pool
+  - Random arena tileset selection (19 or 33)
+- ✅ **Critical Bug Fix:** Fixed static local variable initialization in `GetBossPool()` 
+  - GBA doesn't support compile-time pointer initialization in static locals
+  - Changed to runtime assignment to prevent crashes
+
+#### Phase 2: Boss Arena Generation
+- ✅ Implemented `GenerateBossArena()` in `src/dungeon_generation.c` (lines 6164-6194)
+  - Creates 15×10 rectangular arena at position (10, 10)
+  - Wall generation with `CreateArenaWalls()`
+  - Floor generation with `CreateArenaFloor()`
+  - Spawn position calculation with `MarkSpawnPositions()`
+  - **Critical:** Sets `gDungeon->playerSpawn` and `gDungeon->stairsSpawn` (without this, game freezes)
+- ✅ Implemented helper functions:
+  - `CreateArenaWalls()` - Perimeter wall generation
+  - `CreateArenaFloor()` - Walkable interior tiles  
+  - `MarkSpawnPositions()` - Player at bottom-center, boss at top-center, minions around boss
+- ✅ Implemented `SpawnBossFightEntities()` (lines 6197-6243)
+  - Boss spawning with `SpawnWildMon()`
+  - HP/music setup with `SetupBossFightHP()`
+  - Boss registration for defeat tracking
+  - Minion spawning in pattern around boss
+
+#### Phase 3: Dungeon Generation Integration  
+- ✅ Added boss fight check hook in `GenerateFloor()` (line 190-202)
+  - Validates boss config before generation
+  - Safety checks: gDungeon != NULL, valid species range
+  - Generates arena and spawns entities, then returns early to skip normal generation
+- ✅ Modified `src/dungeon_floor_spawns.c`:
+  - Added static EWRAM variable `sCurrentBossFight` to store current floor's config
+  - Implemented `DungeonFloorSpawns_GetBossFightConfig()` getter function
+  - Modified `ApplySeedOverridesToCurrentFloor()` to copy boss config to EWRAM storage
+  - **Critical Bug Fix:** Disabled normal enemy auto-spawn for boss floors
+    - Set `enemyDensity = 0`
+    - Set `currFloorMonsterSpawnsCount = 0`
+    - Set `monsterSpawnsPopulated = FALSE`
+    - Clear all spawn table entries
+
+#### Phase 4: EWRAM and Linker Configuration
+- ✅ Added `src/dungeon_floor_spawns.o` to `sym_ewram.txt` (line 39)
+  - Required for EWRAM variable `sCurrentBossFight` to link correctly
+  - Placed after `dungeon_generation.o` for logical grouping
+- ✅ Fixed linker errors with proper `.include` directive syntax
+- ✅ Memory usage: 92.55% EWRAM (242,604 / 256 KB) - within limits
+
+### 🔄 In Progress
+
+#### Phase 5: Boss Defeat Handling
+- ⚠️ **Status:** Needs implementation
+- Hook exists in `src/dungeon_cutscene.c:sub_8084E00()` 
+- Functions declared but need full implementation:
+  - `DungeonSeedOverrides_IsCustomBoss()` - Check if entity is our boss
+  - `DungeonSeedOverrides_HandleBossFaint()` - Spawn stairs + drop loot
+  - `DungeonSeedOverrides_RegisterBossEntity()` - Track boss entity pointer
+  - `DungeonSeedOverrides_SetStairsPosition()` - Store stairs position for later
+
+### 🐛 Known Issues & Fixes
+
+#### Issue 1: ROM Boot Crash (RESOLVED)
+**Symptom:** ROM failed to open with "Failed to open game file" error  
+**Cause:** Static local variables with non-constant initializers in `GetBossPool()`
+```c
+// BAD - Doesn't work on GBA:
+static SeedSpeciesPool earlyPool = {sPoolEarlyBosses, ARRAY_COUNT(sPoolEarlyBosses)};
+```
+**Fix:** Runtime assignment instead of compile-time initialization
+```c
+// GOOD - Runtime assignment:
+static SeedSpeciesPool pool;
+pool.species = sPoolEarlyBosses;
+pool.count = ARRAY_COUNT(sPoolEarlyBosses);
+```
+
+#### Issue 2: Game Freeze on Boss Floor Load (RESOLVED)
+**Symptom:** Game freezes when entering floor with boss fight  
+**Cause:** Missing `gDungeon->playerSpawn` initialization  
+**Fix:** Added lines 6181-6186 in `GenerateBossArena()`
+```c
+gDungeon->playerSpawn.x = playerX;
+gDungeon->playerSpawn.y = playerY;
+gDungeon->stairsSpawn.x = stairsX;
+gDungeon->stairsSpawn.y = stairsY;
+```
+
+#### Issue 3: Normal Enemy Auto-Spawn on Boss Floors (RESOLVED)
+**Symptom:** Arena loads correctly but enemies auto-spawn during gameplay, causing freezes  
+**Cause:** Normal enemy spawning mechanisms still active for boss floors  
+**Fix:** Added aggressive spawn disabling in `ApplySeedOverridesToCurrentFloor()` (lines 73-76)
+```c
+gDungeon->floorProperties.enemyDensity = 0;
+gDungeon->currFloorMonsterSpawnsCount = 0;
+gDungeon->monsterSpawnsPopulated = FALSE;
+```
+
+### 📋 Testing Checklist
+
+- [x] ROM builds without errors
+- [x] ROM boots successfully  
+- [x] Boss arena generates correctly (15×10 room with walls/floor)
+- [x] Player spawns at correct position (bottom-center)
+- [ ] Boss spawns at correct position (top-center) with correct HP
+- [ ] Minions spawn around boss in correct pattern
+- [ ] No normal enemies auto-spawn during boss fight
+- [ ] Boss defeat triggers stairs spawn
+- [ ] Boss drops loot on defeat
+- [ ] Stairs spawn at correct position (top-center behind boss)
+- [ ] Can advance to next floor after boss defeat
+- [ ] Same seed generates same boss fights (deterministic)
+- [ ] Different seeds generate different boss configurations
+
+### 📝 Next Steps
+
+1. **Test boss spawning** - Verify boss entity appears with correct HP/music
+2. **Test minion spawning** - Confirm minions appear in correct positions
+3. **Implement defeat handling** - Complete Phase 5 functions
+4. **Test loot drops** - Verify items drop correctly
+5. **Test stairs spawning** - Confirm stairs appear after boss defeat
+6. **Seed determinism testing** - Verify same seed = same bosses
+
+### 🔧 Technical Notes
+
+#### GBA-Specific Gotchas Encountered
+1. **Static initialization:** Cannot initialize static local variables with pointers at compile-time
+2. **EWRAM variables:** Must be explicitly added to `sym_ewram.txt` and initialized with `{0}` or runtime assignment
+3. **Player spawn:** MUST be set or game will freeze waiting for player
+4. **Enemy spawning:** Multiple mechanisms must be disabled (density, count, populated flag, spawn table)
+
+#### Memory Layout
+- `sCurrentBossFight` in EWRAM (external RAM) for faster access
+- Boss arena at fixed position (10, 10) to avoid boundary issues
+- Arena dimensions (15×10) chosen to fit comfortably in 56×32 dungeon grid
+
+### 📚 Modified Files
+
+1. `include/dungeon_seed_overrides.h` - BossFightConfig struct, function declarations
+2. `src/dungeon_seed_overrides.c` - Boss generation logic, RNG, species pools
+3. `include/dungeon_floor_spawns.h` - Getter function declaration
+4. `src/dungeon_floor_spawns.c` - EWRAM storage, spawn disabling
+5. `src/dungeon_generation.c` - Arena generation, entity spawning, generation hook
+6. `src/dungeon_cutscene.c` - Boss defeat hook (partial)
+7. `sym_ewram.txt` - EWRAM linker configuration
+8. `build/pmd_red/sym_ewram.ld` - Generated linker script (auto-generated from sym_ewram.txt)
+

@@ -21,6 +21,9 @@
 #include "dungeon_data.h"
 #include "dungeon_mon_spawn.h"
 #include "run_dungeon.h"
+#include "dungeon_floor_spawns.h"
+#include "dungeon_seed_overrides.h"
+#include "dungeon_cutscene.h"
 
 #include "dungeon_auto_explore.h"
 enum CardinalDirection
@@ -110,6 +113,8 @@ static void ResetInnerBoundaryTileRows(void);
 static void GenerateOneRoomMonsterHouseFloor(void);
 static void ResolveInvalidSpawns(void);
 static void GenerateTwoRoomsWithMonsterHouseFloor(void);
+void GenerateBossArena(BossFightConfig *config);
+void SpawnBossFightEntities(BossFightConfig *config);
 
 EWRAM_DATA bool8 gUnknown_202F1A8 = FALSE;
 static EWRAM_DATA bool8 sInvalidGeneration = FALSE;
@@ -181,6 +186,21 @@ void GenerateFloor(void)
 
     ResetAutoExplore();
     ResetFloor();
+
+    // NEW: Check if this floor has a boss fight
+    // If so, generate boss arena instead of normal dungeon
+    {
+        const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+        // Additional safety: only generate boss if seed overrides are active and boss is valid
+        if (bossFight != NULL && bossFight->enabled &&
+            gDungeon != NULL &&
+            bossFight->bossSpecies > 0 && bossFight->bossSpecies < NUM_MONSTERS) {
+            GenerateBossArena((BossFightConfig*)bossFight);
+            // TESTING: Entity spawning causes freeze - need to spawn later in process
+            // SpawnBossFightEntities((BossFightConfig*)bossFight);
+            return;
+        }
+    }
 
     gDungeon->unk644.enemyDensity = abs(floorProps->enemyDensity);
 
@@ -6125,5 +6145,206 @@ static void ResetInnerBoundaryTileRows(void)
         if (x == 0 || x == DUNGEON_MAX_SIZE_X - 1) {
             tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
         }
+    }
+}
+
+// ==================== BOSS ARENA GENERATION ====================
+// Arena dimensions
+#define ARENA_WIDTH 15
+#define ARENA_HEIGHT 10
+#define ARENA_START_X 10
+#define ARENA_START_Y 10
+
+// Helper functions for boss arena generation
+static void CreateArenaWalls(void);
+static void CreateArenaFloor(void);
+static void MarkSpawnPositions(s32 *playerX, s32 *playerY, s32 *bossX, s32 *bossY,
+                                s32 *stairsX, s32 *stairsY, s32 minionPositions[][2], s32 minionCount);
+
+// Generate a simple rectangular boss arena
+void GenerateBossArena(BossFightConfig *config)
+{
+    s32 playerX, playerY, bossX, bossY, stairsX, stairsY;
+    s32 minionPositions[4][2];  // Up to 4 minions, each with [x, y]
+
+    if (config == NULL || !config->enabled)
+        return;
+
+    // Create the arena structure
+    CreateArenaWalls();
+    CreateArenaFloor();
+
+    // Calculate spawn positions
+    MarkSpawnPositions(&playerX, &playerY, &bossX, &bossY,
+                       &stairsX, &stairsY, minionPositions, config->minionCount);
+
+    // Set player spawn position (CRITICAL - without this the game freezes!)
+    gDungeon->playerSpawn.x = playerX;
+    gDungeon->playerSpawn.y = playerY;
+
+    // Set stairs spawn position (will be spawned after boss defeat)
+    gDungeon->stairsSpawn.x = stairsX;
+    gDungeon->stairsSpawn.y = stairsY;
+
+    // Store stairs position for later spawning after boss defeat
+    DungeonSeedOverrides_SetStairsPosition(stairsX, stairsY);
+}
+
+// Spawn boss and minions after arena is created
+void SpawnBossFightEntities(BossFightConfig *config)
+{
+    struct MonSpawnInfo spawnInfo;
+    Entity *bossEntity;
+    s32 playerX, playerY, bossX, bossY, stairsX, stairsY;
+    s32 minionPositions[4][2];
+    s32 i;
+
+    if (config == NULL || !config->enabled)
+        return;
+
+    // Calculate spawn positions
+    MarkSpawnPositions(&playerX, &playerY, &bossX, &bossY,
+                       &stairsX, &stairsY, minionPositions, config->minionCount);
+
+    // Spawn boss at top-center
+    spawnInfo.species = config->bossSpecies;
+    spawnInfo.level = 50;  // Can be made configurable
+    spawnInfo.pos.x = bossX;
+    spawnInfo.pos.y = bossY;
+    spawnInfo.unk2 = 0;
+    spawnInfo.unk4 = 0;
+    spawnInfo.unk10 = 0;
+
+    bossEntity = SpawnWildMon(&spawnInfo, TRUE);
+
+    if (bossEntity != NULL) {
+        // Set boss HP and music
+        SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
+
+        // Register this entity as the boss for defeat tracking
+        DungeonSeedOverrides_RegisterBossEntity(bossEntity);
+    }
+
+    // Spawn minions around boss
+    for (i = 0; i < config->minionCount && i < 4; i++) {
+        spawnInfo.species = config->minionSpecies[i];
+        spawnInfo.level = 40;  // Minions are weaker than boss
+        spawnInfo.pos.x = minionPositions[i][0];
+        spawnInfo.pos.y = minionPositions[i][1];
+        spawnInfo.unk2 = 0;
+        spawnInfo.unk4 = 0;
+        spawnInfo.unk10 = 0;
+
+        SpawnWildMon(&spawnInfo, TRUE);
+    }
+}
+
+// Create walls around perimeter of arena
+static void CreateArenaWalls(void)
+{
+    s32 x, y;
+    Tile *tile;
+
+    // Top and bottom walls
+    for (x = ARENA_START_X; x < ARENA_START_X + ARENA_WIDTH; x++) {
+        // Top wall
+        tile = GetTileMut(x, ARENA_START_Y);
+        if (tile != NULL) {
+            tile->terrainFlags = TERRAIN_TYPE_WALL | TERRAIN_TYPE_IMPASSABLE_WALL;
+            tile->room = 0;
+        }
+
+        // Bottom wall
+        tile = GetTileMut(x, ARENA_START_Y + ARENA_HEIGHT - 1);
+        if (tile != NULL) {
+            tile->terrainFlags = TERRAIN_TYPE_WALL | TERRAIN_TYPE_IMPASSABLE_WALL;
+            tile->room = 0;
+        }
+    }
+
+    // Left and right walls
+    for (y = ARENA_START_Y; y < ARENA_START_Y + ARENA_HEIGHT; y++) {
+        // Left wall
+        tile = GetTileMut(ARENA_START_X, y);
+        if (tile != NULL) {
+            tile->terrainFlags = TERRAIN_TYPE_WALL | TERRAIN_TYPE_IMPASSABLE_WALL;
+            tile->room = 0;
+        }
+
+        // Right wall
+        tile = GetTileMut(ARENA_START_X + ARENA_WIDTH - 1, y);
+        if (tile != NULL) {
+            tile->terrainFlags = TERRAIN_TYPE_WALL | TERRAIN_TYPE_IMPASSABLE_WALL;
+            tile->room = 0;
+        }
+    }
+}
+
+// Fill interior with walkable floor tiles
+static void CreateArenaFloor(void)
+{
+    s32 x, y;
+    Tile *tile;
+
+    // Fill interior (excluding walls)
+    for (y = ARENA_START_Y + 1; y < ARENA_START_Y + ARENA_HEIGHT - 1; y++) {
+        for (x = ARENA_START_X + 1; x < ARENA_START_X + ARENA_WIDTH - 1; x++) {
+            tile = GetTileMut(x, y);
+            if (tile != NULL) {
+                tile->terrainFlags = TERRAIN_TYPE_NORMAL;
+                tile->room = 0;
+                tile->monster = NULL;
+                tile->object = NULL;
+            }
+        }
+    }
+}
+
+// Calculate and mark spawn positions for all entities
+static void MarkSpawnPositions(s32 *playerX, s32 *playerY, s32 *bossX, s32 *bossY,
+                                s32 *stairsX, s32 *stairsY, s32 minionPositions[][2], s32 minionCount)
+{
+    s32 centerX = ARENA_START_X + ARENA_WIDTH / 2;
+    s32 i;
+
+    // Player spawns at bottom-center
+    *playerX = centerX;
+    *playerY = ARENA_START_Y + ARENA_HEIGHT - 3;  // 2 tiles from bottom wall
+
+    // Boss spawns at top-center
+    *bossX = centerX;
+    *bossY = ARENA_START_Y + 2;  // 2 tiles from top wall
+
+    // Stairs spawn behind boss (top-center)
+    *stairsX = centerX;
+    *stairsY = ARENA_START_Y + 1;  // 1 tile from top wall
+
+    // Minions spawn around boss in a pattern
+    // Pattern: left, right, left-front, right-front
+    if (minionCount > 0) {
+        // First minion: left of boss
+        minionPositions[0][0] = *bossX - 2;
+        minionPositions[0][1] = *bossY;
+    }
+    if (minionCount > 1) {
+        // Second minion: right of boss
+        minionPositions[1][0] = *bossX + 2;
+        minionPositions[1][1] = *bossY;
+    }
+    if (minionCount > 2) {
+        // Third minion: left-front of boss
+        minionPositions[2][0] = *bossX - 1;
+        minionPositions[2][1] = *bossY + 1;
+    }
+    if (minionCount > 3) {
+        // Fourth minion: right-front of boss
+        minionPositions[3][0] = *bossX + 1;
+        minionPositions[3][1] = *bossY + 1;
+    }
+
+    // Clear any unused positions
+    for (i = minionCount; i < 4; i++) {
+        minionPositions[i][0] = 0;
+        minionPositions[i][1] = 0;
     }
 }

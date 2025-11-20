@@ -28,6 +28,7 @@
 #include "dungeon_config.h"
 #include "dungeon_engine.h"
 #include "dungeon_generation.h"
+#include "dungeon_floor_spawns.h"
 #include "dungeon_main.h"
 #include "dungeon_items.h"
 #include "dungeon_leveling.h"
@@ -396,7 +397,18 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         if (!r6) {
             sub_806B168();
             sub_806C3C0();
-            SpawnWildMonsOnFloor();
+
+            // Check if this floor has a boss fight - if so, skip normal enemy spawning
+            {
+                const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                if (bossFight != NULL && bossFight->enabled) {
+                    // STEP 1: Boss floor - NO entity spawning yet (testing arena only)
+                    // SpawnBossFightEntities((BossFightConfig*)bossFight);
+                } else {
+                    // Normal floor - spawn regular enemies
+                    SpawnWildMonsOnFloor();
+                }
+            }
         }
         else {
             sub_806B678();

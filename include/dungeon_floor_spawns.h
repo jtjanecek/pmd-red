@@ -2,6 +2,10 @@
 #define GUARD_DUNGEON_FLOOR_SPAWNS_H
 
 #include "structs/str_spawn_pokemon_data.h"
+#include "dungeon_seed_overrides.h"
+
+// Getter for current floor's boss fight configuration
+const BossFightConfig* DungeonFloorSpawns_GetBossFightConfig(void);
 
 void sub_803D4AC(void);
 void SetFloorItemMonsterSpawns(void);

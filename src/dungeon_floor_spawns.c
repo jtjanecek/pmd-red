@@ -36,6 +36,15 @@ static bool8 TryGetSeedOverrideValue(s32 *seedOut)
     return TRUE;
 }
 
+// Storage for current floor's boss fight config
+static EWRAM_DATA BossFightConfig sCurrentBossFight = {0};
+
+// Getter for boss fight config (used by other modules)
+const BossFightConfig* DungeonFloorSpawns_GetBossFightConfig(void)
+{
+    return &sCurrentBossFight;
+}
+
 static void ApplySeedOverridesToCurrentFloor(void)
 {
     DungeonSeedFloorOverrides overrides;
@@ -46,18 +55,37 @@ static void ApplySeedOverridesToCurrentFloor(void)
         return;
 
     DungeonSeedOverrides_GenerateFloorConfig(seed, gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, &overrides);
+
+    // Copy boss fight config to static storage
+    sCurrentBossFight = overrides.bossFight;
+
     gDungeon->floorProperties.tileset = overrides.tileset;
     gDungeon->floorProperties.fixedRoomNumber = 0;  // Disable boss rooms/cutscenes for randomized dungeons
 
-    for (i = 0; i < overrides.spawnCount && i < MONSTER_SPAWNS_ARR_COUNT; i++) {
-        gDungeon->fileMonsterSpawns[i] = overrides.spawns[i];
-    }
+    // If boss fight is enabled, disable normal monster spawns
+    if (overrides.bossFight.enabled) {
+        // Clear all spawn entries for boss floors
+        for (i = 0; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
+            SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[i], 0);
+            gDungeon->fileMonsterSpawns[i].randNum[0] = 0;
+            gDungeon->fileMonsterSpawns[i].randNum[1] = 0;
+        }
+        // Aggressively disable all enemy spawning mechanisms
+        gDungeon->floorProperties.enemyDensity = 0;
+        gDungeon->currFloorMonsterSpawnsCount = 0;  // Prevent auto-spawn
+        gDungeon->monsterSpawnsPopulated = FALSE;   // Block spawn initialization
+    } else {
+        // Normal floor - apply monster spawns
+        for (i = 0; i < overrides.spawnCount && i < MONSTER_SPAWNS_ARR_COUNT; i++) {
+            gDungeon->fileMonsterSpawns[i] = overrides.spawns[i];
+        }
 
-    while (i < MONSTER_SPAWNS_ARR_COUNT) {
-        SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[i], 0);
-        gDungeon->fileMonsterSpawns[i].randNum[0] = 0;
-        gDungeon->fileMonsterSpawns[i].randNum[1] = 0;
-        i++;
+        while (i < MONSTER_SPAWNS_ARR_COUNT) {
+            SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[i], 0);
+            gDungeon->fileMonsterSpawns[i].randNum[0] = 0;
+            gDungeon->fileMonsterSpawns[i].randNum[1] = 0;
+            i++;
+        }
     }
 }
 

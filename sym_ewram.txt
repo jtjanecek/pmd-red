@@ -36,6 +36,7 @@
     .include "src/dungeon_util.o"
     .include "src/dungeon_map_access.o"
     .include "src/dungeon_generation.o"
+    .include "src/dungeon_floor_spawns.o"
     .include "src/dungeon_message.o"
     .include "src/dungeon_message_log.o"
     .include "src/dungeon_move.o"

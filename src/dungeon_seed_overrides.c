@@ -4,6 +4,7 @@
 #include "constants/dungeon.h"
 #include "constants/monster.h"
 #include "constants/rescue_dungeon_id.h"
+#include "constants/bg_music.h"
 #include "pokemon_3.h"
 #include "save.h"
 #include "code_800D090.h"
@@ -431,7 +432,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     result->bossFight.bossHP = 300 + (floorId * 25);
 
     // Procedurally select music
-    result->bossFight.bossMusic = 0x37;  // MUS_BOSS_BATTLE (from sound constants)
+    result->bossFight.bossMusic = MUS_BOSS_BATTLE;
 
     // Procedurally select loot drop
     result->bossFight.dropItem = SelectRandomLoot(rng, floorId);

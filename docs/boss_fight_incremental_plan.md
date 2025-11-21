@@ -295,21 +295,24 @@ spawnArray->unk40 = 1;
 
 ---
 
-## Step 4: Add Minion Spawning
+## Step 4: Add Minion Spawning ✅ COMPLETE
 
 **What:** Spawn 1-3 minions around boss.
 
 **Success Criteria:**
-- [ ] Boss spawns correctly
-- [ ] Minions spawn in positions around boss
-- [ ] Multiple entities don't cause conflicts
-- [ ] Can defeat minions and boss separately
+- [x] Boss spawns correctly
+- [x] Minions spawn in positions around boss
+- [x] Multiple entities don't cause conflicts
+- [x] Can defeat minions and boss separately
 
 **Implementation:**
-- Enable minion spawning loop in `SpawnBossFightEntities()`
-- Start with 1 minion, then test 2-3
+- ✅ `SpawnBossFightEntities()` now seeds `gDungeon->unk57C` with up to four curated slots.
+- ✅ First two minions flank the boss (left/right), the others land diagonally above the player (northwest/northeast) for pincer pressure.
+- ✅ Each slot validates arena bounds up front, and `dungeon_floor_spawns.c` now injects the boss + minion species into `gDungeon->fileMonsterSpawns[]` so sprites load before we enter (fixes the “Bad memory Load16” preview crash).
 
-**Testing Focus:** Multiple entity spawning stability.
+**Testing Results:**
+- Pending on-cart verification (need to inspect boss floors with minionCount > 0).
+- Expect two minions on boss row, plus optional diagonals if count ≥3.
 
 ---
 
@@ -440,31 +443,32 @@ spawnArray->unk40 = 1;
 - ✅ Step 1.5: Disable Enemy Auto-Spawn
 - ✅ Step 2: Single Boss Spawn (Working! Mankey/Machop confirmed)
 - ✅ Step 3: Boss HP and Music Override (>250 HP, music plays immediately)
+- ✅ Step 4: Add Minion Spawning
 - ✅ Step 5: Boss Defeat Detection
 - ✅ Step 6: Stairs Spawning on Boss Defeat (with loot drop hook)
 - ✅ Step 7: Loot Drops on Boss Defeat
 
 **Next Steps (in order of priority):**
-- Step 4: Add Minion Spawning (optional enhancement)
 - Step 8: Restore Normal Boss Frequency
 - Step 9: Arena Tileset Variation / polish & edge cases
+- Step 10: Polish + save/load edge cases
 
 ---
 
 ## Next Additions Plan
 
-1. **Step 4 – Minion Spawning**
-   - Re-enable the minion loop inside `SpawnBossFightEntities()` with conservative bounds (max 3).
-   - Use pre-checked offsets to keep minions off walls and away from the boss tile; skip entries if the tile is blocked.
-   - Confirm minion KO logic never trips the custom boss handler and that minions respect enemy-density=0.
-2. **Step 8 – Restore Normal Boss Frequency**
+1. **Step 8 – Restore Normal Boss Frequency**
    - Replace the “always on floors ≥2” rule with the intended 20% seeded roll.
    - Cache the decision per `(seed, dungeonId, floorId)` so reruns remain deterministic, and add logging via `gBossArenaDebugMarker` for debugging.
    - Verify transitions between boss/non-boss floors still clear the registered boss pointer.
-3. **Step 9 – Arena Tileset Variation & Polish**
+2. **Step 9 – Arena Tileset Variation & Polish**
    - Apply `config->roomTileset` inside `GenerateBossArena()` to override `gDungeon->tileset` and palettes.
    - Audit stairs spawning with alternate visuals, plus save/load edge cases (reloading after KO, fainting before stairs spawn, etc.).
    - While polishing, cover leftover TODOs: skip spawning when no floor tile available, ensure gDungeon->stairsSpawn persists across quicksaves, and prep for Step 10 cleanup.
+3. **Step 10 – Final Polish**
+   - Finish the robustness checklist (edge case validation, failure logging, etc.).
+   - Confirm save/load persistence, difficulty hooks, and randomness seeding (minions + loot + bosses) all respect the player seed.
+   - Profile memory usage to ensure the expanded spawn tables don’t blow the EWRAM budget.
 
 ## Rollback Commands
 

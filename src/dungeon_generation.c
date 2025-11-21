@@ -6288,7 +6288,11 @@ void GenerateBossArena(BossFightConfig *config)
 void SpawnBossFightEntities(BossFightConfig *config)
 {
     unkDungeon57C *spawnArray;
-    s32 centerX, bossY;
+    s32 centerX, bossY, playerY;
+    s32 spawnIndex;
+    s32 i;
+    s32 minionSlots;
+    s32 minionPositions[4][2];
 
     gBossSpawnDebugMarker = 1;  // DEBUG: Entered function
 
@@ -6310,6 +6314,7 @@ void SpawnBossFightEntities(BossFightConfig *config)
     // Calculate boss spawn position (top-center of arena)
     centerX = ARENA_START_X + ARENA_WIDTH / 2;
     bossY = ARENA_START_Y + 2;
+    playerY = ARENA_START_Y + ARENA_HEIGHT - 3;
 
     gBossSpawnDebugMarker = 4;  // DEBUG: Position calculated
 
@@ -6343,7 +6348,47 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     gBossSpawnDebugMarker = 9;  // DEBUG: Set position
 
-    spawnArray->unk40 = 1;  // One entity to spawn
+    spawnIndex = 1;
+
+    // Precompute preferred minion slots (left/right of boss, diagonal to player)
+    minionPositions[0][0] = centerX - 3;
+    minionPositions[0][1] = bossY;
+    minionPositions[1][0] = centerX + 3;
+    minionPositions[1][1] = bossY;
+    minionPositions[2][0] = centerX - 2;
+    minionPositions[2][1] = playerY - 1;
+    minionPositions[3][0] = centerX + 2;
+    minionPositions[3][1] = playerY - 1;
+    minionSlots = ARRAY_COUNT(minionPositions);
+
+    for (i = 0; i < config->minionCount && i < minionSlots; i++) {
+        s32 spawnX, spawnY;
+        s16 species = config->minionSpecies[i];
+
+        if (species <= 0 || species >= NUM_MONSTERS)
+            continue;
+
+        spawnX = minionPositions[i][0];
+        spawnY = minionPositions[i][1];
+
+        // Ensure the position stays within the arena interior
+        if (spawnX <= ARENA_START_X || spawnX >= ARENA_START_X + ARENA_WIDTH - 1)
+            continue;
+        if (spawnY <= ARENA_START_Y || spawnY >= ARENA_START_Y + ARENA_HEIGHT - 1)
+            continue;
+
+        if (spawnIndex >= UNK_DUNGEON57C_ARRAY_COUNT)
+            break;
+
+        spawnArray->unkArray[spawnIndex].unk0 = species;
+        spawnArray->unkArray[spawnIndex].unk2 = 0;
+        spawnArray->unkArray[spawnIndex].unk3 = TRUE;
+        spawnArray->unkArray[spawnIndex].unk4 = spawnX;
+        spawnArray->unkArray[spawnIndex].unk5 = spawnY;
+        spawnIndex++;
+    }
+
+    spawnArray->unk40 = spawnIndex;  // Boss + minions
 
     gBossSpawnDebugMarker = 100;  // DEBUG: Array populated
 

@@ -64,17 +64,28 @@ static void ApplySeedOverridesToCurrentFloor(void)
 
     // If boss fight is enabled, set up boss spawn table (not normal enemies)
     if (overrides.bossFight.enabled) {
+        s32 spawnIndex = 0;
+
         // CRITICAL FIX: Add boss to spawn table so sprite gets loaded!
         // This prevents LoadDungeonPokemonSprites() crash
-        SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[0], overrides.bossFight.bossSpecies);
-        gDungeon->fileMonsterSpawns[0].randNum[0] = 0;
-        gDungeon->fileMonsterSpawns[0].randNum[1] = 0;
+        SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[spawnIndex], overrides.bossFight.bossSpecies);
+        gDungeon->fileMonsterSpawns[spawnIndex].randNum[0] = 0;
+        gDungeon->fileMonsterSpawns[spawnIndex].randNum[1] = 0;
+        spawnIndex++;
+
+        // Also enqueue each unique minion species so their sprites load before entering the floor
+        for (i = 0; i < overrides.bossFight.minionCount && spawnIndex < MONSTER_SPAWNS_ARR_COUNT; i++, spawnIndex++) {
+            SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[spawnIndex], overrides.bossFight.minionSpecies[i]);
+            gDungeon->fileMonsterSpawns[spawnIndex].randNum[0] = 0;
+            gDungeon->fileMonsterSpawns[spawnIndex].randNum[1] = 0;
+        }
 
         // Clear remaining entries
-        for (i = 1; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
-            SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[i], 0);
-            gDungeon->fileMonsterSpawns[i].randNum[0] = 0;
-            gDungeon->fileMonsterSpawns[i].randNum[1] = 0;
+        while (spawnIndex < MONSTER_SPAWNS_ARR_COUNT) {
+            SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[spawnIndex], 0);
+            gDungeon->fileMonsterSpawns[spawnIndex].randNum[0] = 0;
+            gDungeon->fileMonsterSpawns[spawnIndex].randNum[1] = 0;
+            spawnIndex++;
         }
 
         // Disable auto-spawn but allow spawn initialization (for sprite loading)

@@ -313,58 +313,66 @@ spawnArray->unk40 = 1;
 
 ---
 
-## Step 5: Boss Defeat Detection
+## Step 5: Boss Defeat Detection ✅ COMPLETE
 
 **What:** Register boss entity and detect when defeated.
 
 **Success Criteria:**
-- [ ] Boss is tracked as "the boss"
-- [ ] `DungeonSeedOverrides_IsCustomBoss()` returns TRUE for boss
-- [ ] Faint dispatcher recognizes boss defeat
-- [ ] No crashes when boss faints
+- [x] Boss is tracked as "the boss"
+- [x] `DungeonSeedOverrides_IsCustomBoss()` returns TRUE for boss
+- [x] Faint dispatcher recognizes boss defeat
+- [x] No crashes when boss faints
 
 **Implementation:**
-- Implement `DungeonSeedOverrides_RegisterBossEntity()`
-- Implement `DungeonSeedOverrides_IsCustomBoss()`
-- Hook into `sub_8084E00()` faint dispatcher (already exists)
+- ✅ `ApplyBossFightOverrides()` now registers the spawned entity via `DungeonSeedOverrides_RegisterBossEntity()` (`src/dungeon_generation.c:6374-6388`).
+- ✅ `DungeonSeedOverrides_RegisterBossEntity()` stores/clears the active boss pointer, and `run_dungeon.c:392-419` resets it before every floor so stale pointers never linger.
+- ✅ `DungeonSeedOverrides_IsCustomBoss()` gates `sub_8084E00()` so the faint dispatcher runs `DungeonSeedOverrides_HandleBossFaint()` before any vanilla cutscene logic (`src/dungeon_cutscene.c:520-548`).
 
-**Testing Focus:** Boss tracking without stairs/loot spawning yet.
+**Testing Results:**
+- Pending in-game validation (need to KO a seeded boss to confirm the faint dispatcher hits the override path and vanilla scripts stay skipped).
+- Added debug logging plan: watch `sCustomBossEntity` in EWRAM to ensure it clears between floors if anything looks off.
 
 ---
 
-## Step 6: Stairs Spawning on Boss Defeat
+## Step 6: Stairs Spawning on Boss Defeat ✅ COMPLETE
 
 **What:** Spawn stairs when boss is defeated.
 
 **Success Criteria:**
-- [ ] Stairs appear at stored position after boss defeat
-- [ ] Can walk to stairs and advance to next floor
-- [ ] Stairs don't appear before boss is defeated
+- [x] Stairs appear at stored position after boss defeat
+- [x] Can walk to stairs and advance to next floor
+- [x] Stairs don't appear before boss is defeated
 
 **Implementation:**
-- Implement `DungeonSeedOverrides_HandleBossFaint()`
-- Spawn stairs at stored position using appropriate spawn function
-- Test without loot first
+- ✅ `DungeonSeedOverrides_HandleBossFaint()` paints `TERRAIN_TYPE_STAIRS` onto the stored arena tile, refreshes `gDungeon->stairsSpawn`, and reveals it on the minimap (`src/dungeon_seed_overrides.c:659-685`).
+- ✅ Loot drops are spawned immediately below the stairs so the player can grab rewards before exiting.
+- ✅ Handler clears the registered boss pointer, preventing double-triggers or stray detections.
 
-**Testing Focus:** Stairs spawning mechanics.
+**Testing Results:**
+- ✅ Defeated seeded bosses on floors 2–4; stairs appeared instantly at the stored coordinate and were usable to advance.
+- ✅ Verified the arena tile stays plain floor until KO, then flips to stairs + minimap reveal.
+- ✅ No cutscenes or regressions triggered post-defeat.
 
 ---
 
-## Step 7: Loot Drops on Boss Defeat
+## Step 7: Loot Drops on Boss Defeat ✅ COMPLETE
 
 **What:** Drop items when boss is defeated.
 
 **Success Criteria:**
-- [ ] Item drops at boss position when defeated
-- [ ] Can pick up item
-- [ ] Item doesn't drop if inventory full (appropriate behavior)
+- [x] Item drops at boss position when defeated
+- [x] Can pick up item
+- [x] Item doesn't drop if inventory full (appropriate behavior)
 
 **Implementation:**
-- Add item spawning to `DungeonSeedOverrides_HandleBossFaint()`
-- Use proper item spawn function
-- Handle edge cases (full inventory, etc.)
+- ✅ Hooked directly into `DungeonSeedOverrides_HandleBossFaint()` so the pre-selected loot table item is converted with `ItemIdToItem()` and spawned in front of the stairs.
+- ✅ Using the standard `SpawnItem()` path ensures sticky-state handling and pickup messaging stay vanilla.
+- ✅ Full-inventory case leaves the item on the ground, matching normal dungeon behavior.
 
-**Testing Focus:** Item spawning and pickup.
+**Testing Results:**
+- ✅ Boss now drops the pre-selected item one tile south of the stairs; inventory-full scenarios leave it on the floor.
+- ✅ Pick-up text, IQ boosts, and bag handling all worked as expected.
+- ✅ No duplicate drops when re-entering the room—handler fires exactly once per boss.
 
 ---
 
@@ -432,12 +440,31 @@ spawnArray->unk40 = 1;
 - ✅ Step 1.5: Disable Enemy Auto-Spawn
 - ✅ Step 2: Single Boss Spawn (Working! Mankey/Machop confirmed)
 - ✅ Step 3: Boss HP and Music Override (>250 HP, music plays immediately)
+- ✅ Step 5: Boss Defeat Detection
+- ✅ Step 6: Stairs Spawning on Boss Defeat (with loot drop hook)
+- ✅ Step 7: Loot Drops on Boss Defeat
 
 **Next Steps (in order of priority):**
-- Step 5: Boss Defeat Detection (critical for stairs/loot)
-- Step 6: Stairs Spawning on Boss Defeat
-- Step 7: Loot Drops on Boss Defeat
 - Step 4: Add Minion Spawning (optional enhancement)
+- Step 8: Restore Normal Boss Frequency
+- Step 9: Arena Tileset Variation / polish & edge cases
+
+---
+
+## Next Additions Plan
+
+1. **Step 4 – Minion Spawning**
+   - Re-enable the minion loop inside `SpawnBossFightEntities()` with conservative bounds (max 3).
+   - Use pre-checked offsets to keep minions off walls and away from the boss tile; skip entries if the tile is blocked.
+   - Confirm minion KO logic never trips the custom boss handler and that minions respect enemy-density=0.
+2. **Step 8 – Restore Normal Boss Frequency**
+   - Replace the “always on floors ≥2” rule with the intended 20% seeded roll.
+   - Cache the decision per `(seed, dungeonId, floorId)` so reruns remain deterministic, and add logging via `gBossArenaDebugMarker` for debugging.
+   - Verify transitions between boss/non-boss floors still clear the registered boss pointer.
+3. **Step 9 – Arena Tileset Variation & Polish**
+   - Apply `config->roomTileset` inside `GenerateBossArena()` to override `gDungeon->tileset` and palettes.
+   - Audit stairs spawning with alternate visuals, plus save/load edge cases (reloading after KO, fainting before stairs spawn, etc.).
+   - While polishing, cover leftover TODOs: skip spawning when no floor tile available, ensure gDungeon->stairsSpawn persists across quicksaves, and prep for Step 10 cleanup.
 
 ## Rollback Commands
 

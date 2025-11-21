@@ -6376,6 +6376,9 @@ void ApplyBossFightOverrides(BossFightConfig *config)
     if (bossEntity == NULL)
         return;
 
+    // STEP 5: Register boss so we can track its defeat
+    DungeonSeedOverrides_RegisterBossEntity(bossEntity);
+
     // STEP 3: Apply custom HP and music
     if (config->bossHP > 0) {
         SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
@@ -6386,19 +6389,7 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         gDungeon->unk644.bossSongIndex = config->bossMusic;
     }
 
-    // STEP 5: Register this entity as the boss for defeat tracking
-    // DungeonSeedOverrides_RegisterBossEntity(bossEntity);
-    // (Will implement in Step 5)
-
     /* STEP 3+: Will enable later
-    if (bossEntity != NULL) {
-        // Set boss HP and music
-        SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
-
-        // Register this entity as the boss for defeat tracking
-        DungeonSeedOverrides_RegisterBossEntity(bossEntity);
-    }
-
     // STEP 4: Spawn minions around boss
     for (i = 0; i < config->minionCount && i < 4; i++) {
         spawnInfo.species = config->minionSpecies[i];

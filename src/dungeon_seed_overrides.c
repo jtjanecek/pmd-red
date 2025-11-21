@@ -5,6 +5,7 @@
 #include "constants/monster.h"
 #include "constants/rescue_dungeon_id.h"
 #include "constants/bg_music.h"
+#include "constants/item.h"
 #include "pokemon_3.h"
 #include "save.h"
 #include "code_800D090.h"
@@ -659,6 +660,8 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
     if (pokemon != sCustomBossEntity)
         return;
 
+    DungeonSeedOverrides_RegisterBossEntity(NULL);
+
     bossFight = DungeonFloorSpawns_GetBossFightConfig();
     if (bossFight == NULL)
         return;
@@ -667,14 +670,16 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
     tile = GetTileMut(sStairsSpawnX, sStairsSpawnY);
     if (tile != NULL) {
         tile->terrainFlags |= TERRAIN_TYPE_STAIRS;
+        gDungeon->stairsSpawn.x = sStairsSpawnX;
+        gDungeon->stairsSpawn.y = sStairsSpawnY;
     }
 
     // Drop loot if configured
-    if (bossFight->dropItem != 0) {
+    if (bossFight->dropItem != ITEM_NOTHING) {
         ItemIdToItem(&item, bossFight->dropItem, 0);
         dropPos.x = sStairsSpawnX;
         dropPos.y = sStairsSpawnY + 1;  // One tile in front of stairs
-        SpawnItem(&dropPos, &item, 1);
+        SpawnItem(&dropPos, &item, TRUE);
     }
 
     // Update minimap and visibility

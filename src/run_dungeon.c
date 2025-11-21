@@ -396,32 +396,28 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         LoadDungeonTilesetAssets();
         if (!r6) {
             sub_806B168();
-
-            // Check if this floor has a boss fight
-            // If so, populate spawn array BEFORE sub_806C3C0() runs
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+
+                // Reset any lingering boss pointer from previous floors
+                DungeonSeedOverrides_RegisterBossEntity(NULL);
+
+                // Check if this floor has a boss fight
                 if (bossFight != NULL && bossFight->enabled) {
                     // STEP 2: Populate gDungeon->unk57C array with boss
                     // sub_806C3C0() will spawn it using the working mechanism
                     SpawnBossFightEntities((BossFightConfig*)bossFight);
                 }
-            }
 
-            // This will spawn any entities in gDungeon->unk57C (including our boss!)
-            sub_806C3C0();
+                // This will spawn any entities in gDungeon->unk57C (including our boss!)
+                sub_806C3C0();
 
-            // STEP 3: Apply boss HP/music override after spawning
-            {
-                const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                // STEP 3: Apply boss HP/music override after spawning
                 if (bossFight != NULL && bossFight->enabled) {
                     ApplyBossFightOverrides((BossFightConfig*)bossFight);
                 }
-            }
 
-            // Spawn normal enemies only on non-boss floors
-            {
-                const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                // Spawn normal enemies only on non-boss floors
                 if (bossFight == NULL || !bossFight->enabled) {
                     // Normal floor - spawn regular enemies
                     SpawnWildMonsOnFloor();

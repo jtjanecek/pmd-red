@@ -308,11 +308,11 @@ spawnArray->unk40 = 1;
 **Implementation:**
 - ✅ `SpawnBossFightEntities()` now seeds `gDungeon->unk57C` with up to four curated slots.
 - ✅ First two minions flank the boss (left/right), the others land diagonally above the player (northwest/northeast) for pincer pressure.
-- ✅ Each slot validates arena bounds up front, and `dungeon_floor_spawns.c` now injects the boss + minion species into `gDungeon->fileMonsterSpawns[]` so sprites load before we enter (fixes the “Bad memory Load16” preview crash).
+- ✅ Each slot validates arena bounds up front, falls back to the boss species if the minion entry is invalid, and `dungeon_floor_spawns.c` now injects the boss + minion species into `gDungeon->fileMonsterSpawns[]` so sprites load before we enter (fixes the “Bad memory Load16” preview crash).
 
 **Testing Results:**
-- Pending on-cart verification (need to inspect boss floors with minionCount > 0).
-- Expect two minions on boss row, plus optional diagonals if count ≥3.
+- Pending on-cart verification (currently forcing `minionCount = 3` to stress-test).
+- Expect two minions on boss row, plus diagonals near the player for guaranteed pincers every floor.
 
 ---
 

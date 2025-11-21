@@ -6366,7 +6366,7 @@ void SpawnBossFightEntities(BossFightConfig *config)
         s16 species = config->minionSpecies[i];
 
         if (species <= 0 || species >= NUM_MONSTERS)
-            continue;
+            species = config->bossSpecies;
 
         spawnX = minionPositions[i][0];
         spawnY = minionPositions[i][1];

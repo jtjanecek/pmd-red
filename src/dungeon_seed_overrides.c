@@ -438,10 +438,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     // Procedurally select loot drop
     result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
 
-    // Procedurally determine minion count (0-3)
-    result->bossFight.minionCount = DungeonSeedRng_NextRange(rng, 0, 4);
-    if (result->bossFight.minionCount > 3)
-        result->bossFight.minionCount = 3;
+    // Procedurally determine minion count (forcing 3 for testing)
+    result->bossFight.minionCount = 3;
 
     // Procedurally select minion species
     for (i = 0; i < result->bossFight.minionCount; i++) {

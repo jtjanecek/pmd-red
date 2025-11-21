@@ -1,0 +1,101 @@
+message,type1,type2
+A gentle restlessness moves beneath a quiet resolve,Bug,Fighting
+A light drift circles around something subtly agile,Bug,Flying
+A soft hush weaves through an unseen presence,Bug,Ghost
+A faint stirring settles into the steady ground,Bug,Ground
+A mild quiver ripples through an otherwise simple calm,Bug,Normal
+A quiet tension curls through an uncertain stillness,Bug,Poison
+A subtle rhythm blends with a weighty patience,Bug,Rock
+Fine structure hums beneath a delicate wandering motion,Bug,Steel
+A muted shadow passes under a roaming curiosity,Bug,Dark
+An old pulse stirs within a fleeting skitter,Bug,Dragon
+A soft flicker winds through a barely shifting air,Bug,Electric
+A warm flicker dances beneath a living motion,Bug,Fire
+A tender growth sways with a faint restless energy,Bug,Grass
+A crisp stillness forms around a gentle movement,Bug,Ice
+A thoughtful murmur brushes alongside a curious drift,Bug,Psychic
+A calm ripple carries a faint scuttling impression,Bug,Water
+A quiet firmness merges with a rising motion,Fighting,Flying
+A steady rhythm blends with a gentle fading presence,Fighting,Ghost
+A grounded force settles beneath a determined calm,Fighting,Ground
+A simple steadiness warms beneath a growing resolve,Fighting,Normal
+A soft unease hangs beneath a determined air,Fighting,Poison
+A patient weight steadies around a focused intent,Fighting,Rock
+A quiet discipline shapes a subtly rigid stillness,Fighting,Steel
+A firm breath deepens into a muted shadow,Fighting,Dark
+A deep current coils beneath a practiced strength,Fighting,Dragon
+A faint vibration flickers under a steady focus,Fighting,Electric
+A tempered heat blends with restrained determination,Fighting,Fire
+A living calm roots beneath a firm stance,Fighting,Grass
+A sharp clarity cools a quiet discipline,Fighting,Ice
+A mindful presence steadies a rising energy,Fighting,Psychic
+A gentle flow softens a persistent focus,Fighting,Water
+A drifting lightness blends with a quiet fading,Flying,Ghost
+A wandering breeze settles into steady ground,Flying,Ground
+A plain openness softens into gentle motion,Flying,Normal
+A thin unease threads through a wandering calm,Flying,Poison
+A loose flutter rests against a steady weight,Flying,Rock
+A formed stillness carries a drifting ease,Flying,Steel
+A dim veil moves beneath a roaming stillness,Flying,Dark
+A wide breath circles an old quiet strength,Flying,Dragon
+A bright flicker glides through open space,Flying,Electric
+A warmed whisper moves through open air,Flying,Fire
+A soft overgrowth steadies a wandering breath,Flying,Grass
+A crisp openness hangs with delicate motion,Flying,Ice
+A calm intuition stretches into open space,Flying,Psychic
+A gentle drift flows across a quiet surface,Flying,Water
+A dim echo lingers across the settling ground,Ghost,Ground
+A plain quiet spreads beneath a fading trace,Ghost,Normal
+A soft blur drifts through an uncertain stillness,Ghost,Poison
+A quiet trace settles against unmoving weight,Ghost,Rock
+A muted ring folds into a rigid calm,Ghost,Steel
+A deep stillness settles behind a quiet veil,Ghost,Dark
+A slow ancient calm coils beneath fading shapes,Ghost,Dragon
+A faint vibration hums behind a pale silence,Ghost,Electric
+A low stirring glows against an empty hush,Ghost,Fire
+A gentle green hush covers a drifting echo,Ghost,Grass
+A delicate clarity meets a fading presence,Ghost,Ice
+A light thought brushes a fading impression,Ghost,Psychic
+A quiet ripple moves through a hollow calm,Ghost,Water
+A steady base deepens beneath a simple calm,Ground,Normal
+A muted heaviness blends into a slight unease,Ground,Poison
+A firm weight meets a patient stillness,Ground,Rock
+A shaped presence stands with a quiet foundation,Ground,Steel
+A dim heaviness rests beside a deeper shade,Ground,Dark
+A deep pulse anchors a sweeping presence,Ground,Dragon
+A small vibration hums in the settled dust,Ground,Electric
+A soft warmth rests beneath the level earth,Ground,Fire
+A living calm roots into a grounded breath,Ground,Grass
+A chilled clarity tightens around settled weight,Ground,Ice
+A steady thought anchors a quiet depth,Ground,Psychic
+A calm tide smooths the steady earth,Ground,Water
+A gentle plainness carries a fading residue,Normal,Poison
+A simple stillness settles into gentle weight,Normal,Rock
+A quiet order lines a simple calm,Normal,Steel
+A dim hush lingers beneath an ordinary quiet,Normal,Dark
+A calm pulse moves through steady simplicity,Normal,Dragon
+A faint tingle stirs beneath plain air,Normal,Electric
+A small rising warmth meets simple ease,Normal,Fire
+A soft growth rests beside quiet constancy,Normal,Grass
+A cool clarity settles on an ordinary stillness,Normal,Ice
+A thoughtful glow brushes a gentle simplicity,Normal,Psychic
+A modest flow softens the plain air,Normal,Water
+A drifting haze softens a patient weight,Poison,Rock
+A faint distortion bends around rigid form,Poison,Steel
+A dim blur rests within a deeper shade,Poison,Dark
+A slow curl winds through ancient calm,Poison,Dragon
+A flicker moves beneath a muted haze,Poison,Electric
+A low glow warms a dissolving presence,Poison,Fire
+A tender growth rises through an unclear veil,Poison,Grass
+A pale clarity cools an unstable calm,Poison,Ice
+A quiet distortion brushes thoughtful stillness,Poison,Psychic
+A gentle wave moves through a dissolving air,Poison,Water
+A deep weight steadies beside a soft shadow,Rock,Dark
+An ancient pulse winds beneath a firm shape,Rock,Dragon
+A faint flicker dances across a solid calm,Rock,Electric
+A warm hint glows behind heavy presence,Rock,Fire
+A tender overgrowth softens unyielding form,Rock,Grass
+A crisp stillness rests upon unmoving weight,Rock,Ice
+A thoughtful hum moves within solid quiet,Rock,Psychic
+A smooth wave touches the grounded stone,Rock,Water
+A muted shade lingers within rigid lines,Steel,Dark

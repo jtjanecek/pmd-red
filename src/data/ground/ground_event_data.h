@@ -602,13 +602,7 @@ static const struct ScriptCommand s_script_DISMISSAL_SALLY_MEMBER4_FUNC[] = { /*
 static const struct ScriptCommand s_script_NEXT_SAVE_FUNC[] = { /* 0x8120bdc */
     DEBUGINFO_O(603),
     { 0xf2, 0x00,  0x0002,  0x00000000,  0x00000000, _("NEXT_SAVE_FUNC\n") },
-    ASK1(FALSE, /*default*/ -1, /* speaker */ -1, _("Would you like to save your adventure?")),
-    CHOICE(/* label */  0, _("Yes")),
-    CHOICE(/* label */  1, _("*No")),
-    JUMP_LABEL(1),
-  LABEL(0), /* = 0x00 */
     SPECIAL_TEXT(SPECIAL_TEXT_SAVE_1, 0, 0),
-  LABEL(1), /* = 0x01 */
     TEXTBOX_CLEAR,
     WAIT(60),
     RET_DIRECT,
@@ -617,13 +611,7 @@ static const struct ScriptCommand s_script_NEXT_SAVE_FUNC[] = { /* 0x8120bdc */
 static const struct ScriptCommand s_script_NEXT_SAVE2_FUNC[] = { /* 0x8120cdc */
     DEBUGINFO_O(618),
     { 0xf2, 0x00,  0x0002,  0x00000000,  0x00000000, _("NEXT_SAVE2_FUNC\n") },
-    ASK1(FALSE, /*default*/ -1, /* speaker */ -1, _("Would you like to save your adventure?")),
-    CHOICE(/* label */  0, _("Yes")),
-    CHOICE(/* label */  1, _("*No")),
-    JUMP_LABEL(1),
-  LABEL(0), /* = 0x00 */
     SPECIAL_TEXT(SPECIAL_TEXT_SAVE_2, 0, 0),
-  LABEL(1), /* = 0x01 */
     TEXTBOX_CLEAR,
     WAIT(60),
     RET_DIRECT,

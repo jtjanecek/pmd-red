@@ -175,9 +175,15 @@ SUBDIRS := $(sort $(dir $(ALL_OBJECTS)))
 TYPE_CHOICES_CSV := docs/type_choices.csv
 TYPE_HINT_TABLE_SRC := src/data/type_hint_table.c
 TYPE_HINT_GENERATOR := scripts/build_type_hint_table.py
+TYPE_BOSSES_CSV := docs/type_bosses.csv
+TYPE_BOSS_TABLE_SRC := src/data/type_boss_table.c
+TYPE_BOSS_GENERATOR := scripts/build_type_boss_table.py
 
 $(TYPE_HINT_TABLE_SRC): $(TYPE_CHOICES_CSV) $(TYPE_HINT_GENERATOR)
 	$(PYTHON) $(TYPE_HINT_GENERATOR) $(TYPE_CHOICES_CSV) $(TYPE_HINT_TABLE_SRC)
+
+$(TYPE_BOSS_TABLE_SRC): $(TYPE_BOSSES_CSV) $(TYPE_BOSS_GENERATOR)
+	$(PYTHON) $(TYPE_BOSS_GENERATOR) $(TYPE_BOSSES_CSV) $(TYPE_BOSS_TABLE_SRC)
 
 # Special configurations required for lib files
 ifeq ($(MODERN),0)

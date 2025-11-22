@@ -2,13 +2,14 @@
 #include "type_selection.h"
 
 #include "constants/dungeon.h"
+#include "constants/monster.h"
 #include "dungeon_seed_overrides.h"
 #include "mgba_log.h"
 #include "memory.h"
 #include "save.h"
 #include "strings.h"
 
-#define TYPE_SELECTION_MAX_PER_TYPE 2
+#define TYPE_SELECTION_MAX_TYPE_PICKS 2
 #define TYPE_SELECTION_MAX_DUNGEONS 20
 #define TYPE_SELECTION_MAX_HINTS ((NUM_TYPES * (NUM_TYPES - 1)) / 2)
 
@@ -25,6 +26,9 @@ static bool8 IsTypeWithinBounds(u8 type);
 static bool8 IsTypeAvailable(u8 type);
 static bool8 ShouldGenerateHints(void);
 static void SanitizePendingHints(void);
+static void SanitizeBossState(void);
+static bool8 IsBossInPool(u8 type, s16 species);
+static bool8 SelectBossForType(u8 type, u32 *rngState, s16 *bossOut);
 static u32 MixSeed(u32 seed, u32 salt);
 static u32 NextRandom(u32 *state);
 static s16 ChooseRandomIndex(u32 *state, s16 count);
@@ -58,6 +62,7 @@ void TypeSelection_ReadSaveData(const TypeSelectionSaveData *data)
     }
 
     SanitizePendingHints();
+    SanitizeBossState();
 
     if (!sTypeSelectionState.data.awaitingChoice
         && !sTypeSelectionState.data.committedTypeValid
@@ -78,7 +83,12 @@ void TypeSelection_WriteSaveData(TypeSelectionSaveData *data)
 
 bool8 TypeSelection_IsFeatureEnabled(void)
 {
-    return DungeonSeedOverrides_IsEnabled(NULL);
+    s32 seed = 0;
+    // Keep the system active even if the seed is missing (-1) so we can
+    // surface failures (Bulbasaur fallback) and still drive boss selection.
+    if (DungeonSeedOverrides_IsEnabled(&seed))
+        return TRUE;
+    return (seed == -1);
 }
 
 bool8 TypeSelection_ShouldPromptPlayer(void)
@@ -154,6 +164,8 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
     const TypeHintDefinition *hint;
     u8 chosenType;
     u8 fallbackType;
+    s16 chosenBoss = MONSTER_NONE;
+    bool8 bossValid = FALSE;
     u32 rng;
 
     if (!TypeSelection_IsFeatureEnabled())
@@ -163,6 +175,7 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
 
     if (!TypeSelection_ShouldPromptPlayer())
         return FALSE;
+    SanitizeBossState();
     if (index >= sTypeSelectionState.data.pendingHintCount)
         return FALSE;
 
@@ -181,19 +194,25 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
     if (!IsTypeAvailable(chosenType))
         return FALSE;
 
+    bossValid = SelectBossForType(chosenType, &rng, &chosenBoss);
+    if (!bossValid)
+        MGBA_Warnf("[TypeSelection] No boss available for type %d", chosenType);
+
     sTypeSelectionState.data.pickCount[chosenType]++;
     sTypeSelectionState.data.pendingHintCount = 0;
     ResetPendingHints();
 
     sTypeSelectionState.data.committedType = chosenType;
     sTypeSelectionState.data.committedTypeValid = TRUE;
+    sTypeSelectionState.data.committedBoss = chosenBoss;
+    sTypeSelectionState.data.committedBossValid = bossValid;
     sTypeSelectionState.data.awaitingChoice = FALSE;
     sTypeSelectionState.data.completedDungeons++;
 
     if (chosenTypeOut != NULL)
         *chosenTypeOut = chosenType;
 
-    MGBA_Infof("[TypeSelection] Hint %d picked type %d", index, chosenType);
+    MGBA_Warnf("[TypeSelection] Hint %d picked type %d (boss=%d, bossValid=%d, seed=%d, dungeonCount=%d)", index, chosenType, chosenBoss, bossValid, sub_8011C34(), sTypeSelectionState.data.completedDungeons);
     return TRUE;
 }
 
@@ -215,6 +234,26 @@ bool8 TypeSelection_HasActiveType(void)
 u8 TypeSelection_GetActiveType(void)
 {
     return sTypeSelectionState.data.activeType;
+}
+
+bool8 TypeSelection_HasCommittedBoss(void)
+{
+    return sTypeSelectionState.data.committedBossValid;
+}
+
+s16 TypeSelection_GetCommittedBoss(void)
+{
+    return sTypeSelectionState.data.committedBoss;
+}
+
+bool8 TypeSelection_HasActiveBoss(void)
+{
+    return sTypeSelectionState.data.activeBossValid;
+}
+
+s16 TypeSelection_GetActiveBoss(void)
+{
+    return sTypeSelectionState.data.activeBoss;
 }
 
 bool8 TypeSelection_EnsureInitialCommittedType(void)
@@ -242,6 +281,7 @@ bool8 TypeSelection_EnsureInitialCommittedType(void)
     rng = MixSeed((u32)sub_8011C34(), sTypeSelectionState.data.completedDungeons);
     selection = ChooseRandomIndex(&rng, sTypeSelectionState.data.pendingHintCount);
 
+    MGBA_Warnf("[TypeSelection] Auto-selecting initial hint=%d seed=%d", selection, sub_8011C34());
     return TypeSelection_SelectHint((u32)selection, NULL);
 }
 
@@ -254,14 +294,31 @@ void TypeSelection_HandleDungeonStart(void)
 
     // Ensure a deterministic initial type if none has been picked yet.
     (void)TypeSelection_EnsureInitialCommittedType();
+    SanitizeBossState();
 
     if (sTypeSelectionState.data.committedTypeValid) {
         sTypeSelectionState.data.activeType = sTypeSelectionState.data.committedType;
         sTypeSelectionState.data.activeTypeValid = TRUE;
         sTypeSelectionState.data.committedTypeValid = FALSE;
+        sTypeSelectionState.data.committedType = TYPE_NONE;
         sTypeSelectionState.data.awaitingChoice = TRUE;
+
+        if (sTypeSelectionState.data.committedBossValid
+            && IsBossInPool(sTypeSelectionState.data.activeType, sTypeSelectionState.data.committedBoss)) {
+            sTypeSelectionState.data.activeBoss = sTypeSelectionState.data.committedBoss;
+            sTypeSelectionState.data.activeBossValid = TRUE;
+        } else {
+            sTypeSelectionState.data.activeBoss = MONSTER_NONE;
+            sTypeSelectionState.data.activeBossValid = FALSE;
+        }
+
+        sTypeSelectionState.data.committedBossValid = FALSE;
+        sTypeSelectionState.data.committedBoss = MONSTER_NONE;
     } else {
         sTypeSelectionState.data.activeTypeValid = FALSE;
+        sTypeSelectionState.data.activeBossValid = FALSE;
+        sTypeSelectionState.data.activeType = TYPE_NONE;
+        sTypeSelectionState.data.activeBoss = MONSTER_NONE;
     }
 }
 
@@ -290,16 +347,70 @@ static void SanitizePendingHints(void)
     }
 }
 
+static void SanitizeBossState(void)
+{
+    s32 i;
+    const u8 validMask = (1 << TYPE_SELECTION_MAX_BOSSES_PER_TYPE) - 1;
+
+    for (i = 0; i < NUM_TYPES; i++) {
+        const TypeBossPool *pool = &gTypeBossTable[i];
+        u8 poolMask = validMask;
+
+        if (pool->count == 0)
+            poolMask = 0;
+        else if (pool->count < TYPE_SELECTION_MAX_BOSSES_PER_TYPE)
+            poolMask = (1 << pool->count) - 1;
+
+        sTypeSelectionState.data.bossMask[i] &= poolMask;
+    }
+
+    if (!sTypeSelectionState.data.committedTypeValid
+        || !IsBossInPool(sTypeSelectionState.data.committedType, sTypeSelectionState.data.committedBoss)) {
+        sTypeSelectionState.data.committedBossValid = FALSE;
+        sTypeSelectionState.data.committedBoss = MONSTER_NONE;
+    }
+
+    if (!sTypeSelectionState.data.activeTypeValid
+        || !IsBossInPool(sTypeSelectionState.data.activeType, sTypeSelectionState.data.activeBoss)) {
+        sTypeSelectionState.data.activeBossValid = FALSE;
+        sTypeSelectionState.data.activeBoss = MONSTER_NONE;
+    }
+}
+
 static bool8 IsTypeWithinBounds(u8 type)
 {
     return (type > TYPE_NONE && type < NUM_TYPES);
+}
+
+static bool8 IsBossInPool(u8 type, s16 species)
+{
+    s32 i;
+    const TypeBossPool *pool;
+    s32 poolCount;
+
+    if (!IsTypeWithinBounds(type))
+        return FALSE;
+    if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+        return FALSE;
+
+    pool = &gTypeBossTable[type];
+    poolCount = pool->count;
+    if (poolCount > TYPE_SELECTION_MAX_BOSSES_PER_TYPE)
+        poolCount = TYPE_SELECTION_MAX_BOSSES_PER_TYPE;
+
+    for (i = 0; i < poolCount; i++) {
+        if (pool->species[i] == species)
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
 static bool8 IsTypeAvailable(u8 type)
 {
     if (!IsTypeWithinBounds(type))
         return FALSE;
-    if (sTypeSelectionState.data.pickCount[type] >= TYPE_SELECTION_MAX_PER_TYPE)
+    if (sTypeSelectionState.data.pickCount[type] >= TYPE_SELECTION_MAX_TYPE_PICKS)
         return FALSE;
     return TRUE;
 }
@@ -308,6 +419,57 @@ static bool8 ShouldGenerateHints(void)
 {
     if (!TypeSelection_ShouldPromptPlayer())
         return FALSE;
+    return TRUE;
+}
+
+static bool8 SelectBossForType(u8 type, u32 *rngState, s16 *bossOut)
+{
+    const TypeBossPool *pool;
+    u8 availableIndices[TYPE_SELECTION_MAX_BOSSES_PER_TYPE];
+    s32 availableCount = 0;
+    u32 rngLocal;
+    s32 poolCount;
+    s32 choice;
+
+    if (bossOut == NULL)
+        return FALSE;
+    if (!IsTypeWithinBounds(type))
+        return FALSE;
+
+    pool = &gTypeBossTable[type];
+    poolCount = pool->count;
+    if (poolCount <= 0)
+        return FALSE;
+    if (poolCount > TYPE_SELECTION_MAX_BOSSES_PER_TYPE)
+        poolCount = TYPE_SELECTION_MAX_BOSSES_PER_TYPE;
+
+    sTypeSelectionState.data.bossMask[type] &= (1 << TYPE_SELECTION_MAX_BOSSES_PER_TYPE) - 1;
+
+    if (rngState != NULL)
+        rngLocal = *rngState;
+    else
+        rngLocal = MixSeed((u32)sub_8011C34(), sTypeSelectionState.data.completedDungeons + type);
+
+    for (choice = 0; choice < poolCount; choice++) {
+        if (!(sTypeSelectionState.data.bossMask[type] & (1 << choice))) {
+            availableIndices[availableCount++] = (u8)choice;
+        }
+    }
+
+    if (availableCount == 0) {
+        availableIndices[availableCount++] = (u8)(poolCount - 1);
+    }
+
+    choice = ChooseRandomIndex(&rngLocal, (s16)availableCount);
+    if (choice < 0 || choice >= availableCount)
+        return FALSE;
+
+    sTypeSelectionState.data.bossMask[type] |= (1 << availableIndices[choice]);
+    *bossOut = pool->species[availableIndices[choice]];
+
+    if (rngState != NULL)
+        *rngState = rngLocal;
+
     return TRUE;
 }
 

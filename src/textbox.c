@@ -1496,7 +1496,6 @@ static bool8 sub_809B648(void)
             return 1;
         case SPECIAL_TEXT_TYPE_SELECTION:
             if (sTypeSelectionMenuActive) {
-                MGBA_Infof("[TypeSelection] menu loop tick");
                 if (!TypeSelectionMenu_Update())
                     return 1;
                 TypeSelectionMenu_Reset();
@@ -1505,14 +1504,12 @@ static bool8 sub_809B648(void)
                     SetAutoPressTextboxMidEndMsgFrames(sTypeSelectionPrevEndFrames, sTypeSelectionPrevMidFrames);
                     sTypeSelectionAutoPressSaved = FALSE;
                 }
-                MGBA_Infof("[TypeSelection] menu closed, resuming script");
                 sTextbox->unk430 = -1;
                 sTextbox->unk420 = 3;
                 return 0;
             }
 
             if (sTextbox->unk420 == 1) {
-                MGBA_Infof("[TypeSelection] special text triggered (state=1)");
                 ResetTextbox();
                 if (!sTypeSelectionAutoPressSaved) {
                     sTypeSelectionPrevEndFrames = sTextbox->endMsgFrames;
@@ -1521,12 +1518,10 @@ static bool8 sub_809B648(void)
                 }
                 SetAutoPressTextboxFrames(-1);
                 if (TypeSelectionMenu_Begin()) {
-                    MGBA_Infof("[TypeSelection] menu begin success");
                     sTypeSelectionMenuActive = TRUE;
                     sTextbox->unk420 = 4;
                 }
                 else {
-                    MGBA_Warnf("[TypeSelection] menu begin failed, using fallback text");
                     CreateMenuDialogueBoxAndPortrait(gTypeSelectionFallbackText, 0, 0, NULL, 0, 3, 0, NULL, 0);
                     sTextbox->unk420 = 2;
                 }
@@ -1534,7 +1529,6 @@ static bool8 sub_809B648(void)
             }
             if (sTextbox->unk420 == 2) {
                 s32 temp;
-                MGBA_Infof("[TypeSelection] waiting for fallback acknowledgement");
                 if (sub_80144A4(&temp) != 0) {
                     sTextbox->unk430 = -1;
                     sTextbox->unk420 = 3;

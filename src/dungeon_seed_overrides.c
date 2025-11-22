@@ -16,6 +16,8 @@
 #include "dungeon_map.h"
 #include "dungeon_map_access.h"
 #include "dungeon_floor_spawns.h"
+#include "main_loops.h"
+#include "mgba_log.h"
 #include "items.h"
 #include "structs/map.h"
 #include "type_selection.h"
@@ -86,6 +88,7 @@ static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result);
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
+static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
 
 static const s16 sPoolElectric[] = {MONSTER_PICHU, MONSTER_PIKACHU, MONSTER_PLUSLE, MONSTER_MINUN, MONSTER_MANECTRIC};
 static const s16 sPoolFire[] = {MONSTER_VULPIX, MONSTER_GROWLITHE, MONSTER_CHARMELEON, MONSTER_FLAREON, MONSTER_BLAZIKEN};
@@ -230,8 +233,24 @@ bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
 {
     s32 seed = sub_8011C34();
 
+    // Fallback: if the global seed isn't set, try to recover it from the
+    // persisted TeamBasicInfo and mirror it back into the global slot.
+    if (seed == -1) {
+        TeamBasicInfo basicInfo;
+        ReadTeamBasicInfo(&basicInfo);
+        if (basicInfo.customSeed != -1) {
+            seed = basicInfo.customSeed;
+            sub_8011C40(seed);
+            MGBA_Infof("[DungeonSeedOverrides] Restored seed from TeamBasicInfo: %d", seed);
+        }
+    }
+
     if (seed == -1)
+    {
+        if (seedOut != NULL)
+            *seedOut = seed;
         return FALSE;
+    }
     if (seedOut != NULL)
         *seedOut = seed;
     return TRUE;
@@ -416,12 +435,36 @@ static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId)
     return sLootPool[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sLootPool))];
 }
 
+static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies)
+{
+    if (bossSpecies == NULL)
+        return FALSE;
+
+    if (TypeSelection_HasActiveBoss()) {
+        *bossSpecies = TypeSelection_GetActiveBoss();
+    } else if (TypeSelection_HasCommittedBoss()) {
+        *bossSpecies = TypeSelection_GetCommittedBoss();
+    } else {
+        return FALSE;
+    }
+
+    if (*bossSpecies <= MONSTER_NONE || *bossSpecies >= MONSTER_MAX)
+        return FALSE;
+
+    return TRUE;
+}
+
 // Procedurally generate boss fight configuration from seed
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId)
 {
-    const SeedSpeciesPool *bossPool;
     const SeedSpeciesPool minionPool = {sPoolMinions, ARRAY_COUNT(sPoolMinions)};
-    s32 bossIndex, i;
+    s32 i;
+    s32 seedForLog = sub_8011C34();
+    s32 typeForLog = -1;
+    const char *source = "unknown";
+    s16 selectedBoss = MONSTER_NONE;
+    bool8 bossValid = FALSE;
+    bool8 bossWasFallback = FALSE;
 
     (void)dungeonId;  // May use for dungeon-specific logic later
 
@@ -432,12 +475,43 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         return;
     }
 
+    // If the global seed is missing, surface the issue by forcing a Bulbasaur boss.
+    if (sub_8011C34() == -1) {
+        result->bossFight.enabled = TRUE;
+        result->bossFight.bossSpecies = MONSTER_BULBASAUR;
+        result->bossFight.bossHP = 300 + (floorId * 25);
+        result->bossFight.bossMusic = MUS_BOSS_BATTLE;
+        result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
+        result->bossFight.minionCount = 0;
+        result->bossFight.roomTileset = 19;
+        result->bossFight.monsterBehavior = 0;
+        source = "seed_missing";
+        MGBA_Warnf("[BossGen] seed=-1 type=%d floor=%d boss=%d source=%s", typeForLog, floorId, result->bossFight.bossSpecies, source);
+        return;
+    }
+
     result->bossFight.enabled = TRUE;
 
-    // Procedurally select boss species from tier-appropriate pool
-    bossPool = GetBossPool(floorId);
-    bossIndex = DungeonSeedRng_NextRange(rng, 0, bossPool->count);
-    result->bossFight.bossSpecies = bossPool->species[bossIndex];
+    // Prefer the type-selected boss for this dungeon; fall back to tiered pool if unavailable
+    bossValid = TryGetTypeSelectionBoss(&selectedBoss);
+    if (!bossValid) {
+        const SeedSpeciesPool *bossPool = GetBossPool(floorId);
+        s32 bossIndex = DungeonSeedRng_NextRange(rng, 0, bossPool->count);
+        selectedBoss = bossPool->species[bossIndex];
+        source = "pool";
+    }
+    else {
+        source = "type";
+    }
+
+    // If the selected boss exceeds the trimmed monster cap, fall back to Bulbasaur
+    if (selectedBoss <= MONSTER_NONE || selectedBoss >= MONSTER_MAX) {
+        bossWasFallback = TRUE;
+        selectedBoss = MONSTER_BULBASAUR;
+        source = "fallback_oob";
+    }
+
+    result->bossFight.bossSpecies = selectedBoss;
 
     // Procedurally set HP scaling with floor
     result->bossFight.bossHP = 300 + (floorId * 25);
@@ -462,6 +536,14 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
 
     // Set behavior for boss identification
     result->bossFight.monsterBehavior = 0;  // Will define this constant later
+
+    if (TypeSelection_HasActiveType())
+        typeForLog = TypeSelection_GetActiveType();
+    else if (TypeSelection_HasCommittedType())
+        typeForLog = TypeSelection_GetCommittedType();
+
+    MGBA_Warnf("[BossGen] seed=%d type=%d floor=%d boss=%d source=%s fallback=%d",
+               seedForLog, typeForLog, floorId, result->bossFight.bossSpecies, source, bossWasFallback);
 }
 
 static void ResetSeededDungeonNameCache(void)

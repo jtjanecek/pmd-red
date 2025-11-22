@@ -21,14 +21,29 @@
 #include "dungeon_config.h"
 #include "structs/dungeon_mapparam.h"
 #include "dungeon_seed_overrides.h"
+#include "mgba_log.h"
 
 static bool8 TryGetSeedOverrideValue(s32 *seedOut);
 static void ApplySeedOverridesToCurrentFloor(void);
 
 static bool8 TryGetSeedOverrideValue(s32 *seedOut)
 {
-    if (!DungeonSeedOverrides_IsEnabled(seedOut))
-        return FALSE;
+    s32 seed = 0;
+    bool8 enabled = DungeonSeedOverrides_IsEnabled(&seed);
+
+    // If the custom seed is unset (-1), keep overrides active using a zero seed
+    // so boss floors still generate instead of silently falling back to vanilla.
+    if (!enabled) {
+        if (seed == -1) {
+            seed = 0;
+        } else {
+            MGBA_Warnf("[BossGen] Overrides disabled for seed=%d", seed);
+            return FALSE;
+        }
+    }
+
+    if (seedOut != NULL)
+        *seedOut = seed;
     if (gDungeon == NULL)
         return FALSE;
     if (gDungeon->unk644.dungeonLocation.id > DUNGEON_PURITY_FOREST)
@@ -58,6 +73,12 @@ static void ApplySeedOverridesToCurrentFloor(void)
 
     // Copy boss fight config to static storage
     sCurrentBossFight = overrides.bossFight;
+    MGBA_Warnf("[BossGen] ApplyOverrides: dungeonId=%d floor=%d seed=%d bossEnabled=%d boss=%d",
+               gDungeon->unk644.dungeonLocation.id,
+               gDungeon->unk644.dungeonLocation.floor,
+               seed,
+               overrides.bossFight.enabled,
+               overrides.bossFight.bossSpecies);
 
     gDungeon->floorProperties.tileset = overrides.tileset;
     gDungeon->floorProperties.fixedRoomNumber = 0;  // Disable boss rooms/cutscenes for randomized dungeons

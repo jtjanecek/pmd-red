@@ -84,9 +84,7 @@ void sub_803F27C(bool8 a0)
     strPtr->prevRotateModeDirection = 0;
     strPtr->inFloorMapMode = 0;
     strPtr->unk18215 = 1;
-    MGBA_Warnf("[Dungeon] About to call sub_803F38C");
     sub_803F38C();
-    MGBA_Warnf("[Dungeon] sub_803F38C returned");
 
     gUnknown_202EDFC = 0xFFFF;
     if (!a0) {
@@ -102,7 +100,6 @@ static void sub_803F38C(void)
     s32 palId;
     UnkDungeonGlobal_unk181E8_sub *strPtr = &gDungeon->unk181e8;
 
-    MGBA_Warnf("[Dungeon] sub_803F38C entered");
     strPtr->unk3A = -1;
     strPtr->unk3C = -1;
     strPtr->unk3E = -1;
@@ -119,7 +116,6 @@ static void sub_803F38C(void)
     nullsub_5(0xFD, &gFontPalette[16 * palId + 13]);
     nullsub_5(0xFE, &gFontPalette[16 * palId + 14]);
     nullsub_5(0xFF, &gFontPalette[16 * palId + 15]);
-    MGBA_Warnf("[Dungeon] sub_803F38C complete");
 }
 
 bool8 sub_803F428(DungeonPos *pos)

@@ -592,6 +592,7 @@ SECTIONS {
         src/pokemon_mail.o(.rodata);
         src/type_selection.o(.rodata);
         src/type_selection_ui.o(.rodata);
+        src/data/type_boss_table.o(.rodata);
         src/data/type_hint_table.o(.rodata);
         src/personality_test1.o(.rodata);
         src/personality_test2.o(.rodata);

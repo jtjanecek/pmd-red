@@ -18,6 +18,8 @@
 #include "dungeon_config.h"
 #include "dungeon_generation_fixed.h"
 #include "dungeon_pos_data.h"
+#include "mgba_log.h"
+#include "type_selection.h"
 #include "dungeon_data.h"
 #include "dungeon_mon_spawn.h"
 #include "run_dungeon.h"
@@ -194,11 +196,15 @@ void GenerateFloor(void)
         // Additional safety: only generate boss if seed overrides are active and boss is valid
         if (bossFight != NULL && bossFight->enabled &&
             gDungeon != NULL &&
-            bossFight->bossSpecies > 0 && bossFight->bossSpecies < NUM_MONSTERS) {
+            bossFight->bossSpecies > 0 && bossFight->bossSpecies < MONSTER_MAX) {
+            MGBA_Warnf("[BossGen] GenerateFloor: dungeonId=%d floor=%d boss=%d", gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, bossFight->bossSpecies);
             GenerateBossArena((BossFightConfig*)bossFight);
             // TESTING: Entity spawning causes freeze - need to spawn later in process
             // SpawnBossFightEntities((BossFightConfig*)bossFight);
             return;
+        }
+        else {
+            MGBA_Warnf("[BossGen] GenerateFloor: no boss (enabled=%d species=%d)", bossFight ? bossFight->enabled : 0, bossFight ? bossFight->bossSpecies : -1);
         }
     }
 
@@ -6304,7 +6310,7 @@ void SpawnBossFightEntities(BossFightConfig *config)
     gBossSpawnDebugMarker = 2;  // DEBUG: Config valid
 
     // STEP 2: Validate boss species
-    if (config->bossSpecies <= 0 || config->bossSpecies >= NUM_MONSTERS) {
+    if (config->bossSpecies <= 0 || config->bossSpecies >= MONSTER_MAX) {
         gBossSpawnDebugMarker = -2;  // DEBUG: Invalid species
         return;
     }
@@ -6317,6 +6323,8 @@ void SpawnBossFightEntities(BossFightConfig *config)
     playerY = ARENA_START_Y + ARENA_HEIGHT - 3;
 
     gBossSpawnDebugMarker = 4;  // DEBUG: Position calculated
+
+    MGBA_Warnf("[BossGen] SpawnBossFightEntities species=%d typeValid=%d", config->bossSpecies, TypeSelection_HasActiveType());
 
     // Validate position is in bounds
     if (centerX < 0 || centerX >= DUNGEON_MAX_SIZE_X ||
@@ -6365,7 +6373,7 @@ void SpawnBossFightEntities(BossFightConfig *config)
         s32 spawnX, spawnY;
         s16 species = config->minionSpecies[i];
 
-        if (species <= 0 || species >= NUM_MONSTERS)
+        if (species <= 0 || species >= MONSTER_MAX)
             species = config->bossSpecies;
 
         spawnX = minionPositions[i][0];

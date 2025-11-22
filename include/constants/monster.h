@@ -427,7 +427,8 @@
 #define MONSTER_STATUE 422
 #define MONSTER_RAYQUAZA_CUTSCENE 423
 
-#define NUM_MONSTERS 200  // Reduced from 413 (MONSTER_JIRACHI) to save ~18 KB EWRAM
+#define NUM_RECRUITABLE_MONSTERS 200  // Reduced from 413 to save ~18 KB EWRAM
+#define NUM_MONSTERS NUM_RECRUITABLE_MONSTERS  // Legacy alias for recruitable storage
 #define NUM_PARTNERS MONSTER_JIRACHI  // Keep personality test at full size
 #define MONSTER_MAX (MONSTER_RAYQUAZA_CUTSCENE + 1)
 

@@ -85,7 +85,7 @@ static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max);
 static u8 SelectTileset(s32 floorId);
 static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
 static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result);
-static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
+static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed);
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
@@ -202,7 +202,7 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xC0FFEE);
 
     // NEW: Procedurally generate boss fight configuration
-    PopulateBossFightConfig(result, &rng, dungeonId, floorId);
+    PopulateBossFightConfig(result, &rng, dungeonId, floorId, seed);
 
     // If boss fight enabled, use boss tileset; otherwise normal generation
     if (result->bossFight.enabled) {
@@ -455,22 +455,24 @@ static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies)
 }
 
 // Procedurally generate boss fight configuration from seed
-static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId)
+static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed)
 {
     const SeedSpeciesPool minionPool = {sPoolMinions, ARRAY_COUNT(sPoolMinions)};
     s32 i;
-    s32 seedForLog = sub_8011C34();
+    s32 seedForLog = seed;
     s32 typeForLog = -1;
     const char *source = "unknown";
     s16 selectedBoss = MONSTER_NONE;
     bool8 bossValid = FALSE;
     bool8 bossWasFallback = FALSE;
+    s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
+    s32 finalFloor = floorCount - 1;
 
     (void)dungeonId;  // May use for dungeon-specific logic later
 
     // Procedurally determine if this floor has a boss
-    // TESTING: Always spawn boss on floors >= 2 (normally would be 20% chance)
-    if (floorId < 2) {
+    // Only spawn bosses on the final floor of the dungeon
+    if (floorCount <= 1 || floorId != finalFloor) {
         result->bossFight.enabled = FALSE;
         return;
     }

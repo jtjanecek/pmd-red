@@ -31,7 +31,7 @@
 #define SEEDED_PREFIX_BUFFER_LEN 16
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
-// Exactly 30 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
+// Exactly 20 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
 static const s16 sSequentialDungeonList[] = {
     // Main story dungeons (1-7) - only single-part
     RESCUE_DUNGEON_TINY_WOODS,           // 1
@@ -54,17 +54,7 @@ static const s16 sSequentialDungeonList[] = {
     RESCUE_DUNGEON_WESTERN_CAVE,         // 17
     RESCUE_DUNGEON_NORTHERN_RANGE,       // 18
     RESCUE_DUNGEON_PITFALL_VALLEY,       // 19
-    RESCUE_DUNGEON_BURIED_RELIC,         // 20
-    RESCUE_DUNGEON_MURKY_CAVE,           // 21
-    RESCUE_DUNGEON_DESERT_REGION,        // 22
-    RESCUE_DUNGEON_SOUTHERN_CAVERN,      // 23
-    RESCUE_DUNGEON_WYVERN_HILL,          // 24
-    RESCUE_DUNGEON_SOLAR_CAVE,           // 25
-    RESCUE_DUNGEON_DARKNIGHT_RELIC,      // 26
-    RESCUE_DUNGEON_GRAND_SEA,            // 27
-    RESCUE_DUNGEON_WATERFALL_POND,       // 28
-    RESCUE_DUNGEON_UNOWN_RELIC,          // 29
-    RESCUE_DUNGEON_PURITY_FOREST,        // 30 - FINAL DUNGEON (credits after)
+    RESCUE_DUNGEON_BURIED_RELIC,         // 20 - FINAL DUNGEON (credits after)
 };
 
 #define SEQUENTIAL_DUNGEON_COUNT ARRAY_COUNT(sSequentialDungeonList)
@@ -740,7 +730,7 @@ bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId)
     return RescueScenarioConquered(sSequentialDungeonList[dungeonIndex - 1]);
 }
 
-// Check if this dungeon is the final one (Dungeon 30) to trigger credits
+// Check if this dungeon is the final one (Dungeon 20) to trigger credits
 bool8 DungeonSeedOverrides_ShouldTriggerCredits(s16 rescueDungeonId)
 {
     s32 seed;
@@ -749,7 +739,7 @@ bool8 DungeonSeedOverrides_ShouldTriggerCredits(s16 rescueDungeonId)
     if (!DungeonSeedOverrides_IsEnabled(&seed))
         return FALSE;
 
-    // Check if this is the last dungeon in our sequential list (Dungeon 30)
+    // Check if this is the last dungeon in our sequential list (Dungeon 20)
     if (SEQUENTIAL_DUNGEON_COUNT == 0)
         return FALSE;
 

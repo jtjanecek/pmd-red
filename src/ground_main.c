@@ -204,7 +204,7 @@ u32 xxx_script_related_8098468(s32 param_1)
                     if (gUnknown_20398B4 == 9) {
                         SetScriptVarArrayValue(0,DUNGEON_CLEAR_LIST,(u16) scriptVar13,1);
 
-                        // Check if this is the final dungeon (Dungeon 30) - trigger credits
+                        // Check if this is the final dungeon (Dungeon 20) - trigger credits
                         if (DungeonSeedOverrides_ShouldTriggerCredits(scriptVar13)) {
                             SetScriptVarValue(0, GROUND_GETOUT, 2);  // Trigger credits sequence
                         }

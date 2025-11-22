@@ -217,12 +217,43 @@ u8 TypeSelection_GetActiveType(void)
     return sTypeSelectionState.data.activeType;
 }
 
+bool8 TypeSelection_EnsureInitialCommittedType(void)
+{
+    u32 rng;
+    s32 selection;
+
+    if (!TypeSelection_IsFeatureEnabled())
+        return FALSE;
+    if (!sTypeSelectionState.initialized)
+        TypeSelection_Init();
+
+    // Only apply for the very first dungeon, before any runs are counted.
+    if (sTypeSelectionState.data.completedDungeons != 0)
+        return FALSE;
+    if (sTypeSelectionState.data.committedTypeValid)
+        return TRUE;
+
+    if (!TypeSelection_EnsurePendingHints())
+        return FALSE;
+    if (sTypeSelectionState.data.pendingHintCount == 0)
+        return FALSE;
+
+    // Deterministic hint selection based on the custom seed and current dungeon index (0).
+    rng = MixSeed((u32)sub_8011C34(), sTypeSelectionState.data.completedDungeons);
+    selection = ChooseRandomIndex(&rng, sTypeSelectionState.data.pendingHintCount);
+
+    return TypeSelection_SelectHint((u32)selection, NULL);
+}
+
 void TypeSelection_HandleDungeonStart(void)
 {
     if (!TypeSelection_IsFeatureEnabled())
         return;
     if (!sTypeSelectionState.initialized)
         TypeSelection_Init();
+
+    // Ensure a deterministic initial type if none has been picked yet.
+    (void)TypeSelection_EnsureInitialCommittedType();
 
     if (sTypeSelectionState.data.committedTypeValid) {
         sTypeSelectionState.data.activeType = sTypeSelectionState.data.committedType;

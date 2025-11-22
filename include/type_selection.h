@@ -44,6 +44,7 @@ u8 TypeSelection_GetCommittedType(void);
 bool8 TypeSelection_HasActiveType(void);
 u8 TypeSelection_GetActiveType(void);
 void TypeSelection_HandleDungeonStart(void);
+bool8 TypeSelection_EnsureInitialCommittedType(void);
 
 bool8 TypeSelectionMenu_Begin(void);
 bool8 TypeSelectionMenu_Update(void);

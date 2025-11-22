@@ -558,8 +558,8 @@ static s32 GetSelectedTypeForDisplay(void)
 {
     s32 type = -1;
 
-    if (!TypeSelection_IsFeatureEnabled())
-        return -1;
+    // Ensure the very first dungeon gets a committed type before displaying names.
+    TypeSelection_EnsureInitialCommittedType();
 
     // Prefer the committed type for the upcoming dungeon
     if (TypeSelection_HasCommittedType())

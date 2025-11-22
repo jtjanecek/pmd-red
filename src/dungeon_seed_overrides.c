@@ -18,6 +18,7 @@
 #include "dungeon_floor_spawns.h"
 #include "items.h"
 #include "structs/map.h"
+#include "type_selection.h"
 
 #define SEEDED_TILESET_COUNT 75  // Max valid tileset ID (gNaturePowerCalledMoves uses max 74)
 #define SEEDED_MIN_FLOORS 3
@@ -179,11 +180,13 @@ static u8 sSeededDungeonName1[NUM_DUNGEONS][SEEDED_DUNGEON_NAME_MAX_LEN];
 static u8 sSeededDungeonName2[NUM_DUNGEONS][SEEDED_DUNGEON_NAME_MAX_LEN];
 static bool8 sSeededDungeonNameValid[NUM_DUNGEONS];
 static s32 sSeededDungeonNameSeed = -2;
+static s32 sSeededDungeonNameType = -2;
 
 static void ResetSeededDungeonNameCache(void);
 static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed);
 static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize);
 static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize);
+static s32 GetSelectedTypeForDisplay(void);
 
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result)
 {
@@ -237,6 +240,7 @@ bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
 const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)
 {
     s32 seed;
+    s32 displayType;
 
     if (dungeonId >= NUM_DUNGEONS)
         return NULL;
@@ -244,6 +248,12 @@ const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)
         return NULL;
     if (!DungeonSeedOverrides_IsEnabled(&seed))
         return NULL;
+
+    displayType = GetSelectedTypeForDisplay();
+    if (displayType != sSeededDungeonNameType) {
+        sSeededDungeonNameType = displayType;
+        ResetSeededDungeonNameCache();
+    }
 
     if (sSeededDungeonNameSeed != seed) {
         sSeededDungeonNameSeed = seed;
@@ -473,9 +483,16 @@ static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
     char prefixBuffer[SEEDED_PREFIX_BUFFER_LEN];
     s32 dungeonIndex = -1;
     s32 i;
+    const char *typeLabel = NULL;
+    char typeBuffer[20];
 
     prefix = SelectPrefixForDungeon(dungeonId, &rng, prefixBuffer, ARRAY_COUNT(prefixBuffer));
     suffix = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
+
+    if (sSeededDungeonNameType > TYPE_NONE && sSeededDungeonNameType < NUM_TYPES) {
+        sprintfStatic(typeBuffer, "[%s]", gUnformattedTypeStrings[sSeededDungeonNameType]);
+        typeLabel = typeBuffer;
+    }
 
     // Find this dungeon's index in the sequential list by checking each rescue dungeon
     for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
@@ -488,8 +505,13 @@ static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
 
     // If dungeon is in the sequential list, prepend "Dungeon X/YY" format
     if (dungeonIndex != -1) {
-        sprintfStatic((char *)sSeededDungeonName1[dungeonId], "Dungeon %d/%d",
-                      dungeonIndex + 1, SEQUENTIAL_DUNGEON_COUNT);
+        if (typeLabel != NULL) {
+            sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d) %s",
+                          dungeonIndex + 1, SEQUENTIAL_DUNGEON_COUNT, typeLabel);
+        } else {
+            sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d)",
+                          dungeonIndex + 1, SEQUENTIAL_DUNGEON_COUNT);
+        }
         sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
     } else {
         // Not in sequential list, use normal format
@@ -530,6 +552,33 @@ static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSi
     }
     buffer[i] = '\0';
     return (i != 0);
+}
+
+static s32 GetSelectedTypeForDisplay(void)
+{
+    s32 type = -1;
+
+    if (!TypeSelection_IsFeatureEnabled())
+        return -1;
+
+    // Prefer the committed type for the upcoming dungeon
+    if (TypeSelection_HasCommittedType())
+        type = TypeSelection_GetCommittedType();
+    // Fall back to the active type (already consumed for current dungeon)
+    else if (TypeSelection_HasActiveType())
+        type = TypeSelection_GetActiveType();
+    else {
+        // Last-ditch: read the committed/active slots even if their valids are false,
+        // in case the flag was cleared but the value is still useful for debugging display.
+        type = TypeSelection_GetCommittedType();
+        if (type <= TYPE_NONE || type >= NUM_TYPES)
+            type = TypeSelection_GetActiveType();
+    }
+
+    if (type <= TYPE_NONE || type >= NUM_TYPES)
+        return -1;
+
+    return type;
 }
 
 // Helper function to check if a rescue dungeon is in the sequential list

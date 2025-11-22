@@ -16,7 +16,7 @@
 #define TYPE_SELECTION_PROMPT_WINDOW_ID 0
 #define TYPE_SELECTION_MENU_WINDOW_ID 1
 #define TYPE_SELECTION_MENU_ENTRY_HEIGHT 40
-#define TYPE_SELECTION_MENU_LINE_LENGTH 24
+#define TYPE_SELECTION_MENU_LINE_LENGTH 36
 
 typedef struct TypeSelectionMenuState
 {
@@ -29,8 +29,8 @@ typedef struct TypeSelectionMenuState
 
 static EWRAM_DATA TypeSelectionMenuState sMenuState = {0};
 
-static const u8 sMenuHeaderText[] = _("Choose tomorrow's omen.");
-static const u8 sMenuPromptText[] = _("What path should we take tomorrow?");
+static const u8 sMenuHeaderText[] = _("Which path to take?");
+static const u8 sMenuPromptText[] = _("You see a vision of tomorrow's adventures, which vision do you see?");
 const u8 gTypeSelectionFallbackText[] = _("That was good work today.\nI should get some rest.");
 
 static const WindowHeader sTypeSelectionWindowHeader = {1, 0, 22, 0};
@@ -165,11 +165,7 @@ const void *const gTypeSelectionUiLinkAnchor[] = {
 
 static void BuildHintLabel(u8 *dst, s32 index, const TypeHintDefinition *hint)
 {
-    u8 *cursor = dst;
-
-    cursor += sprintf(cursor, _("Hint %d:"), index + 1);
-    *cursor++ = '\n';
-    AppendWrappedHint(cursor, hint->message);
+    AppendWrappedHint(dst, hint->message);
 
     MGBA_Infof("[TypeSelectionUI] Hint %d = \"%s\" (%s/%s)",
                index + 1,

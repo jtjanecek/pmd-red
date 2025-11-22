@@ -10,6 +10,7 @@
 #include "code_8094F88.h"
 #include "code_80958E8.h"
 #include "constants/difficulty.h"
+#include "type_selection.h"
 
 enum
 {
@@ -49,7 +50,8 @@ struct UnkStruct_sub_8011DAC
     u32 unk43C;
     u32 unk440;
     u32 savedMailInfo;
-    u8 unk448[0x5388];
+    TypeSelectionSaveData typeSelection;
+    u8 unk448[0x5368];
 };
 
 // size: 0x60

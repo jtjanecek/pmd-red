@@ -72,6 +72,7 @@
 #include "rescue_scenario.h"
 #include "code_80A26CC.h"
 #include "constants/rescue_dungeon_id.h"
+#include "type_selection.h"
 
 EWRAM_INIT struct UnkStruct_203B414 *gUnknown_203B414 = NULL;
 EWRAM_INIT Dungeon *gDungeon = NULL;
@@ -159,6 +160,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         gDungeon->unk644.windTurns = GetTurnLimit(setupPtr->info.sub0.unk0.id);
         gDungeon->unk644.windPhase = 0;
         gDungeon->unk644.unk37 = GetRescuesAllowed(setupPtr->info.sub0.unk0.id);
+        TypeSelection_HandleDungeonStart();
     }
     gDungeon->unk644.unk54 = 0;
     gDungeon->unk644.unk55 = 0;

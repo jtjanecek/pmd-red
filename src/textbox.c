@@ -17,6 +17,7 @@
 #include "code_801D014.h"
 #include "code_803B050.h"
 #include "code_8099360.h"
+#include "data_script.h"
 #include "credits2.h"
 #include "event_flag.h"
 #include "felicity_bank.h"
@@ -39,6 +40,7 @@
 #include "portrait_placement.h"
 #include "pokemon.h"
 #include "save_write.h"
+#include "mgba_log.h"
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
@@ -53,6 +55,7 @@
 #include "structs/menu.h"
 #include "structs/str_file_system.h"
 #include "structs/str_mon_portrait.h"
+#include "type_selection.h"
 
 struct TextboxPortrait
 {
@@ -119,6 +122,10 @@ struct Textbox
 };
 
 static IWRAM_INIT struct Textbox *sTextbox = { NULL };
+static bool8 sTypeSelectionAutoPressSaved = FALSE;
+static s32 sTypeSelectionPrevEndFrames = 0;
+static s32 sTypeSelectionPrevMidFrames = 0;
+static bool8 sTypeSelectionMenuActive = FALSE;
 
 void sub_809B028(const MenuItem *, s32 a1_, s32 a2, s32 a3, s32 a4_, const char *text);
 bool8 sub_809B18C(s32 *sp);
@@ -1485,6 +1492,60 @@ static bool8 sub_809B648(void)
                         sub_80213A0();
                         return 0;
                 }
+            }
+            return 1;
+        case SPECIAL_TEXT_TYPE_SELECTION:
+            if (sTypeSelectionMenuActive) {
+                MGBA_Infof("[TypeSelection] menu loop tick");
+                if (!TypeSelectionMenu_Update())
+                    return 1;
+                TypeSelectionMenu_Reset();
+                sTypeSelectionMenuActive = FALSE;
+                if (sTypeSelectionAutoPressSaved) {
+                    SetAutoPressTextboxMidEndMsgFrames(sTypeSelectionPrevEndFrames, sTypeSelectionPrevMidFrames);
+                    sTypeSelectionAutoPressSaved = FALSE;
+                }
+                MGBA_Infof("[TypeSelection] menu closed, resuming script");
+                sTextbox->unk430 = -1;
+                sTextbox->unk420 = 3;
+                return 0;
+            }
+
+            if (sTextbox->unk420 == 1) {
+                MGBA_Infof("[TypeSelection] special text triggered (state=1)");
+                ResetTextbox();
+                if (!sTypeSelectionAutoPressSaved) {
+                    sTypeSelectionPrevEndFrames = sTextbox->endMsgFrames;
+                    sTypeSelectionPrevMidFrames = sTextbox->midMsgFrames;
+                    sTypeSelectionAutoPressSaved = TRUE;
+                }
+                SetAutoPressTextboxFrames(-1);
+                if (TypeSelectionMenu_Begin()) {
+                    MGBA_Infof("[TypeSelection] menu begin success");
+                    sTypeSelectionMenuActive = TRUE;
+                    sTextbox->unk420 = 4;
+                }
+                else {
+                    MGBA_Warnf("[TypeSelection] menu begin failed, using fallback text");
+                    CreateMenuDialogueBoxAndPortrait(gTypeSelectionFallbackText, 0, 0, NULL, 0, 3, 0, NULL, 0);
+                    sTextbox->unk420 = 2;
+                }
+                return 1;
+            }
+            if (sTextbox->unk420 == 2) {
+                s32 temp;
+                MGBA_Infof("[TypeSelection] waiting for fallback acknowledgement");
+                if (sub_80144A4(&temp) != 0) {
+                    sTextbox->unk430 = -1;
+                    sTextbox->unk420 = 3;
+                    return 0;
+                }
+                return 1;
+            }
+            if (sTextbox->unk420 == 4) {
+                // should be handled by sTypeSelectionMenuActive block, but keep fallthrough
+                sTextbox->unk420 = 1;
+                return 1;
             }
             return 1;
         case 0xc:

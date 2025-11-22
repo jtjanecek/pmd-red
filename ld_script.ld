@@ -21,6 +21,10 @@ SECTIONS {
         data/sound_data.o(.bss);
         src/dungeon_astar.o(.bss);
         src/dungeon_seed_overrides.o(.bss);
+        src/type_selection.o(.bss);
+        src/type_selection_ui.o(.bss);
+        KEEP(*(ewram_data))
+        KEEP(*(ewram_data.*))
         INCLUDE "sym_ewram.ld"
         *libgcc.a:fp-bit.o(.bss);
         *libgcc.a:dp-bit.o(.bss);
@@ -198,6 +202,8 @@ SECTIONS {
         src/code_803B050.o(.text);
         src/code_803B344.o(.text);
         src/pokemon_mail.o(.text);
+        src/type_selection.o(.text);
+        src/type_selection_ui.o(.text);
         src/code_803C1B4.o(.text);
         src/personality_test1.o(.text);
         src/personality_test2.o(.text);
@@ -584,6 +590,9 @@ SECTIONS {
         data/data_80E7D40.o(.rodata);
         src/pokemon_mail_pre.o(.rodata);
         src/pokemon_mail.o(.rodata);
+        src/type_selection.o(.rodata);
+        src/type_selection_ui.o(.rodata);
+        src/data/type_hint_table.o(.rodata);
         src/personality_test1.o(.rodata);
         src/personality_test2.o(.rodata);
         src/code_803D0D8.o(.rodata);
@@ -930,6 +939,7 @@ SECTIONS {
 		INCLUDE "sym_ewram_init.ld"
 		src/dungeon_astar.o(.data);
 		src/dungeon_seed_overrides.o(.data);
+		src/textbox.o(.data);
 		*libc.a:impure.o(.data);
 		*libc.a:locale.o(.data);
 		*libc.a:mallocr.o(.data);

@@ -33,7 +33,8 @@ struct unk_struct
     u32 difficulty;
     u8 skipBasicRescues;
     u8 recruitAll;
-    u32 padding[500];
+    TypeSelectionSaveData typeSelection;
+    u32 padding[492];
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
@@ -255,6 +256,7 @@ u32 ReadSaveFromPak(u32 *a)
             SetGameDifficultySetting(playerSave->difficulty);
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
+            TypeSelection_ReadSaveData(&playerSave->typeSelection);
         }
         else {
             gUnknown_203B184->unk054 = playerSave->unk41C;
@@ -264,6 +266,7 @@ u32 ReadSaveFromPak(u32 *a)
             SetGameDifficultySetting(playerSave->difficulty);
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
+            TypeSelection_ReadSaveData(&playerSave->typeSelection);
         }
     }
     if (!saveStatus)
@@ -352,6 +355,7 @@ u32 sub_8011FA8(void)
             SetGameDifficultySetting(r5->difficulty);
             SetSkipBasicRescuesSetting(r5->skipBasicRescues);
             SetRecruitAllSetting(r5->recruitAll);
+            TypeSelection_ReadSaveData(&r5->typeSelection);
         }
     }
     MemoryFree(r5);
@@ -393,6 +397,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->difficulty = GetGameDifficultySetting();
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
+    TypeSelection_WriteSaveData(&playerSave->typeSelection);
   }
   else {
     playerSave->unk41C = gUnknown_203B184->unk054;
@@ -401,6 +406,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->RngState = gUnknown_203B184->RngState;
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
+    TypeSelection_WriteSaveData(&playerSave->typeSelection);
   }
    playerSave->checksum = 0x5071412;
   gameName = GetGameInternalName();
@@ -460,6 +466,7 @@ u32 sub_80121E0(u32 r0)
     r4->difficulty = GetGameDifficultySetting();
     r4->skipBasicRescues = GetSkipBasicRescuesSetting();
     r4->recruitAll = GetRecruitAllSetting();
+    TypeSelection_WriteSaveData(&r4->typeSelection);
 
     gameName = GetGameInternalName();
     strncpy(r4->gameInternalName, gameName, ARRAY_COUNT(r4->gameInternalName));
@@ -541,6 +548,7 @@ void InitializePlayerData(void)
     sub_80974E8();
     InitializeGameOptions(TRUE);
     InitializeExclusivePokemon();
+    TypeSelection_ResetForNewRun();
 }
 
 

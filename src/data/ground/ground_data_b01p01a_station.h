@@ -1282,7 +1282,7 @@ static const struct ScriptCommand s_gs9_g6_s2_lives0_dlg0[] = { /* 0x819f594 */
     { 0xdf, 0x00,  0x0000,  0x00000000,  0x00000000, NULL },
     WAIT(30),
     PORTRAIT(PLACEMENT_LEFT, 0x0000, 0x00000000),
-    { 0x33, 0x00,  0x0000,  0x00000000,  0x00000000, _("That was good work today.\nI should get some rest.") },
+    SPECIAL_TEXT(SPECIAL_TEXT_TYPE_SELECTION, 0, 0),
     TEXTBOX_CLEAR,
     ALERT_CUE(3),
     HALT,

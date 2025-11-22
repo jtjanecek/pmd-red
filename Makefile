@@ -87,6 +87,7 @@ RAMSCRGEN := tools/ramscrgen/ramscrgen
 DUNGEONJSON := tools/dungeonjson/dungeonjson
 
 PERL := perl
+PYTHON ?= python3
 
 TOOLDIRS := $(filter-out tools/agbcc tools/binutils,$(wildcard tools/*))
 TOOLBASE = $(TOOLDIRS:tools/%=%)
@@ -171,6 +172,13 @@ OBJS_REL := $(patsubst $(BUILD_DIR)/%,%,$(ALL_OBJECTS))
 
 SUBDIRS := $(sort $(dir $(ALL_OBJECTS)))
 
+TYPE_CHOICES_CSV := docs/type_choices.csv
+TYPE_HINT_TABLE_SRC := src/data/type_hint_table.c
+TYPE_HINT_GENERATOR := scripts/build_type_hint_table.py
+
+$(TYPE_HINT_TABLE_SRC): $(TYPE_CHOICES_CSV) $(TYPE_HINT_GENERATOR)
+	$(PYTHON) $(TYPE_HINT_GENERATOR) $(TYPE_CHOICES_CSV) $(TYPE_HINT_TABLE_SRC)
+
 # Special configurations required for lib files
 ifeq ($(MODERN),0)
   $(C_BUILDDIR)/agb_flash.o   : CC1FLAGS := -O -mthumb-interwork
@@ -183,6 +191,8 @@ endif
 
 #### Main Rules ####
 
+
+.DEFAULT_GOAL := all
 
 ALL_BUILDS := red
 
@@ -335,7 +345,7 @@ else
 endif
 
 # Elf from object files
-LDFLAGS = -Map ../../$(MAP)
+LDFLAGS = -Map ../../$(MAP) -u TypeSelection_Init -u TypeSelectionMenu_Begin
 $(ELF): $(LD_SCRIPT) $(LD_SCRIPT_DEPS) $(ALL_OBJECTS) libagbsyscall
 	@cd $(BUILD_DIR) && $(LD) $(LDFLAGS) -T ../../$< --print-memory-usage -o ../../$@ $(OBJS_REL) $(LIB) | cat
 	@echo "cd $(BUILD_DIR) && $(LD) $(LDFLAGS) -T ../../$< --print-memory-usage -o ../../$@ <objs> <libs> | cat"

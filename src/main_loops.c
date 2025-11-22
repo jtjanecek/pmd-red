@@ -58,6 +58,7 @@
 #include "constants/friend_area.h"
 #include "constants/ground_map.h"
 #include "constants/dungeon.h"
+#include "type_selection.h"
 
 typedef struct unkTalkTable
 {
@@ -84,6 +85,7 @@ static EWRAM_INIT TeamBasicInfo sTeamBasicInfo_203B040 = {
 };
 
 static void LoadTitleScreen(void);
+static void EnsureTypeSelectionLink(void);
 static void NDS_LoadOverlay_GroundMain();
 static u32 RunGameMode_Async(u32 param_1);
 static void sub_80011CC(DungeonSetupSubstruct *info, u8 dungId);
@@ -136,6 +138,8 @@ void GameLoop(void)
     u32 flag;
 
     InitHeap();
+    EnsureTypeSelectionLink();
+    TypeSelection_Init();
     MGBA_Warnf("[demo] GameLoop start");
     NDS_DebugInit();
     ResetSoundEffectCounters();
@@ -1206,4 +1210,9 @@ static void LoadAndRunDungeon_Async(DungeonSetupStruct *setupPtr)
 void nullsub_3(s32 yPos, s32 a1)
 {
 
+}
+static void EnsureTypeSelectionLink(void)
+{
+    (void)gTypeSelectionLinkAnchor;
+    (void)gTypeSelectionUiLinkAnchor;
 }

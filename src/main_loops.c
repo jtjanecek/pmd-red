@@ -1266,7 +1266,7 @@ static void BuildCreditsHeader(void)
     }
 
     sprintfStatic((char *)sCreditsHeaderBuffer,
-                  "{CENTER_ALIGN}ROGUE RESCUE TEAM v%s\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s",
+                  "ROGUE RESCUE TEAM v%s\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s",
                   ROGUE_VERSION_STRING,
                   seed,
                   difficulty,

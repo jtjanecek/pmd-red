@@ -408,11 +408,15 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             gDungeon->unk644.windTurns = GetTurnLimit(gDungeon->unk644.dungeonLocation.id);
             gDungeon->unk644.windPhase = 0;
         }
+        MGBA_Warnf("[Dungeon] Before sub_804AAD4");
         sub_804AAD4();
+        MGBA_Warnf("[Dungeon] After sub_804AAD4");
         sub_8049B8C();
+        MGBA_Warnf("[Dungeon] After sub_8049B8C");
         LoadDungeonTilesetAssets();
         if (!r6) {
             sub_806B168();
+            MGBA_Warnf("[Dungeon] After sub_806B168");
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
 
@@ -436,8 +440,10 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
                 // Spawn normal enemies only on non-boss floors
                 if (bossFight == NULL || !bossFight->enabled) {
+                    MGBA_Warnf("[Dungeon] Before SpawnWildMonsOnFloor");
                     // Normal floor - spawn regular enemies
                     SpawnWildMonsOnFloor();
+                    MGBA_Warnf("[Dungeon] After SpawnWildMonsOnFloor");
                 }
             }
         }

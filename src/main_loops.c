@@ -63,6 +63,7 @@
 #include "type_selection.h"
 #include "pokemon.h"
 #include "input.h"
+#include "rogue_version.h"
 
 typedef struct unkTalkTable
 {
@@ -1265,7 +1266,8 @@ static void BuildCreditsHeader(void)
     }
 
     sprintfStatic((char *)sCreditsHeaderBuffer,
-                  "{CENTER_ALIGN}ROGUE RESCUE TEAM\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s",
+                  "{CENTER_ALIGN}ROGUE RESCUE TEAM v%s\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s",
+                  ROGUE_VERSION_STRING,
                   seed,
                   difficulty,
                   heroName,

@@ -3164,6 +3164,16 @@ static void GenerateKecleonShop(struct GridCell grid[GRID_CELL_LEN][GRID_CELL_LE
     sKecleonShopMiddlePos.x = -1;
     sKecleonShopMiddlePos.y = -1;
 
+    // Skip shop generation entirely when seed overrides are active (roguelike runs).
+    // Shops seem to be causing a freeze on seeded floors, so avoid them for now.
+    {
+        s32 seed;
+        if (DungeonSeedOverrides_IsEnabled(&seed)) {
+            MGBA_Warnf("[ShopGen] Skipping shop for seeded run (seed=%d)", seed);
+            return;
+        }
+    }
+
 	if (sHasMonsterHouse || GetFloorType() == FLOOR_TYPE_RESCUE || chance == 0)
         return;
 	if (chance <= DungeonRandInt(100))

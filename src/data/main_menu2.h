@@ -1,3 +1,6 @@
+// Shared version label for title/menus
+#include "rogue_version.h"
+
 static const WindowTemplate sUnknown_80E59C8 = {
     0,
     3,
@@ -160,7 +163,7 @@ static const WindowTemplate sUnknown_80E5CB4 = {
 };
 
 static const MenuItem sUnknown_80E5CCC[] = {
-    {_("Red Rescue Team Reborn v0.01"), 0xFFDE},
+    {_(ROGUE_VERSION_LABEL), 0xFFDE},
     {_("  "), 0xFFDE},
     {NULL, 0xFFDD},
 };
@@ -178,7 +181,7 @@ static const MenuItem sUnknown_80E5D48[] = {
 };
 
 static const MenuItem sUnknown_80E5DA0[] = {
-    {_("Red Rescue Team Reborn v0.01"), 0xFFDE},
+    {_(ROGUE_VERSION_LABEL), 0xFFDE},
     {_("  "), 0xFFDE},
     {NULL, 0xFFDD},
 };

@@ -47,15 +47,8 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     s32 size = GetBodySize(targetInfo->apparentID);
     u8 recruitSetting = GetRecruitAllSetting();
 
-#ifdef DEV
-    if (recruitSetting == 2) {
-        if (size <= 1)
-            return FALSE;
-    }
-#else
     if (recruitSetting == 2)
         return FALSE;
-#endif
 
     if (gDungeon->fixedRoomNumber != FIXED_ROOM_FROSTY_GROTTO_ARTICUNO
         && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_BLAZE_PEAK_MOLTRES

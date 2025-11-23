@@ -110,7 +110,7 @@ void Credits1_SetCustomHeader(const u8 *text)
     CopyStringtoBuffer(sCustomHeaderText, text);
     sCustomHeader.type = 1;
     sCustomHeader.x = 0;
-    sCustomHeader.y = 0x3c;
+    sCustomHeader.y = 0x30;
     sCustomHeader.text = sCustomHeaderText;
 
     for (i = 0; i < CREDITS_TABLE_COUNT; i++)

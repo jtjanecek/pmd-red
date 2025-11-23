@@ -5,6 +5,7 @@
 #include "constants/type.h"
 
 #define TYPE_SELECTION_MAX_BOSSES_PER_TYPE 2
+#define TYPE_SELECTION_MAX_TILESETS_PER_TYPE 8
 
 typedef struct TypeHintDefinition
 {
@@ -19,17 +20,26 @@ typedef struct TypeBossPool
     u8 count;
 } TypeBossPool;
 
+typedef struct TypeTilesetPool
+{
+    u8 tilesets[TYPE_SELECTION_MAX_TILESETS_PER_TYPE];
+    u8 count;
+} TypeTilesetPool;
+
 typedef struct TypeSelectionSaveData
 {
     u8 pickCount[NUM_TYPES];
     u8 bossMask[NUM_TYPES];
+    u8 tilesetMask[NUM_TYPES];
     s16 pendingHintIds[2];
     s16 committedBoss;
     s16 activeBoss;
     u8 pendingHintCount;
     u8 completedDungeons;
-    u8 pendingType;
-    u8 pendingTypeValid;
+    u8 committedTileset;
+    u8 committedTilesetValid;
+    u8 activeTileset;
+    u8 activeTilesetValid;
     u8 committedType;
     u8 committedTypeValid;
     u8 activeType;
@@ -43,6 +53,7 @@ typedef struct TypeSelectionSaveData
 extern const TypeHintDefinition gTypeHintTable[];
 extern const u32 gTypeHintCount;
 extern const TypeBossPool gTypeBossTable[NUM_TYPES];
+extern const TypeTilesetPool gTypeTilesetTable[NUM_TYPES];
 
 void TypeSelection_Init(void);
 void TypeSelection_ResetForNewRun(void);
@@ -57,6 +68,10 @@ bool8 TypeSelection_HasCommittedType(void);
 u8 TypeSelection_GetCommittedType(void);
 bool8 TypeSelection_HasActiveType(void);
 u8 TypeSelection_GetActiveType(void);
+bool8 TypeSelection_HasCommittedTileset(void);
+u8 TypeSelection_GetCommittedTileset(void);
+bool8 TypeSelection_HasActiveTileset(void);
+u8 TypeSelection_GetActiveTileset(void);
 bool8 TypeSelection_HasCommittedBoss(void);
 s16 TypeSelection_GetCommittedBoss(void);
 bool8 TypeSelection_HasActiveBoss(void);

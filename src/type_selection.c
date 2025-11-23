@@ -27,8 +27,11 @@ static bool8 IsTypeAvailable(u8 type);
 static bool8 ShouldGenerateHints(void);
 static void SanitizePendingHints(void);
 static void SanitizeBossState(void);
+static void SanitizeTilesetState(void);
 static bool8 IsBossInPool(u8 type, s16 species);
+static bool8 IsTilesetInPool(u8 type, u8 tilesetId);
 static bool8 SelectBossForType(u8 type, u32 *rngState, s16 *bossOut);
+static bool8 SelectTilesetForType(u8 type, u32 *rngState, u8 *tilesetOut);
 static u32 MixSeed(u32 seed, u32 salt);
 static u32 NextRandom(u32 *state);
 static s16 ChooseRandomIndex(u32 *state, s16 count);
@@ -63,6 +66,7 @@ void TypeSelection_ReadSaveData(const TypeSelectionSaveData *data)
 
     SanitizePendingHints();
     SanitizeBossState();
+    SanitizeTilesetState();
 
     if (!sTypeSelectionState.data.awaitingChoice
         && !sTypeSelectionState.data.committedTypeValid
@@ -166,7 +170,10 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
     u8 fallbackType;
     s16 chosenBoss = MONSTER_NONE;
     bool8 bossValid = FALSE;
+    u8 chosenTileset = 0;
+    bool8 tilesetValid = FALSE;
     u32 rng;
+    u32 tilesetRng;
 
     if (!TypeSelection_IsFeatureEnabled())
         return FALSE;
@@ -176,6 +183,7 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
     if (!TypeSelection_ShouldPromptPlayer())
         return FALSE;
     SanitizeBossState();
+    SanitizeTilesetState();
     if (index >= sTypeSelectionState.data.pendingHintCount)
         return FALSE;
 
@@ -198,6 +206,11 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
     if (!bossValid)
         MGBA_Warnf("[TypeSelection] No boss available for type %d", chosenType);
 
+    tilesetRng = MixSeed((u32)sub_8011C34(), (sTypeSelectionState.data.completedDungeons << 4) ^ chosenType ^ 0x715E7D);
+    tilesetValid = SelectTilesetForType(chosenType, &tilesetRng, &chosenTileset);
+    if (!tilesetValid)
+        MGBA_Warnf("[TypeSelection] No tileset available for type %d", chosenType);
+
     sTypeSelectionState.data.pickCount[chosenType]++;
     sTypeSelectionState.data.pendingHintCount = 0;
     ResetPendingHints();
@@ -206,13 +219,15 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
     sTypeSelectionState.data.committedTypeValid = TRUE;
     sTypeSelectionState.data.committedBoss = chosenBoss;
     sTypeSelectionState.data.committedBossValid = bossValid;
+    sTypeSelectionState.data.committedTileset = chosenTileset;
+    sTypeSelectionState.data.committedTilesetValid = tilesetValid;
     sTypeSelectionState.data.awaitingChoice = FALSE;
     sTypeSelectionState.data.completedDungeons++;
 
     if (chosenTypeOut != NULL)
         *chosenTypeOut = chosenType;
 
-    MGBA_Warnf("[TypeSelection] Hint %d picked type %d (boss=%d, bossValid=%d, seed=%d, dungeonCount=%d)", index, chosenType, chosenBoss, bossValid, sub_8011C34(), sTypeSelectionState.data.completedDungeons);
+    MGBA_Warnf("[TypeSelection] Hint %d picked type %d (boss=%d, bossValid=%d, tileset=%d, tilesetValid=%d, seed=%d, dungeonCount=%d)", index, chosenType, chosenBoss, bossValid, chosenTileset, tilesetValid, sub_8011C34(), sTypeSelectionState.data.completedDungeons);
     return TRUE;
 }
 
@@ -234,6 +249,26 @@ bool8 TypeSelection_HasActiveType(void)
 u8 TypeSelection_GetActiveType(void)
 {
     return sTypeSelectionState.data.activeType;
+}
+
+bool8 TypeSelection_HasCommittedTileset(void)
+{
+    return sTypeSelectionState.data.committedTilesetValid;
+}
+
+u8 TypeSelection_GetCommittedTileset(void)
+{
+    return sTypeSelectionState.data.committedTileset;
+}
+
+bool8 TypeSelection_HasActiveTileset(void)
+{
+    return sTypeSelectionState.data.activeTilesetValid;
+}
+
+u8 TypeSelection_GetActiveTileset(void)
+{
+    return sTypeSelectionState.data.activeTileset;
 }
 
 bool8 TypeSelection_HasCommittedBoss(void)
@@ -295,6 +330,7 @@ void TypeSelection_HandleDungeonStart(void)
     // Ensure a deterministic initial type if none has been picked yet.
     (void)TypeSelection_EnsureInitialCommittedType();
     SanitizeBossState();
+    SanitizeTilesetState();
 
     if (sTypeSelectionState.data.committedTypeValid) {
         sTypeSelectionState.data.activeType = sTypeSelectionState.data.committedType;
@@ -314,11 +350,25 @@ void TypeSelection_HandleDungeonStart(void)
 
         sTypeSelectionState.data.committedBossValid = FALSE;
         sTypeSelectionState.data.committedBoss = MONSTER_NONE;
+
+        if (sTypeSelectionState.data.committedTilesetValid
+            && IsTilesetInPool(sTypeSelectionState.data.activeType, sTypeSelectionState.data.committedTileset)) {
+            sTypeSelectionState.data.activeTileset = sTypeSelectionState.data.committedTileset;
+            sTypeSelectionState.data.activeTilesetValid = TRUE;
+        } else {
+            sTypeSelectionState.data.activeTileset = 0;
+            sTypeSelectionState.data.activeTilesetValid = FALSE;
+        }
+
+        sTypeSelectionState.data.committedTilesetValid = FALSE;
+        sTypeSelectionState.data.committedTileset = 0;
     } else {
         sTypeSelectionState.data.activeTypeValid = FALSE;
         sTypeSelectionState.data.activeBossValid = FALSE;
         sTypeSelectionState.data.activeType = TYPE_NONE;
         sTypeSelectionState.data.activeBoss = MONSTER_NONE;
+        sTypeSelectionState.data.activeTilesetValid = FALSE;
+        sTypeSelectionState.data.activeTileset = 0;
     }
 }
 
@@ -377,6 +427,36 @@ static void SanitizeBossState(void)
     }
 }
 
+static void SanitizeTilesetState(void)
+{
+    s32 i;
+    const u8 validMask = (1 << TYPE_SELECTION_MAX_TILESETS_PER_TYPE) - 1;
+
+    for (i = 0; i < NUM_TYPES; i++) {
+        const TypeTilesetPool *pool = &gTypeTilesetTable[i];
+        u8 poolMask = 0;
+
+        if (pool->count >= TYPE_SELECTION_MAX_TILESETS_PER_TYPE)
+            poolMask = validMask;
+        else if (pool->count > 0)
+            poolMask = (1 << pool->count) - 1;
+
+        sTypeSelectionState.data.tilesetMask[i] &= poolMask;
+    }
+
+    if (!sTypeSelectionState.data.committedTypeValid
+        || !IsTilesetInPool(sTypeSelectionState.data.committedType, sTypeSelectionState.data.committedTileset)) {
+        sTypeSelectionState.data.committedTilesetValid = FALSE;
+        sTypeSelectionState.data.committedTileset = 0;
+    }
+
+    if (!sTypeSelectionState.data.activeTypeValid
+        || !IsTilesetInPool(sTypeSelectionState.data.activeType, sTypeSelectionState.data.activeTileset)) {
+        sTypeSelectionState.data.activeTilesetValid = FALSE;
+        sTypeSelectionState.data.activeTileset = 0;
+    }
+}
+
 static bool8 IsTypeWithinBounds(u8 type)
 {
     return (type > TYPE_NONE && type < NUM_TYPES);
@@ -400,6 +480,28 @@ static bool8 IsBossInPool(u8 type, s16 species)
 
     for (i = 0; i < poolCount; i++) {
         if (pool->species[i] == species)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+static bool8 IsTilesetInPool(u8 type, u8 tilesetId)
+{
+    s32 i;
+    const TypeTilesetPool *pool;
+    s32 poolCount;
+
+    if (!IsTypeWithinBounds(type))
+        return FALSE;
+
+    pool = &gTypeTilesetTable[type];
+    poolCount = pool->count;
+    if (poolCount > TYPE_SELECTION_MAX_TILESETS_PER_TYPE)
+        poolCount = TYPE_SELECTION_MAX_TILESETS_PER_TYPE;
+
+    for (i = 0; i < poolCount; i++) {
+        if (pool->tilesets[i] == tilesetId)
             return TRUE;
     }
 
@@ -466,6 +568,57 @@ static bool8 SelectBossForType(u8 type, u32 *rngState, s16 *bossOut)
 
     sTypeSelectionState.data.bossMask[type] |= (1 << availableIndices[choice]);
     *bossOut = pool->species[availableIndices[choice]];
+
+    if (rngState != NULL)
+        *rngState = rngLocal;
+
+    return TRUE;
+}
+
+static bool8 SelectTilesetForType(u8 type, u32 *rngState, u8 *tilesetOut)
+{
+    const TypeTilesetPool *pool;
+    u8 availableIndices[TYPE_SELECTION_MAX_TILESETS_PER_TYPE];
+    s32 availableCount = 0;
+    u32 rngLocal;
+    s32 poolCount;
+    s32 choice;
+
+    if (tilesetOut == NULL)
+        return FALSE;
+    if (!IsTypeWithinBounds(type))
+        return FALSE;
+
+    pool = &gTypeTilesetTable[type];
+    poolCount = pool->count;
+    if (poolCount <= 0)
+        return FALSE;
+    if (poolCount > TYPE_SELECTION_MAX_TILESETS_PER_TYPE)
+        poolCount = TYPE_SELECTION_MAX_TILESETS_PER_TYPE;
+
+    sTypeSelectionState.data.tilesetMask[type] &= (1 << poolCount) - 1;
+
+    if (rngState != NULL)
+        rngLocal = *rngState;
+    else
+        rngLocal = MixSeed((u32)sub_8011C34(), (sTypeSelectionState.data.completedDungeons << 8) ^ type ^ 0x715E7D);
+
+    for (choice = 0; choice < poolCount; choice++) {
+        if (!(sTypeSelectionState.data.tilesetMask[type] & (1 << choice))) {
+            availableIndices[availableCount++] = (u8)choice;
+        }
+    }
+
+    if (availableCount == 0) {
+        availableIndices[availableCount++] = (u8)(poolCount - 1);
+    }
+
+    choice = ChooseRandomIndex(&rngLocal, (s16)availableCount);
+    if (choice < 0 || choice >= availableCount)
+        return FALSE;
+
+    sTypeSelectionState.data.tilesetMask[type] |= (1 << availableIndices[choice]);
+    *tilesetOut = pool->tilesets[availableIndices[choice]];
 
     if (rngState != NULL)
         *rngState = rngLocal;

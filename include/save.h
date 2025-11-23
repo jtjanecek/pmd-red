@@ -51,7 +51,7 @@ struct UnkStruct_sub_8011DAC
     u32 unk440;
     u32 savedMailInfo;
     TypeSelectionSaveData typeSelection;
-    u8 unk448[0x5350];
+    u8 unk448[0x533C];
 };
 
 // size: 0x60

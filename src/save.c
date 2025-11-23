@@ -34,7 +34,7 @@ struct unk_struct
     u8 skipBasicRescues;
     u8 recruitAll;
     TypeSelectionSaveData typeSelection;
-    u32 padding[486];
+    u32 padding[481];
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};

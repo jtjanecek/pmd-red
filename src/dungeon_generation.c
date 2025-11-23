@@ -172,6 +172,10 @@ void GenerateFloor(void)
     FloorProperties *floorProps = &gDungeon->floorProperties;
 
     gDungeon->unk13568 = OpenFileAndGetFileDataPtr("fixedmap", &gDungeonFileArchive);
+    if (gDungeon->unk13568 == NULL || gDungeon->unk13568->data == NULL) {
+        MGBA_Warnf("[FloorGen] ERROR: failed to load fixedmap (file=%p data=%p)", gDungeon->unk13568, gDungeon->unk13568 ? gDungeon->unk13568->data : NULL);
+        return;
+    }
     sHasKecleonShop = FALSE;
     sHasMonsterHouse = 0;
     sHasMaze = FALSE;
@@ -209,6 +213,14 @@ void GenerateFloor(void)
     }
 
     gDungeon->unk644.enemyDensity = abs(floorProps->enemyDensity);
+    MGBA_Warnf("[FloorGen] Start: dungeon=%d floor=%d layout=%d tileset=%d fixedRoom=%d enemyDensity=%d roomDensity=%d",
+               gDungeon->unk644.dungeonLocation.id,
+               gDungeon->unk644.dungeonLocation.floor,
+               floorProps->layout,
+               floorProps->tileset,
+               gDungeon->fixedRoomNumber,
+               gDungeon->unk644.enemyDensity,
+               floorProps->roomDensity);
 
     gDungeon->unk3A09 = 0;
     gDungeon->unk3A0A = 0;
@@ -219,12 +231,14 @@ void GenerateFloor(void)
         s32 genAttempts;
         bool32 isEmptyMonsterHouse;
 
+        MGBA_Warnf("[FloorGen] Spawn attempt %d", spawnAttempts);
         gDungeon->playerSpawn.x = -1;
         gDungeon->playerSpawn.y = -1;
         gDungeon->stairsSpawn.x = -1;
         gDungeon->stairsSpawn.y = -1;
         // Actual generation attempts, up to 10 times per entity
         for (genAttempts = 0; genAttempts < 10; genAttempts++) {
+            MGBA_Warnf("[FloorGen] Gen attempt %d", genAttempts);
             gDungeon->unk3A16 = genAttempts;
             if (genAttempts > 0) {
                 sSecondaryStructuresBudget = 0;
@@ -337,6 +351,14 @@ void GenerateFloor(void)
                         secondaryGen = TRUE;
                         break;
                 }
+                MGBA_Warnf("[FloorGen] Layout built: gen=%d layout=%d grid=%dx%d forceMH=%d floorSize=%d tileset=%d",
+                           genAttempts,
+                           layout % NUM_FLOOR_LAYOUTS,
+                           gridSizeX,
+                           gridSizeY,
+                           gDungeon->forceMonsterHouse,
+                           sFloorSize,
+                           gDungeon->tileset);
             }
 
             ResetInnerBoundaryTileRows();
@@ -395,8 +417,15 @@ void GenerateFloor(void)
         }
 
         isEmptyMonsterHouse = (DungeonRandInt(100) < floorProps->itemlessMonsterHouseChance);
+        MGBA_Warnf("[FloorGen] Spawns: isEmptyMonsterHouse=%d currSpawnCount=%d enemyDensity=%d", isEmptyMonsterHouse, gDungeon->currFloorMonsterSpawnsCount, gDungeon->unk644.enemyDensity);
         SpawnNonEnemies(floorProps, isEmptyMonsterHouse);
         SpawnEnemies(floorProps, isEmptyMonsterHouse);
+        MGBA_Warnf("[FloorGen] Spawn routines finished: player=(%d,%d) stairs=(%d,%d) forceMH=%d",
+                   gDungeon->playerSpawn.x,
+                   gDungeon->playerSpawn.y,
+                   gDungeon->stairsSpawn.x,
+                   gDungeon->stairsSpawn.y,
+                   gDungeon->forceMonsterHouse);
 
         ResolveInvalidSpawns(); // Make sure multiple flags aren't set for one tile
         if (gDungeon->playerSpawn.x != -1 && gDungeon->playerSpawn.y != -1) {
@@ -428,11 +457,16 @@ void GenerateFloor(void)
     }
 
     if (sKecleonShopMiddlePos.x >= 0 && sKecleonShopMiddlePos.y >= 0) {
+        MGBA_Warnf("[ShopGen] Spawning Kecleon at (%d,%d)", sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
         sub_806C330(sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y, MONSTER_KECLEON, 0);
     }
 
     if (sKecleonShopPosition.minX >= 0) {
         sub_8051654(floorProps);
+        MGBA_Warnf("[ShopGen] Final shop bounds=(%d,%d)-(%d,%d) center=(%d,%d)",
+                   sKecleonShopPosition.minX, sKecleonShopPosition.minY,
+                   sKecleonShopPosition.maxX, sKecleonShopPosition.maxY,
+                   sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
         gDungeon->unk3A0A = 1;
     }
     else {
@@ -444,6 +478,10 @@ void GenerateFloor(void)
         sub_804FC74();
     }
 
+    MGBA_Warnf("[FloorGen] Complete: shop=%d monsterHouse=%d enemyDensity=%d",
+               gDungeon->unk3A0A,
+               gDungeon->forceMonsterHouse,
+               gDungeon->unk644.enemyDensity);
     CloseFile(gDungeon->unk13568);
 }
 
@@ -3131,6 +3169,7 @@ static void GenerateKecleonShop(struct GridCell grid[GRID_CELL_LEN][GRID_CELL_LE
 	if (chance <= DungeonRandInt(100))
         return;
 
+    MGBA_Warnf("[ShopGen] Rolling shop: chance=%d grid=%dx%d", chance, gridSizeX, gridSizeY);
 	// All possible grid cells
 	for (i = 0; i < GRID_CELL_LEN; i++) {
 		listX[i] = i;
@@ -3259,6 +3298,10 @@ static void GenerateKecleonShop(struct GridCell grid[GRID_CELL_LEN][GRID_CELL_LE
             sKecleonShopMiddlePos.x = curX;
             sKecleonShopMiddlePos.y = curY;
 
+            MGBA_Warnf("[ShopGen] Selected room: bounds=(%d,%d)-(%d,%d) middle=(%d,%d)",
+                       sKecleonShopPosition.minX, sKecleonShopPosition.minY,
+                       sKecleonShopPosition.maxX, sKecleonShopPosition.maxY,
+                       sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
             return;
 		}
 	}
@@ -6037,6 +6080,14 @@ static void sub_8051654(FloorProperties *floorProps)
     s32 xIndex, yIndex;
     s32 r10;
 
+    if (sKecleonShopPosition.maxX <= sKecleonShopPosition.minX + 2 ||
+        sKecleonShopPosition.maxY <= sKecleonShopPosition.minY + 2) {
+        MGBA_Warnf("[ShopGen] Invalid shop bounds before trim: (%d,%d)-(%d,%d)",
+                   sKecleonShopPosition.minX, sKecleonShopPosition.minY,
+                   sKecleonShopPosition.maxX, sKecleonShopPosition.maxY);
+        return;
+    }
+
     // Note: These loops make no sense as the range is always at least 3 - which means the loop always breaks after the first iteration.
     // In fact, pmd red's compiler optimizes out these loops completely. These are however needed to match and were NOT optimized by blue's compiler which proves that's how it was written.
     for (n = 0; n < 20; n++) {
@@ -6096,6 +6147,11 @@ static void sub_8051654(FloorProperties *floorProps)
         }
     }
 
+    MGBA_Warnf("[ShopGen] After trim bounds=(%d,%d)-(%d,%d) rangeX=%d rangeY=%d layout=%d",
+               sKecleonShopPosition.minX, sKecleonShopPosition.minY,
+               sKecleonShopPosition.maxX, sKecleonShopPosition.maxY,
+               rangeX, rangeY, floorProps->kecleonShopLayout);
+
     for (x = sKecleonShopPosition.minX; x < sKecleonShopPosition.maxX; x++) {
         for (y = sKecleonShopPosition.minY; y < sKecleonShopPosition.maxY; y++) {
             Tile *tile = GetTileMut(x, y);
@@ -6128,6 +6184,9 @@ static void sub_8051654(FloorProperties *floorProps)
         }
     }
 }
+
+/*
+ * ResetInnerBoundaryTileRows
 
 /*
  * ResetInnerBoundaryTileRows - Resets inner boundary tile rows (y == 1 and y == 30)

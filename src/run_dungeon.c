@@ -401,7 +401,9 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         ShowDungeonNameBanner_Async();
 
         if (!r6) {
+            MGBA_Warnf("[Dungeon] Before GenerateFloor");
             GenerateFloor();
+            MGBA_Warnf("[Dungeon] After GenerateFloor shop=%d mh=%d tileset=%d", gDungeon->unk3A0A, gDungeon->forceMonsterHouse, gDungeon->tileset);
             // Junction T1 initialization removed - using A* pathfinding instead
             gDungeon->unk644.windTurns = GetTurnLimit(gDungeon->unk644.dungeonLocation.id);
             gDungeon->unk644.windPhase = 0;

@@ -95,6 +95,7 @@ u32 xxx_script_related_8098468(s32 param_1)
     s32 r7;
     s32 varE;
     s32 loopCount;
+    bool8 triggerCredits = FALSE;
 
     MGBA_Warnf("[GroundMain] Called with param_1=%d (0x%x)", param_1, param_1);
     gUnknown_20398B4 = param_1;
@@ -194,19 +195,29 @@ u32 xxx_script_related_8098468(s32 param_1)
                 if (scriptVar13 != -1) {
                     s32 var;
                     const DungeonInfo *dungInfo;
+                    u8 dungeonIndex = 0;
+
                     if (scriptVar13 == 0x51) {
                         dungInfo = GetDungeonInfo_80A2608((s16)GetScriptVarValue(0,DUNGEON_ENTER_INDEX));
                     }
                     else {
                         dungInfo = GetDungeonInfo_80A2608(scriptVar13);
                     }
-                    r7 = dungInfo->unkA;
+                    if (dungInfo != NULL) {
+                        dungeonIndex = dungInfo->dungeonIndex;
+                        r7 = dungInfo->unkA;
+                    } else {
+                        r7 = 0;
+                    }
                     if (gUnknown_20398B4 == 9) {
                         SetScriptVarArrayValue(0,DUNGEON_CLEAR_LIST,(u16) scriptVar13,1);
 
                         // Check if this is the final dungeon (Dungeon 20) - trigger credits
-                        if (DungeonSeedOverrides_ShouldTriggerCredits(scriptVar13)) {
-                            SetScriptVarValue(0, GROUND_GETOUT, 2);  // Trigger credits sequence
+                        if (DungeonSeedOverrides_ShouldTriggerCredits()) {
+                            // Skip ground handoff and go straight into credits/game end flow
+                            triggerCredits = TRUE;
+                            gUnknown_20398B9 = 1;
+                            gUnknown_20398A8 = 9;
                         }
                     }
                     var = sub_8098FCC(gUnknown_20398B4);
@@ -241,6 +252,8 @@ u32 xxx_script_related_8098468(s32 param_1)
                 r7 = 0x76;
                 break;
         }
+        if (triggerCredits)
+            break;
         if (gUnknown_20398B9 == 0) {
             s32 var = GetScriptVarValue(0,GROUND_ENTER);
             SetScriptVarValue(0,START_MODE,gUnknown_20398B4);

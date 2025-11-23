@@ -730,8 +730,8 @@ bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId)
     return RescueScenarioConquered(sSequentialDungeonList[dungeonIndex - 1]);
 }
 
-// Check if this dungeon is the final one (Dungeon 20) to trigger credits
-bool8 DungeonSeedOverrides_ShouldTriggerCredits(s16 rescueDungeonId)
+// Check if all sequential dungeons have been cleared (run complete) to trigger credits
+bool8 DungeonSeedOverrides_ShouldTriggerCredits(void)
 {
     s32 seed;
 
@@ -739,11 +739,8 @@ bool8 DungeonSeedOverrides_ShouldTriggerCredits(s16 rescueDungeonId)
     if (!DungeonSeedOverrides_IsEnabled(&seed))
         return FALSE;
 
-    // Check if this is the last dungeon in our sequential list (Dungeon 20)
-    if (SEQUENTIAL_DUNGEON_COUNT == 0)
-        return FALSE;
-
-    return (rescueDungeonId == sSequentialDungeonList[SEQUENTIAL_DUNGEON_COUNT - 1]);
+    // When every sequential dungeon is conquered, the run is done.
+    return (DungeonSeedOverrides_GetCurrentDungeon() == -1);
 }
 
 // Boss fight handling - global state

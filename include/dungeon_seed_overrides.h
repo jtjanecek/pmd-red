@@ -32,7 +32,7 @@ const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine);
 bool8 DungeonSeedOverrides_IsInSequentialList(s16 rescueDungeonId);
 s16 DungeonSeedOverrides_GetCurrentDungeon(void);
 bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId);
-bool8 DungeonSeedOverrides_ShouldTriggerCredits(s16 rescueDungeonId);
+bool8 DungeonSeedOverrides_ShouldTriggerCredits(void);
 
 // Boss fight functions
 bool8 DungeonSeedOverrides_IsCustomBoss(Entity *pokemon);

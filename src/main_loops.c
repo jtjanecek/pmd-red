@@ -58,7 +58,9 @@
 #include "constants/friend_area.h"
 #include "constants/ground_map.h"
 #include "constants/dungeon.h"
+#include "credits1.h"
 #include "type_selection.h"
+#include "input.h"
 
 typedef struct unkTalkTable
 {
@@ -97,6 +99,7 @@ static void RemoveAllMoneyAndItems(void);
 static void LoadAndRunDungeon_Async(DungeonSetupStruct *r0);
 static u32 xxx_script_related_8001334(u32 r0);
 static void MainLoops_RunFrameActions(u32 unused);
+static void PlayCreditsAndWait(void);
 
 extern bool8 sub_8096A08(u8 dungeon, Pokemon *pokemon);
 extern void sub_8096BD0(void);
@@ -844,6 +847,12 @@ static u32 RunGameMode_Async(u32 a0)
                 sub_8096BD0();
             }
         }
+        else if (r5 == 0xF) {
+            MGBA_Warnf("[MainLoop] Credits requested (r5=0xF) - playing credits");
+            PlayCreditsAndWait();
+            ret = TRUE;
+            break;
+        }
 
         if (r5 == 7 || r5 == 8 || r5 == 9 || r5 == 10 || r5 == 0 || r5 == 2 || r5 == 3) {
             u8 r6;
@@ -1194,6 +1203,27 @@ static void nullsub_2(DungeonSetupStruct *r0)
 static u32 xxx_script_related_8001334(u32 r0)
 {
     return xxx_script_related_8098468(r0);
+}
+
+// Minimal credits runner for roguelike flow: play once, then return to title loop.
+static void PlayCreditsAndWait(void)
+{
+    u32 frames = 0;
+
+    FadeOutAllMusic(0x10);
+    ResetDialogueBox();
+    DrawCredits(0, 60);
+    while (sub_8035574() != 3) {
+        MainLoops_RunFrameActions(0);
+        frames++;
+        // Let the player or a timeout skip if the credits routine stalls.
+        if ((gRealInputs.pressed & (A_BUTTON | B_BUTTON | START_BUTTON)) != 0 || frames > 1800) {
+            break;
+        }
+    }
+    sub_803565C();
+    ResetDialogueBox();
+    SetWindowBGColor();
 }
 
 // arm9.bin::0200CA1C

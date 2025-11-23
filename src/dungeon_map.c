@@ -240,14 +240,8 @@ void DrawMinimapTile(s32 x, s32 y)
     if (GameOptions_ShowMiniMap() && !gDungeon->unk1356C) {
         mapGfxType = MAP_GFX_NOTHING;
         
-        // PRIORITY: Check if this is the auto-crawl target position FIRST
-        if (!blinded && gAutoExploreActive && gAutoCrawlTargetPos.x == x && gAutoCrawlTargetPos.y == y) {
-            mapGfxType = MAP_GFX_TRAP; // Use trap icon (red X) for target
-            lookForMapObject = FALSE;
-            // Debug: This should show up as a red X on the minimap
-        }
         // Junction T1 highlighting removed - using A* pathfinding instead
-        else if (!blinded) {
+        if (!blinded) {
             Entity *entity = tile->monster;
             if (entity != NULL) {
                 s32 entType = GetEntityType(entity);

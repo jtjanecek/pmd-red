@@ -15,7 +15,7 @@
         StaffCredits_80E4AD8:
         .string "{CENTER_ALIGN}"
         .byte 0x82, 0xa0
-        .string "STAFF CREDITS"
+        .string "ROGUE RESCUE TEAM"
         .byte 0x82, 0xa2, 0x00
 
         .global Credits_Producer

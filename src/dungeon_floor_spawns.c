@@ -147,6 +147,7 @@ void SetFloorItemMonsterSpawns(void)
         return;
 
     gDungeon->unk1C570 = gDungeon->unk644.dungeonLocation2;
+    MGBA_Warnf("[FloorInit] Begin: dungeon=%d floor=%d", gDungeon->unk1C570.id, gDungeon->unk1C570.floor);
     file = OpenFileAndGetFileDataPtr("mapparam", &gDungeonFileArchive);
     strPtr = &((struct DungeonMapParam2 *)(file->data))->unk0[gDungeon->unk1C570.id][gDungeon->unk1C570.floor];
 
@@ -154,6 +155,11 @@ void SetFloorItemMonsterSpawns(void)
     gDungeon->startFloorId = GetDungeonStartingFloor(gDungeon->unk644.dungeonLocation.id);
 
     gDungeon->floorProperties = ((struct DungeonMapParam2 *)(file->data))->floorProperties[strPtr->unk0];
+    MGBA_Warnf("[FloorInit] Props: tileset=%d fixedRoom=%d startFloor=%d floorCount=%d",
+               gDungeon->floorProperties.tileset,
+               gDungeon->floorProperties.fixedRoomNumber,
+               gDungeon->startFloorId,
+               gDungeon->unk1CEC8);
 
     for (i = 0; i < NUM_TRAPS; i++) {
         gDungeon->trapSpawnChances[i] = ((struct DungeonMapParam2 *)(file->data))->trapSpawnChances[strPtr->unk4][i];
@@ -199,6 +205,12 @@ void SetFloorItemMonsterSpawns(void)
 
     CloseFile(file);
     ApplySeedOverridesToCurrentFloor();
+    MGBA_Warnf("[FloorInit] End: tileset=%d bossEnabled=%d boss=%d enemyDensity=%d spawnsLoaded=%d",
+               gDungeon->floorProperties.tileset,
+               sCurrentBossFight.enabled,
+               sCurrentBossFight.bossSpecies,
+               gDungeon->floorProperties.enemyDensity,
+               gDungeon->monsterSpawnsPopulated);
 }
 
 u8 GetRandomFloorTrap(void)

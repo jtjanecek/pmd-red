@@ -188,6 +188,7 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     if (result == NULL)
         return;
 
+    MGBA_Warnf("[SeedOverrides] GenFloor start: seed=%d dungeon=%d floor=%d", seed, dungeonId, floorId);
     ClearFloorOverrides(result);
     rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xC0FFEE);
 
@@ -203,6 +204,12 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
         PopulateSpawnTable(result, &rng, dungeonId, floorId);
         FinalizeSpawnWeights(result);
     }
+
+    MGBA_Warnf("[SeedOverrides] GenFloor done: tileset=%d spawns=%d bossEnabled=%d boss=%d",
+               result->tileset,
+               result->spawnCount,
+               result->bossFight.enabled,
+               result->bossFight.bossSpecies);
 }
 
 s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
@@ -216,13 +223,16 @@ s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
 u32 DungeonSeedOverrides_GetDungeonRngSeed(s32 seed, u8 dungeonId, s32 floorId)
 {
     DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0x5EED5EED);
-    return DungeonSeedRng_Next(&rng) | 1;
+    u32 rngSeed = DungeonSeedRng_Next(&rng) | 1;
+    MGBA_Warnf("[SeedOverrides] RngSeed: seed=%d dungeon=%d floor=%d rngSeed=%u", seed, dungeonId, floorId, rngSeed);
+    return rngSeed;
 }
 
 bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
 {
     s32 seed = sub_8011C34();
 
+    MGBA_Warnf("[SeedOverrides] IsEnabled? seed=%d", seed);
     // Fallback: if the global seed isn't set, try to recover it from the
     // persisted TeamBasicInfo and mirror it back into the global slot.
     if (seed == -1) {
@@ -243,6 +253,7 @@ bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
     }
     if (seedOut != NULL)
         *seedOut = seed;
+    MGBA_Warnf("[SeedOverrides] Enabled=TRUE seed=%d", seed);
     return TRUE;
 }
 

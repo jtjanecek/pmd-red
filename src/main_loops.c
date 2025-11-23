@@ -32,6 +32,7 @@
 #include "main_menu2.h"
 #include "dungeon_info.h"
 #include "memory.h"
+#include "code_800D090.h"
 #include "moves.h"
 #include "music.h"
 #include "play_time.h"
@@ -60,6 +61,7 @@
 #include "constants/dungeon.h"
 #include "credits1.h"
 #include "type_selection.h"
+#include "pokemon.h"
 #include "input.h"
 
 typedef struct unkTalkTable
@@ -85,6 +87,7 @@ static EWRAM_INIT TeamBasicInfo sTeamBasicInfo_203B040 = {
     .skipBasicRescues = 0,
     .recruitAll = 0,
 };
+static EWRAM_DATA u8 sCreditsHeaderBuffer[128] = {0};
 
 static void LoadTitleScreen(void);
 static void EnsureTypeSelectionLink(void);
@@ -100,6 +103,7 @@ static void LoadAndRunDungeon_Async(DungeonSetupStruct *r0);
 static u32 xxx_script_related_8001334(u32 r0);
 static void MainLoops_RunFrameActions(u32 unused);
 static void PlayCreditsAndWait(void);
+static void BuildCreditsHeader(void);
 
 extern bool8 sub_8096A08(u8 dungeon, Pokemon *pokemon);
 extern void sub_8096BD0(void);
@@ -1210,6 +1214,7 @@ static void PlayCreditsAndWait(void)
 {
     u32 frames = 0;
 
+    BuildCreditsHeader();
     FadeOutAllMusic(0x10);
     ResetDialogueBox();
     DrawCredits(0, 60);
@@ -1224,6 +1229,38 @@ static void PlayCreditsAndWait(void)
     sub_803565C();
     ResetDialogueBox();
     SetWindowBGColor();
+}
+
+static void BuildCreditsHeader(void)
+{
+    TeamBasicInfo info;
+    u8 heroName[20];
+    u8 partnerName[20];
+    const char *difficulty = "Vanilla";
+
+    ReadTeamBasicInfo(&info);
+    CopyMonsterNameToBuffer(heroName, info.StarterID);
+    CopyMonsterNameToBuffer(partnerName, info.PartnerID);
+
+    switch (GetGameDifficultySetting()) {
+        case DIFFICULTY_HARD:
+            difficulty = "Hard";
+            break;
+        case DIFFICULTY_NIGHTMARE:
+            difficulty = "Nightmare";
+            break;
+        default:
+            difficulty = "Vanilla";
+            break;
+    }
+
+    sprintfStatic((char *)sCreditsHeaderBuffer,
+                  "{CENTER_ALIGN}ROGUE RESCUE TEAM\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s",
+                  info.customSeed,
+                  difficulty,
+                  heroName,
+                  partnerName);
+    Credits1_SetCustomHeader(sCreditsHeaderBuffer);
 }
 
 // arm9.bin::0200CA1C

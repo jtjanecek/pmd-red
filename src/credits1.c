@@ -7,8 +7,14 @@
 #include "memory.h"
 #include "text_1.h"
 #include "text_3.h"
+#include "text_util.h"
 
 EWRAM_INIT static Credits1Work *sCredits1Work = {NULL};
+static EWRAM_DATA CreditsData sCustomHeader = {0};
+static EWRAM_DATA u8 sCustomHeaderText[128] = {0};
+static EWRAM_DATA bool8 sCustomHeaderActive = FALSE;
+static EWRAM_DATA const CreditsData *sCreditsTableOverride[27] = {0};
+#define CREDITS_TABLE_COUNT 27
 
 static const WindowTemplate sDummyWinTemplate = WIN_TEMPLATE_DUMMY;
 static const WindowTemplate gUnknown_80E4A28 = {
@@ -91,6 +97,28 @@ UNUSED static const u8 sUnknownUnusedData[][2] = {
 
 extern const CreditsData* gCreditsTable[27];
 
+void Credits1_SetCustomHeader(const u8 *text)
+{
+    s32 i;
+
+    if (text == NULL) {
+        sCustomHeaderActive = FALSE;
+        return;
+    }
+
+    // Copy the text into a local buffer so credits can read it safely.
+    CopyStringtoBuffer(sCustomHeaderText, text);
+    sCustomHeader.type = 1;
+    sCustomHeader.x = 0;
+    sCustomHeader.y = 0x3c;
+    sCustomHeader.text = sCustomHeaderText;
+
+    for (i = 0; i < CREDITS_TABLE_COUNT; i++)
+        sCreditsTableOverride[i] = gCreditsTable[i];
+    sCreditsTableOverride[0] = &sCustomHeader;
+    sCustomHeaderActive = TRUE;
+}
+
 bool8 DrawCredits(s32 creditsCategoryIndex, s32 param_2)
 {
     s32 i;
@@ -116,7 +144,11 @@ bool8 DrawCredits(s32 creditsCategoryIndex, s32 param_2)
     sub_8099690(2);
     sub_80073B8(0);
 
-    cred = creditsCategoryIndex[gCreditsTable]; // WTF
+    // Allow an override header that can be populated at runtime.
+    if (sCustomHeaderActive)
+        cred = sCreditsTableOverride[creditsCategoryIndex];
+    else
+        cred = gCreditsTable[creditsCategoryIndex];
     y = 0;
     while (cred->text != NULL) {
         const u8 *srcText = cred->text;

@@ -134,6 +134,19 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
     gUnknown_203B40C = 0;
     MGBA_Warnf("[demo] Enter dungeon id=%d seed=%d", setupPtr->info.sub0.unk0.id, setupPtr->info.dungeonSeed);
+    MGBA_Warnf("[Dungeon] Setup: quicksave=%d unkD=%d unkC=%d canRecruit=%d hasInventory=%d unkB=%d unk5=%d unk8=%d unk6=%d unk7=%d unk9=%d unkA=%d",
+               setupPtr->info.sub0.unk4,
+               setupPtr->info.sub0.unkD,
+               setupPtr->info.sub0.unkC,
+               setupPtr->info.sub0.unk6,
+               setupPtr->info.sub0.unk9,
+               setupPtr->info.sub0.unkB,
+               setupPtr->info.sub0.unk5,
+               setupPtr->info.sub0.unk8,
+               setupPtr->info.sub0.unk6,
+               setupPtr->info.sub0.unk7,
+               setupPtr->info.sub0.unk9,
+               setupPtr->info.sub0.unkA);
     r6 = setupPtr->info.sub0.unk4;
     r9 = setupPtr->info.sub0.unkD;
     r10 = setupPtr->info.sub0.unkC;

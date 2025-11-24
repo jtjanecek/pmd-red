@@ -167,10 +167,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
+    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;
     SetRecruitAllSetting(2);
     SetSkipBasicRescuesSetting(1);
-    SetGameDifficultySetting(DIFFICULTY_NORMAL);
+    SetGameDifficultySetting(DIFFICULTY_NIGHTMARE);
     
     // Level up team to 100 in dev mode
     sub_8043FD0();

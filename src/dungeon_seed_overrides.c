@@ -6,6 +6,7 @@
 #include "constants/rescue_dungeon_id.h"
 #include "constants/bg_music.h"
 #include "constants/item.h"
+#include "constants/move_id.h"
 #include "constants/weather.h"
 #include "pokemon_3.h"
 #include "save.h"
@@ -82,6 +83,7 @@ static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
 static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCountOut);
+static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut);
 static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species);
 static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rng);
 static bool8 IsBossSpecies(s16 species);
@@ -393,6 +395,10 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     for (i = 0; i < 4; i++) {
         result->bossFight.minionSpecies[i] = 0;
     }
+    for (i = 0; i < MAX_MON_MOVES; i++) {
+        result->bossFight.bossMoves[i] = MOVE_NOTHING;
+    }
+    result->bossFight.useCustomMoves = FALSE;
 }
 
 static DungeonSeedRng DungeonSeedRng_Init(s32 seed, u8 dungeonId, s32 floorId, u32 salt)
@@ -717,6 +723,48 @@ static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCoun
     return FALSE;
 }
 
+static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut)
+{
+    s32 i, j, k;
+    u16 localMoves[MAX_MON_MOVES];
+
+    if (movesOut == NULL)
+        return FALSE;
+    if (bossSpecies <= MONSTER_NONE || bossSpecies >= MONSTER_MAX)
+        return FALSE;
+
+    for (k = 0; k < MAX_MON_MOVES; k++) {
+        movesOut[k] = MOVE_NOTHING;
+        localMoves[k] = MOVE_NOTHING;
+    }
+
+    for (i = 0; i < NUM_TYPES; i++) {
+        const TypeBossPool *pool = &gTypeBossTable[i];
+        s32 poolCount = pool->count;
+
+        if (poolCount > TYPE_SELECTION_MAX_BOSSES_PER_TYPE)
+            poolCount = TYPE_SELECTION_MAX_BOSSES_PER_TYPE;
+
+        for (j = 0; j < poolCount; j++) {
+            if (pool->species[j] != bossSpecies)
+                continue;
+            if (!pool->hasCustomMoves[j])
+                return FALSE;
+
+            for (k = 0; k < MAX_MON_MOVES; k++) {
+                localMoves[k] = pool->moves[j][k];
+            }
+
+            for (k = 0; k < MAX_MON_MOVES; k++) {
+                movesOut[k] = localMoves[k];
+            }
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species)
 {
     s32 i, j;
@@ -798,6 +846,10 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     for (i = 0; i < ARRAY_COUNT(result->bossFight.minionSpecies); i++) {
         result->bossFight.minionSpecies[i] = MONSTER_NONE;
     }
+    for (i = 0; i < MAX_MON_MOVES; i++) {
+        result->bossFight.bossMoves[i] = MOVE_NOTHING;
+    }
+    result->bossFight.useCustomMoves = FALSE;
 
     // Procedurally determine if this floor has a boss
     // Only spawn bosses on the final floor of the dungeon
@@ -848,6 +900,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     }
 
     result->bossFight.bossSpecies = selectedBoss;
+    result->bossFight.useCustomMoves = GetTypeBossMoves(selectedBoss, result->bossFight.bossMoves);
 
     // Procedurally set HP scaling with floor
     result->bossFight.bossHP = 300 + (floorId * 25);

@@ -22,6 +22,8 @@ typedef struct TypeBossPool
 {
     s16 species[TYPE_SELECTION_MAX_BOSSES_PER_TYPE];
     s16 minions[TYPE_SELECTION_MAX_BOSSES_PER_TYPE][TYPE_SELECTION_MINIONS_PER_BOSS];
+    u16 moves[TYPE_SELECTION_MAX_BOSSES_PER_TYPE][MAX_MON_MOVES];
+    bool8 hasCustomMoves[TYPE_SELECTION_MAX_BOSSES_PER_TYPE];
     u8 count;
 } TypeBossPool;
 

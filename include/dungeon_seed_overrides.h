@@ -14,6 +14,8 @@ typedef struct BossFightConfig {
     u8 monsterBehavior;               // Boss behavior ID
     u8 minionCount;                   // Number of minions to spawn
     s16 minionSpecies[4];             // Minion species (up to 4)
+    u16 bossMoves[MAX_MON_MOVES];     // Custom move set for the boss (MOVE_NOTHING entries are ignored)
+    bool8 useCustomMoves;             // Should the boss use the custom moves above?
     u8 roomTileset;                   // Override tileset for boss room
     u8 weather;                       // Weather to apply on boss floors
     bool8 applyWeather;               // Should boss floors override weather?

@@ -2,6 +2,7 @@
 #include "global.h"
 #include "type_selection.h"
 #include "constants/monster.h"
+#include "constants/move_id.h"
 #include "constants/type.h"
 
 const TypeBossPool gTypeBossTable[NUM_TYPES] = {
@@ -11,6 +12,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_NONE, MONSTER_NONE},
             {MONSTER_NONE, MONSTER_NONE},
         },
+        .moves = {
+            {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {FALSE, FALSE},
         .count = 0,
     },
     [TYPE_NORMAL] = {
@@ -19,6 +25,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_TAUROS, MONSTER_URSARING},
             {MONSTER_TOGETIC, MONSTER_PORYGON2},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_FIRE] = {
@@ -27,6 +38,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_CHARIZARD, MONSTER_TYPHLOSION},
             {MONSTER_FLAREON, MONSTER_FLAREON},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_WATER] = {
@@ -35,6 +51,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_VAPOREON, MONSTER_VAPOREON},
             {MONSTER_GOREBYSS, MONSTER_HUNTAIL},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_GRASS] = {
@@ -43,6 +64,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_TROPIUS, MONSTER_EXEGGUTOR},
             {MONSTER_MEGANIUM, MONSTER_SCEPTILE},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_ELECTRIC] = {
@@ -51,6 +77,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_RAICHU, MONSTER_MANECTRIC},
             {MONSTER_JOLTEON, MONSTER_JOLTEON},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_ICE] = {
@@ -59,6 +90,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_DEWGONG, MONSTER_CLOYSTER},
             {MONSTER_GLALIE, MONSTER_WALREIN},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_FIGHTING] = {
@@ -67,6 +103,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_HITMONLEE, MONSTER_HITMONCHAN},
             {MONSTER_BRELOOM, MONSTER_HARIYAMA},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_POISON] = {
@@ -75,6 +116,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_WEEZING, MONSTER_SWALOT},
             {MONSTER_SEVIPER, MONSTER_ARBOK},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_GROUND] = {
@@ -83,6 +129,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_RHYDON, MONSTER_ONIX},
             {MONSTER_SOLROCK, MONSTER_LUNATONE},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_FLYING] = {
@@ -91,6 +142,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SWELLOW, MONSTER_PIDGEOT},
             {MONSTER_AERODACTYL, MONSTER_ALTARIA},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_PSYCHIC] = {
@@ -99,6 +155,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_XATU, MONSTER_STARMIE},
             {MONSTER_DEOXYS_NORMAL, MONSTER_DEOXYS_NORMAL},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_BUG] = {
@@ -107,6 +168,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_BEEDRILL, MONSTER_BUTTERFREE},
             {MONSTER_SCYTHER, MONSTER_SCYTHER},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_ROCK] = {
@@ -115,6 +181,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_CRADILY, MONSTER_ARMALDO},
             {MONSTER_KABUTOPS, MONSTER_OMASTAR},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_GHOST] = {
@@ -123,6 +194,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_BANETTE, MONSTER_SHEDINJA},
             {MONSTER_SABLEYE, MONSTER_MISDREAVUS},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_DRAGON] = {
@@ -131,6 +207,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_DRAGONITE, MONSTER_KINGDRA},
             {MONSTER_SALAMENCE, MONSTER_FLYGON},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_DARK] = {
@@ -139,6 +220,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SABLEYE, MONSTER_MIGHTYENA},
             {MONSTER_CRAWDAUNT, MONSTER_SHARPEDO},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
     [TYPE_STEEL] = {
@@ -147,6 +233,11 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_MAGNETON, MONSTER_SKARMORY},
             {MONSTER_METAGROSS, MONSTER_STEELIX},
         },
+        .moves = {
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+        },
+        .hasCustomMoves = {TRUE, TRUE},
         .count = 2,
     },
 };

@@ -26,6 +26,7 @@
 #include "dungeon_floor_spawns.h"
 #include "dungeon_seed_overrides.h"
 #include "dungeon_cutscene.h"
+#include "moves.h"
 
 #include "dungeon_auto_explore.h"
 enum CardinalDirection
@@ -6478,6 +6479,7 @@ void ApplyBossFightOverrides(BossFightConfig *config)
     Entity *bossEntity;
     Tile *tile;
     s32 centerX, bossY;
+    s32 i;
 
     if (config == NULL || !config->enabled)
         return;
@@ -6498,6 +6500,18 @@ void ApplyBossFightOverrides(BossFightConfig *config)
 
     // STEP 5: Register boss so we can track its defeat
     DungeonSeedOverrides_RegisterBossEntity(bossEntity);
+
+    // STEP 3a: Override boss moves if configured
+    if (config->useCustomMoves) {
+        EntityInfo *bossInfo = GetEntInfo(bossEntity);
+
+        if (bossInfo != NULL) {
+            for (i = 0; i < MAX_MON_MOVES; i++) {
+                InitPokemonMoveOrNullObject(&bossInfo->moves.moves[i], config->bossMoves[i]);
+            }
+            bossInfo->moves.struggleMoveFlags = 0;
+        }
+    }
 
     // STEP 3: Apply custom HP and music
     if (config->bossHP > 0) {

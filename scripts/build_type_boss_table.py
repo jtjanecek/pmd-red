@@ -15,9 +15,11 @@ from typing import Dict, List
 
 MAX_BOSSES_PER_TYPE = 2
 MINIONS_PER_BOSS = 2
+MAX_MOVES_PER_BOSS = 4
 CHANCE_SCALE = 1000
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 MONSTER_HEADER_PATH = PROJECT_ROOT / "include" / "constants" / "monster.h"
+MOVE_HEADER_PATH = PROJECT_ROOT / "include" / "constants" / "move_id.h"
 
 TYPE_NAMES = [
     "NONE",
@@ -76,6 +78,8 @@ class BossRow:
     weather: str | None
     chances: Dict[str, int]  # difficulty -> scaled probability
     minions: List[str]
+    moves: List[str]
+    has_custom_moves: bool
 
 
 def load_monster_constants(path: pathlib.Path) -> List[str]:
@@ -92,11 +96,31 @@ def load_monster_constants(path: pathlib.Path) -> List[str]:
     return list(names)
 
 
+def load_move_constants(path: pathlib.Path) -> List[str]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise SystemExit(f"Move header not found at {path}") from exc
+
+    names = set()
+    for match in re.finditer(r"MOVE_([A-Z0-9_]+)", text):
+        names.add(f"MOVE_{match.group(1)}")
+    if not names:
+        raise SystemExit(f"No move constants found in {path}")
+    return list(names)
+
+
 SPECIES_OVERRIDES: Dict[str, str] = {
     # Default to Normal form when CSV specifies generic Deoxys.
     "DEOXYS": "MONSTER_DEOXYS_NORMAL",
 }
 VALID_SPECIES = set(load_monster_constants(MONSTER_HEADER_PATH))
+VALID_MOVES = set(load_move_constants(MOVE_HEADER_PATH))
+MOVE_OVERRIDES: Dict[str, str] = {
+    "": "MOVE_NOTHING",
+    "NONE": "MOVE_NOTHING",
+    "NOTHING": "MOVE_NOTHING",
+}
 
 
 def normalize_key(value: str) -> str:
@@ -143,6 +167,22 @@ def parse_species(raw: str, field_name: str) -> str:
     return candidate
 
 
+def parse_move(raw: str, field_name: str) -> str:
+    key = normalize_key(raw)
+
+    if key in MOVE_OVERRIDES:
+        mapped = MOVE_OVERRIDES[key]
+    elif not key:
+        mapped = "MOVE_NOTHING"
+    else:
+        candidate = key if key.startswith("MOVE_") else f"MOVE_{key}"
+        if candidate not in VALID_MOVES:
+            raise SystemExit(f"Unknown move '{raw}' in column '{field_name}'")
+        mapped = candidate
+
+    return mapped
+
+
 def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
     pools: Dict[str, List[BossRow]] = {name: [] for name in TYPE_NAMES}
 
@@ -160,6 +200,12 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
             minions = [
                 parse_species(row.get("Minion1", ""), "Minion1"),
                 parse_species(row.get("Minion2", ""), "Minion2"),
+            ]
+            moves = [
+                parse_move(row.get("Move1", ""), "Move1"),
+                parse_move(row.get("Move2", ""), "Move2"),
+                parse_move(row.get("Move3", ""), "Move3"),
+                parse_move(row.get("Move4", ""), "Move4"),
             ]
             species = parse_species(row.get("Pokemon", ""), "Pokemon")
 
@@ -179,6 +225,8 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                     weather=weather,
                     chances=chances,
                     minions=minions,
+                    moves=moves,
+                    has_custom_moves=any(move != "MOVE_NOTHING" for move in moves),
                 )
             )
 
@@ -201,6 +249,7 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
         handle.write('#include "global.h"\n')
         handle.write('#include "type_selection.h"\n')
         handle.write('#include "constants/monster.h"\n')
+        handle.write('#include "constants/move_id.h"\n')
         handle.write('#include "constants/type.h"\n\n')
         handle.write("const TypeBossPool gTypeBossTable[NUM_TYPES] = {\n")
 
@@ -224,6 +273,23 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
                     minions.append("MONSTER_NONE")
                 handle.write(f"            {{{', '.join(minions)}}},\n")
             handle.write("        },\n")
+            handle.write("        .moves = {\n")
+            for idx in range(MAX_BOSSES_PER_TYPE):
+                if idx < len(rows):
+                    moves = list(rows[idx].moves)
+                else:
+                    moves = []
+                while len(moves) < MAX_MOVES_PER_BOSS:
+                    moves.append("MOVE_NOTHING")
+                handle.write(f"            {{{', '.join(moves)}}},\n")
+            handle.write("        },\n")
+            has_custom_moves = []
+            for idx in range(MAX_BOSSES_PER_TYPE):
+                if idx < len(rows):
+                    has_custom_moves.append("TRUE" if rows[idx].has_custom_moves else "FALSE")
+                else:
+                    has_custom_moves.append("FALSE")
+            handle.write(f"        .hasCustomMoves = {{{', '.join(has_custom_moves)}}},\n")
             handle.write(f"        .count = {count},\n")
             handle.write("    },\n")
 

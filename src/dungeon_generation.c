@@ -6224,8 +6224,8 @@ static void ResetInnerBoundaryTileRows(void)
 }
 
 // ==================== BOSS ARENA GENERATION ====================
-// Arena dimensions
-#define ARENA_WIDTH 15
+// Arena dimensions (aligned to Fiery/Northwind Field bosses: Entei/Suicune)
+#define ARENA_WIDTH 11
 #define ARENA_HEIGHT 10
 #define ARENA_START_X 10
 #define ARENA_START_Y 10
@@ -6244,7 +6244,7 @@ static EWRAM_DATA s32 gBossSpawnDebugMarker = {0};
 void GenerateBossArena(BossFightConfig *config)
 {
     s32 x, y;
-    s32 centerX, playerY, bossY;
+    s32 centerX, playerY, bossY, maxPlayerY;
     Tile *tile;
 
     gBossArenaDebugMarker = 1;  // DEBUG: Entered function
@@ -6256,8 +6256,11 @@ void GenerateBossArena(BossFightConfig *config)
 
     // Calculate key positions
     centerX = ARENA_START_X + ARENA_WIDTH / 2;
-    playerY = ARENA_START_Y + ARENA_HEIGHT - 3;
     bossY = ARENA_START_Y + 2;
+    maxPlayerY = ARENA_START_Y + ARENA_HEIGHT - 2;  // Inside bottom wall
+    playerY = bossY + 3;
+    if (playerY > maxPlayerY)
+        playerY = maxPlayerY;
 
     gBossArenaDebugMarker = 3;  // DEBUG: Positions calculated
 
@@ -6363,11 +6366,11 @@ void GenerateBossArena(BossFightConfig *config)
 void SpawnBossFightEntities(BossFightConfig *config)
 {
     unkDungeon57C *spawnArray;
-    s32 centerX, bossY, playerY;
+    s32 centerX, bossY;
     s32 spawnIndex;
     s32 i;
     s32 minionSlots;
-    s32 minionPositions[4][2];
+    s32 minionPositions[2][2];
 
     gBossSpawnDebugMarker = 1;  // DEBUG: Entered function
 
@@ -6389,7 +6392,6 @@ void SpawnBossFightEntities(BossFightConfig *config)
     // Calculate boss spawn position (top-center of arena)
     centerX = ARENA_START_X + ARENA_WIDTH / 2;
     bossY = ARENA_START_Y + 2;
-    playerY = ARENA_START_Y + ARENA_HEIGHT - 3;
 
     gBossSpawnDebugMarker = 4;  // DEBUG: Position calculated
 
@@ -6427,15 +6429,11 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     spawnIndex = 1;
 
-    // Precompute preferred minion slots (left/right of boss, diagonal to player)
-    minionPositions[0][0] = centerX - 3;
+    // Precompute preferred minion slots (flanking the boss)
+    minionPositions[0][0] = centerX - 1;
     minionPositions[0][1] = bossY;
-    minionPositions[1][0] = centerX + 3;
+    minionPositions[1][0] = centerX + 1;
     minionPositions[1][1] = bossY;
-    minionPositions[2][0] = centerX - 2;
-    minionPositions[2][1] = playerY - 1;
-    minionPositions[3][0] = centerX + 2;
-    minionPositions[3][1] = playerY - 1;
     minionSlots = ARRAY_COUNT(minionPositions);
 
     for (i = 0; i < config->minionCount && i < minionSlots; i++) {

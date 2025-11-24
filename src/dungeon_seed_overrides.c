@@ -264,16 +264,17 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     MGBA_Warnf("[SeedOverrides] GenFloor start: seed=%d dungeon=%d floor=%d", seed, dungeonId, floorId);
     ClearFloorOverrides(result);
     rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xC0FFEE);
+    result->tileset = SelectTileset(floorId);
 
     // NEW: Procedurally generate boss fight configuration
     PopulateBossFightConfig(result, &rng, dungeonId, floorId, seed);
 
     // If boss fight enabled, use boss tileset; otherwise normal generation
     if (result->bossFight.enabled) {
-        result->tileset = result->bossFight.roomTileset;
+        // Force boss arena tileset to match the dungeon's selected tileset
+        result->bossFight.roomTileset = result->tileset;
         result->spawnCount = 0;  // No normal spawns in boss rooms
     } else {
-        result->tileset = SelectTileset(floorId);
         PopulateSpawnTable(result, &rng, dungeonId, floorId);
         FinalizeSpawnWeights(result);
     }
@@ -694,7 +695,11 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         result->bossFight.bossHP = 300 + (floorId * 25);
         result->bossFight.bossMusic = MUS_BOSS_BATTLE;
         result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
-        result->bossFight.minionCount = 0;
+        result->bossFight.minionCount = 2;
+        for (i = 0; i < result->bossFight.minionCount; i++) {
+            s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, minionPool.count);
+            result->bossFight.minionSpecies[i] = minionPool.species[minionIdx];
+        }
         result->bossFight.roomTileset = 19;
         result->bossFight.monsterBehavior = 0;
         source = "seed_missing";
@@ -734,8 +739,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     // Procedurally select loot drop
     result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
 
-    // Procedurally determine minion count (forcing 3 for testing)
-    result->bossFight.minionCount = 3;
+    // Procedurally determine minion count (two flanks)
+    result->bossFight.minionCount = 2;
 
     // Procedurally select minion species
     for (i = 0; i < result->bossFight.minionCount; i++) {

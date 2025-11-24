@@ -7,74 +7,146 @@
 const TypeBossPool gTypeBossTable[NUM_TYPES] = {
     [TYPE_NONE] = {
         .species = {MONSTER_NONE, MONSTER_NONE},
+        .minions = {
+            {MONSTER_NONE, MONSTER_NONE},
+            {MONSTER_NONE, MONSTER_NONE},
+        },
         .count = 0,
     },
     [TYPE_NORMAL] = {
         .species = {MONSTER_MEWTWO, MONSTER_MEW},
+        .minions = {
+            {MONSTER_TAUROS, MONSTER_URSARING},
+            {MONSTER_TOGETIC, MONSTER_PORYGON2},
+        },
         .count = 2,
     },
     [TYPE_FIRE] = {
         .species = {MONSTER_MOLTRES, MONSTER_ENTEI},
+        .minions = {
+            {MONSTER_CHARIZARD, MONSTER_TYPHLOSION},
+            {MONSTER_FLAREON, MONSTER_FLAREON},
+        },
         .count = 2,
     },
     [TYPE_WATER] = {
         .species = {MONSTER_SUICUNE, MONSTER_KYOGRE},
+        .minions = {
+            {MONSTER_VAPOREON, MONSTER_VAPOREON},
+            {MONSTER_GOREBYSS, MONSTER_HUNTAIL},
+        },
         .count = 2,
     },
     [TYPE_GRASS] = {
         .species = {MONSTER_CELEBI, MONSTER_VENUSAUR},
+        .minions = {
+            {MONSTER_TROPIUS, MONSTER_EXEGGUTOR},
+            {MONSTER_MEGANIUM, MONSTER_SCEPTILE},
+        },
         .count = 2,
     },
     [TYPE_ELECTRIC] = {
         .species = {MONSTER_ZAPDOS, MONSTER_RAIKOU},
+        .minions = {
+            {MONSTER_RAICHU, MONSTER_MANECTRIC},
+            {MONSTER_JOLTEON, MONSTER_JOLTEON},
+        },
         .count = 2,
     },
     [TYPE_ICE] = {
         .species = {MONSTER_ARTICUNO, MONSTER_REGICE},
+        .minions = {
+            {MONSTER_DEWGONG, MONSTER_CLOYSTER},
+            {MONSTER_GLALIE, MONSTER_WALREIN},
+        },
         .count = 2,
     },
     [TYPE_FIGHTING] = {
         .species = {MONSTER_MACHAMP, MONSTER_MEDICHAM},
+        .minions = {
+            {MONSTER_HITMONLEE, MONSTER_HITMONCHAN},
+            {MONSTER_BRELOOM, MONSTER_HARIYAMA},
+        },
         .count = 2,
     },
     [TYPE_POISON] = {
         .species = {MONSTER_MUK, MONSTER_CROBAT},
+        .minions = {
+            {MONSTER_WEEZING, MONSTER_SWALOT},
+            {MONSTER_SEVIPER, MONSTER_ARBOK},
+        },
         .count = 2,
     },
     [TYPE_GROUND] = {
         .species = {MONSTER_GROUDON, MONSTER_CLAYDOL},
+        .minions = {
+            {MONSTER_RHYDON, MONSTER_ONIX},
+            {MONSTER_SOLROCK, MONSTER_LUNATONE},
+        },
         .count = 2,
     },
     [TYPE_FLYING] = {
         .species = {MONSTER_HO_OH, MONSTER_RAYQUAZA},
+        .minions = {
+            {MONSTER_SWELLOW, MONSTER_PIDGEOT},
+            {MONSTER_AERODACTYL, MONSTER_ALTARIA},
+        },
         .count = 2,
     },
     [TYPE_PSYCHIC] = {
         .species = {MONSTER_LUGIA, MONSTER_DEOXYS_NORMAL},
+        .minions = {
+            {MONSTER_XATU, MONSTER_STARMIE},
+            {MONSTER_DEOXYS_NORMAL, MONSTER_DEOXYS_NORMAL},
+        },
         .count = 2,
     },
     [TYPE_BUG] = {
-        .species = {MONSTER_HERACROSS, MONSTER_PINSIR},
+        .species = {MONSTER_HERACROSS, MONSTER_SCIZOR},
+        .minions = {
+            {MONSTER_BEEDRILL, MONSTER_BUTTERFREE},
+            {MONSTER_SCYTHER, MONSTER_SCYTHER},
+        },
         .count = 2,
     },
     [TYPE_ROCK] = {
         .species = {MONSTER_REGIROCK, MONSTER_TYRANITAR},
+        .minions = {
+            {MONSTER_CRADILY, MONSTER_ARMALDO},
+            {MONSTER_KABUTOPS, MONSTER_OMASTAR},
+        },
         .count = 2,
     },
     [TYPE_GHOST] = {
         .species = {MONSTER_GENGAR, MONSTER_DUSCLOPS},
+        .minions = {
+            {MONSTER_BANETTE, MONSTER_SHEDINJA},
+            {MONSTER_SABLEYE, MONSTER_MISDREAVUS},
+        },
         .count = 2,
     },
     [TYPE_DRAGON] = {
         .species = {MONSTER_LATIAS, MONSTER_LATIOS},
+        .minions = {
+            {MONSTER_DRAGONITE, MONSTER_KINGDRA},
+            {MONSTER_SALAMENCE, MONSTER_FLYGON},
+        },
         .count = 2,
     },
     [TYPE_DARK] = {
         .species = {MONSTER_ABSOL, MONSTER_SHIFTRY},
+        .minions = {
+            {MONSTER_SABLEYE, MONSTER_MIGHTYENA},
+            {MONSTER_CRAWDAUNT, MONSTER_SHARPEDO},
+        },
         .count = 2,
     },
     [TYPE_STEEL] = {
         .species = {MONSTER_REGISTEEL, MONSTER_JIRACHI},
+        .minions = {
+            {MONSTER_MAGNETON, MONSTER_SKARMORY},
+            {MONSTER_METAGROSS, MONSTER_STEELIX},
+        },
         .count = 2,
     },
 };
@@ -201,7 +273,7 @@ const TypeBossWeatherPool gTypeBossWeatherTable[NUM_TYPES] = {
     },
     [TYPE_STEEL] = {
         .bosses = {
-            { .enabled = TRUE, .weather = WEATHER_SANDSTORM, .chance = {0, 600, 1000} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
             { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
         },
         .count = 2,

@@ -9,11 +9,15 @@ import argparse
 import csv
 from dataclasses import dataclass
 import pathlib
+import re
 import sys
 from typing import Dict, List
 
 MAX_BOSSES_PER_TYPE = 2
+MINIONS_PER_BOSS = 2
 CHANCE_SCALE = 1000
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
+MONSTER_HEADER_PATH = PROJECT_ROOT / "include" / "constants" / "monster.h"
 
 TYPE_NAMES = [
     "NONE",
@@ -57,43 +61,6 @@ TYPE_MAP: Dict[str, str] = {
     "STEEL": "TYPE_STEEL",
 }
 
-SPECIES_MAP: Dict[str, str] = {
-    "HERACROSS": "MONSTER_HERACROSS",
-    "PINSIR": "MONSTER_PINSIR",
-    "ABSOL": "MONSTER_ABSOL",
-    "SHIFTRY": "MONSTER_SHIFTRY",
-    "LATIAS": "MONSTER_LATIAS",
-    "LATIOS": "MONSTER_LATIOS",
-    "ZAPDOS": "MONSTER_ZAPDOS",
-    "RAIKOU": "MONSTER_RAIKOU",
-    "MACHAMP": "MONSTER_MACHAMP",
-    "MEDICHAM": "MONSTER_MEDICHAM",
-    "MOLTRES": "MONSTER_MOLTRES",
-    "ENTEI": "MONSTER_ENTEI",
-    "HO_OH": "MONSTER_HO_OH",
-    "RAYQUAZA": "MONSTER_RAYQUAZA",
-    "GENGAR": "MONSTER_GENGAR",
-    "DUSCLOPS": "MONSTER_DUSCLOPS",
-    "CELEBI": "MONSTER_CELEBI",
-    "VENUSAUR": "MONSTER_VENUSAUR",
-    "GROUDON": "MONSTER_GROUDON",
-    "CLAYDOL": "MONSTER_CLAYDOL",
-    "ARTICUNO": "MONSTER_ARTICUNO",
-    "REGICE": "MONSTER_REGICE",
-    "MEWTWO": "MONSTER_MEWTWO",
-    "MEW": "MONSTER_MEW",
-    "MUK": "MONSTER_MUK",
-    "CROBAT": "MONSTER_CROBAT",
-    "LUGIA": "MONSTER_LUGIA",
-    "DEOXYS": "MONSTER_DEOXYS_NORMAL",
-    "REGIROCK": "MONSTER_REGIROCK",
-    "TYRANITAR": "MONSTER_TYRANITAR",
-    "REGISTEEL": "MONSTER_REGISTEEL",
-    "JIRACHI": "MONSTER_JIRACHI",
-    "SUICUNE": "MONSTER_SUICUNE",
-    "KYOGRE": "MONSTER_KYOGRE",
-}
-
 WEATHER_MAP: Dict[str, str] = {
     "SUNNY": "WEATHER_SUNNY",
     "SANDSTORM": "WEATHER_SANDSTORM",
@@ -108,6 +75,28 @@ class BossRow:
     species: str
     weather: str | None
     chances: Dict[str, int]  # difficulty -> scaled probability
+    minions: List[str]
+
+
+def load_monster_constants(path: pathlib.Path) -> List[str]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise SystemExit(f"Monster header not found at {path}") from exc
+
+    names = set()
+    for match in re.finditer(r"MONSTER_([A-Z0-9_]+)", text):
+        names.add(f"MONSTER_{match.group(1)}")
+    if not names:
+        raise SystemExit(f"No monster constants found in {path}")
+    return list(names)
+
+
+SPECIES_OVERRIDES: Dict[str, str] = {
+    # Default to Normal form when CSV specifies generic Deoxys.
+    "DEOXYS": "MONSTER_DEOXYS_NORMAL",
+}
+VALID_SPECIES = set(load_monster_constants(MONSTER_HEADER_PATH))
 
 
 def normalize_key(value: str) -> str:
@@ -140,6 +129,20 @@ def parse_weather(raw: str) -> str | None:
     return WEATHER_MAP[key]
 
 
+def parse_species(raw: str, field_name: str) -> str:
+    key = normalize_key(raw)
+    if not key:
+        raise SystemExit(f"Missing species for column '{field_name}'")
+
+    if key in SPECIES_OVERRIDES:
+        return SPECIES_OVERRIDES[key]
+
+    candidate = f"MONSTER_{key}"
+    if candidate not in VALID_SPECIES:
+        raise SystemExit(f"Unknown species '{raw}' in column '{field_name}'")
+    return candidate
+
+
 def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
     pools: Dict[str, List[BossRow]] = {name: [] for name in TYPE_NAMES}
 
@@ -154,13 +157,16 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                 "hard": parse_probability(row.get("weather_chance_hard", "")),
                 "nightmare": parse_probability(row.get("weather_chance_nightmare", "")),
             }
+            minions = [
+                parse_species(row.get("Minion1", ""), "Minion1"),
+                parse_species(row.get("Minion2", ""), "Minion2"),
+            ]
+            species = parse_species(row.get("Pokemon", ""), "Pokemon")
 
             if not name or not type_name:
                 raise SystemExit(f"Invalid row in {path}: {row!r}")
             if type_name not in TYPE_MAP:
                 raise SystemExit(f"Unknown type '{type_name}' in {path}")
-            if name not in SPECIES_MAP:
-                raise SystemExit(f"Unknown species '{name}' in {path}")
             if len(pools[type_name]) >= MAX_BOSSES_PER_TYPE:
                 raise SystemExit(f"Too many bosses for type {type_name} (max {MAX_BOSSES_PER_TYPE})")
 
@@ -169,9 +175,10 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
 
             pools[type_name].append(
                 BossRow(
-                    species=SPECIES_MAP[name],
+                    species=species,
                     weather=weather,
                     chances=chances,
+                    minions=minions,
                 )
             )
 
@@ -207,6 +214,16 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
 
             handle.write(f"    [{type_const}] = {{\n")
             handle.write(f"        .species = {{{', '.join(species)}}},\n")
+            handle.write("        .minions = {\n")
+            for idx in range(MAX_BOSSES_PER_TYPE):
+                if idx < len(rows):
+                    minions = list(rows[idx].minions)
+                else:
+                    minions = []
+                while len(minions) < MINIONS_PER_BOSS:
+                    minions.append("MONSTER_NONE")
+                handle.write(f"            {{{', '.join(minions)}}},\n")
+            handle.write("        },\n")
             handle.write(f"        .count = {count},\n")
             handle.write("    },\n")
 

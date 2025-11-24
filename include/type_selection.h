@@ -7,6 +7,7 @@
 #include "constants/weather.h"
 
 #define TYPE_SELECTION_MAX_BOSSES_PER_TYPE 2
+#define TYPE_SELECTION_MINIONS_PER_BOSS 2
 #define TYPE_SELECTION_MAX_TILESETS_PER_TYPE 8
 #define BOSS_WEATHER_CHANCE_SCALE 1000
 
@@ -20,6 +21,7 @@ typedef struct TypeHintDefinition
 typedef struct TypeBossPool
 {
     s16 species[TYPE_SELECTION_MAX_BOSSES_PER_TYPE];
+    s16 minions[TYPE_SELECTION_MAX_BOSSES_PER_TYPE][TYPE_SELECTION_MINIONS_PER_BOSS];
     u8 count;
 } TypeBossPool;
 

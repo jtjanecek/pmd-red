@@ -81,6 +81,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
+static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCountOut);
 static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species);
 static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rng);
 static bool8 IsBossSpecies(s16 species);
@@ -670,6 +671,52 @@ static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies)
     return TRUE;
 }
 
+static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCountOut)
+{
+    s32 i, j, k;
+    s16 localMinions[TYPE_SELECTION_MINIONS_PER_BOSS];
+    bool8 allValid;
+
+    if (bossSpecies <= MONSTER_NONE || bossSpecies >= MONSTER_MAX)
+        return FALSE;
+
+    for (i = 0; i < NUM_TYPES; i++) {
+        const TypeBossPool *pool = &gTypeBossTable[i];
+        s32 poolCount = pool->count;
+
+        if (poolCount > TYPE_SELECTION_MAX_BOSSES_PER_TYPE)
+            poolCount = TYPE_SELECTION_MAX_BOSSES_PER_TYPE;
+
+        for (j = 0; j < poolCount; j++) {
+            if (pool->species[j] != bossSpecies)
+                continue;
+
+            allValid = TRUE;
+            for (k = 0; k < TYPE_SELECTION_MINIONS_PER_BOSS; k++) {
+                localMinions[k] = pool->minions[j][k];
+                if (localMinions[k] <= MONSTER_NONE || localMinions[k] >= MONSTER_MAX)
+                    allValid = FALSE;
+            }
+
+            if (!allValid)
+                return FALSE;
+
+            if (minionsOut != NULL) {
+                for (k = 0; k < TYPE_SELECTION_MINIONS_PER_BOSS; k++) {
+                    minionsOut[k] = localMinions[k];
+                }
+            }
+
+            if (minionCountOut != NULL)
+                *minionCountOut = TYPE_SELECTION_MINIONS_PER_BOSS;
+
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species)
 {
     s32 i, j;
@@ -733,7 +780,7 @@ static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rn
 // Procedurally generate boss fight configuration from seed
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed)
 {
-    const SeedSpeciesPool minionPool = {sPoolMinions, ARRAY_COUNT(sPoolMinions)};
+    const SeedSpeciesPool defaultMinionPool = {sPoolMinions, ARRAY_COUNT(sPoolMinions)};
     s32 i;
     s32 seedForLog = seed;
     s32 typeForLog = -1;
@@ -747,6 +794,10 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     (void)dungeonId;  // May use for dungeon-specific logic later
     result->bossFight.applyWeather = FALSE;
     result->bossFight.weather = WEATHER_CLEAR;
+    result->bossFight.minionCount = 0;
+    for (i = 0; i < ARRAY_COUNT(result->bossFight.minionSpecies); i++) {
+        result->bossFight.minionSpecies[i] = MONSTER_NONE;
+    }
 
     // Procedurally determine if this floor has a boss
     // Only spawn bosses on the final floor of the dungeon
@@ -764,8 +815,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
         result->bossFight.minionCount = 2;
         for (i = 0; i < result->bossFight.minionCount; i++) {
-            s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, minionPool.count);
-            result->bossFight.minionSpecies[i] = minionPool.species[minionIdx];
+            s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, defaultMinionPool.count);
+            result->bossFight.minionSpecies[i] = defaultMinionPool.species[minionIdx];
         }
         result->bossFight.roomTileset = 19;
         result->bossFight.monsterBehavior = 0;
@@ -807,13 +858,13 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     // Procedurally select loot drop
     result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
 
-    // Procedurally determine minion count (two flanks)
-    result->bossFight.minionCount = 2;
-
-    // Procedurally select minion species
-    for (i = 0; i < result->bossFight.minionCount; i++) {
-        s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, minionPool.count);
-        result->bossFight.minionSpecies[i] = minionPool.species[minionIdx];
+    // Prefer configured minions for type-selected bosses; fall back to random pool otherwise
+    if (!GetTypeBossMinions(selectedBoss, result->bossFight.minionSpecies, &result->bossFight.minionCount)) {
+        result->bossFight.minionCount = 2;
+        for (i = 0; i < result->bossFight.minionCount; i++) {
+            s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, defaultMinionPool.count);
+            result->bossFight.minionSpecies[i] = defaultMinionPool.species[minionIdx];
+        }
     }
 
     // Procedurally select arena tileset (19 or 33)

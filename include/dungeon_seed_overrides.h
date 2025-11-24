@@ -15,6 +15,8 @@ typedef struct BossFightConfig {
     u8 minionCount;                   // Number of minions to spawn
     s16 minionSpecies[4];             // Minion species (up to 4)
     u8 roomTileset;                   // Override tileset for boss room
+    u8 weather;                       // Weather to apply on boss floors
+    bool8 applyWeather;               // Should boss floors override weather?
 } BossFightConfig;
 
 typedef struct DungeonSeedFloorOverrides {

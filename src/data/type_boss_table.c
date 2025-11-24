@@ -78,3 +78,132 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .count = 2,
     },
 };
+
+const TypeBossWeatherPool gTypeBossWeatherTable[NUM_TYPES] = {
+    [TYPE_NONE] = {
+        .bosses = {
+            {0},
+            {0},
+        },
+        .count = 0,
+    },
+    [TYPE_NORMAL] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_FIRE] = {
+        .bosses = {
+            { .enabled = TRUE, .weather = WEATHER_SUNNY, .chance = {0, 600, 1000} },
+            { .enabled = TRUE, .weather = WEATHER_SUNNY, .chance = {0, 600, 1000} },
+        },
+        .count = 2,
+    },
+    [TYPE_WATER] = {
+        .bosses = {
+            { .enabled = TRUE, .weather = WEATHER_FOG, .chance = {0, 600, 1000} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_GRASS] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = TRUE, .weather = WEATHER_SUNNY, .chance = {0, 600, 1000} },
+        },
+        .count = 2,
+    },
+    [TYPE_ELECTRIC] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_ICE] = {
+        .bosses = {
+            { .enabled = TRUE, .weather = WEATHER_SNOW, .chance = {0, 600, 1000} },
+            { .enabled = TRUE, .weather = WEATHER_HAIL, .chance = {0, 600, 1000} },
+        },
+        .count = 2,
+    },
+    [TYPE_FIGHTING] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_POISON] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_GROUND] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_FLYING] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_PSYCHIC] = {
+        .bosses = {
+            { .enabled = TRUE, .weather = WEATHER_FOG, .chance = {0, 600, 1000} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_BUG] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_ROCK] = {
+        .bosses = {
+            { .enabled = TRUE, .weather = WEATHER_SANDSTORM, .chance = {0, 600, 1000} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_GHOST] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_DRAGON] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_DARK] = {
+        .bosses = {
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+    [TYPE_STEEL] = {
+        .bosses = {
+            { .enabled = TRUE, .weather = WEATHER_SANDSTORM, .chance = {0, 600, 1000} },
+            { .enabled = FALSE, .weather = WEATHER_CLEAR, .chance = {0, 0, 0} },
+        },
+        .count = 2,
+    },
+};

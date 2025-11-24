@@ -6,6 +6,7 @@
 #include "constants/rescue_dungeon_id.h"
 #include "constants/bg_music.h"
 #include "constants/item.h"
+#include "constants/weather.h"
 #include "pokemon_3.h"
 #include "save.h"
 #include "code_800D090.h"
@@ -80,6 +81,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
+static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species);
+static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rng);
 static bool8 IsBossSpecies(s16 species);
 static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask);
 static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity);
@@ -384,6 +387,8 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     result->bossFight.monsterBehavior = 0;
     result->bossFight.minionCount = 0;
     result->bossFight.roomTileset = 0;
+    result->bossFight.weather = WEATHER_CLEAR;
+    result->bossFight.applyWeather = FALSE;
     for (i = 0; i < 4; i++) {
         result->bossFight.minionSpecies[i] = 0;
     }
@@ -665,6 +670,66 @@ static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies)
     return TRUE;
 }
 
+static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species)
+{
+    s32 i, j;
+
+    if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+        return NULL;
+
+    for (i = 0; i < NUM_TYPES; i++) {
+        const TypeBossPool *pool = &gTypeBossTable[i];
+        const TypeBossWeatherPool *weatherPool = &gTypeBossWeatherTable[i];
+        s32 poolCount = pool->count;
+
+        if (poolCount > TYPE_SELECTION_MAX_BOSSES_PER_TYPE)
+            poolCount = TYPE_SELECTION_MAX_BOSSES_PER_TYPE;
+
+        for (j = 0; j < poolCount; j++) {
+            if (pool->species[j] == species)
+                return &weatherPool->bosses[j];
+        }
+    }
+
+    return NULL;
+}
+
+static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rng)
+{
+    const BossWeatherConfig *config;
+    u32 difficulty;
+    u16 chance;
+
+    if (bossFight == NULL || rng == NULL)
+        return;
+
+    bossFight->applyWeather = FALSE;
+    bossFight->weather = WEATHER_CLEAR;
+
+    config = GetBossWeatherConfigForSpecies(bossFight->bossSpecies);
+    if (config == NULL || !config->enabled)
+        return;
+
+    difficulty = GetGameDifficultySetting();
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    chance = config->chance[difficulty];
+    if (chance == 0)
+        return;
+
+    if (chance >= BOSS_WEATHER_CHANCE_SCALE) {
+        bossFight->applyWeather = TRUE;
+        bossFight->weather = config->weather;
+        return;
+    }
+
+    if (DungeonSeedRng_NextRange(rng, 0, BOSS_WEATHER_CHANCE_SCALE) < chance) {
+        bossFight->applyWeather = TRUE;
+        bossFight->weather = config->weather;
+    }
+}
+
 // Procedurally generate boss fight configuration from seed
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed)
 {
@@ -680,6 +745,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     s32 finalFloor = floorCount - 1;
 
     (void)dungeonId;  // May use for dungeon-specific logic later
+    result->bossFight.applyWeather = FALSE;
+    result->bossFight.weather = WEATHER_CLEAR;
 
     // Procedurally determine if this floor has a boss
     // Only spawn bosses on the final floor of the dungeon
@@ -702,6 +769,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         }
         result->bossFight.roomTileset = 19;
         result->bossFight.monsterBehavior = 0;
+        MaybeApplyBossWeather(&result->bossFight, rng);
         source = "seed_missing";
         MGBA_Warnf("[BossGen] seed=-1 type=%d floor=%d boss=%d source=%s", typeForLog, floorId, result->bossFight.bossSpecies, source);
         return;
@@ -754,13 +822,16 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     // Set behavior for boss identification
     result->bossFight.monsterBehavior = 0;  // Will define this constant later
 
+    MaybeApplyBossWeather(&result->bossFight, rng);
+
     if (TypeSelection_HasActiveType())
         typeForLog = TypeSelection_GetActiveType();
     else if (TypeSelection_HasCommittedType())
         typeForLog = TypeSelection_GetCommittedType();
 
-    MGBA_Warnf("[BossGen] seed=%d type=%d floor=%d boss=%d source=%s fallback=%d",
-               seedForLog, typeForLog, floorId, result->bossFight.bossSpecies, source, bossWasFallback);
+    MGBA_Warnf("[BossGen] seed=%d type=%d floor=%d boss=%d source=%s fallback=%d weather=%d applyWeather=%d",
+               seedForLog, typeForLog, floorId, result->bossFight.bossSpecies, source, bossWasFallback,
+               result->bossFight.weather, result->bossFight.applyWeather);
 }
 
 static void ResetSeededDungeonNameCache(void)

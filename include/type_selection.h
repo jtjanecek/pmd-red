@@ -2,10 +2,13 @@
 #define GUARD_TYPE_SELECTION_H
 
 #include "global.h"
+#include "constants/difficulty.h"
 #include "constants/type.h"
+#include "constants/weather.h"
 
 #define TYPE_SELECTION_MAX_BOSSES_PER_TYPE 2
 #define TYPE_SELECTION_MAX_TILESETS_PER_TYPE 8
+#define BOSS_WEATHER_CHANCE_SCALE 1000
 
 typedef struct TypeHintDefinition
 {
@@ -19,6 +22,19 @@ typedef struct TypeBossPool
     s16 species[TYPE_SELECTION_MAX_BOSSES_PER_TYPE];
     u8 count;
 } TypeBossPool;
+
+typedef struct BossWeatherConfig
+{
+    bool8 enabled;
+    u8 weather;
+    u16 chance[NUM_DIFFICULTY_SETTINGS]; // Probability scaled by BOSS_WEATHER_CHANCE_SCALE
+} BossWeatherConfig;
+
+typedef struct TypeBossWeatherPool
+{
+    BossWeatherConfig bosses[TYPE_SELECTION_MAX_BOSSES_PER_TYPE];
+    u8 count;
+} TypeBossWeatherPool;
 
 typedef struct TypeTilesetPool
 {
@@ -53,6 +69,7 @@ typedef struct TypeSelectionSaveData
 extern const TypeHintDefinition gTypeHintTable[];
 extern const u32 gTypeHintCount;
 extern const TypeBossPool gTypeBossTable[NUM_TYPES];
+extern const TypeBossWeatherPool gTypeBossWeatherTable[NUM_TYPES];
 extern const TypeTilesetPool gTypeTilesetTable[NUM_TYPES];
 
 void TypeSelection_Init(void);

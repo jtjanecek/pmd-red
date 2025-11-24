@@ -82,6 +82,10 @@ static void ApplySeedOverridesToCurrentFloor(void)
 
     gDungeon->floorProperties.tileset = overrides.tileset;
     gDungeon->floorProperties.fixedRoomNumber = 0;  // Disable boss rooms/cutscenes for randomized dungeons
+    if (overrides.bossFight.enabled && overrides.bossFight.applyWeather) {
+        gDungeon->floorProperties.weather = overrides.bossFight.weather;
+        MGBA_Warnf("[BossGen] Weather override applied: weather=%d", overrides.bossFight.weather);
+    }
 
     // If boss fight is enabled, set up boss spawn table (not normal enemies)
     if (overrides.bossFight.enabled) {
@@ -205,8 +209,9 @@ void SetFloorItemMonsterSpawns(void)
 
     CloseFile(file);
     ApplySeedOverridesToCurrentFloor();
-    MGBA_Warnf("[FloorInit] End: tileset=%d bossEnabled=%d boss=%d enemyDensity=%d spawnsLoaded=%d",
+    MGBA_Warnf("[FloorInit] End: tileset=%d weather=%d bossEnabled=%d boss=%d enemyDensity=%d spawnsLoaded=%d",
                gDungeon->floorProperties.tileset,
+               gDungeon->floorProperties.weather,
                sCurrentBossFight.enabled,
                sCurrentBossFight.bossSpecies,
                gDungeon->floorProperties.enemyDensity,

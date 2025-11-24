@@ -84,7 +84,7 @@ static EWRAM_INIT TeamBasicInfo sTeamBasicInfo_203B040 = {
     .PartnerNick = {""},
     .TeamName = {""},
     .customSeed = 0,
-    .difficulty = DIFFICULTY_VANILLA,
+    .difficulty = DIFFICULTY_NORMAL,
     .skipBasicRescues = 0,
     .recruitAll = 0,
 };
@@ -1240,7 +1240,7 @@ static void BuildCreditsHeader(void)
     Pokemon *hero = GetPlayerPokemonStruct();
     Pokemon *partner = sub_808D378();
     s32 seed = sub_8011C34();
-    const char *difficulty = "Vanilla";
+    const char *difficulty = "Normal";
 
     ReadTeamBasicInfo(&info);
     if (hero != NULL)
@@ -1261,7 +1261,7 @@ static void BuildCreditsHeader(void)
             difficulty = "Nightmare";
             break;
         default:
-            difficulty = "Vanilla";
+            difficulty = "Normal";
             break;
     }
 

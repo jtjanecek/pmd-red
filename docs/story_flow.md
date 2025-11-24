@@ -1,6 +1,6 @@
 # Story Flow Notes
 
-# Vanilla Post Game Example
+# Normal Post Game Example
 ## Title screen (loads save file)
 [WARN] GBA Debug: GroundScript unlock   4
 [WARN] GBA Debug: GroundMap ExecuteEvent 114 0 ==================

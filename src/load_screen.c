@@ -154,7 +154,7 @@ ALIGNED(4) const char gHelperHeadingText[] = "Helper:";
 ALIGNED(4) const char gCustomSeedLabelFormat[] = "S: %d";
 ALIGNED(4) const char gCustomSeedUnsetText[] = "S: -----";
 ALIGNED(4) const char *const gDifficultyLabels[] = {
-    "Vanilla",
+    "Normal",
     "Hard",
     "Nightmare",
 };
@@ -316,7 +316,7 @@ void DrawLoadScreenText(void)
       {
           u32 difficulty = GetGameDifficultySetting();
           if (difficulty >= NUM_DIFFICULTY_SETTINGS)
-              difficulty = DIFFICULTY_VANILLA;
+              difficulty = DIFFICULTY_NORMAL;
           InlineStrcpy(gLoadScreen->formattedDifficulty, gDifficultyLabels[difficulty]);
           PrintStringOnWindow(seedX, 12, gLoadScreen->formattedDifficulty, 0, 0);
       }

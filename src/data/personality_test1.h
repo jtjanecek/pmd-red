@@ -5,7 +5,7 @@ ALIGNED(4) static const u8 gSeedModePrompt[] = _(
     "{CENTER_ALIGN}The seed randomizes tilesets and Pokemon."
 );
 static const MenuItem gSeedModeMenu[] = {
-    { _("Vanilla"), 0 },
+    { _("Normal"), 0 },
     { _("Random"), 1 },
     { _("Custom"), 2 },
     { NULL, -1 },
@@ -28,18 +28,18 @@ ALIGNED(4) static const u8 gRecruitAllPrompt[] = _(
     "{CENTER_ALIGN}No Recruitable - No in-dungeon recruits"
 );
 static const MenuItem gRecruitAllMenu[] = {
-    { _("Vanilla"), 0 },
+    { _("Normal"), 0 },
     { _("All Recruitable"), 1 },
     { _("No Recruitable"), 2 },
     { NULL, -1 },
 };
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
-    "{CENTER_ALIGN}Vanilla: Similar difficulty to the base game.\n"
+    "{CENTER_ALIGN}Normal: Similar difficulty to the base game.\n"
     "{CENTER_ALIGN}Hard: Stronger enemies. More bosses.\n"
     "{CENTER_ALIGN}Nightmare: Only the best will survive."
 );
 static const MenuItem gDifficultyMenu[] = {
-    { _("Vanilla"), DIFFICULTY_VANILLA },
+    { _("Normal"), DIFFICULTY_NORMAL },
     { _("Hard"), DIFFICULTY_HARD },
     { _("Nightmare"), DIFFICULTY_NIGHTMARE },
     { NULL, -1 },

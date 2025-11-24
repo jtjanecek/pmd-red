@@ -75,7 +75,7 @@ static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
 
 #define INT32_MAX_VALUE 2147483647
 #define INT32_MIN_VALUE (-2147483647 - 1)
-#define SEED_MENU_VANILLA 0
+#define SEED_MENU_NORMAL 0
 #define SEED_MENU_RANDOM 1
 #define SEED_MENU_CUSTOM 2
 #define NAMING_SCREEN_NUMERIC 6
@@ -145,10 +145,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->rngSeed = 0;
     sPersonalityTestTracker->seedChosen = FALSE;
     sPersonalityTestTracker->usingCustomSeed = FALSE;
-    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
+    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
     sPersonalityTestTracker->unk4.skipBasicRescues = 0; // Default to No
     sPersonalityTestTracker->unk4.recruitAll = 0; // Default to No
-    SetGameDifficultySetting(DIFFICULTY_VANILLA);
+    SetGameDifficultySetting(DIFFICULTY_NORMAL);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
     
     // DEV: Skip personality quiz and set dev defaults
@@ -160,17 +160,17 @@ static void InitializeTestStats(void)
     // - Recruitment: No Recruitable
     // - Skip basic rescues: Yes
     // - Skip Cutscenes: Yes
-    // - Difficulty: Vanilla
+    // - Difficulty: Normal
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_VANILLA;
+    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
     SetRecruitAllSetting(2);
     SetSkipBasicRescuesSetting(1);
-    SetGameDifficultySetting(DIFFICULTY_VANILLA);
+    SetGameDifficultySetting(DIFFICULTY_NORMAL);
     
     // Level up team to 100 in dev mode
     sub_8043FD0();
@@ -315,7 +315,7 @@ static void HandleSeedSelection(void)
         return;
 
     switch (selection) {
-        case SEED_MENU_VANILLA:
+        case SEED_MENU_NORMAL:
         {
             //sPersonalityTestTracker->rngSeed = -1;
             sPersonalityTestTracker->unk4.customSeed = -1;
@@ -598,7 +598,7 @@ static void HandleRecruitAllSelection(void)
         return;
 
     if (selection < 0 || selection > 2)
-        selection = 0; // Default to Vanilla
+        selection = 0; // Default to Normal
 
     sPersonalityTestTracker->unk4.recruitAll = (u8)selection;
     SetRecruitAllSetting((u8)selection);
@@ -613,7 +613,7 @@ static void HandleDifficultySelection(void)
         return;
 
     if (selection < 0 || selection >= NUM_DIFFICULTY_SETTINGS)
-        selection = DIFFICULTY_VANILLA;
+        selection = DIFFICULTY_NORMAL;
 
     sPersonalityTestTracker->unk4.difficulty = selection;
     SetGameDifficultySetting(selection);
@@ -642,7 +642,7 @@ static void ApplySkipPostgameBootstrap(void)
     sub_8001064();
 
     // Scenario: set main scenario & sub-scenarios to match the
-    // story_flow.md "Vanilla Post Game Example" snapshot.
+    // story_flow.md "Normal Post Game Example" snapshot.
     // Main: SCEN=[19,2]
     ScenarioCalc(SCENARIO_MAIN, 19, 2);
     // Subs: S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0]

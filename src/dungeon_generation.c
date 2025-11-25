@@ -6225,8 +6225,8 @@ static void ResetInnerBoundaryTileRows(void)
 }
 
 // ==================== BOSS ARENA GENERATION ====================
-// Arena dimensions (aligned to Fiery/Northwind Field bosses: Entei/Suicune)
-#define ARENA_WIDTH 11
+// Arena dimensions (slightly tighter than Fiery/Northwind Field bosses)
+#define ARENA_WIDTH 9
 #define ARENA_HEIGHT 10
 #define ARENA_START_X 10
 #define ARENA_START_Y 10

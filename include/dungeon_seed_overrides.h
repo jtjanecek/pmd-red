@@ -5,6 +5,15 @@
 #include "structs/str_spawn_pokemon_data.h"
 #include "structs/str_dungeon.h"
 
+typedef enum {
+    MINION_FORMATION_DEFAULT = 0,
+    MINION_FORMATION_WIDE,           // Shift minions 1 tile farther left/right
+    MINION_FORMATION_FORWARD,        // Move minions 1 tile down toward the player
+    MINION_FORMATION_BACK,           // Move minions 1 tile up
+    MINION_FORMATION_WIDE_FORWARD,   // Shift left/right and down
+    MINION_FORMATION_COUNT
+} BossMinionFormation;
+
 typedef struct BossFightConfig {
     bool8 enabled;                    // Is there a boss fight on this floor?
     s16 bossSpecies;                  // Boss monster species
@@ -13,6 +22,7 @@ typedef struct BossFightConfig {
     u16 dropItem;                     // Item to drop (ITEM_NOTHING for none)
     u8 monsterBehavior;               // Boss behavior ID
     u8 minionCount;                   // Number of minions to spawn
+    u8 minionFormation;               // Seeded minion layout selection
     s16 minionSpecies[4];             // Minion species (up to 4)
     u16 bossMoves[MAX_MON_MOVES];     // Custom move set for the boss (MOVE_NOTHING entries are ignored)
     u16 minionMoves[4][MAX_MON_MOVES]; // Custom move sets for minions (aligned to minionSpecies)

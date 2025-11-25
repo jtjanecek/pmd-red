@@ -6241,6 +6241,56 @@ static void ResetInnerBoundaryTileRows(void)
 static EWRAM_DATA s32 gBossArenaDebugMarker = {0};
 static EWRAM_DATA s32 gBossSpawnDebugMarker = {0};
 
+// Seeded helper: derive minion coordinates from the chosen formation
+static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s32 bossY, s32 minionPositions[][2], s32 capacity)
+{
+    s32 leftOffset = -1;
+    s32 rightOffset = 1;
+    s32 yOffset = 0;
+    u8 formation = MINION_FORMATION_DEFAULT;
+    s32 i;
+
+    if (config != NULL && config->minionFormation < MINION_FORMATION_COUNT)
+        formation = config->minionFormation;
+
+    switch (formation) {
+        case MINION_FORMATION_WIDE:
+            leftOffset = -2;
+            rightOffset = 2;
+            break;
+        case MINION_FORMATION_FORWARD:
+            yOffset = 1;
+            break;
+        case MINION_FORMATION_BACK:
+            yOffset = -1;
+            break;
+        case MINION_FORMATION_WIDE_FORWARD:
+            leftOffset = -2;
+            rightOffset = 2;
+            yOffset = 1;
+            break;
+        case MINION_FORMATION_DEFAULT:
+        default:
+            break;
+    }
+
+    if (capacity <= 0)
+        return;
+
+    minionPositions[0][0] = centerX + leftOffset;
+    minionPositions[0][1] = bossY + yOffset;
+
+    if (capacity > 1) {
+        minionPositions[1][0] = centerX + rightOffset;
+        minionPositions[1][1] = bossY + yOffset;
+    }
+
+    for (i = 2; i < capacity; i++) {
+        minionPositions[i][0] = centerX;
+        minionPositions[i][1] = bossY;
+    }
+}
+
 // Generate a simple rectangular boss arena using fixed room system
 void GenerateBossArena(BossFightConfig *config)
 {
@@ -6430,12 +6480,8 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     spawnIndex = 1;
 
-    // Precompute preferred minion slots (flanking the boss)
-    minionPositions[0][0] = centerX - 1;
-    minionPositions[0][1] = bossY;
-    minionPositions[1][0] = centerX + 1;
-    minionPositions[1][1] = bossY;
     minionSlots = ARRAY_COUNT(minionPositions);
+    GetBossMinionPositions(config, centerX, bossY, minionPositions, minionSlots);
 
     for (i = 0; i < config->minionCount && i < minionSlots; i++) {
         s32 spawnX, spawnY;
@@ -6520,11 +6566,7 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         EntityInfo *minionInfo;
         s32 j;
 
-        minionPositions[0][0] = centerX - 1;
-        minionPositions[0][1] = bossY;
-        minionPositions[1][0] = centerX + 1;
-        minionPositions[1][1] = bossY;
-
+        GetBossMinionPositions(config, centerX, bossY, minionPositions, ARRAY_COUNT(minionPositions));
         for (i = 0; i < config->minionCount && i < 2; i++) {
             if (!config->minionUseCustomMoves[i])
                 continue;

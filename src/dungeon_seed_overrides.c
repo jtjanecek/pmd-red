@@ -75,6 +75,7 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result);
 static DungeonSeedRng DungeonSeedRng_Init(s32 seed, u8 dungeonId, s32 floorId, u32 salt);
 static u32 DungeonSeedRng_Next(DungeonSeedRng *rng);
 static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max);
+static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId);
 static u8 SelectTileset(s32 floorId);
 static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
 static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result);
@@ -390,6 +391,7 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     result->bossFight.dropItem = 0;
     result->bossFight.monsterBehavior = 0;
     result->bossFight.minionCount = 0;
+    result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
     result->bossFight.roomTileset = 0;
     result->bossFight.weather = WEATHER_CLEAR;
     result->bossFight.applyWeather = FALSE;
@@ -404,6 +406,12 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
         result->bossFight.bossMoves[i] = MOVE_NOTHING;
     }
     result->bossFight.useCustomMoves = FALSE;
+}
+
+static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId)
+{
+    DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xB0551EED);
+    return DungeonSeedRng_NextRange(&rng, 0, MINION_FORMATION_COUNT);
 }
 
 static DungeonSeedRng DungeonSeedRng_Init(s32 seed, u8 dungeonId, s32 floorId, u32 salt)
@@ -887,10 +895,10 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
     s32 finalFloor = floorCount - 1;
 
-    (void)dungeonId;  // May use for dungeon-specific logic later
     result->bossFight.applyWeather = FALSE;
     result->bossFight.weather = WEATHER_CLEAR;
     result->bossFight.minionCount = 0;
+    result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
     for (i = 0; i < ARRAY_COUNT(result->bossFight.minionSpecies); i++) {
         result->bossFight.minionSpecies[i] = MONSTER_NONE;
     }
@@ -920,6 +928,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         result->bossFight.bossMusic = MUS_BOSS_BATTLE;
         result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
         result->bossFight.minionCount = 2;
+        result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
         for (i = 0; i < result->bossFight.minionCount; i++) {
             s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, defaultMinionPool.count);
             result->bossFight.minionSpecies[i] = defaultMinionPool.species[minionIdx];
@@ -976,6 +985,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     if (result->bossFight.minionCount > ARRAY_COUNT(result->bossFight.minionSpecies))
         result->bossFight.minionCount = ARRAY_COUNT(result->bossFight.minionSpecies);
     GetTypeBossMinionMoves(selectedBoss, result->bossFight.minionMoves, result->bossFight.minionUseCustomMoves);
+    result->bossFight.minionFormation = SelectMinionFormation(seed, dungeonId, floorId);
 
     // Procedurally select arena tileset (19 or 33)
     result->bossFight.roomTileset = DungeonSeedRng_NextRange(rng, 0, 2) == 0 ? 19 : 33;

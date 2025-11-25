@@ -17,6 +17,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {FALSE, FALSE},
+        .minionMoves = {
+            {
+                {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {FALSE, FALSE},
+            {FALSE, FALSE},
+        },
         .count = 0,
     },
     [TYPE_NORMAL] = {
@@ -26,10 +40,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_TOGETIC, MONSTER_PORYGON2},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_FIRE] = {
@@ -39,10 +67,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_FLAREON, MONSTER_FLAREON},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_WATER] = {
@@ -52,10 +94,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_GOREBYSS, MONSTER_HUNTAIL},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_GRASS] = {
@@ -65,10 +121,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_MEGANIUM, MONSTER_SCEPTILE},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_ELECTRIC] = {
@@ -78,10 +148,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_JOLTEON, MONSTER_JOLTEON},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_ICE] = {
@@ -91,10 +175,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_GLALIE, MONSTER_WALREIN},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_FIGHTING] = {
@@ -104,10 +202,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_BRELOOM, MONSTER_HARIYAMA},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_POISON] = {
@@ -117,10 +229,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SEVIPER, MONSTER_ARBOK},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_GROUND] = {
@@ -130,10 +256,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SOLROCK, MONSTER_LUNATONE},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_FLYING] = {
@@ -143,10 +283,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_AERODACTYL, MONSTER_ALTARIA},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_PSYCHIC] = {
@@ -156,10 +310,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_DEOXYS_NORMAL, MONSTER_DEOXYS_NORMAL},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_BUG] = {
@@ -169,10 +337,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SCYTHER, MONSTER_SCYTHER},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_ROCK] = {
@@ -182,10 +364,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_KABUTOPS, MONSTER_OMASTAR},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_GHOST] = {
@@ -195,10 +391,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SABLEYE, MONSTER_MISDREAVUS},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_DRAGON] = {
@@ -208,10 +418,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SALAMENCE, MONSTER_FLYGON},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_DARK] = {
@@ -221,10 +445,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_CRAWDAUNT, MONSTER_SHARPEDO},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
     [TYPE_STEEL] = {
@@ -234,10 +472,24 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_METAGROSS, MONSTER_STEELIX},
         },
         .moves = {
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_SELFDESTRUCT, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
         },
         .hasCustomMoves = {TRUE, TRUE},
+        .minionMoves = {
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+            {
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                {MOVE_SOLARBEAM, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .minionHasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
         .count = 2,
     },
 };

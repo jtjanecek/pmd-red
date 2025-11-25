@@ -78,8 +78,10 @@ class BossRow:
     weather: str | None
     chances: Dict[str, int]  # difficulty -> scaled probability
     minions: List[str]
-    moves: List[str]
-    has_custom_moves: bool
+    boss_moves: List[str]
+    boss_has_custom_moves: bool
+    minion_moves: List[List[str]]
+    minion_has_custom_moves: List[bool]
 
 
 def load_monster_constants(path: pathlib.Path) -> List[str]:
@@ -117,7 +119,6 @@ SPECIES_OVERRIDES: Dict[str, str] = {
 VALID_SPECIES = set(load_monster_constants(MONSTER_HEADER_PATH))
 VALID_MOVES = set(load_move_constants(MOVE_HEADER_PATH))
 MOVE_OVERRIDES: Dict[str, str] = {
-    "": "MOVE_NOTHING",
     "NONE": "MOVE_NOTHING",
     "NOTHING": "MOVE_NOTHING",
 }
@@ -167,13 +168,13 @@ def parse_species(raw: str, field_name: str) -> str:
     return candidate
 
 
-def parse_move(raw: str, field_name: str) -> str:
+def parse_move(raw: str, field_name: str, default_move: str = "MOVE_NOTHING") -> str:
     key = normalize_key(raw)
 
     if key in MOVE_OVERRIDES:
         mapped = MOVE_OVERRIDES[key]
     elif not key:
-        mapped = "MOVE_NOTHING"
+        mapped = default_move
     else:
         candidate = key if key.startswith("MOVE_") else f"MOVE_{key}"
         if candidate not in VALID_MOVES:
@@ -201,11 +202,23 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                 parse_species(row.get("Minion1", ""), "Minion1"),
                 parse_species(row.get("Minion2", ""), "Minion2"),
             ]
-            moves = [
-                parse_move(row.get("Move1", ""), "Move1"),
-                parse_move(row.get("Move2", ""), "Move2"),
-                parse_move(row.get("Move3", ""), "Move3"),
-                parse_move(row.get("Move4", ""), "Move4"),
+            boss_moves = [
+                parse_move(row.get("BossMove1", ""), "BossMove1"),
+                parse_move(row.get("BossMove2", ""), "BossMove2"),
+                parse_move(row.get("BossMove3", ""), "BossMove3"),
+                parse_move(row.get("BossMove4", ""), "BossMove4"),
+            ]
+            minion1_moves = [
+                parse_move(row.get("Minion1Move1", ""), "Minion1Move1"),
+                parse_move(row.get("Minion1Move2", ""), "Minion1Move2"),
+                parse_move(row.get("Minion1Move3", ""), "Minion1Move3"),
+                parse_move(row.get("Minion1Move4", ""), "Minion1Move4"),
+            ]
+            minion2_moves = [
+                parse_move(row.get("Minion2Move1", ""), "Minion2Move1"),
+                parse_move(row.get("Minion2Move2", ""), "Minion2Move2"),
+                parse_move(row.get("Minion2Move3", ""), "Minion2Move3"),
+                parse_move(row.get("Minion2Move4", ""), "Minion2Move4"),
             ]
             species = parse_species(row.get("Pokemon", ""), "Pokemon")
 
@@ -225,8 +238,13 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                     weather=weather,
                     chances=chances,
                     minions=minions,
-                    moves=moves,
-                    has_custom_moves=any(move != "MOVE_NOTHING" for move in moves),
+                    boss_moves=boss_moves,
+                    boss_has_custom_moves=any(move != "MOVE_NOTHING" for move in boss_moves),
+                    minion_moves=[minion1_moves, minion2_moves],
+                    minion_has_custom_moves=[
+                        any(move != "MOVE_NOTHING" for move in minion1_moves),
+                        any(move != "MOVE_NOTHING" for move in minion2_moves),
+                    ],
                 )
             )
 
@@ -276,7 +294,7 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
             handle.write("        .moves = {\n")
             for idx in range(MAX_BOSSES_PER_TYPE):
                 if idx < len(rows):
-                    moves = list(rows[idx].moves)
+                    moves = list(rows[idx].boss_moves)
                 else:
                     moves = []
                 while len(moves) < MAX_MOVES_PER_BOSS:
@@ -286,10 +304,37 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
             has_custom_moves = []
             for idx in range(MAX_BOSSES_PER_TYPE):
                 if idx < len(rows):
-                    has_custom_moves.append("TRUE" if rows[idx].has_custom_moves else "FALSE")
+                    has_custom_moves.append("TRUE" if rows[idx].boss_has_custom_moves else "FALSE")
                 else:
                     has_custom_moves.append("FALSE")
             handle.write(f"        .hasCustomMoves = {{{', '.join(has_custom_moves)}}},\n")
+            handle.write("        .minionMoves = {\n")
+            for idx in range(MAX_BOSSES_PER_TYPE):
+                if idx < len(rows):
+                    minion_moves = list(rows[idx].minion_moves)
+                else:
+                    minion_moves = []
+                while len(minion_moves) < MINIONS_PER_BOSS:
+                    minion_moves.append([])
+                handle.write("            {\n")
+                for minion_idx in range(MINIONS_PER_BOSS):
+                    moves = list(minion_moves[minion_idx])
+                    while len(moves) < MAX_MOVES_PER_BOSS:
+                        moves.append("MOVE_NOTHING")
+                    handle.write(f"                {{{', '.join(moves)}}},\n")
+                handle.write("            },\n")
+            handle.write("        },\n")
+            handle.write("        .minionHasCustomMoves = {\n")
+            for idx in range(MAX_BOSSES_PER_TYPE):
+                if idx < len(rows):
+                    flags = list(rows[idx].minion_has_custom_moves)
+                else:
+                    flags = []
+                while len(flags) < MINIONS_PER_BOSS:
+                    flags.append(False)
+                flag_str = ", ".join("TRUE" if flag else "FALSE" for flag in flags)
+                handle.write(f"            {{{flag_str}}},\n")
+            handle.write("        },\n")
             handle.write(f"        .count = {count},\n")
             handle.write("    },\n")
 

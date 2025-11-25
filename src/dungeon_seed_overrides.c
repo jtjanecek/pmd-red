@@ -84,6 +84,7 @@ static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
 static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCountOut);
 static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut);
+static bool8 GetTypeBossMinionMoves(s16 bossSpecies, u16 minionMovesOut[][MAX_MON_MOVES], bool8 *minionHasCustomMovesOut);
 static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species);
 static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rng);
 static bool8 IsBossSpecies(s16 species);
@@ -371,7 +372,7 @@ const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)
 
 static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
 {
-    s32 i;
+    s32 i, j;
 
     result->tileset = 0;
     result->spawnCount = 0;
@@ -394,6 +395,10 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     result->bossFight.applyWeather = FALSE;
     for (i = 0; i < 4; i++) {
         result->bossFight.minionSpecies[i] = 0;
+        result->bossFight.minionUseCustomMoves[i] = FALSE;
+        for (j = 0; j < MAX_MON_MOVES; j++) {
+            result->bossFight.minionMoves[i][j] = MOVE_NOTHING;
+        }
     }
     for (i = 0; i < MAX_MON_MOVES; i++) {
         result->bossFight.bossMoves[i] = MOVE_NOTHING;
@@ -765,6 +770,49 @@ static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut)
     return FALSE;
 }
 
+static bool8 GetTypeBossMinionMoves(s16 bossSpecies, u16 minionMovesOut[][MAX_MON_MOVES], bool8 *minionHasCustomMovesOut)
+{
+    s32 i, j, k;
+
+    if (bossSpecies <= MONSTER_NONE || bossSpecies >= MONSTER_MAX)
+        return FALSE;
+    if (minionMovesOut == NULL || minionHasCustomMovesOut == NULL)
+        return FALSE;
+
+    for (i = 0; i < 4; i++) {
+        minionHasCustomMovesOut[i] = FALSE;
+        for (j = 0; j < MAX_MON_MOVES; j++) {
+            minionMovesOut[i][j] = MOVE_NOTHING;
+        }
+    }
+
+    for (i = 0; i < NUM_TYPES; i++) {
+        const TypeBossPool *pool = &gTypeBossTable[i];
+        s32 poolCount = pool->count;
+
+        if (poolCount > TYPE_SELECTION_MAX_BOSSES_PER_TYPE)
+            poolCount = TYPE_SELECTION_MAX_BOSSES_PER_TYPE;
+
+        for (j = 0; j < poolCount; j++) {
+            if (pool->species[j] != bossSpecies)
+                continue;
+
+            for (k = 0; k < TYPE_SELECTION_MINIONS_PER_BOSS; k++) {
+                s32 idx = k;
+                s32 moveIdx;
+                minionHasCustomMovesOut[idx] = pool->minionHasCustomMoves[j][k];
+                for (moveIdx = 0; moveIdx < MAX_MON_MOVES; moveIdx++) {
+                    minionMovesOut[idx][moveIdx] = pool->minionMoves[j][k][moveIdx];
+                }
+            }
+
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species)
 {
     s32 i, j;
@@ -829,7 +877,7 @@ static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rn
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed)
 {
     const SeedSpeciesPool defaultMinionPool = {sPoolMinions, ARRAY_COUNT(sPoolMinions)};
-    s32 i;
+    s32 i, j;
     s32 seedForLog = seed;
     s32 typeForLog = -1;
     const char *source = "unknown";
@@ -850,6 +898,12 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         result->bossFight.bossMoves[i] = MOVE_NOTHING;
     }
     result->bossFight.useCustomMoves = FALSE;
+    for (i = 0; i < ARRAY_COUNT(result->bossFight.minionSpecies); i++) {
+        result->bossFight.minionUseCustomMoves[i] = FALSE;
+        for (j = 0; j < MAX_MON_MOVES; j++) {
+            result->bossFight.minionMoves[i][j] = MOVE_NOTHING;
+        }
+    }
 
     // Procedurally determine if this floor has a boss
     // Only spawn bosses on the final floor of the dungeon
@@ -919,6 +973,9 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             result->bossFight.minionSpecies[i] = defaultMinionPool.species[minionIdx];
         }
     }
+    if (result->bossFight.minionCount > ARRAY_COUNT(result->bossFight.minionSpecies))
+        result->bossFight.minionCount = ARRAY_COUNT(result->bossFight.minionSpecies);
+    GetTypeBossMinionMoves(selectedBoss, result->bossFight.minionMoves, result->bossFight.minionUseCustomMoves);
 
     // Procedurally select arena tileset (19 or 33)
     result->bossFight.roomTileset = DungeonSeedRng_NextRange(rng, 0, 2) == 0 ? 19 : 33;

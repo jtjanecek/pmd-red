@@ -6513,6 +6513,40 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         }
     }
 
+    // STEP 3b: Override minion moves if configured
+    {
+        s32 minionPositions[2][2];
+        Entity *minionEntity;
+        EntityInfo *minionInfo;
+        s32 j;
+
+        minionPositions[0][0] = centerX - 1;
+        minionPositions[0][1] = bossY;
+        minionPositions[1][0] = centerX + 1;
+        minionPositions[1][1] = bossY;
+
+        for (i = 0; i < config->minionCount && i < 2; i++) {
+            if (!config->minionUseCustomMoves[i])
+                continue;
+
+            tile = GetTileMut(minionPositions[i][0], minionPositions[i][1]);
+            if (tile == NULL)
+                continue;
+            minionEntity = tile->monster;
+            if (minionEntity == NULL)
+                continue;
+
+            minionInfo = GetEntInfo(minionEntity);
+            if (minionInfo == NULL)
+                continue;
+
+            for (j = 0; j < MAX_MON_MOVES; j++) {
+                InitPokemonMoveOrNullObject(&minionInfo->moves.moves[j], config->minionMoves[i][j]);
+            }
+            minionInfo->moves.struggleMoveFlags = 0;
+        }
+    }
+
     // STEP 3: Apply custom HP and music
     if (config->bossHP > 0) {
         SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);

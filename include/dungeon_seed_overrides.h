@@ -31,6 +31,8 @@ typedef struct BossFightConfig {
     u8 roomTileset;                   // Override tileset for boss room
     u8 weather;                       // Weather to apply on boss floors
     bool8 applyWeather;               // Should boss floors override weather?
+    bool8 useFixedRoomLayout;         // Use a fixed room layout instead of simple rectangle
+    u8 fixedRoomNumber;               // Which fixed room to load (e.g., 1 = Skarmory)
 } BossFightConfig;
 
 typedef struct DungeonSeedFloorOverrides {

@@ -935,6 +935,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         }
         result->bossFight.roomTileset = 19;
         result->bossFight.monsterBehavior = 0;
+        result->bossFight.useFixedRoomLayout = TRUE;
+        result->bossFight.fixedRoomNumber = 1;  // FIXED_ROOM_MT_STEEL_SKARMORY
         MaybeApplyBossWeather(&result->bossFight, rng);
         source = "seed_missing";
         MGBA_Warnf("[BossGen] seed=-1 type=%d floor=%d boss=%d source=%s", typeForLog, floorId, result->bossFight.bossSpecies, source);
@@ -992,6 +994,10 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
 
     // Set behavior for boss identification
     result->bossFight.monsterBehavior = 0;  // Will define this constant later
+
+    // Use Skarmory fixed room (ID 1) for boss arena layout
+    result->bossFight.useFixedRoomLayout = TRUE;
+    result->bossFight.fixedRoomNumber = 1;  // FIXED_ROOM_MT_STEEL_SKARMORY
 
     MaybeApplyBossWeather(&result->bossFight, rng);
 

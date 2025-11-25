@@ -40,6 +40,7 @@
 #include "dungeon_mon_spawn.h"
 #include "dungeon_message.h"
 #include "direction_util.h"
+#include "mgba_log.h"
 
 struct RgbS16
 {
@@ -129,9 +130,20 @@ void sub_80847D4(void)
     u32 fixedRoomNumber;
     s32 index;
 
+    MGBA_Warnf("[Cutscene] sub_80847D4: fixedRoomNumber=%d", gDungeon->fixedRoomNumber);
+
     gDungeon->unk3A0D = 0;
     gDungeon->unk1356C = 0;
     UpdateMinimap();
+
+    // IMPORTANT: Skip cutscene setup for custom boss fights
+    // Custom boss fights use fixed room layouts but should not trigger original cutscenes
+    if (gDungeon->fixedRoomNumber == 0) {
+        MGBA_Warnf("[Cutscene] No fixed room, skipping cutscene setup");
+        sub_8097FF8();
+        return;
+    }
+
     for(index = 0; index < 0x3e7 && gUnknown_8107234[index].unk0 != 0;  index++) {
         fixedRoomNumber = gDungeon->fixedRoomNumber;
         // Dojo maze bosses all use the same cutscene data
@@ -140,6 +152,7 @@ void sub_80847D4(void)
         }
         if (fixedRoomNumber == gUnknown_8107234[index].unk0)
         {
+            MGBA_Warnf("[Cutscene] Found cutscene for room %d, setting unk3A0D", fixedRoomNumber);
             sub_8084854(&gUnknown_8107234[index]);
             break;
         }
@@ -350,10 +363,14 @@ void sub_80848F0(void)
 
 void DisplayPreFightDialogue(void)
 {
+  MGBA_Warnf("[Cutscene] DisplayPreFightDialogue: unk3A0D=%d", gDungeon->unk3A0D);
+
   switch(gDungeon->unk3A0D) {
       case 0:
+        MGBA_Warnf("[Cutscene] No pre-fight dialogue (unk3A0D=0)");
         break;
       case 1:
+        MGBA_Warnf("[Cutscene] Calling SkarmoryPreFightDialogue");
         SkarmoryPreFightDialogue();
         break;
       case 2:

@@ -38,6 +38,7 @@
 #include "effect_main.h"
 #include "dungeon_mon_sprite_render.h"
 #include "dungeon_8041AD0.h"
+#include "mgba_log.h"
 
 // File split is correct. This technical file deals with windows, advancing frames(v-blanks) and vram / pal set-up.
 
@@ -291,12 +292,15 @@ void sub_803E748(void)
     s32 index1;
     s32 index2;
 
+    MGBA_Warnf("[VRAM] sub_803E748 start");
     index2 = 0x1F;
     gUnknown_203B40D = 1;
     gDungeonBrightness = 0;
 
+    MGBA_Warnf("[VRAM] About to call sub_803E874");
     sub_803E874(1, 0x1F);
 
+    MGBA_Warnf("[VRAM] Starting fade loop");
     for(index1 = 0; index1 < 0x2C; index1++)
     {
         if(index1 < 0x20)
@@ -305,6 +309,7 @@ void sub_803E748(void)
             if(index2 <= 0)
             {
                 index2 = 0;
+                MGBA_Warnf("[VRAM] Calling sub_803EAF0 at index %d", index1);
                 sub_803EAF0(1, NULL);
                 gDungeon->unk181e8.unk18217 = index2;
             }
@@ -312,8 +317,11 @@ void sub_803E748(void)
         if(index1 > 0xB)
             if(gDungeonBrightness <= 0x1E)
                 gDungeonBrightness++;
+        MGBA_Warnf("[VRAM] Loop %d: calling sub_803E874", index1);
         sub_803E874(1, index2);
+        MGBA_Warnf("[VRAM] Loop %d: calling DungeonRunFrameActions", index1);
         DungeonRunFrameActions(5);
+        MGBA_Warnf("[VRAM] Loop %d: complete", index1);
     }
     gUnknown_203B40D = 0;
     gDungeonBrightness = 0x1F;
@@ -324,12 +332,15 @@ void sub_803E7C8(void)
     s32 index1;
     s32 index2;
 
+    MGBA_Warnf("[VRAM] sub_803E7C8 start");
     index2 = 0x1F;
     gUnknown_203B40D = 1;
     gDungeonBrightness = 0;
 
+    MGBA_Warnf("[VRAM] About to call DungeonRunFrameActions");
     DungeonRunFrameActions(5);
 
+    MGBA_Warnf("[VRAM] Starting fade loop");
     for(index1 = 0; index1 < 0x2C; index1++)
     {
         sub_803E874(1, index2);

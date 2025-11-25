@@ -204,6 +204,15 @@ void GenerateFloor(void)
             bossFight->bossSpecies > 0 && bossFight->bossSpecies < MONSTER_MAX) {
             MGBA_Warnf("[BossGen] GenerateFloor: dungeonId=%d floor=%d boss=%d", gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, bossFight->bossSpecies);
             GenerateBossArena((BossFightConfig*)bossFight);
+
+            // Boss floors skip normal generation; make sure state is clean and file handle is closed.
+            gDungeon->unk3A09 = 0;
+            gDungeon->unk3A0A = 0;
+            gDungeon->forceMonsterHouse = FALSE;
+            if (gDungeon->unk13568 != NULL) {
+                CloseFile(gDungeon->unk13568);
+                gDungeon->unk13568 = NULL;
+            }
             // TESTING: Entity spawning causes freeze - need to spawn later in process
             // SpawnBossFightEntities((BossFightConfig*)bossFight);
             return;
@@ -6291,7 +6300,122 @@ static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s
     }
 }
 
-// Generate a simple rectangular boss arena using fixed room system
+// Load a fixed room layout (walkable terrain only, optionally spawn entities)
+// Based on sub_8051288 but made reusable for boss arenas
+void LoadFixedRoomLayout(s32 fixedRoomNumber, bool8 spawnEntities)
+{
+    s32 x, y;
+    Dungeon *dungeon = gDungeon;
+    s32 fixedRoomSizeX, fixedRoomSizeY;
+
+    MGBA_Warnf("[FixedRoom] LoadFixedRoomLayout: roomNumber=%d spawnEntities=%d", fixedRoomNumber, spawnEntities);
+
+    // Check if fixedmap data is loaded
+    if (dungeon->unk13568 == NULL) {
+        MGBA_Warnf("[FixedRoom] ERROR: unk13568 is NULL!");
+        return;
+    }
+    if (dungeon->unk13568->data == NULL) {
+        MGBA_Warnf("[FixedRoom] ERROR: unk13568->data is NULL!");
+        return;
+    }
+
+    MGBA_Warnf("[FixedRoom] Getting room dimensions for room %d", fixedRoomNumber);
+    fixedRoomSizeX = ((struct FixedRoomsData **)(dungeon->unk13568->data))[fixedRoomNumber]->x;
+    fixedRoomSizeY = ((struct FixedRoomsData **)(dungeon->unk13568->data))[fixedRoomNumber]->y;
+
+    MGBA_Warnf("[FixedRoom] Room size: %dx%d", fixedRoomSizeX, fixedRoomSizeY);
+
+    dungeon->unkE260.unk0 = fixedRoomSizeX;
+    dungeon->unkE260.unk2 = fixedRoomSizeY;
+    gUnknown_202F1DC = ((struct FixedRoomsData **)(dungeon->unk13568->data))[fixedRoomNumber]->unk3;
+    gUnknown_202F1E1 = 0;
+
+    // Place each tile using action IDs from compressed data
+    MGBA_Warnf("[FixedRoom] Processing tiles...");
+    for (y = 5; y < fixedRoomSizeY + 5; y++) {
+        for (x = 5; x < fixedRoomSizeX + 5; x++) {
+            u8 unk = sub_80511F0();  // Read next byte from compressed data
+
+            // Debug: Log important action IDs
+            if (unk == 4 || unk == 8) {
+                MGBA_Warnf("[FixedRoom] Found actionID %d at (%d,%d)", unk, x, y);
+            }
+
+            if (sub_805124C(GetTileMut(x, y), unk, x, y, spawnEntities)) {
+                dungeon->stairsSpawn.x = x;
+                dungeon->stairsSpawn.y = y;
+            }
+        }
+    }
+
+    MGBA_Warnf("[FixedRoom] Tiles processed. playerSpawn=(%d,%d) stairsSpawn=(%d,%d)",
+               dungeon->playerSpawn.x, dungeon->playerSpawn.y,
+               dungeon->stairsSpawn.x, dungeon->stairsSpawn.y);
+
+    // If the fixed room didn't set spawn positions, set them manually
+    if (dungeon->stairsSpawn.x == -1 || dungeon->stairsSpawn.y == -1) {
+        // Place stairs at top-center of the room
+        dungeon->stairsSpawn.x = 5 + fixedRoomSizeX / 2;
+        dungeon->stairsSpawn.y = 6;  // One tile from top
+        MGBA_Warnf("[FixedRoom] Fixed room has no stairs marker, setting manually to (%d,%d)",
+                   dungeon->stairsSpawn.x, dungeon->stairsSpawn.y);
+    }
+
+    // Record where the post-boss stairs should spawn
+    DungeonSeedOverrides_SetStairsPosition(dungeon->stairsSpawn.x, dungeon->stairsSpawn.y);
+
+    if (dungeon->playerSpawn.x == -1 || dungeon->playerSpawn.y == -1) {
+        // Place player at bottom-center of the room
+        dungeon->playerSpawn.x = 5 + fixedRoomSizeX / 2;
+        dungeon->playerSpawn.y = 5 + fixedRoomSizeY - 2;  // Near bottom
+        MGBA_Warnf("[FixedRoom] Fixed room has no player marker, setting manually to (%d,%d)",
+                   dungeon->playerSpawn.x, dungeon->playerSpawn.y);
+    }
+
+    // Fill borders with impassable walls
+    for (y = 0; y < DUNGEON_MAX_SIZE_Y; y++) {
+        for (x = 0; x < DUNGEON_MAX_SIZE_X; x++) {
+            if (x <= 4 || x >= fixedRoomSizeX + 5 || y <= 4 || y >= fixedRoomSizeY + 5) {
+                Tile *tile = GetTileMut(x, y);
+                tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+                if (gUnknown_202F1A8) {
+                    SetTerrainType(tile, TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+                }
+                else {
+                    SetTerrainWall(tile);
+                }
+            }
+        }
+    }
+
+    // Handle special cases (e.g., Mt. Blaze Peak)
+    if (fixedRoomNumber == FIXED_ROOM_MT_BLAZE_PEAK_MOLTRES) {
+        for (y = 5; y < 17; y++) {
+            for (x = 2; x < 5; x++) {
+                Tile *tile = GetTileMut(x, y);
+                tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+                SetTerrainWall(tile);
+            }
+        }
+    }
+
+    // Make walls impassable if tileset >= 64
+    if (gDungeon->tileset >= 64) {
+        for (y = 0; y < DUNGEON_MAX_SIZE_Y; y++) {
+            for (x = 0; x < DUNGEON_MAX_SIZE_X; x++) {
+                Tile *tile = GetTileMut(x, y);
+                if (GetTerrainType(tile) == TERRAIN_TYPE_WALL) {
+                    tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+                }
+            }
+        }
+    }
+
+    FinalizeJunctions();
+}
+
+// Generate a boss arena - either using a fixed room layout or simple rectangular arena
 void GenerateBossArena(BossFightConfig *config)
 {
     s32 x, y;
@@ -6305,50 +6429,69 @@ void GenerateBossArena(BossFightConfig *config)
 
     gBossArenaDebugMarker = 2;  // DEBUG: Config valid
 
-    // Calculate key positions
-    centerX = ARENA_START_X + ARENA_WIDTH / 2;
-    bossY = ARENA_START_Y + 2;
-    maxPlayerY = ARENA_START_Y + ARENA_HEIGHT - 2;  // Inside bottom wall
-    playerY = bossY + 3;
-    if (playerY > maxPlayerY)
-        playerY = maxPlayerY;
-
-    gBossArenaDebugMarker = 3;  // DEBUG: Positions calculated
-
     // CRITICAL: Reset floor tiles (we bypassed normal generation)
     ResetFloor();
-    gBossArenaDebugMarker = 3.5;  // DEBUG: Floor reset
+    gBossArenaDebugMarker = 3;  // DEBUG: Floor reset
 
-    // Create arena layout: walls around perimeter, normal floor inside
-    gBossArenaDebugMarker = 4;  // DEBUG: Creating arena
+    // Check if we should use a fixed room layout
+    if (config->useFixedRoomLayout) {
+        gBossArenaDebugMarker = 4;  // DEBUG: Using fixed room layout
 
-    for (y = ARENA_START_Y; y < ARENA_START_Y + ARENA_HEIGHT; y++) {
-        for (x = ARENA_START_X; x < ARENA_START_X + ARENA_WIDTH; x++) {
-            tile = GetTileMut(x, y);
+        MGBA_Warnf("[BossGen] Using fixed room layout: roomNumber=%d", config->fixedRoomNumber);
 
-            // Check if this is a perimeter tile (wall) or interior (floor)
-            if (x == ARENA_START_X || x == ARENA_START_X + ARENA_WIDTH - 1 ||
-                y == ARENA_START_Y || y == ARENA_START_Y + ARENA_HEIGHT - 1) {
-                // Perimeter - create wall
-                SetTerrainType(tile, TERRAIN_TYPE_WALL);
-                tile->room = 0;  // Arena room
-            } else {
-                // Interior - create normal walkable floor
-                SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
-                tile->room = 0;  // Arena room
+        // Load fixed room layout (without spawning entities - we spawn boss separately)
+        LoadFixedRoomLayout(config->fixedRoomNumber, FALSE);
+
+        MGBA_Warnf("[BossGen] Fixed room layout loaded successfully");
+
+        // Player and stairs spawn positions are set by LoadFixedRoomLayout via action IDs
+        // (Action 4 = player spawn, Action 8 = stairs spawn)
+
+        gBossArenaDebugMarker = 5;  // DEBUG: Fixed room loaded
+    }
+    else {
+        // Use simple rectangular arena (original implementation)
+        gBossArenaDebugMarker = 6;  // DEBUG: Using rectangular arena
+
+        // Calculate key positions
+        centerX = ARENA_START_X + ARENA_WIDTH / 2;
+        bossY = ARENA_START_Y + 2;
+        maxPlayerY = ARENA_START_Y + ARENA_HEIGHT - 2;  // Inside bottom wall
+        playerY = bossY + 3;
+        if (playerY > maxPlayerY)
+            playerY = maxPlayerY;
+
+        // Create arena layout: walls around perimeter, normal floor inside
+        for (y = ARENA_START_Y; y < ARENA_START_Y + ARENA_HEIGHT; y++) {
+            for (x = ARENA_START_X; x < ARENA_START_X + ARENA_WIDTH; x++) {
+                tile = GetTileMut(x, y);
+
+                // Check if this is a perimeter tile (wall) or interior (floor)
+                if (x == ARENA_START_X || x == ARENA_START_X + ARENA_WIDTH - 1 ||
+                    y == ARENA_START_Y || y == ARENA_START_Y + ARENA_HEIGHT - 1) {
+                    // Perimeter - create wall
+                    SetTerrainType(tile, TERRAIN_TYPE_WALL);
+                    tile->room = 0;  // Arena room
+                } else {
+                    // Interior - create normal walkable floor
+                    SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+                    tile->room = 0;  // Arena room
+                }
             }
         }
+
+        // Set spawn positions manually for rectangular arena
+        gDungeon->playerSpawn.x = centerX;
+        gDungeon->playerSpawn.y = playerY;
+        gDungeon->stairsSpawn.x = centerX;
+        gDungeon->stairsSpawn.y = ARENA_START_Y + 1;
+        DungeonSeedOverrides_SetStairsPosition(centerX, ARENA_START_Y + 1);
+
+        gBossArenaDebugMarker = 7;  // DEBUG: Rectangular arena created
     }
 
-    gBossArenaDebugMarker = 5;  // DEBUG: Arena created
-
-    // Set spawn positions
-    gDungeon->playerSpawn.x = centerX;
-    gDungeon->playerSpawn.y = playerY;
-    gDungeon->stairsSpawn.x = centerX;
-    gDungeon->stairsSpawn.y = ARENA_START_Y + 1;
+    // Disable enemy spawning for all boss arenas
     gDungeon->unk644.enemyDensity = 0;
-    DungeonSeedOverrides_SetStairsPosition(centerX, ARENA_START_Y + 1);
 
     gBossArenaDebugMarker = 99;  // DEBUG: Complete
     return;
@@ -6440,9 +6583,23 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     gBossSpawnDebugMarker = 3;  // DEBUG: Species valid
 
-    // Calculate boss spawn position (top-center of arena)
-    centerX = ARENA_START_X + ARENA_WIDTH / 2;
-    bossY = ARENA_START_Y + 2;
+    // Calculate boss spawn position based on arena type
+    if (config->useFixedRoomLayout) {
+        // For fixed rooms, use the stairs spawn position as reference
+        // Stairs are typically at the top of boss arenas
+        // Boss spawns 2 tiles below stairs
+        centerX = gDungeon->stairsSpawn.x;
+        bossY = gDungeon->stairsSpawn.y + 2;
+
+        MGBA_Warnf("[BossGen] Using fixed room spawn: stairs=(%d,%d) boss=(%d,%d)",
+                   gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y, centerX, bossY);
+    } else {
+        // For simple rectangular arena, use hardcoded coordinates
+        centerX = ARENA_START_X + ARENA_WIDTH / 2;
+        bossY = ARENA_START_Y + 2;
+
+        MGBA_Warnf("[BossGen] Using rectangular arena spawn: boss=(%d,%d)", centerX, bossY);
+    }
 
     gBossSpawnDebugMarker = 4;  // DEBUG: Position calculated
 
@@ -6451,38 +6608,66 @@ void SpawnBossFightEntities(BossFightConfig *config)
     // Validate position is in bounds
     if (centerX < 0 || centerX >= DUNGEON_MAX_SIZE_X ||
         bossY < 0 || bossY >= DUNGEON_MAX_SIZE_Y) {
+        MGBA_Warnf("[BossGen] ERROR: Boss position out of bounds (%d,%d)", centerX, bossY);
         gBossSpawnDebugMarker = -3;  // DEBUG: Position out of bounds
         return;
     }
 
+    MGBA_Warnf("[BossGen] Boss position validated (%d,%d)", centerX, bossY);
     gBossSpawnDebugMarker = 5;  // DEBUG: Position valid
+
+    // Check if the spawn tile is valid
+    {
+        Tile *spawnTile;
+        u32 terrainType;
+
+        spawnTile = GetTileMut(centerX, bossY);
+        if (spawnTile == NULL) {
+            MGBA_Warnf("[BossGen] ERROR: GetTileMut returned NULL for (%d,%d)", centerX, bossY);
+            return;
+        }
+
+        terrainType = GetTerrainType(spawnTile);
+        MGBA_Warnf("[BossGen] Spawn tile terrain: type=%d flags=0x%x", terrainType, spawnTile->terrainFlags);
+
+        if (terrainType == TERRAIN_TYPE_WALL) {
+            MGBA_Warnf("[BossGen] WARNING: Trying to spawn boss on wall tile!");
+        }
+    }
 
     // Use the EXACT same mechanism as sub_806C3C0()
     // Populate gDungeon->unk57C array and let sub_806C3C0() spawn it
     spawnArray = &gDungeon->unk57C;
+    MGBA_Warnf("[BossGen] Got spawn array pointer: 0x%x", (u32)spawnArray);
 
     gBossSpawnDebugMarker = 6;  // DEBUG: Got spawn array pointer
 
     // Add boss to spawn array (index 0)
+    MGBA_Warnf("[BossGen] Setting species to %d", config->bossSpecies);
     spawnArray->unkArray[0].unk0 = config->bossSpecies;
 
     gBossSpawnDebugMarker = 7;  // DEBUG: Set species
 
+    MGBA_Warnf("[BossGen] Setting spawn flags");
     spawnArray->unkArray[0].unk2 = 0;       // Normal spawn
     spawnArray->unkArray[0].unk3 = TRUE;    // Enable this entry
 
     gBossSpawnDebugMarker = 8;  // DEBUG: Set flags
 
+    MGBA_Warnf("[BossGen] Setting position (%d,%d)", centerX, bossY);
     spawnArray->unkArray[0].unk4 = centerX;
     spawnArray->unkArray[0].unk5 = bossY;
 
     gBossSpawnDebugMarker = 9;  // DEBUG: Set position
 
+    MGBA_Warnf("[BossGen] Boss added to spawn array");
     spawnIndex = 1;
 
     minionSlots = ARRAY_COUNT(minionPositions);
+    MGBA_Warnf("[BossGen] Getting minion positions, count=%d", config->minionCount);
     GetBossMinionPositions(config, centerX, bossY, minionPositions, minionSlots);
 
+    MGBA_Warnf("[BossGen] Processing minions...");
     for (i = 0; i < config->minionCount && i < minionSlots; i++) {
         s32 spawnX, spawnY;
         s16 species = config->minionSpecies[i];
@@ -6493,15 +6678,34 @@ void SpawnBossFightEntities(BossFightConfig *config)
         spawnX = minionPositions[i][0];
         spawnY = minionPositions[i][1];
 
+        MGBA_Warnf("[BossGen] Minion %d: species=%d pos=(%d,%d)", i, species, spawnX, spawnY);
+
         // Ensure the position stays within the arena interior
-        if (spawnX <= ARENA_START_X || spawnX >= ARENA_START_X + ARENA_WIDTH - 1)
-            continue;
-        if (spawnY <= ARENA_START_Y || spawnY >= ARENA_START_Y + ARENA_HEIGHT - 1)
-            continue;
+        // For rectangular arenas, use hardcoded bounds
+        // For fixed rooms, just validate against dungeon grid bounds
+        if (!config->useFixedRoomLayout) {
+            if (spawnX <= ARENA_START_X || spawnX >= ARENA_START_X + ARENA_WIDTH - 1) {
+                MGBA_Warnf("[BossGen] Minion %d rejected: X out of arena bounds", i);
+                continue;
+            }
+            if (spawnY <= ARENA_START_Y || spawnY >= ARENA_START_Y + ARENA_HEIGHT - 1) {
+                MGBA_Warnf("[BossGen] Minion %d rejected: Y out of arena bounds", i);
+                continue;
+            }
+        }
 
-        if (spawnIndex >= UNK_DUNGEON57C_ARRAY_COUNT)
+        // Validate against overall dungeon bounds
+        if (spawnX < 0 || spawnX >= DUNGEON_MAX_SIZE_X || spawnY < 0 || spawnY >= DUNGEON_MAX_SIZE_Y) {
+            MGBA_Warnf("[BossGen] Minion %d rejected: out of dungeon bounds", i);
+            continue;
+        }
+
+        if (spawnIndex >= UNK_DUNGEON57C_ARRAY_COUNT) {
+            MGBA_Warnf("[BossGen] Minion %d rejected: spawn array full", i);
             break;
+        }
 
+        MGBA_Warnf("[BossGen] Adding minion %d to spawn array at index %d", i, spawnIndex);
         spawnArray->unkArray[spawnIndex].unk0 = species;
         spawnArray->unkArray[spawnIndex].unk2 = 0;
         spawnArray->unkArray[spawnIndex].unk3 = TRUE;
@@ -6510,9 +6714,11 @@ void SpawnBossFightEntities(BossFightConfig *config)
         spawnIndex++;
     }
 
+    MGBA_Warnf("[BossGen] Setting spawn count to %d", spawnIndex);
     spawnArray->unk40 = spawnIndex;  // Boss + minions
 
     gBossSpawnDebugMarker = 100;  // DEBUG: Array populated
+    MGBA_Warnf("[BossGen] SpawnBossFightEntities complete - array populated with %d entities", spawnIndex);
 
     // sub_806C3C0() will be called immediately after this function
     // and will spawn the boss from the array!
@@ -6530,9 +6736,14 @@ void ApplyBossFightOverrides(BossFightConfig *config)
     if (config == NULL || !config->enabled)
         return;
 
-    // Calculate where we spawned the boss
-    centerX = ARENA_START_X + ARENA_WIDTH / 2;
-    bossY = ARENA_START_Y + 2;
+    // Calculate where we spawned the boss - must match SpawnBossFightEntities
+    if (config->useFixedRoomLayout) {
+        centerX = gDungeon->stairsSpawn.x;
+        bossY = gDungeon->stairsSpawn.y + 2;
+    } else {
+        centerX = ARENA_START_X + ARENA_WIDTH / 2;
+        bossY = ARENA_START_Y + 2;
+    }
 
     // Get the tile where boss was spawned
     tile = GetTileMut(centerX, bossY);

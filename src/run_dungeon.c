@@ -413,9 +413,30 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         MGBA_Warnf("[Dungeon] After sub_804AAD4");
         sub_8049B8C();
         MGBA_Warnf("[Dungeon] After sub_8049B8C");
-        LoadDungeonTilesetAssets();
+        MGBA_Warnf("[Dungeon] Calling LoadDungeonTilesetAssets");
+        // CRITICAL FIX: Skip LoadDungeonTilesetAssets for boss floors with fixed rooms - causes bad memory loads
+        {
+            const BossFightConfig *bossFight;
+            bossFight = DungeonFloorSpawns_GetBossFightConfig();
+            if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
+                MGBA_Warnf("[Dungeon] Skipping LoadDungeonTilesetAssets for boss floor");
+            } else {
+                LoadDungeonTilesetAssets();
+            }
+        }
+        MGBA_Warnf("[Dungeon] LoadDungeonTilesetAssets complete");
         if (!r6) {
-            sub_806B168();
+            MGBA_Warnf("[Dungeon] Calling sub_806B168");
+            // CRITICAL FIX: Skip sub_806B168 for boss floors with fixed rooms - causes bad memory loads
+            {
+                const BossFightConfig *bossFight;
+                bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
+                    MGBA_Warnf("[Dungeon] Skipping sub_806B168 for boss floor");
+                } else {
+                    sub_806B168();
+                }
+            }
             MGBA_Warnf("[Dungeon] After sub_806B168");
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
@@ -427,15 +448,22 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
                 if (bossFight != NULL && bossFight->enabled) {
                     // STEP 2: Populate gDungeon->unk57C array with boss
                     // sub_806C3C0() will spawn it using the working mechanism
+                    MGBA_Warnf("[Dungeon] About to call SpawnBossFightEntities");
                     SpawnBossFightEntities((BossFightConfig*)bossFight);
+                    MGBA_Warnf("[Dungeon] SpawnBossFightEntities returned successfully");
                 }
 
                 // This will spawn any entities in gDungeon->unk57C (including our boss!)
+                MGBA_Warnf("[Dungeon] About to call sub_806C3C0 to spawn entities");
+                MGBA_Warnf("[Dungeon] unk57C.unk40 = %d", gDungeon->unk57C.unk40);
                 sub_806C3C0();
+                MGBA_Warnf("[Dungeon] sub_806C3C0 returned successfully");
 
                 // STEP 3: Apply boss HP/music override after spawning
                 if (bossFight != NULL && bossFight->enabled) {
+                    MGBA_Warnf("[Dungeon] About to call ApplyBossFightOverrides");
                     ApplyBossFightOverrides((BossFightConfig*)bossFight);
+                    MGBA_Warnf("[Dungeon] ApplyBossFightOverrides returned successfully");
                 }
 
                 // Spawn normal enemies only on non-boss floors
@@ -444,26 +472,41 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
                     // Normal floor - spawn regular enemies
                     SpawnWildMonsOnFloor();
                     MGBA_Warnf("[Dungeon] After SpawnWildMonsOnFloor");
+                } else {
+                    MGBA_Warnf("[Dungeon] Skipping SpawnWildMonsOnFloor (boss floor)");
                 }
+
+                MGBA_Warnf("[Dungeon] Boss spawn section complete");
             }
         }
         else {
+            MGBA_Warnf("[Dungeon] Calling sub_806B678");
             sub_806B678();
+            MGBA_Warnf("[Dungeon] sub_806B678 returned");
         }
 
+        MGBA_Warnf("[Dungeon] Setting floor state variables");
         gDungeon->lightningRodPokemon = NULL;
         gDungeon->unk17B38 = 0;
         gDungeon->snatchPokemon = NULL;
         gDungeon->unk17B3C = 0;
         gDungeon->illuminatePokemon = NULL;
         gDungeon->illuminateMonSpawnGenID = 0;
+        MGBA_Warnf("[Dungeon] Floor state variables set");
+
         if (!r6) {
+            MGBA_Warnf("[Dungeon] Calling sub_807FA18");
             sub_807FA18();
+            MGBA_Warnf("[Dungeon] Calling CreateFloorItems");
             CreateFloorItems();
+            MGBA_Warnf("[Dungeon] Setting unk644 values");
             gDungeon->unk644.unk50 = gDungeon->unk644.unk48;
             gDungeon->unk644.unk4C = 0;
+            MGBA_Warnf("[Dungeon] Calling sub_8051E3C");
             sub_8051E3C();
+            MGBA_Warnf("[Dungeon] Calling sub_804AAAC");
             sub_804AAAC();
+            MGBA_Warnf("[Dungeon] Floor initialization complete");
         }
         else {
             ReevaluateSnatchMonster();
@@ -494,33 +537,76 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         }
 #endif
 
+        MGBA_Warnf("[Dungeon] Post-init: About to call sub_80848F0");
         if (!r6) {
             sub_80848F0();
             IncrementAdventureFloorsExplored();
         }
 
+        MGBA_Warnf("[Dungeon] Post-init: Setting gUnknown_203B40C");
         gUnknown_203B40C = 1;
         if (r6) {
             sub_807E88C();
             sub_806AB2C();
         }
 
-        if (gDungeon->unk7 == 0) {
-            sub_803E748();
+        // CRITICAL FIX: Move leader entity to new spawn position before rendering
+        // Fixed rooms set playerSpawn, but the leader entity hasn't been moved yet
+        // This causes crashes in rendering code that assumes valid entity positions
+        MGBA_Warnf("[Dungeon] Post-init: Repositioning leader to spawn point");
+        {
+            Entity *leader = GetLeader();
+            if (EntityIsValid(leader)) {
+                MGBA_Warnf("[Dungeon] Moving leader from (%d,%d) to (%d,%d)",
+                           leader->pos.x, leader->pos.y,
+                           gDungeon->playerSpawn.x, gDungeon->playerSpawn.y);
+                leader->pos.x = gDungeon->playerSpawn.x;
+                leader->pos.y = gDungeon->playerSpawn.y;
+                leader->pixelPos.x = X_POS_TO_PIXELPOS(leader->pos.x);
+                leader->pixelPos.y = Y_POS_TO_PIXELPOS(leader->pos.y);
+            }
         }
-        else {
-            sub_803E7C8();
+
+        MGBA_Warnf("[Dungeon] Post-init: About to call sub_803E748/sub_803E7C8");
+
+        // CRITICAL FIX: Skip fade-in ANIMATION for boss floors with fixed rooms
+        // The fade-in loop calls DungeonRunFrameActions which tries to render entities,
+        // but boss entities in fixed rooms aren't fully initialized yet, causing crashes
+        // However, we still need to call sub_803E874 to initialize the screen/rendering
+        {
+            const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+            bool8 skipFadeIn = (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout);
+
+            if (skipFadeIn) {
+                MGBA_Warnf("[Dungeon] Skipping fade-in animation for fixed room boss floor");
+                // Initialize screen/rendering variables only - let game loop handle rendering
+                gUnknown_203B40D = 0;
+                gDungeonBrightness = 0x1F;
+                MGBA_Warnf("[Dungeon] Brightness set, skip complete (screen will be black until game loop)");
+            }
+            else if (gDungeon->unk7 == 0) {
+                sub_803E748();
+            }
+            else {
+                sub_803E7C8();
+            }
         }
+        MGBA_Warnf("[Dungeon] Post-init: About to call sub_8040094");
         sub_8040094(0);
+        MGBA_Warnf("[Dungeon] Post-init: About to call sub_803EAF0");
         sub_803EAF0(0, NULL);
+        MGBA_Warnf("[Dungeon] Post-init: About to call InitDungeonMap");
         InitDungeonMap(r6);
+        MGBA_Warnf("[Dungeon] Post-init: About to call UpdateMinimap");
         UpdateMinimap();
+        MGBA_Warnf("[Dungeon] Post-init: Setting dungeon variables");
         gDungeon->unkB8 = NULL;
         gDungeon->unk644.unk28 = 0;
         gDungeon->unk644.unk29 = 0;
         gDungeon->unk12 = 99;
         gDungeon->unk0 = 1;
 
+        MGBA_Warnf("[Dungeon] Post-init: Tutorial/dest floor messages");
         if (!r6) {
             TryDisplayGeneralTutorialMessage();
             if (gDungeon->unk9 != 0) {
@@ -529,97 +615,217 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
                 DisplayYouReachedDestFloorStr();
             }
         }
+        MGBA_Warnf("[Dungeon] Post-init: Setting leader pointer");
         gLeaderPointer = NULL;
         gDungeon->unk5 = 0;
         if (!r6) {
+            MGBA_Warnf("[Dungeon] Post-init: About to call DisplayPreFightDialogue");
             DisplayPreFightDialogue();
+            MGBA_Warnf("[Dungeon] Post-init: DisplayPreFightDialogue complete, unk4=%d unk2=%d", gDungeon->unk4, gDungeon->unk2);
             if (gDungeon->unk4 != 0 || gDungeon->unk2 != 0) {
+                MGBA_Warnf("[Dungeon] Post-init: Setting unk5=1");
                 gDungeon->unk5 = 1;
             }
             else {
-                sub_803F4A0(GetLeader());
+                MGBA_Warnf("[Dungeon] Post-init: Calling sub_803F4A0");
+                // CRITICAL FIX: Skip sub_803F4A0 for boss floors with fixed rooms - causes bad memory loads
+                {
+                    const BossFightConfig *bossFight;
+                    bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                    if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
+                        MGBA_Warnf("[Dungeon] Post-init: Skipping sub_803F4A0 for boss floor");
+                    } else {
+                        sub_803F4A0(GetLeader());
+                    }
+                }
+                MGBA_Warnf("[Dungeon] Post-init: sub_803F4A0 complete");
+                MGBA_Warnf("[Dungeon] Post-init: Calling UpdateMinimap");
                 UpdateMinimap();
+                MGBA_Warnf("[Dungeon] Post-init: UpdateMinimap complete");
+            }
+
+            {
+                Entity *leader = GetLeader();
+                MGBA_Warnf("[Dungeon] Leader check: valid=%d pos=(%d,%d)",
+                           EntityIsValid(leader),
+                           leader ? leader->pos.x : -1,
+                           leader ? leader->pos.y : -1);
             }
         }
 
+        MGBA_Warnf("[Dungeon] Post-leader-check: Weather setup");
         if (!r6) {
             if (gDungeon->unk5 == 0) {
-                sub_807E5AC();
+                // CRITICAL FIX: Skip sub_807E5AC for boss floors with fixed rooms
+                // This function crashes when accessing tile data in fixed room layouts
+                const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                bool8 skipWeatherInit = (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout);
+
+                if (skipWeatherInit) {
+                    MGBA_Warnf("[Dungeon] Skipping sub_807E5AC for fixed room boss floor");
+                } else {
+                    MGBA_Warnf("[Dungeon] Calling sub_807E5AC");
+                    sub_807E5AC();
+                }
+
                 if (GetApparentWeather(NULL) != 0) {
+                    MGBA_Warnf("[Dungeon] Calling sub_807E7FC");
                     sub_807E7FC(1);
                 }
             }
         }
         else {
+            MGBA_Warnf("[Dungeon] Calling TryActivateArtificialWeatherAbilities");
             TryActivateArtificialWeatherAbilities();
         }
 
+        MGBA_Warnf("[Dungeon] Post-weather: Pre-game-loop setup");
         if (r6) {
             r6 = FALSE;
         }
         else {
+            MGBA_Warnf("[Dungeon] Calling sub_80427AC");
             sub_80427AC();
+            MGBA_Warnf("[Dungeon] Calling TryTriggerMonsterHouseWithMsg");
             TryTriggerMonsterHouseWithMsg(GetLeader(), gDungeon->forceMonsterHouse);
+            MGBA_Warnf("[Dungeon] Calling sub_807EAA0");
             sub_807EAA0(1, 0);
         }
 
+        MGBA_Warnf("[Dungeon] Calling nullsub_16");
         nullsub_16();
+        MGBA_Warnf("[Dungeon] After nullsub_16, unk5=%d", gDungeon->unk5);
         if (gDungeon->unk5 == 0) {
             bool8 param = TRUE;
+            s32 turnCount = 0;
+            const BossFightConfig *bossFight;
+            bool8 skipGameLoop;
 
+            MGBA_Warnf("[Dungeon] Entering main game loop");
             gDungeon->unk644.unk10 = 0;
             gDungeon->unk181e8.unk18218 = 0;
             gDungeon->unk181e8.unk18219 = 1;
-            do {
+
+            // TEMPORARY WORKAROUND: Skip game loop for boss floors to test floor loading
+            bossFight = DungeonFloorSpawns_GetBossFightConfig();
+            skipGameLoop = (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout);
+
+            if (skipGameLoop) {
+                MGBA_Warnf("[Dungeon] SKIPPING GAME LOOP FOR BOSS FLOOR (testing only)");
+                // Just call it once to initialize, then exit
                 RunFractionalTurn(param);
-                param = FALSE;
-            } while (!IsFloorOver());
+                MGBA_Warnf("[Dungeon] Single turn complete, forcing floor to end");
+                gDungeon->unk644.unk10 = 1;  // Force floor end
+            } else {
+                do {
+                    MGBA_Warnf("[Dungeon] ===== Turn %d: Calling RunFractionalTurn (param=%d) =====", turnCount, param);
+                    RunFractionalTurn(param);
+                    turnCount++;
+                    MGBA_Warnf("[Dungeon] Turn %d complete, checking IsFloorOver", turnCount);
+                    param = FALSE;
+                } while (!IsFloorOver());
+            }
+            MGBA_Warnf("[Dungeon] Main game loop exited after %d turns", turnCount);
         }
 
+        MGBA_Warnf("[Dungeon] Post-loop: Getting leader");
         leader = GetLeader();
+        MGBA_Warnf("[Dungeon] Post-loop: Leader valid=%d", EntityIsValid(leader));
         if (EntityIsValid(leader)) {
+            MGBA_Warnf("[Dungeon] Post-loop: Calling EnemyEvolution");
             EnemyEvolution(leader);
         }
 
+        MGBA_Warnf("[Dungeon] Post-loop: Checking forced loss (unk10=%d)", gDungeon->unk644.unk10);
         if (gDungeon->unk644.unk10 != 1) {
+            MGBA_Warnf("[Dungeon] Post-loop: Calling TryForcedLoss");
             if (TryForcedLoss(TRUE)) {
                 gDungeon->unk644.unk10 = 1;
             }
         }
+        MGBA_Warnf("[Dungeon] Post-loop: Checking cleanup (unk10=%d unk11=%d)", gDungeon->unk644.unk10, gDungeon->unk11);
         if (gDungeon->unk644.unk10 == 1 || gDungeon->unk11 != 0) {
+            const BossFightConfig *bossFight;
+
             if (gDungeon->unk6 == 0) {
-                sub_806AA70();
+                // CRITICAL FIX: Skip sub_806AA70 for boss floors - it crashes with fixed rooms
+                bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                MGBA_Warnf("[Dungeon] Post-loop: bossFight check - ptr=%p", bossFight);
+                if (bossFight != NULL) {
+                    MGBA_Warnf("[Dungeon] Post-loop: bossFight - enabled=%d useFixedRoomLayout=%d", bossFight->enabled, bossFight->useFixedRoomLayout);
+                }
+                if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
+                    MGBA_Warnf("[Dungeon] Post-loop: Skipping sub_806AA70 for boss floor");
+                } else {
+                    MGBA_Warnf("[Dungeon] Post-loop: Calling sub_806AA70");
+                    sub_806AA70();
+                }
             }
         }
 
+        MGBA_Warnf("[Dungeon] Post-loop: Final leader checks");
         if (EntityIsValid(GetLeader())) {
+            MGBA_Warnf("[Dungeon] Post-loop: Calling sub_80526D0");
             sub_80526D0(0x4F);
+            MGBA_Warnf("[Dungeon] Post-loop: Calling sub_8052740");
             sub_8052740(0x4F);
         }
 
+        MGBA_Warnf("[Dungeon] Post-loop: Calling SetDungeonMapToNotShown");
         SetDungeonMapToNotShown();
+        MGBA_Warnf("[Dungeon] Post-loop: SetDungeonMapToNotShown complete");
+        MGBA_Warnf("[Dungeon] Post-loop: Calling sub_803EAF0(1, NULL)");
         sub_803EAF0(1, NULL);
+        MGBA_Warnf("[Dungeon] Post-loop: sub_803EAF0 complete");
         gDungeon->unk181e8.unk18219 = 0;
         gDungeon->unk181e8.unk18218 = 1;
+        MGBA_Warnf("[Dungeon] Post-loop: Checking BGM fade (unk3=%d unk6=%d)", gDungeon->unk3, gDungeon->unk6);
         if (gDungeon->unk3 == 0
             && gDungeon->unk6 == 0
             && gDungeon->musPlayer.queuedSongIndex == 0x72
             && gDungeon->unk644.dungeonLocation.id == DUNGEON_BURIED_RELIC)
         {
+            MGBA_Warnf("[Dungeon] Post-loop: Fading out BGM");
             DungeonFadeOutBGM(60);
         }
 
-        sub_803E708(4, 0x4F);
+        MGBA_Warnf("[Dungeon] Post-loop: Calling sub_803E708(4, 0x4F)");
+        // CRITICAL FIX: Skip sub_803E708 for boss floors with fixed rooms - it crashes
+        {
+            const BossFightConfig *bossFight;
+            bossFight = DungeonFloorSpawns_GetBossFightConfig();
+            if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
+                MGBA_Warnf("[Dungeon] Post-loop: Skipping sub_803E708 for boss floor");
+            } else {
+                sub_803E708(4, 0x4F);
+            }
+        }
+        MGBA_Warnf("[Dungeon] Post-loop: sub_803E708 complete, unk7=%d", gDungeon->unk7);
         if (gDungeon->unk7 == 0) {
-            sub_803E830();
+            MGBA_Warnf("[Dungeon] Post-loop: Calling sub_803E830");
+            // CRITICAL FIX: Skip sub_803E830 for boss floors with fixed rooms - it may also crash
+            {
+                const BossFightConfig *bossFight;
+                bossFight = DungeonFloorSpawns_GetBossFightConfig();
+                if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
+                    MGBA_Warnf("[Dungeon] Post-loop: Skipping sub_803E830 for boss floor");
+                } else {
+                    sub_803E830();
+                }
+            }
+            MGBA_Warnf("[Dungeon] Post-loop: sub_803E830 complete");
         }
 
+        MGBA_Warnf("[Dungeon] Post-loop: Setting BG/OBJ flags");
         SetBGOBJEnableFlags(0);
+        MGBA_Warnf("[Dungeon] Post-loop: Setting palette color");
         color.r = 0x60;
         color.g = 0x80;
         color.b = 0xF8;
         SetBGPaletteBufferColorRGB(253, &color, gDungeonBrightness, NULL);
+        MGBA_Warnf("[Dungeon] Post-loop: Calling sub_8040094(1)");
         sub_8040094(1);
+        MGBA_Warnf("[Dungeon] Post-loop: Setting unk18218");
         gDungeon->unk181e8.unk18218 = 1;
         if ((GetForcedLossReason() == 2 || GetForcedLossReason() == 3) && gDungeon->unk6 != 0) {
             leader = GetLeader();

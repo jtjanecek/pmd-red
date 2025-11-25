@@ -59,6 +59,7 @@ void GenerateFloor(void);
 void GenerateBossArena(BossFightConfig *config);
 void SpawnBossFightEntities(BossFightConfig *config);
 void ApplyBossFightOverrides(BossFightConfig *config);
+void LoadFixedRoomLayout(s32 fixedRoomNumber, bool8 spawnEntities);
 bool8 StairsAlwaysReachable(s32 stairsX, s32 stairsY, bool8 markUnreachable);
 void sub_804EB30(void);
 

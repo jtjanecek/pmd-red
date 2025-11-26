@@ -6333,14 +6333,13 @@ void LoadFixedRoomLayout(s32 fixedRoomNumber, bool8 spawnEntities)
 
     // Place each tile using action IDs from compressed data
     MGBA_Warnf("[FixedRoom] Processing tiles...");
+    MGBA_Warnf("[FixedRoom] PATTERN EXTRACTION START (room %d, size %dx%d)", fixedRoomNumber, fixedRoomSizeX, fixedRoomSizeY);
     for (y = 5; y < fixedRoomSizeY + 5; y++) {
         for (x = 5; x < fixedRoomSizeX + 5; x++) {
             u8 unk = sub_80511F0();  // Read next byte from compressed data
 
-            // Debug: Log important action IDs
-            if (unk == 4 || unk == 8) {
-                MGBA_Warnf("[FixedRoom] Found actionID %d at (%d,%d)", unk, x, y);
-            }
+            // EXTRACTION: Log every action ID for pattern reconstruction
+            MGBA_Warnf("[FixedRoom] Tile[%d][%d] = %d", y-5, x-5, unk);
 
             if (sub_805124C(GetTileMut(x, y), unk, x, y, spawnEntities)) {
                 dungeon->stairsSpawn.x = x;
@@ -6348,6 +6347,14 @@ void LoadFixedRoomLayout(s32 fixedRoomNumber, bool8 spawnEntities)
             }
         }
     }
+    MGBA_Warnf("[FixedRoom] PATTERN EXTRACTION END");
+
+    // Log final spawn positions for pattern reconstruction
+    MGBA_Warnf("[FixedRoom] SPAWN_POSITIONS:");
+    MGBA_Warnf("[FixedRoom] Player spawn (absolute): (%d, %d)", dungeon->playerSpawn.x, dungeon->playerSpawn.y);
+    MGBA_Warnf("[FixedRoom] Player spawn (relative): (%d, %d)", dungeon->playerSpawn.x - 5, dungeon->playerSpawn.y - 5);
+    MGBA_Warnf("[FixedRoom] Stairs spawn (absolute): (%d, %d)", dungeon->stairsSpawn.x, dungeon->stairsSpawn.y);
+    MGBA_Warnf("[FixedRoom] Stairs spawn (relative): (%d, %d)", dungeon->stairsSpawn.x - 5, dungeon->stairsSpawn.y - 5);
 
     MGBA_Warnf("[FixedRoom] Tiles processed. playerSpawn=(%d,%d) stairsSpawn=(%d,%d)",
                dungeon->playerSpawn.x, dungeon->playerSpawn.y,

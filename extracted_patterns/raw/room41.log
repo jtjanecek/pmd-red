@@ -1,0 +1,256 @@
+[WARN] GBA Debug: [FixedRoom] PATTERN EXTRACTION START (room 41, size 9x9)
+[WARN] GBA Debug: [FixedRoom] Tile[0][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][1] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][2] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][3] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][4] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][5] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][6] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][7] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[0][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[1][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[1][1] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[1][2] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[1][3] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[1][4] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[1][5] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[1][6] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[1][7] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[1][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[2][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[2][1] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[2][2] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[2][3] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[2][4] = 125
+[WARN] GBA Debug: [FixedRoom] Tile[2][5] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[2][6] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[2][7] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[2][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[3][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[3][1] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[3][2] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[3][3] = 124
+[WARN] GBA Debug: [FixedRoom] Tile[3][4] = 125
+[WARN] GBA Debug: [FixedRoom] Tile[3][5] = 124
+[WARN] GBA Debug: [FixedRoom] Tile[3][6] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[3][7] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[3][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[4][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[4][1] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[4][2] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[4][3] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[4][4] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[4][5] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[4][6] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[4][7] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[4][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[5][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[5][1] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[5][2] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[5][3] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[5][4] = 4
+[WARN] GBA Debug: [FixedRoom] Tile[5][5] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[5][6] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[5][7] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[5][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[6][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[6][1] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[6][2] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[6][3] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[6][4] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[6][5] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[6][6] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[6][7] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[6][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[7][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[7][1] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[7][2] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[7][3] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[7][4] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[7][5] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[7][6] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[7][7] = 11
+[WARN] GBA Debug: [FixedRoom] Tile[7][8] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][0] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][1] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][2] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][3] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][4] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][5] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][6] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][7] = 2
+[WARN] GBA Debug: [FixedRoom] Tile[8][8] = 2
+[WARN] GBA Debug: [FixedRoom] PATTERN EXTRACTION END
+[WARN] GBA Debug: [FixedRoom] SPAWN_POSITIONS:
+[WARN] GBA Debug: [FixedRoom] Player spawn (absolute): (9, 10)
+[WARN] GBA Debug: [FixedRoom] Player spawn (relative): (4, 5)
+[WARN] GBA Debug: [FixedRoom] Stairs spawn (absolute): (-1, -1)
+[WARN] GBA Debug: [FixedRoom] Stairs spawn (relative): (-6, -6)
+[WARN] GBA Debug: [FixedRoom] Tiles processed. playerSpawn=(9,10) stairsSpawn=(-1,-1)
+[WARN] GBA Debug: [FixedRoom] Fixed room has no stairs marker, setting manually to (9,6)
+[WARN] GBA Debug: [BossGen] Fixed room layout loaded successfully
+[WARN] GBA Debug: [Dungeon] After GenerateFloor shop=0 mh=0 tileset=12
+[WARN] GBA Debug: [Dungeon] Before sub_804AAD4
+[WARN] GBA Debug: [Dungeon] After sub_804AAD4
+[WARN] GBA Debug: [Dungeon] After sub_8049B8C
+[WARN] GBA Debug: [Dungeon] Calling LoadDungeonTilesetAssets
+[WARN] GBA Debug: [Dungeon] Skipping LoadDungeonTilesetAssets for boss floor
+[WARN] GBA Debug: [Dungeon] LoadDungeonTilesetAssets complete
+[WARN] GBA Debug: [Dungeon] Calling sub_806B168
+[WARN] GBA Debug: [Dungeon] Skipping sub_806B168 for boss floor
+[WARN] GBA Debug: [Dungeon] After sub_806B168
+[WARN] GBA Debug: [Dungeon] About to call SpawnBossFightEntities
+[WARN] GBA Debug: [BossGen] Using fixed room spawn: stairs=(9,6) boss=(9,8)
+[WARN] GBA Debug: [BossGen] SpawnBossFightEntities species=384 typeValid=1
+[WARN] GBA Debug: [BossGen] Boss position validated (9,8)
+[WARN] GBA Debug: [BossGen] Spawn tile terrain: type=1 flags=0x101
+[WARN] GBA Debug: [BossGen] Got spawn array pointer: 0x2006aa4
+[WARN] GBA Debug: [BossGen] Setting species to 384
+[WARN] GBA Debug: [BossGen] Setting spawn flags
+[WARN] GBA Debug: [BossGen] Setting position (9,8)
+[WARN] GBA Debug: [BossGen] Boss added to spawn array
+[WARN] GBA Debug: [BossGen] Getting minion positions, count=2
+[WARN] GBA Debug: [BossGen] Processing minions...
+[WARN] GBA Debug: [BossGen] Minion 0: species=327 pos=(7,8)
+[WARN] GBA Debug: [BossGen] Adding minion 0 to spawn array at index 1
+[WARN] GBA Debug: [BossGen] Minion 1: species=200 pos=(11,8)
+[WARN] GBA Debug: [BossGen] Adding minion 1 to spawn array at index 2
+[WARN] GBA Debug: [BossGen] Setting spawn count to 3
+[WARN] GBA Debug: [BossGen] SpawnBossFightEntities complete - array populated with 3 entities
+[WARN] GBA Debug: [Dungeon] SpawnBossFightEntities returned successfully
+[WARN] GBA Debug: [Dungeon] About to call sub_806C3C0 to spawn entities
+[WARN] GBA Debug: [Dungeon] unk57C.unk40 = 3
+[WARN] GBA Debug: [Dungeon] sub_806C3C0 returned successfully
+[WARN] GBA Debug: [Dungeon] About to call ApplyBossFightOverrides
+[WARN] GBA Debug: [Dungeon] ApplyBossFightOverrides returned successfully
+[WARN] GBA Debug: [Dungeon] Skipping SpawnWildMonsOnFloor (boss floor)
+[WARN] GBA Debug: [Dungeon] Boss spawn section complete
+[WARN] GBA Debug: [Dungeon] Setting floor state variables
+[WARN] GBA Debug: [Dungeon] Floor state variables set
+[WARN] GBA Debug: [Dungeon] Calling sub_807FA18
+[WARN] GBA Debug: [Dungeon] Calling CreateFloorItems
+[WARN] GBA Debug: [Dungeon] Setting unk644 values
+[WARN] GBA Debug: [Dungeon] Calling sub_8051E3C
+[WARN] GBA Debug: [Dungeon] Calling sub_804AAAC
+[WARN] GBA Debug: [Dungeon] Floor initialization complete
+[WARN] GBA Debug: [Dungeon] Post-init: About to call sub_80848F0
+[WARN] GBA Debug: [Dungeon] Post-init: Setting gUnknown_203B40C
+[WARN] GBA Debug: [Dungeon] Post-init: Repositioning leader to spawn point
+[WARN] GBA Debug: [Dungeon] Post-init: About to call sub_803E748/sub_803E7C8
+[WARN] GBA Debug: [Dungeon] Skipping fade-in animation for fixed room boss floor
+[WARN] GBA Debug: [Dungeon] Brightness set, skip complete (screen will be black until game loop)
+[WARN] GBA Debug: [Dungeon] Post-init: About to call sub_8040094
+[WARN] GBA Debug: [Dungeon] Post-init: About to call sub_803EAF0
+[WARN] GBA Debug: [Dungeon] Post-init: About to call InitDungeonMap
+[WARN] GBA Debug: [Dungeon] Post-init: About to call UpdateMinimap
+[WARN] GBA Debug: [Dungeon] Post-init: Setting dungeon variables
+[WARN] GBA Debug: [Dungeon] Post-init: Tutorial/dest floor messages
+[WARN] GBA Debug: [Dungeon] Post-init: Setting leader pointer
+[WARN] GBA Debug: [Dungeon] Post-init: About to call DisplayPreFightDialogue
+[WARN] GBA Debug: [Cutscene] DisplayPreFightDialogue: unk3A0D=0
+[WARN] GBA Debug: [Cutscene] No pre-fight dialogue (unk3A0D=0)
+[WARN] GBA Debug: [Dungeon] Post-init: DisplayPreFightDialogue complete, unk4=0 unk2=0
+[WARN] GBA Debug: [Dungeon] Post-init: Calling sub_803F4A0
+[WARN] GBA Debug: [Dungeon] Post-init: Skipping sub_803F4A0 for boss floor
+[WARN] GBA Debug: [Dungeon] Post-init: sub_803F4A0 complete
+[WARN] GBA Debug: [Dungeon] Post-init: Calling UpdateMinimap
+[WARN] GBA Debug: [Dungeon] Post-init: UpdateMinimap complete
+[WARN] GBA Debug: [Dungeon] Leader check: valid=0 pos=(-1,-1)
+[WARN] GBA Debug: [Dungeon] Post-leader-check: Weather setup
+[WARN] GBA Debug: [Dungeon] Skipping sub_807E5AC for fixed room boss floor
+[WARN] GBA Debug: [Dungeon] Post-weather: Pre-game-loop setup
+[WARN] GBA Debug: [Dungeon] Calling sub_80427AC
+[WARN] GBA Debug: [Dungeon] Calling TryTriggerMonsterHouseWithMsg
+[WARN] GBA Debug: [Dungeon] Calling sub_807EAA0
+[WARN] GBA Debug: [Dungeon] Calling nullsub_16
+[WARN] GBA Debug: [Dungeon] After nullsub_16, unk5=0
+[WARN] GBA Debug: [Dungeon] Entering main game loop
+[WARN] GBA Debug: [Dungeon] SKIPPING GAME LOOP FOR BOSS FLOOR (testing only)
+[WARN] GBA Debug: [Dungeon] Single turn complete, forcing floor to end
+[WARN] GBA Debug: [Dungeon] Main game loop exited after 0 turns
+[WARN] GBA Debug: [Dungeon] Post-loop: Getting leader
+[WARN] GBA Debug: [Dungeon] Post-loop: Leader valid=0
+[WARN] GBA Debug: [Dungeon] Post-loop: Checking forced loss (unk10=1)
+[WARN] GBA Debug: [Dungeon] Post-loop: Checking cleanup (unk10=1 unk11=0)
+[WARN] GBA Debug: [Dungeon] Post-loop: bossFight check - ptr=0x2031aac
+[WARN] GBA Debug: [Dungeon] Post-loop: bossFight - enabled=1 useFixedRoomLayout=1
+[WARN] GBA Debug: [Dungeon] Post-loop: Skipping sub_806AA70 for boss floor
+[WARN] GBA Debug: [Dungeon] Post-loop: Final leader checks
+[WARN] GBA Debug: [Dungeon] Post-loop: Calling SetDungeonMapToNotShown
+[WARN] GBA Debug: [Dungeon] Post-loop: SetDungeonMapToNotShown complete
+[WARN] GBA Debug: [Dungeon] Post-loop: Calling sub_803EAF0(1, NULL)
+[WARN] GBA Debug: [Dungeon] Post-loop: sub_803EAF0 complete
+[WARN] GBA Debug: [Dungeon] Post-loop: Checking BGM fade (unk3=0 unk6=0)
+[WARN] GBA Debug: [Dungeon] Post-loop: Calling sub_803E708(4, 0x4F)
+[WARN] GBA Debug: [Dungeon] Post-loop: Skipping sub_803E708 for boss floor
+[WARN] GBA Debug: [Dungeon] Post-loop: sub_803E708 complete, unk7=0
+[WARN] GBA Debug: [Dungeon] Post-loop: Calling sub_803E830
+[WARN] GBA Debug: [Dungeon] Post-loop: Skipping sub_803E830 for boss floor
+[WARN] GBA Debug: [Dungeon] Post-loop: sub_803E830 complete
+[WARN] GBA Debug: [Dungeon] Post-loop: Setting BG/OBJ flags
+[WARN] GBA Debug: [Dungeon] Post-loop: Setting palette color
+[WARN] GBA Debug: [Dungeon] Post-loop: Calling sub_8040094(1)
+[WARN] GBA Debug: [Dungeon] Post-loop: Setting unk18218
+[WARN] GBA Debug: [SeedOverrides] IsEnabled? seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] Enabled=TRUE seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] IsEnabled? seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] Enabled=TRUE seed=-1038672614
+[WARN] GBA Debug: [QuickSave] Returned from LoadAndRunDungeon_Async
+[WARN] GBA Debug: [QuickSave] Exiting LoadAndRunQuickSaveDungeon_Async with unk7C=-1
+[WARN] GBA Debug: [MainLoop] LoadAndRunQuickSaveDungeon_Async returned
+[WARN] GBA Debug: [GroundMain] Called with param_1=12 (0xc)
+[WARN] GBA Debug: [Effect] sub_800DAC0 entered with fileSelection=1
+[WARN] GBA Debug: [Effect] Allocating memory size=6680
+[WARN] GBA Debug: [Effect] Memory allocated at 0x2025cdc
+[WARN] GBA Debug: [Effect] Memory cleared
+[WARN] GBA Debug: [Effect] Calling sub_800ED38
+[WARN] GBA Debug: [Effect] Calling sub_800F034
+[WARN] GBA Debug: GroundSprite Reset
+[WARN] GBA Debug: [GO] job id=37 set=1 scen=19 DS=46
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=46 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=34 set=1 scen=19 DS=43
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=43 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=31 set=1 scen=19 DS=40
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=40 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=32 set=1 scen=19 DS=41
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=41 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=33 set=1 scen=19 DS=42
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=42 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=35 set=1 scen=19 DS=44
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=44 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=36 set=1 scen=19 DS=45
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=45 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=40 set=1 scen=19 DS=49
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=49 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=38 set=1 scen=19 DS=47
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=47 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=39 set=1 scen=19 DS=48
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=48 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [GO] job id=41 set=1 scen=19 DS=50
+[WARN] GBA Debug: [STATE go-set] SCEN=[19,2] S1=[31,1] S2=[35,0] S3=[37,0] S4=[43,2] S5=[45,0] S6=[48,0] S7=[50,0] S8=[52,0] S9=[55,3]
+[WARN] GBA Debug: [STATE go-set] MODE=7 GE=9 GEL=0 GO=9 DS=50 DE=81 DEI=0 DR=12 WL=0
+[WARN] GBA Debug: [SeedOverrides] IsEnabled? seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] Enabled=TRUE seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] IsEnabled? seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] Enabled=TRUE seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] IsEnabled? seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] Enabled=TRUE seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] IsEnabled? seed=-1038672614
+[WARN] GBA Debug: [SeedOverrides] Enabled=TRUE seed=-1038672614
+[WARN] GBA Debug: GroundSprite Reset
+[WARN] GBA Debug: [SquareGuard] Non-square event 359 invoked while GROUND_PLACE is still square
+[WARN] GBA Debug: GroundMap ExecuteEvent 359 0 ==================
+[WARN] GBA Debug: [ExecuteEvent] About to execute script for event 359
+[WARN] GBA Debug: [ExecuteEvent] Completed script for event 359
+[WARN] GBA Debug: [GroundMain] Entering main loop, B9=0 A8=0
+[WARN] GBA Debug: [GroundMain] Loop iteration 1000, B9=0 A8=0 AC=0

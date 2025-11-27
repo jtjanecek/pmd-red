@@ -933,7 +933,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, defaultMinionPool.count);
             result->bossFight.minionSpecies[i] = defaultMinionPool.species[minionIdx];
         }
-        result->bossFight.roomTileset = 64;  // Skarmory tileset
+        result->bossFight.roomTileset = 64;  // Skarmory boss fight tileset
         result->bossFight.monsterBehavior = 0;
         result->bossFight.useFixedRoomLayout = TRUE;
         result->bossFight.fixedRoomNumber = 1;  // Fixed Room 1
@@ -989,8 +989,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     GetTypeBossMinionMoves(selectedBoss, result->bossFight.minionMoves, result->bossFight.minionUseCustomMoves);
     result->bossFight.minionFormation = SelectMinionFormation(seed, dungeonId, floorId);
 
-    // Use Skarmory tileset for all boss arenas
-    result->bossFight.roomTileset = 64;  // Skarmory tileset
+    // Use Skarmory boss fight tileset for all boss arenas
+    result->bossFight.roomTileset = 64;  // Skarmory boss fight tileset
 
     // Set behavior for boss identification
     result->bossFight.monsterBehavior = 0;  // Will define this constant later

@@ -564,10 +564,15 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
             if (skipFadeIn) {
                 MGBA_Warnf("[Dungeon] Skipping fade-in animation for fixed room boss floor");
-                // Initialize screen/rendering variables only - let game loop handle rendering
+                // Initialize screen/rendering but skip the animation loop
                 gUnknown_203B40D = 0;
                 gDungeonBrightness = 0x1F;
-                MGBA_Warnf("[Dungeon] Brightness set, skip complete (screen will be black until game loop)");
+
+                // CRITICAL: Call sub_803E874 to initialize screen rendering/palette
+                // Without this, the screen stays black until something else triggers rendering
+                MGBA_Warnf("[Dungeon] Calling sub_803E874 to initialize screen rendering");
+                sub_803E874(FALSE, 0x1F);
+                MGBA_Warnf("[Dungeon] Screen rendering initialized, ready for display");
             }
             else if (gDungeon->unk7 == 0) {
                 sub_803E748();

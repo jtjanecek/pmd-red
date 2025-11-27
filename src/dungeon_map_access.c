@@ -18,6 +18,7 @@
 #include "text_1.h"
 #include "dungeon_mon_sprite_render.h"
 #include "dungeon_pos_data.h"
+#include "mgba_log.h"
 #include "dungeon_data.h"
 #include "dungeon_8041AD0.h"
 
@@ -81,13 +82,18 @@ void LoadDungeonTilesetAssets(void)
   OpenedFile *file_1;
   u8 fileName [12];
 
+  MGBA_Warnf("[LoadTileset] tileset=%d, mapped=%d", gDungeon->tileset, gUnknown_8108EC0[gDungeon->tileset]);
   sprintf(fileName,"b%02dfon",gUnknown_8108EC0[gDungeon->tileset]);
+  MGBA_Warnf("[LoadTileset] Loading font file: %s", fileName);
   file = OpenFileAndGetFileDataPtr(fileName,&gDungeonFileArchive);
+  MGBA_Warnf("[LoadTileset] Font file opened, decompressing to VRAM");
   DecompressATGlobalFile((u32 *)0x06008000,0,file);
   CloseFile(file);
 
   sprintf(fileName,"b%02dpal",gDungeon->tileset);
+  MGBA_Warnf("[LoadTileset] Loading palette file: %s", fileName);
   gDungeonPaletteFile = OpenFileAndGetFileDataPtr(fileName,&gDungeonFileArchive);
+  MGBA_Warnf("[LoadTileset] Palette file opened");
 
   sprintf(fileName,"b%02dcel",gUnknown_8108EC0[gDungeon->tileset]);
   file_1 = OpenFileAndGetFileDataPtr(fileName,&gDungeonFileArchive);

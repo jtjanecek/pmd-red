@@ -413,7 +413,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         MGBA_Warnf("[Dungeon] After sub_804AAD4");
         sub_8049B8C();
         MGBA_Warnf("[Dungeon] After sub_8049B8C");
-        MGBA_Warnf("[Dungeon] Calling LoadDungeonTilesetAssets");
+        MGBA_Warnf("[Dungeon] Calling LoadDungeonTilesetAssets (tileset=%d)", gDungeon->tileset);
         LoadDungeonTilesetAssets();
         MGBA_Warnf("[Dungeon] LoadDungeonTilesetAssets complete");
         if (!r6) {

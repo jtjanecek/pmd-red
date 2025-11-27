@@ -1,0 +1,10 @@
+make[1]: Nothing to be done for `all'.
+arm-none-eabi-ld: warning: ../../pmd_red.elf has a LOAD segment with RWX permissions
+Memory region         Used Size  Region Size  %age Used
+           EWRAM:      243836 B       256 KB     93.02%
+           IWRAM:       30960 B        32 KB     94.48%
+             ROM:         32 MB        32 MB    100.00%
+cd build/pmd_red && arm-none-eabi-ld -Map ../../pmd_red.map -u TypeSelection_Init -u TypeSelectionMenu_Begin -T ../../ld_script.ld --print-memory-usage -o ../../pmd_red.elf <objs> <libs> | cat
+tools/gbafix/gbafix pmd_red.elf -t"POKE DUNGEON" -cB24E -m01 -r0 --silent
+arm-none-eabi-objcopy -O binary --gap-fill 0xFF --pad-to 0xA000000 pmd_red.elf pmd_red.gba
+tools/gbafix/gbafix pmd_red.gba -p --silent

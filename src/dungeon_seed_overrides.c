@@ -279,8 +279,8 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
 
     // If boss fight enabled, use boss tileset; otherwise normal generation
     if (result->bossFight.enabled) {
-        // Force boss arena tileset to match the dungeon's selected tileset
-        result->bossFight.roomTileset = result->tileset;
+        // Use the boss room's tileset (set in PopulateBossFightConfig) for the entire floor
+        result->tileset = result->bossFight.roomTileset;
         result->spawnCount = 0;  // No normal spawns in boss rooms
     } else {
         PopulateSpawnTable(result, &rng, dungeonId, floorId);
@@ -933,10 +933,10 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             s32 minionIdx = DungeonSeedRng_NextRange(rng, 0, defaultMinionPool.count);
             result->bossFight.minionSpecies[i] = defaultMinionPool.species[minionIdx];
         }
-        result->bossFight.roomTileset = 19;
+        result->bossFight.roomTileset = 64;  // Skarmory tileset
         result->bossFight.monsterBehavior = 0;
         result->bossFight.useFixedRoomLayout = TRUE;
-        result->bossFight.fixedRoomNumber = 55;  // FIXED_ROOM_MT_STEEL_SKARMORY
+        result->bossFight.fixedRoomNumber = 1;  // Fixed Room 1
         MaybeApplyBossWeather(&result->bossFight, rng);
         source = "seed_missing";
         MGBA_Warnf("[BossGen] seed=-1 type=%d floor=%d boss=%d source=%s", typeForLog, floorId, result->bossFight.bossSpecies, source);
@@ -989,15 +989,15 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     GetTypeBossMinionMoves(selectedBoss, result->bossFight.minionMoves, result->bossFight.minionUseCustomMoves);
     result->bossFight.minionFormation = SelectMinionFormation(seed, dungeonId, floorId);
 
-    // Procedurally select arena tileset (19 or 33)
-    result->bossFight.roomTileset = DungeonSeedRng_NextRange(rng, 0, 2) == 0 ? 19 : 33;
+    // Use Skarmory tileset for all boss arenas
+    result->bossFight.roomTileset = 64;  // Skarmory tileset
 
     // Set behavior for boss identification
     result->bossFight.monsterBehavior = 0;  // Will define this constant later
 
-    // Use Skarmory fixed room (ID 1) for boss arena layout
+    // Use Fixed Room 1 for boss arena layout
     result->bossFight.useFixedRoomLayout = TRUE;
-    result->bossFight.fixedRoomNumber = 55;  // FIXED_ROOM_MT_STEEL_SKARMORY
+    result->bossFight.fixedRoomNumber = 1;  // Fixed Room 1
 
     MaybeApplyBossWeather(&result->bossFight, rng);
 

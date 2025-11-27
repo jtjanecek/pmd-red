@@ -6300,6 +6300,174 @@ static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s
     }
 }
 
+// Custom fixed room tile type constants
+#define CUSTOM_TILE_UNUSED          0
+#define CUSTOM_TILE_WALL            2
+#define CUSTOM_TILE_STAIRS_DOWN     4
+#define CUSTOM_TILE_SECONDARY_WALL  6
+#define CUSTOM_TILE_WATER           10
+#define CUSTOM_TILE_PLAYER_SPAWN    16
+#define CUSTOM_TILE_SPECIAL         17
+#define CUSTOM_TILE_STAIRS_UP       18
+#define CUSTOM_TILE_STAIRS_PART_1   22
+#define CUSTOM_TILE_STAIRS_PART_2   23
+#define CUSTOM_TILE_STAIRS_PART_3   24
+#define CUSTOM_TILE_STAIRS_PART_4   25
+#define CUSTOM_TILE_STAIRS_PART_5   26
+#define CUSTOM_TILE_STAIRS_PART_6   27
+#define CUSTOM_TILE_FLOOR           60
+#define CUSTOM_TILE_TRAP_ITEM       68
+
+// Fixed Room 1 - 17 rows x 9 columns (Skarmory boss room)
+static const u8 sFixedRoom1_Tiles[] = {
+    // Row 0-2: Top walls
+    6,   2,   2,   2,   2,   2,   2,   2,   6,
+    6,   2,   2,   2,   2,   2,   2,   2,   6,
+    2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 3: Boss spawn area
+    2,   2,   2,  68,  17,  68,   2,   2,   2,
+    // Row 4-5: Middle walls
+    2,   6,   6,   6,   6,   6,   6,   6,   2,
+   68,   6,   6,   6,   6,   6,   6,   6,  68,
+    // Row 6-7: Water edges
+    10,  10,  10,  10,  10,  10,  10,  10,  10,
+    10,  60,  60,  60,  60,  60,  60,  60,  10,
+    // Row 8-11: Floor with player spawn and stairs
+    60,  60,  60,  60,  16,  60,  60,  60,  60,
+    60,  60,  60,  60,   4,  60,  60,  60,  60,
+    60,  60,  60,  23,  22,  24,  60,  60,  60,
+    60,  60,  60,  26,  25,  27,  60,  60,  60,
+    // Row 12-16: Bottom area with walls
+    2,   2,  60,  60,  60,  60,  60,   2,   2,
+    2,   2,   2,  10,  10,  10,   2,   2,   2,
+    2,   2,   2,  10,  10,  10,   2,   2,   2,
+    2,   2,   2,   6,   6,   6,   2,   2,   2,
+    2,   2,   2,   6,   6,   6,   2,   2,   2
+};
+
+static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
+{
+    if (tile == NULL)
+        return;
+
+    switch (tileType) {
+        case CUSTOM_TILE_WALL:
+        case CUSTOM_TILE_SECONDARY_WALL:
+            tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+            SetTerrainWall(tile);
+            tile->room = 0;
+            break;
+        case CUSTOM_TILE_WATER:
+            SetTerrainType(tile, TERRAIN_TYPE_SECONDARY);
+            tile->room = 0;
+            break;
+        case CUSTOM_TILE_FLOOR:
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            break;
+        case CUSTOM_TILE_PLAYER_SPAWN:
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            gDungeon->playerSpawn.x = worldX;
+            gDungeon->playerSpawn.y = worldY;
+            MGBA_Warnf("[CustomRoom] Set player spawn to (%d,%d)", worldX, worldY);
+            break;
+        case CUSTOM_TILE_STAIRS_DOWN:
+        case CUSTOM_TILE_STAIRS_UP:
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            gDungeon->stairsSpawn.x = worldX;
+            gDungeon->stairsSpawn.y = worldY;
+            MGBA_Warnf("[CustomRoom] Set stairs spawn to (%d,%d)", worldX, worldY);
+            break;
+        case CUSTOM_TILE_STAIRS_PART_1:
+        case CUSTOM_TILE_STAIRS_PART_2:
+        case CUSTOM_TILE_STAIRS_PART_3:
+        case CUSTOM_TILE_STAIRS_PART_4:
+        case CUSTOM_TILE_STAIRS_PART_5:
+        case CUSTOM_TILE_STAIRS_PART_6:
+        case CUSTOM_TILE_TRAP_ITEM:
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            break;
+        case CUSTOM_TILE_SPECIAL:
+            // Special tile marks boss spawn location in custom fixed rooms
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            // Store boss spawn position (reuse stairsSpawn since boss rooms don't have real stairs)
+            gDungeon->stairsSpawn.x = worldX;
+            gDungeon->stairsSpawn.y = worldY;
+            MGBA_Warnf("[CustomRoom] Set boss spawn (via SPECIAL tile) to (%d,%d)", worldX, worldY);
+            break;
+        case CUSTOM_TILE_UNUSED:
+            // Unused tiles should not be placed at all - they're just padding in the array
+            // Leave the tile as-is (will be handled by normal dungeon generation)
+            break;
+        default:
+            // Unknown tile types become walls
+            tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+            SetTerrainWall(tile);
+            tile->room = 0;
+            break;
+    }
+}
+
+static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
+{
+    const u8 *tiles;
+    s32 width, height;
+    s32 x, y, worldX, worldY, offsetX, offsetY;
+    u8 tileType;
+    Tile *tile;
+
+    (void)spawnEntities;
+
+    MGBA_Warnf("[CustomRoom] LoadCustomFixedRoom: roomId=%d", roomId);
+
+    // Select room by ID
+    switch (roomId) {
+        case 1:
+            tiles = sFixedRoom1_Tiles;
+            width = 9;   // 9 columns
+            height = 17; // 17 rows
+            MGBA_Warnf("[CustomRoom] Selected room 1: %dx%d (cols x rows)", width, height);
+            break;
+        default:
+            MGBA_Warnf("[CustomRoom] Invalid room ID %d", roomId);
+            return;
+    }
+
+    offsetX = 5;
+    offsetY = 5;
+    MGBA_Warnf("[CustomRoom] Offset: (%d,%d)", offsetX, offsetY);
+
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+            tileType = tiles[y * width + x];
+            if (tileType == CUSTOM_TILE_UNUSED)
+                continue;
+
+            worldX = offsetX + x;
+            worldY = offsetY + y;
+
+            if (worldX < 0 || worldX >= DUNGEON_MAX_SIZE_X ||
+                worldY < 0 || worldY >= DUNGEON_MAX_SIZE_Y)
+                continue;
+
+            // Log player spawn and stairs
+            if (tileType == CUSTOM_TILE_PLAYER_SPAWN || tileType == CUSTOM_TILE_STAIRS_DOWN) {
+                MGBA_Warnf("[CustomRoom] Found tile type %d at room(%d,%d) -> world(%d,%d)",
+                           tileType, x, y, worldX, worldY);
+            }
+
+            tile = GetTileMut(worldX, worldY);
+            PlaceCustomTile(tile, tileType, worldX, worldY);
+        }
+    }
+
+    MGBA_Warnf("[CustomRoom] Done loading room");
+}
+
 // Load a fixed room layout (walkable terrain only, optionally spawn entities)
 // Based on sub_8051288 but made reusable for boss arenas
 void LoadFixedRoomLayout(s32 fixedRoomNumber, bool8 spawnEntities)
@@ -6444,15 +6612,16 @@ void GenerateBossArena(BossFightConfig *config)
     if (config->useFixedRoomLayout) {
         gBossArenaDebugMarker = 4;  // DEBUG: Using fixed room layout
 
-        MGBA_Warnf("[BossGen] Using fixed room layout: roomNumber=%d", config->fixedRoomNumber);
+        MGBA_Warnf("[BossGen] Using CUSTOM fixed room layout: roomNumber=%d", config->fixedRoomNumber);
 
-        // Load fixed room layout (without spawning entities - we spawn boss separately)
-        LoadFixedRoomLayout(config->fixedRoomNumber, FALSE);
+        // Load our custom fixed room layout (walkable terrain only)
+        // Tileset visuals are handled separately by the floor's tileset setting
+        LoadCustomFixedRoom(config->fixedRoomNumber, FALSE);
 
-        MGBA_Warnf("[BossGen] Fixed room layout loaded successfully");
+        MGBA_Warnf("[BossGen] Custom fixed room layout loaded successfully");
 
-        // Player and stairs spawn positions are set by LoadFixedRoomLayout via action IDs
-        // (Action 4 = player spawn, Action 8 = stairs spawn)
+        // Player and stairs spawn positions are set by LoadCustomFixedRoom
+        // based on tile types (CUSTOM_TILE_PLAYER_SPAWN, CUSTOM_TILE_STAIRS_DOWN)
 
         gBossArenaDebugMarker = 5;  // DEBUG: Fixed room loaded
     }
@@ -6592,14 +6761,13 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     // Calculate boss spawn position based on arena type
     if (config->useFixedRoomLayout) {
-        // For fixed rooms, use the stairs spawn position as reference
-        // Stairs are typically at the top of boss arenas
-        // Boss spawns 2 tiles below stairs
+        // For custom fixed rooms, stairsSpawn is repurposed to store the boss spawn position
+        // (set from CUSTOM_TILE_SPECIAL in the room data)
         centerX = gDungeon->stairsSpawn.x;
-        bossY = gDungeon->stairsSpawn.y + 2;
+        bossY = gDungeon->stairsSpawn.y;
 
-        MGBA_Warnf("[BossGen] Using fixed room spawn: stairs=(%d,%d) boss=(%d,%d)",
-                   gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y, centerX, bossY);
+        MGBA_Warnf("[BossGen] Using fixed room spawn: boss=(%d,%d)",
+                   centerX, bossY);
     } else {
         // For simple rectangular arena, use hardcoded coordinates
         centerX = ARENA_START_X + ARENA_WIDTH / 2;

@@ -414,29 +414,11 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         sub_8049B8C();
         MGBA_Warnf("[Dungeon] After sub_8049B8C");
         MGBA_Warnf("[Dungeon] Calling LoadDungeonTilesetAssets");
-        // CRITICAL FIX: Skip LoadDungeonTilesetAssets for boss floors with fixed rooms - causes bad memory loads
-        {
-            const BossFightConfig *bossFight;
-            bossFight = DungeonFloorSpawns_GetBossFightConfig();
-            if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
-                MGBA_Warnf("[Dungeon] Skipping LoadDungeonTilesetAssets for boss floor");
-            } else {
-                LoadDungeonTilesetAssets();
-            }
-        }
+        LoadDungeonTilesetAssets();
         MGBA_Warnf("[Dungeon] LoadDungeonTilesetAssets complete");
         if (!r6) {
-            MGBA_Warnf("[Dungeon] Calling sub_806B168");
-            // CRITICAL FIX: Skip sub_806B168 for boss floors with fixed rooms - causes bad memory loads
-            {
-                const BossFightConfig *bossFight;
-                bossFight = DungeonFloorSpawns_GetBossFightConfig();
-                if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
-                    MGBA_Warnf("[Dungeon] Skipping sub_806B168 for boss floor");
-                } else {
-                    sub_806B168();
-                }
-            }
+            MGBA_Warnf("[Dungeon] Calling sub_806B168 to spawn player team");
+            sub_806B168();
             MGBA_Warnf("[Dungeon] After sub_806B168");
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
@@ -556,6 +538,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         MGBA_Warnf("[Dungeon] Post-init: Repositioning leader to spawn point");
         {
             Entity *leader = GetLeader();
+            MGBA_Warnf("[Dungeon] Leader entity: ptr=%p valid=%d", leader, EntityIsValid(leader));
             if (EntityIsValid(leader)) {
                 MGBA_Warnf("[Dungeon] Moving leader from (%d,%d) to (%d,%d)",
                            leader->pos.x, leader->pos.y,
@@ -564,6 +547,8 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
                 leader->pos.y = gDungeon->playerSpawn.y;
                 leader->pixelPos.x = X_POS_TO_PIXELPOS(leader->pos.x);
                 leader->pixelPos.y = Y_POS_TO_PIXELPOS(leader->pos.y);
+            } else {
+                MGBA_Warnf("[Dungeon] Leader not valid, cannot reposition!");
             }
         }
 
@@ -628,16 +613,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             }
             else {
                 MGBA_Warnf("[Dungeon] Post-init: Calling sub_803F4A0");
-                // CRITICAL FIX: Skip sub_803F4A0 for boss floors with fixed rooms - causes bad memory loads
-                {
-                    const BossFightConfig *bossFight;
-                    bossFight = DungeonFloorSpawns_GetBossFightConfig();
-                    if (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout) {
-                        MGBA_Warnf("[Dungeon] Post-init: Skipping sub_803F4A0 for boss floor");
-                    } else {
-                        sub_803F4A0(GetLeader());
-                    }
-                }
+                sub_803F4A0(GetLeader());
                 MGBA_Warnf("[Dungeon] Post-init: sub_803F4A0 complete");
                 MGBA_Warnf("[Dungeon] Post-init: Calling UpdateMinimap");
                 UpdateMinimap();
@@ -698,33 +674,18 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         if (gDungeon->unk5 == 0) {
             bool8 param = TRUE;
             s32 turnCount = 0;
-            const BossFightConfig *bossFight;
-            bool8 skipGameLoop;
-
-            MGBA_Warnf("[Dungeon] Entering main game loop");
             gDungeon->unk644.unk10 = 0;
             gDungeon->unk181e8.unk18218 = 0;
             gDungeon->unk181e8.unk18219 = 1;
 
-            // TEMPORARY WORKAROUND: Skip game loop for boss floors to test floor loading
-            bossFight = DungeonFloorSpawns_GetBossFightConfig();
-            skipGameLoop = (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout);
-
-            if (skipGameLoop) {
-                MGBA_Warnf("[Dungeon] SKIPPING GAME LOOP FOR BOSS FLOOR (testing only)");
-                // Just call it once to initialize, then exit
+            MGBA_Warnf("[Dungeon] Entering main game loop");
+            do {
+                MGBA_Warnf("[Dungeon] ===== Turn %d: Calling RunFractionalTurn (param=%d) =====", turnCount, param);
                 RunFractionalTurn(param);
-                MGBA_Warnf("[Dungeon] Single turn complete, forcing floor to end");
-                gDungeon->unk644.unk10 = 1;  // Force floor end
-            } else {
-                do {
-                    MGBA_Warnf("[Dungeon] ===== Turn %d: Calling RunFractionalTurn (param=%d) =====", turnCount, param);
-                    RunFractionalTurn(param);
-                    turnCount++;
-                    MGBA_Warnf("[Dungeon] Turn %d complete, checking IsFloorOver", turnCount);
-                    param = FALSE;
-                } while (!IsFloorOver());
-            }
+                turnCount++;
+                MGBA_Warnf("[Dungeon] Turn %d complete, checking IsFloorOver", turnCount);
+                param = FALSE;
+            } while (!IsFloorOver());
             MGBA_Warnf("[Dungeon] Main game loop exited after %d turns", turnCount);
         }
 

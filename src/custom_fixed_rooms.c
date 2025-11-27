@@ -1,0 +1,180 @@
+#include "global.h"
+#include "custom_fixed_rooms.h"
+#include "dungeon_map_access.h"
+#include "dungeon_util.h"
+#include "dungeon_engine.h"
+#include "structs/map.h"
+#include "constants/dungeon.h"
+#include "mgba_log.h"
+
+// Fixed Room 1 - 9 rows x 17 columns
+// Original source: Skarmory boss room pattern
+static const u8 sFixedRoom1_Tiles[] = {
+    // Row 0
+    6,   2,   2,   2,   2,   2,   2,   2,   6,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 1
+    6,   2,   2,   2,   2,   2,   2,   2,   6,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 2
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 3
+    2,   2,   2,  68,  17,  68,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 4
+    2,   6,   6,   6,   6,   6,   6,   6,   2,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 5
+    68,   6,   6,   6,   6,   6,   6,   6,  68,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 6
+    10,  10,  10,  10,  10,  10,  10,  10,  10,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 7
+    10,  60,  60,  60,  60,  60,  60,  60,  10,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 8
+    60,  60,  60,  60,  16,  60,  60,  60,  60,   0,   0,   0,   0,   0,   0,   0,   0
+};
+
+static const CustomFixedRoom sFixedRoom1 = {
+    .width = 17,
+    .height = 9,
+    .tiles = sFixedRoom1_Tiles
+};
+
+// Array of all custom rooms
+static const CustomFixedRoom *sCustomRooms[] = {
+    NULL,           // Index 0 unused
+    &sFixedRoom1,   // Index 1
+};
+
+#define CUSTOM_ROOM_COUNT (sizeof(sCustomRooms) / sizeof(sCustomRooms[0]))
+
+// Get tile value at (x, y) from flattened array
+static u8 GetCustomTile(const CustomFixedRoom *room, s32 x, s32 y)
+{
+    if (room == NULL || x < 0 || y < 0 || x >= room->width || y >= room->height)
+        return CUSTOM_TILE_UNUSED;
+
+    return room->tiles[y * room->width + x];
+}
+
+// Place a tile based on custom tile type
+static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
+{
+    if (tile == NULL)
+        return;
+
+    switch (tileType) {
+        case CUSTOM_TILE_WALL:
+        case CUSTOM_TILE_SECONDARY_WALL:
+            // Solid wall - impassable
+            tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+            SetTerrainWall(tile);
+            tile->room = 0;
+            break;
+
+        case CUSTOM_TILE_WATER:
+            // Water tile - use secondary terrain (water/lava depending on dungeon)
+            SetTerrainType(tile, TERRAIN_TYPE_SECONDARY);
+            tile->room = 0;
+            break;
+
+        case CUSTOM_TILE_FLOOR:
+            // Normal walkable floor
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            break;
+
+        case CUSTOM_TILE_PLAYER_SPAWN:
+            // Player spawn - mark as normal floor, set spawn position
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            gDungeon->playerSpawn.x = worldX;
+            gDungeon->playerSpawn.y = worldY;
+            MGBA_Warnf("[CustomRoom] Player spawn set: (%d, %d)", worldX, worldY);
+            break;
+
+        case CUSTOM_TILE_STAIRS_DOWN:
+        case CUSTOM_TILE_STAIRS_UP:
+            // Stairs - mark as normal floor for now, stairs spawn handled separately
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            gDungeon->stairsSpawn.x = worldX;
+            gDungeon->stairsSpawn.y = worldY;
+            MGBA_Warnf("[CustomRoom] Stairs spawn set: (%d, %d)", worldX, worldY);
+            break;
+
+        case CUSTOM_TILE_STAIRS_PART_1:
+        case CUSTOM_TILE_STAIRS_PART_2:
+        case CUSTOM_TILE_STAIRS_PART_3:
+        case CUSTOM_TILE_STAIRS_PART_4:
+        case CUSTOM_TILE_STAIRS_PART_5:
+        case CUSTOM_TILE_STAIRS_PART_6:
+            // Stair decoration tiles - treat as normal floor
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            break;
+
+        case CUSTOM_TILE_TRAP_ITEM:
+        case CUSTOM_TILE_SPECIAL:
+            // Special tiles - treat as normal floor for now
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            break;
+
+        case CUSTOM_TILE_UNUSED:
+        default:
+            // Unused space - make it a wall to prevent access
+            tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+            SetTerrainWall(tile);
+            tile->room = 0;
+            break;
+    }
+}
+
+// Load a custom fixed room layout
+void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
+{
+    const CustomFixedRoom *room;
+    s32 x, y;
+    s32 worldX, worldY;
+    s32 offsetX, offsetY;
+    u8 tileType;
+    Tile *tile;
+
+    (void)spawnEntities;  // Not used yet
+
+    MGBA_Warnf("[CustomRoom] Loading custom room %d", roomId);
+
+    if (roomId >= CUSTOM_ROOM_COUNT || sCustomRooms[roomId] == NULL) {
+        MGBA_Warnf("[CustomRoom] ERROR: Invalid room ID %d", roomId);
+        return;
+    }
+
+    room = sCustomRooms[roomId];
+    MGBA_Warnf("[CustomRoom] Room size: %dx%d", room->width, room->height);
+
+    // Center the room in the dungeon grid
+    // Standard offset is (5, 5) like the game's fixed rooms
+    offsetX = 5;
+    offsetY = 5;
+
+    // Place all tiles
+    for (y = 0; y < room->height; y++) {
+        for (x = 0; x < room->width; x++) {
+            tileType = GetCustomTile(room, x, y);
+
+            // Skip unused tiles
+            if (tileType == CUSTOM_TILE_UNUSED)
+                continue;
+
+            worldX = offsetX + x;
+            worldY = offsetY + y;
+
+            // Bounds check
+            if (worldX < 0 || worldX >= DUNGEON_MAX_SIZE_X ||
+                worldY < 0 || worldY >= DUNGEON_MAX_SIZE_Y)
+                continue;
+
+            tile = GetTileMut(worldX, worldY);
+            PlaceCustomTile(tile, tileType, worldX, worldY);
+        }
+    }
+
+    MGBA_Warnf("[CustomRoom] Room loaded successfully");
+}

@@ -6250,6 +6250,10 @@ static void ResetInnerBoundaryTileRows(void)
 static EWRAM_DATA s32 gBossArenaDebugMarker = {0};
 static EWRAM_DATA s32 gBossSpawnDebugMarker = {0};
 
+// Boss spawn position for fixed room boss fights (separate from stairs)
+static EWRAM_DATA s32 gBossFixedRoomSpawnX = {-1};
+static EWRAM_DATA s32 gBossFixedRoomSpawnY = {-1};
+
 // Seeded helper: derive minion coordinates from the chosen formation
 static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s32 bossY, s32 minionPositions[][2], s32 capacity)
 {
@@ -6319,24 +6323,25 @@ static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s
 #define CUSTOM_TILE_TRAP_ITEM       68
 
 // Fixed Room 1 - 17 rows x 9 columns (Skarmory boss room)
+// Modified: Boss spawn moved to main floor area for accessibility
 static const u8 sFixedRoom1_Tiles[] = {
     // Row 0-2: Top walls
     6,   2,   2,   2,   2,   2,   2,   2,   6,
     6,   2,   2,   2,   2,   2,   2,   2,   6,
     2,   2,   2,   2,   2,   2,   2,   2,   2,
-    // Row 3: Boss spawn area
-    2,   2,   2,  68,  17,  68,   2,   2,   2,
+    // Row 3: Upper area (now just traps, boss moved down)
+    2,   2,   2,  68,  60,  68,   2,   2,   2,
     // Row 4-5: Middle walls
     2,   6,   6,   6,   6,   6,   6,   6,   2,
    68,   6,   6,   6,   6,   6,   6,   6,  68,
     // Row 6-7: Water edges
     10,  10,  10,  10,  10,  10,  10,  10,  10,
-    10,  60,  60,  60,  60,  60,  60,  60,  10,
+    10,  60,  60,  60,  17,  60,  60,  60,  10,  // Boss spawns here in main area
     // Row 8-11: Floor with player spawn and stairs
-    60,  60,  60,  60,  16,  60,  60,  60,  60,
-    60,  60,  60,  60,   4,  60,  60,  60,  60,
-    60,  60,  60,  23,  22,  24,  60,  60,  60,
-    60,  60,  60,  26,  25,  27,  60,  60,  60,
+    60,  60,  60,  60,  60,  60,  60,  60,  60,
+    60,  60,  60,  60,  60,  60,  60,  60,  60,
+    60,  60,  60,  60,  16,  60,  60,  60,  60,  // Player at center (column 4)
+    60,  60,  60,  60,  4,   60,  60,  60,  60,  // Stairs below player (column 4)
     // Row 12-16: Bottom area with walls
     2,   2,  60,  60,  60,  60,  60,   2,   2,
     2,   2,   2,  10,  10,  10,   2,   2,   2,
@@ -6394,9 +6399,9 @@ static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
             // Special tile marks boss spawn location in custom fixed rooms
             SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
             tile->room = 0;
-            // Store boss spawn position (reuse stairsSpawn since boss rooms don't have real stairs)
-            gDungeon->stairsSpawn.x = worldX;
-            gDungeon->stairsSpawn.y = worldY;
+            // Store boss spawn position in dedicated global (don't use stairsSpawn - it's for actual stairs!)
+            gBossFixedRoomSpawnX = worldX;
+            gBossFixedRoomSpawnY = worldY;
             MGBA_Warnf("[CustomRoom] Set boss spawn (via SPECIAL tile) to (%d,%d)", worldX, worldY);
             break;
         case CUSTOM_TILE_UNUSED:
@@ -6761,10 +6766,10 @@ void SpawnBossFightEntities(BossFightConfig *config)
 
     // Calculate boss spawn position based on arena type
     if (config->useFixedRoomLayout) {
-        // For custom fixed rooms, stairsSpawn is repurposed to store the boss spawn position
+        // For custom fixed rooms, use the dedicated boss spawn position
         // (set from CUSTOM_TILE_SPECIAL in the room data)
-        centerX = gDungeon->stairsSpawn.x;
-        bossY = gDungeon->stairsSpawn.y;
+        centerX = gBossFixedRoomSpawnX;
+        bossY = gBossFixedRoomSpawnY;
 
         MGBA_Warnf("[BossGen] Using fixed room spawn: boss=(%d,%d)",
                    centerX, bossY);
@@ -6913,8 +6918,8 @@ void ApplyBossFightOverrides(BossFightConfig *config)
 
     // Calculate where we spawned the boss - must match SpawnBossFightEntities
     if (config->useFixedRoomLayout) {
-        centerX = gDungeon->stairsSpawn.x;
-        bossY = gDungeon->stairsSpawn.y + 2;
+        centerX = gBossFixedRoomSpawnX;
+        bossY = gBossFixedRoomSpawnY;
     } else {
         centerX = ARENA_START_X + ARENA_WIDTH / 2;
         bossY = ARENA_START_Y + 2;

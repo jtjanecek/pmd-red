@@ -9,6 +9,7 @@
 
 // Fixed Room 1 - 9 rows x 17 columns
 // Original source: Skarmory boss room pattern
+// Tile types: 2=wall, 6=secondary wall, 10=water, 17=boss spawn, 16=player spawn, 4=stairs, 60=floor, 68=trap/item
 static const u8 sFixedRoom1_Tiles[] = {
     // Row 0
     6,   2,   2,   2,   2,   2,   2,   2,   6,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -16,7 +17,7 @@ static const u8 sFixedRoom1_Tiles[] = {
     6,   2,   2,   2,   2,   2,   2,   2,   6,   0,   0,   0,   0,   0,   0,   0,   0,
     // Row 2
     2,   2,   2,   2,   2,   2,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,
-    // Row 3
+    // Row 3 - Boss spawns here at center (tile 17)
     2,   2,   2,  68,  17,  68,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,
     // Row 4
     2,   6,   6,   6,   6,   6,   6,   6,   2,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -26,13 +27,15 @@ static const u8 sFixedRoom1_Tiles[] = {
     10,  10,  10,  10,  10,  10,  10,  10,  10,   0,   0,   0,   0,   0,   0,   0,   0,
     // Row 7
     10,  60,  60,  60,  60,  60,  60,  60,  10,   0,   0,   0,   0,   0,   0,   0,   0,
-    // Row 8
-    60,  60,  60,  60,  16,  60,  60,  60,  60,   0,   0,   0,   0,   0,   0,   0,   0
+    // Row 8 - Player spawns at center (tile 16 at column 4)
+    60,  60,  60,  60,  16,  60,  60,  60,  60,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 9 - Stairs below player, partner will spawn to the left
+    60,  60,  60,  60,   4,  60,  60,  60,  60,   0,   0,   0,   0,   0,   0,   0,   0
 };
 
 static const CustomFixedRoom sFixedRoom1 = {
     .width = 17,
-    .height = 9,
+    .height = 10,  // Now 10 rows (added row for stairs)
     .tiles = sFixedRoom1_Tiles
 };
 
@@ -177,4 +180,7 @@ void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
     }
 
     MGBA_Warnf("[CustomRoom] Room loaded successfully");
+    MGBA_Warnf("[CustomRoom] Final positions - Player: (%d, %d), Stairs: (%d, %d)",
+               gDungeon->playerSpawn.x, gDungeon->playerSpawn.y,
+               gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
 }

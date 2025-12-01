@@ -87,7 +87,7 @@ struct GroundLive
     struct UnkGroundSpriteStruct unk170;
 };
 
-#define UNK_3001B84_ARR_COUNT 0x4  // Reduced from 0x18 (24) - saves ~9.7KB heap (only need 3-4 NPCs without Town Square)
+#define UNK_3001B84_ARR_COUNT 0x6  // Allow a couple extra base NPCs (still far below original 0x18)
 
 struct GroundLives
 {

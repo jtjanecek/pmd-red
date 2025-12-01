@@ -678,6 +678,26 @@ static const struct ScriptCommand s_gs9_g0_s5_lives1_dlg0[] = { /* 0x819cd04 */
     RET,
 };
 
+static const struct ScriptCommand s_gs9_medicham_base_dlg0[] = { /* custom */
+    DEBUGINFO_O(710),
+    SELECT_ANIMATION(2),
+    MSG_NPC(1, _(" Pshehehehehe!")),
+    MSG_NPC(1, _(" That Lombre... He amuses\nme so!\nPshehehehehe!")),
+    TEXTBOX_CLEAR,
+    MSG_NPC(1, _(" Oh, long time no see.\nYou are well?")),
+    MSG_NPC(1, _(" I heard about Lombre's tale.\nIt is too funny.")),
+    MSG_NPC(1, _(" He almost drowned at sea!")),
+    MSG_NPC(1, _(" But that Lombre--he lives\nin water! How very pathetic!\nPshehehehehe!")),
+    JUMP_SCRIPT(END_TALK),
+};
+
+static const struct ScriptCommand s_gs9_xatu_base_dlg0[] = { /* custom */
+    DEBUGINFO_O(724),
+    SELECT_ANIMATION(2),
+    MSG_NPC(1, _(" Hmmmm...")),
+    JUMP_SCRIPT(END_TALK),
+};
+
 static const struct ScriptCommand s_gs9_g0_s6_lives0_dlg0[] = { /* 0x819cd44 */
     DEBUGINFO_O(690),
     CALL_SCRIPT(LIVES_WARP_ARRIVE_FUNC),
@@ -14202,6 +14222,12 @@ static const struct GroundLivesData s_gs9_g0_s1_lives[] = { /* 0x81ddb58 */
     /*  1 */ {   4,   6,   0,   0, {  64,  43, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s1_lives1_dlg0,
     } },
+    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_medicham_base_dlg0,
+    } },
+    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_xatu_base_dlg0,
+    } },
 };
 
 static const struct GroundLivesData s_gs9_g0_s2_lives[] = { /* 0x81ddb88 */
@@ -14210,6 +14236,12 @@ static const struct GroundLivesData s_gs9_g0_s2_lives[] = { /* 0x81ddb88 */
     } },
     /*  1 */ {   4,   2,   0,   0, {   5,  46, 0, 0 }, {
         [0] = s_gs9_g0_s2_lives1_dlg0,
+    } },
+    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_medicham_base_dlg0,
+    } },
+    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_xatu_base_dlg0,
     } },
 };
 
@@ -14220,6 +14252,12 @@ static const struct GroundLivesData s_gs9_g0_s3_lives[] = { /* 0x81ddbb8 */
     /*  1 */ {   4,   4,   0,   0, {  34,  64, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s3_lives1_dlg0,
     } },
+    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_medicham_base_dlg0,
+    } },
+    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_xatu_base_dlg0,
+    } },
 };
 
 static const struct GroundLivesData s_gs9_g0_s4_lives[] = { /* 0x81ddbe8 */
@@ -14228,6 +14266,12 @@ static const struct GroundLivesData s_gs9_g0_s4_lives[] = { /* 0x81ddbe8 */
     } },
     /*  1 */ {   4,   0,   0,   0, {  34,  27, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s4_lives1_dlg0,
+    } },
+    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_medicham_base_dlg0,
+    } },
+    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_xatu_base_dlg0,
     } },
 };
 
@@ -14238,6 +14282,12 @@ static const struct GroundLivesData s_gs9_g0_s5_lives[] = { /* 0x81ddc18 */
     /*  1 */ {   4,   4,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s5_lives1_dlg0,
     } },
+    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_medicham_base_dlg0,
+    } },
+    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_xatu_base_dlg0,
+    } },
 };
 
 static const struct GroundLivesData s_gs9_g0_s6_lives[] = { /* 0x81ddc48 */
@@ -14246,6 +14296,12 @@ static const struct GroundLivesData s_gs9_g0_s6_lives[] = { /* 0x81ddc48 */
     } },
     /*  1 */ {   4,   4,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s6_lives1_dlg0,
+    } },
+    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_medicham_base_dlg0,
+    } },
+    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_xatu_base_dlg0,
     } },
 };
 

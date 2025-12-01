@@ -1230,8 +1230,10 @@ void DungeonSeedOverrides_RegisterBossEntity(Entity *boss)
 // Set the position where stairs should spawn after boss defeat
 void DungeonSeedOverrides_SetStairsPosition(s32 x, s32 y)
 {
+    MGBA_Warnf("[StairsPos] SetStairsPosition called: (%d, %d)", x, y);
     sStairsSpawnX = x;
     sStairsSpawnY = y;
+    MGBA_Warnf("[StairsPos] Stored: sStairsSpawnX=%d, sStairsSpawnY=%d", sStairsSpawnX, sStairsSpawnY);
 }
 
 // Check if an entity is a custom boss
@@ -1248,21 +1250,39 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
     Tile *tile;
     DungeonPos dropPos;
 
-    if (pokemon != sCustomBossEntity)
-        return;
+    MGBA_Warnf("[BossFaint] HandleBossFaint called for entity %p (boss=%p)", pokemon, sCustomBossEntity);
 
+    if (pokemon != sCustomBossEntity) {
+        MGBA_Warnf("[BossFaint] Entity mismatch - not our custom boss, returning");
+        return;
+    }
+
+    MGBA_Warnf("[BossFaint] Boss defeated! Spawning stairs at (%d, %d)", sStairsSpawnX, sStairsSpawnY);
     DungeonSeedOverrides_RegisterBossEntity(NULL);
 
     bossFight = DungeonFloorSpawns_GetBossFightConfig();
-    if (bossFight == NULL)
+    if (bossFight == NULL) {
+        MGBA_Warnf("[BossFaint] ERROR: bossFight is NULL!");
         return;
+    }
 
     // Spawn stairs at marked position
     tile = GetTileMut(sStairsSpawnX, sStairsSpawnY);
     if (tile != NULL) {
+        MGBA_Warnf("[BossFaint] Setting stairs flags on tile at (%d, %d)", sStairsSpawnX, sStairsSpawnY);
         tile->terrainFlags |= TERRAIN_TYPE_STAIRS;
+        tile->spawnOrVisibilityFlags.spawn |= SPAWN_FLAG_STAIRS;
+        tile->spawnOrVisibilityFlags.spawn &= ~(SPAWN_FLAG_ITEM);
         gDungeon->stairsSpawn.x = sStairsSpawnX;
         gDungeon->stairsSpawn.y = sStairsSpawnY;
+
+        // Render the stairs tile
+        MGBA_Warnf("[BossFaint] Rendering stairs tile");
+        sub_80498A8(sStairsSpawnX, sStairsSpawnY);
+        sub_8049BB0(sStairsSpawnX, sStairsSpawnY);
+        MGBA_Warnf("[BossFaint] Stairs spawned successfully!");
+    } else {
+        MGBA_Warnf("[BossFaint] ERROR: tile is NULL at (%d, %d)!", sStairsSpawnX, sStairsSpawnY);
     }
 
     // Drop loot if configured

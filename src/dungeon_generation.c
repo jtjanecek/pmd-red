@@ -205,6 +205,10 @@ void GenerateFloor(void)
             MGBA_Warnf("[BossGen] GenerateFloor: dungeonId=%d floor=%d boss=%d", gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, bossFight->bossSpecies);
             GenerateBossArena((BossFightConfig*)bossFight);
 
+            // Initialize tile rendering for boss arena
+            sub_8049884();  // Render all tiles
+            sub_8049B8C();  // Finalize tile connections
+
             // Boss floors skip normal generation; make sure state is clean and file handle is closed.
             gDungeon->unk3A09 = 0;
             gDungeon->unk3A0A = 0;

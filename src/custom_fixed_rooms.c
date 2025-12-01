@@ -3,6 +3,7 @@
 #include "dungeon_map_access.h"
 #include "dungeon_util.h"
 #include "dungeon_engine.h"
+#include "dungeon_seed_overrides.h"
 #include "structs/map.h"
 #include "constants/dungeon.h"
 #include "mgba_log.h"
@@ -94,12 +95,13 @@ static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
 
         case CUSTOM_TILE_STAIRS_DOWN:
         case CUSTOM_TILE_STAIRS_UP:
-            // Stairs - mark as normal floor for now, stairs spawn handled separately
+            // Stairs - mark as normal floor (stairs spawn AFTER boss defeat)
             SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
             tile->room = 0;
+            // Store position but DON'T set spawn flags yet (happens after boss defeat)
             gDungeon->stairsSpawn.x = worldX;
             gDungeon->stairsSpawn.y = worldY;
-            MGBA_Warnf("[CustomRoom] Stairs spawn set: (%d, %d)", worldX, worldY);
+            MGBA_Warnf("[CustomRoom] Stairs position marked: (%d, %d)", worldX, worldY);
             break;
 
         case CUSTOM_TILE_STAIRS_PART_1:
@@ -183,4 +185,7 @@ void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
     MGBA_Warnf("[CustomRoom] Final positions - Player: (%d, %d), Stairs: (%d, %d)",
                gDungeon->playerSpawn.x, gDungeon->playerSpawn.y,
                gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
+
+    // Store stairs position for post-boss spawning
+    DungeonSeedOverrides_SetStairsPosition(gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
 }

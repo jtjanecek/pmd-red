@@ -14232,10 +14232,10 @@ static const struct GroundLivesData s_gs9_g0_s1_lives[] = { /* 0x81ddb58 */
     /*  1 */ {   4,   6,   0,   0, {  64,  43, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s1_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_medicham_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_xatu_base_dlg0,
     } },
 };
@@ -14247,10 +14247,10 @@ static const struct GroundLivesData s_gs9_g0_s2_lives[] = { /* 0x81ddb88 */
     /*  1 */ {   4,   2,   0,   0, {   5,  46, 0, 0 }, {
         [0] = s_gs9_g0_s2_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_medicham_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_xatu_base_dlg0,
     } },
 };
@@ -14262,10 +14262,10 @@ static const struct GroundLivesData s_gs9_g0_s3_lives[] = { /* 0x81ddbb8 */
     /*  1 */ {   4,   4,   0,   0, {  34,  64, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s3_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_medicham_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_xatu_base_dlg0,
     } },
 };
@@ -14277,10 +14277,10 @@ static const struct GroundLivesData s_gs9_g0_s4_lives[] = { /* 0x81ddbe8 */
     /*  1 */ {   4,   0,   0,   0, {  34,  27, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s4_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_medicham_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_xatu_base_dlg0,
     } },
 };
@@ -14292,10 +14292,10 @@ static const struct GroundLivesData s_gs9_g0_s5_lives[] = { /* 0x81ddc18 */
     /*  1 */ {   4,   4,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s5_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_medicham_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_xatu_base_dlg0,
     } },
 };
@@ -14307,10 +14307,10 @@ static const struct GroundLivesData s_gs9_g0_s6_lives[] = { /* 0x81ddc48 */
     /*  1 */ {   4,   4,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s6_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_medicham_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  45, 0, CPOS_HALFTILE }, {
+    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_xatu_base_dlg0,
     } },
 };
@@ -15372,7 +15372,7 @@ static const struct GroundLivesData s_gs9_g79_s1_lives[] = { /* 0x81df370 */
 };
 
 static const struct GroundLivesData s_gs9_g80_s0_lives[] = { /* 0x81df388 */
-    /*  0 */ {  93,   0,   0,   0, {  63,  45, 0, CPOS_HALFTILE }, {
+    /*  0 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [1] = s_gs9_g80_s0_lives0_dlg1,
         [2] = s_gs9_g80_s0_lives0_dlg2,
         [3] = s_gs9_g80_s0_lives0_dlg3,

@@ -6342,10 +6342,10 @@ static const u8 sFixedRoom1_Tiles[] = {
     10,  10,  10,  10,  10,  10,  10,  10,  10,
     10,  60,  60,  60,  17,  60,  60,  60,  10,  // Boss spawns here in main area
     // Row 8-11: Floor with player spawn and stairs
-    60,  60,  60,  60,  60,  60,  60,  60,  60,
+    60,  60,  60,  60,  4,   60,  60,  60,  60,  // Stairs at top of main area (column 4)
     60,  60,  60,  60,  60,  60,  60,  60,  60,
     60,  60,  60,  60,  16,  60,  60,  60,  60,  // Player at center (column 4)
-    60,  60,  60,  60,  4,   60,  60,  60,  60,  // Stairs below player (column 4)
+    60,  60,  60,  60,  60,  60,  60,  60,  60,
     // Row 12-16: Bottom area with walls
     2,   2,  60,  60,  60,  60,  60,   2,   2,
     2,   2,   2,  10,  10,  10,   2,   2,   2,
@@ -6475,6 +6475,12 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
     }
 
     MGBA_Warnf("[CustomRoom] Done loading room");
+    MGBA_Warnf("[CustomRoom] Final positions - Player: (%d, %d), Stairs: (%d, %d)",
+               gDungeon->playerSpawn.x, gDungeon->playerSpawn.y,
+               gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
+
+    // Store stairs position for post-boss spawning
+    DungeonSeedOverrides_SetStairsPosition(gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
 }
 
 // Load a fixed room layout (walkable terrain only, optionally spawn entities)

@@ -142,6 +142,7 @@ SECTIONS {
         src/code_801F428.o(.text);
         src/code_801F808.o(.text);
         src/gulpin_shop_801FB50.o(.text);
+        src/move_deleter.o(.text);
         src/wigglytuff_shop1.o(.text);
         src/wigglytuff_shop2.o(.text);
         src/wigglytuff_shop3.o(.text);
@@ -519,6 +520,7 @@ SECTIONS {
         src/code_801F428.o(.rodata);
         src/code_801F808.o(.rodata);
         src/gulpin_shop_801FB50.o(.rodata);
+        src/move_deleter.o(.rodata);
         src/wigglytuff_shop1.o(.rodata);
         src/wigglytuff_shop2.o(.rodata);
         src/wigglytuff_shop3.o(.rodata);
@@ -942,6 +944,7 @@ SECTIONS {
 		src/dungeon_astar.o(.data);
 		src/dungeon_seed_overrides.o(.data);
 		src/textbox.o(.data);
+		src/move_deleter.o(.data);
 		*libc.a:impure.o(.data);
 		*libc.a:locale.o(.data);
 		*libc.a:mallocr.o(.data);

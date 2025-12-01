@@ -29,6 +29,7 @@
 #include "ground_script.h"
 #include "gulpin_shop_801FB50.h"
 #include "input.h"
+#include "move_deleter.h"
 #include "kangaskhan_storage1.h"
 #include "kangaskhan_storage2.h"
 #include "kecleon_bros1.h"
@@ -1167,6 +1168,14 @@ static const struct unkStruct_3001B64_unk418 gUnknown_8116208 =
     .unkC = sub_801FC40,
 };
 
+static const struct unkStruct_3001B64_unk418 sXatuMoveDeleterCallbacks =
+{
+    .unk0 = 1,
+    .unk4 = NULL,
+    .unk8 = DestroyXatuMoveDeleter,
+    .unkC = XatuMoveDeleterCallback,
+};
+
 static const struct unkStruct_3001B64_unk418 gUnknown_8116218 =
 {
     .unk0 = 1,
@@ -1971,6 +1980,15 @@ static bool8 sub_809B648(void)
                 }
             }
             break;
+        case SPECIAL_TEXT_MOVE_DELETER: {
+            ResetTextbox();
+            if (CreateXatuMoveDeleter()) {
+                sTextbox->unk418 = &sXatuMoveDeleterCallbacks;
+                return 1;
+            }
+            sTextbox->unk430 = -1;
+            return 0;
+        }
     }
 
     return 0;

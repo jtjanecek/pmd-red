@@ -695,6 +695,16 @@ static const struct ScriptCommand s_gs9_xatu_base_dlg0[] = { /* custom */
     DEBUGINFO_O(724),
     SELECT_ANIMATION(2),
     MSG_NPC(1, _(" Hmmmm...")),
+    MSG_NPC(1, _(" I can erase moves you no\nlonger need.")),
+    ASK3(FALSE, /*default*/ 0, /* speaker */ 1, _(" Shall I delete a move?")),
+    CHOICE(/* label */  1, _("Delete a move")),
+    CHOICE(/* label */  2, _("Not right now")),
+  LABEL(1), /* = 0x01 */
+    TEXTBOX_CLEAR,
+    SPECIAL_TEXT(SPECIAL_TEXT_MOVE_DELETER, 0, 0),
+    JUMP_SCRIPT(END_TALK),
+  LABEL(2), /* = 0x02 */
+    MSG_NPC(1, _(" Very well.")),
     JUMP_SCRIPT(END_TALK),
 };
 

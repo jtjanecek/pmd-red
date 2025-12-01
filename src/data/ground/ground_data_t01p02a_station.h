@@ -395,7 +395,7 @@ static const struct ScriptCommand s_gs2_g3_s0_lives0_dlg2[] = { /* 0x817e834 */
     { 0xe1, 0x00,  0x00cd,  0x00000000,  0x00000000, NULL },
     TEXTBOX_CLEAR,
     WAIT(20),
-    MSG_INSTANT(_("{CENTER_ALIGN}Beware--you must take the HM {COLOR GREEN_I}Dive{RESET},\n{CENTER_ALIGN}or a team member must learn {COLOR GREEN_I}Dive{RESET}\n{CENTER_ALIGN}as a move for the team to enter!")),
+    MSG_INSTANT(_("{CENTER_ALIGN}Beware--you must take the TM {COLOR GREEN_I}Dive{RESET},\n{CENTER_ALIGN}or a team member must learn {COLOR GREEN_I}Dive{RESET}\n{CENTER_ALIGN}as a move for the team to enter!")),
     TEXTBOX_CLEAR,
     BGM_SWITCH(8),
     { 0xaf, 0x01,  0x0010,  0x00000000,  0x00000000, NULL },

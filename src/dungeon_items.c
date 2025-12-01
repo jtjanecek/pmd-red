@@ -818,18 +818,16 @@ bool8 sub_8046F00(Item *item)
 
     if (GetItemCategory(item->id) == CATEGORY_TMS_HMS) {
         u16 moveID = GetItemMoveID(item->id);
-        if (!IsHMItem(item->id)) {
-            for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
-                Entity *entity = gDungeon->teamPokemon[i];
-                if (EntityIsValid(entity)) {
-                    bool8 canLearnMove = CanMonLearnMove(moveID, GetEntInfo(entity)->id);
-                    bool8 cannotMove = CheckVariousStatuses2(entity, FALSE);
-                    if (cannotMove) {
-                        canLearnMove = FALSE;
-                    }
-                    if (canLearnMove)
-                        return TRUE;
+        for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
+            Entity *entity = gDungeon->teamPokemon[i];
+            if (EntityIsValid(entity)) {
+                bool8 canLearnMove = CanMonLearnMove(moveID, GetEntInfo(entity)->id);
+                bool8 cannotMove = CheckVariousStatuses2(entity, FALSE);
+                if (cannotMove) {
+                    canLearnMove = FALSE;
                 }
+                if (canLearnMove)
+                    return TRUE;
             }
         }
         return FALSE;

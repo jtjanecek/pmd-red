@@ -828,35 +828,35 @@ ItemDescriptionPierceOrb:
 
 .global ItemDescriptionCut
 ItemDescriptionCut:
-.string "Teaches the move {color GREEN}Cut{reset}. It does not break,{NEW_LINE}but cannot be used in a dungeon.{NEW_LINE}The move damages all foes around the{NEW_LINE}user.\n\0"
+.string "Teaches the move {color GREEN}Cut{reset}. This single-use TM{NEW_LINE}works inside dungeons.{NEW_LINE}The move damages all foes around the{NEW_LINE}user.\n\0"
 
 .global ItemDescriptionFly
 ItemDescriptionFly:
-.string "Teaches the move {color GREEN}Fly{reset}. It does not break,{NEW_LINE}but cannot be used in a dungeon.{NEW_LINE}The move makes the user's status {color CYAN}Flying{reset},{NEW_LINE}making it attack on the next turn.\n\0"
+.string "Teaches the move {color GREEN}Fly{reset}. This single-use TM{NEW_LINE}works inside dungeons.{NEW_LINE}The move makes the user's status {color CYAN}Flying{reset},{NEW_LINE}making it attack on the next turn.\n\0"
 
 .global ItemDescriptionSurf
 ItemDescriptionSurf:
-.string "Teaches the move {color GREEN}Surf{reset}. It does not break,{NEW_LINE}but cannot be used in a dungeon.{NEW_LINE}The move damages the target.{NEW_LINE}Inflicts double damage on a {color CYAN}diving{reset} foe.\n\0"
+.string "Teaches the move {color GREEN}Surf{reset}. This single-use TM{NEW_LINE}works inside dungeons.{NEW_LINE}The move damages the target.{NEW_LINE}Inflicts double damage on a {color CYAN}diving{reset} foe.\n\0"
 
 .global ItemDescriptionStrength
 ItemDescriptionStrength:
-.string "Teaches the move {color GREEN}Strength{reset}. It does not{NEW_LINE}break, but cannot be used in a dungeon.{NEW_LINE}The move hurls the target at another{NEW_LINE}Pokémon to inflict damage.\n\0"
+.string "Teaches the move {color GREEN}Strength{reset}. This single-use{NEW_LINE}TM works inside dungeons.{NEW_LINE}The move hurls the target at another{NEW_LINE}Pokémon to inflict damage.\n\0"
 
 .global ItemDescriptionFlash
 ItemDescriptionFlash:
-.string "Teaches the move {color GREEN}Flash{reset}. It does not break,{NEW_LINE}but cannot be used in a dungeon.{NEW_LINE}The move lowers the target's {color YELLOW}Accuracy{reset}{NEW_LINE}by one level.\n\0"
+.string "Teaches the move {color GREEN}Flash{reset}. This single-use TM{NEW_LINE}works inside dungeons.{NEW_LINE}The move lowers the target's {color YELLOW}Accuracy{reset}{NEW_LINE}by one level.\n\0"
 
 .global ItemDescriptionRockSmash
 ItemDescriptionRockSmash:
-.string "Teaches the move {color GREEN}Rock Smash{reset}. It does not{NEW_LINE}break, but cannot be used in a dungeon.{NEW_LINE}The move digs through the wall the user{NEW_LINE}is facing.\n\0"
+.string "Teaches the move {color GREEN}Rock Smash{reset}. This{NEW_LINE}single-use TM works inside dungeons.{NEW_LINE}The move digs through the wall the user{NEW_LINE}is facing.\n\0"
 
 .global ItemDescriptionWaterfall
 ItemDescriptionWaterfall:
-.string "Teaches the move {color GREEN}Waterfall{reset}. It does not{NEW_LINE}break, but cannot be used in a dungeon.{NEW_LINE}The move damages the target.\n\0"
+.string "Teaches the move {color GREEN}Waterfall{reset}. This single-use{NEW_LINE}TM works inside dungeons.{NEW_LINE}The move damages the target.\n\0"
 
 .global ItemDescriptionDive
 ItemDescriptionDive:
-.string "Teaches the move {color GREEN}Dive{reset}. It does not break,{NEW_LINE}but cannot be used in a dungeon.{NEW_LINE}The move makes the user's status {color CYAN}Diving{reset},{NEW_LINE}making it attack strongly on the next turn.\n\0"
+.string "Teaches the move {color GREEN}Dive{reset}. This single-use TM{NEW_LINE}works inside dungeons.{NEW_LINE}The move makes the user's status {color CYAN}Diving{reset},{NEW_LINE}making it attack strongly on the next turn.\n\0"
 
 .global ItemDescriptionLinkBox
 ItemDescriptionLinkBox:

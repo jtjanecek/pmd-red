@@ -703,10 +703,6 @@ bool8 sub_8048950(Entity *param_1,Item *item)
         DisplayDungeonMessage(0,gItemStickyDoesntWorkText,1);
         return FALSE;
     }
-    else if (IsHMItem(item->id)) {
-        DisplayDungeonMessage(0,gPtrCantUseInDungeonMessage,1);
-        return FALSE;
-    }
     else
     {
         for(index = 0; index < MAX_TEAM_MEMBERS; index++)

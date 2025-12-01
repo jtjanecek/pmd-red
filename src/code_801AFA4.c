@@ -90,10 +90,8 @@ static void sub_801B080(void)
             break;
         case 2:
             sub_8094060(sUnknown_203B22C->moves, sUnknown_203B22C->pokeStruct->moves);
-            if (!IsHMItem(sUnknown_203B22C->id)) {
-                gTeamInventoryRef->teamItems[sUnknown_203B22C->teamItemIndex].quantity = sUnknown_203B22C->id - 125;
-                gTeamInventoryRef->teamItems[sUnknown_203B22C->teamItemIndex].id = ITEM_TM_USED_TM;
-            }
+            gTeamInventoryRef->teamItems[sUnknown_203B22C->teamItemIndex].quantity = sUnknown_203B22C->id - 125;
+            gTeamInventoryRef->teamItems[sUnknown_203B22C->teamItemIndex].id = ITEM_TM_USED_TM;
             PlaySound(312);
             CreateDialogueBoxAndPortrait(sFmtLearnedTheMove, 0, 0, 0x121);
             break;

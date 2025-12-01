@@ -15,6 +15,7 @@
 #include "random.h"
 #include "save.h"
 #include "constants/ground_map.h" // MAP_TEAM_BASE_INSIDE
+#include "constants/item.h" // ITEM_HM_SURF, ITEM_HM_CUT
 #include "story_debug.h"
 #include "adventure_save.h"
 #include "training_maze.h"
@@ -549,6 +550,11 @@ void InitializePlayerData(void)
     InitializeFriendAreas();
     InitializeRecruitedPokemon();
     InitializeMoneyItems();
+#ifdef DEV
+    // Stock key HMs in storage for quick testing in dev builds.
+    gTeamInventoryRef->teamStorage[ITEM_HM_SURF] = 1;
+    gTeamInventoryRef->teamStorage[ITEM_HM_CUT] = 1;
+#endif
     InitializeRescueTeamInfo();
     sub_80972F4();
     sub_8095118();

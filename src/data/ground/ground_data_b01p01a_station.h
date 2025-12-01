@@ -678,25 +678,24 @@ static const struct ScriptCommand s_gs9_g0_s5_lives1_dlg0[] = { /* 0x819cd04 */
     RET,
 };
 
-static const struct ScriptCommand s_gs9_medicham_base_dlg0[] = { /* custom */
+static const struct ScriptCommand s_gs9_gengar_base_dlg0[] = { /* custom */
     DEBUGINFO_O(710),
     SELECT_ANIMATION(2),
-    MSG_NPC(1, _(" Pshehehehehe!")),
-    MSG_NPC(1, _(" That Lombre... He amuses\nme so!\nPshehehehehe!")),
+    MSG_NPC(1, _(" Heh heh heh...")),
+    MSG_NPC(1, _(" Been pulling pranks all day.\nGot any spooky gossip?")),
     TEXTBOX_CLEAR,
-    MSG_NPC(1, _(" Oh, long time no see.\nYou are well?")),
-    MSG_NPC(1, _(" I heard about Lombre's tale.\nIt is too funny.")),
-    MSG_NPC(1, _(" He almost drowned at sea!")),
-    MSG_NPC(1, _(" But that Lombre--he lives\nin water! How very pathetic!\nPshehehehehe!")),
+    MSG_NPC(1, _(" Oh, it's you.\nStill chasing glory?")),
+    MSG_NPC(1, _(" If you want nightmares,\nI've got plenty to share.")),
+    MSG_NPC(1, _(" Or just watch me scare the\nsquare crowds. Heh heh!")),
     JUMP_SCRIPT(END_TALK),
 };
 
-static const struct ScriptCommand s_gs9_xatu_base_dlg0[] = { /* custom */
+static const struct ScriptCommand s_gs9_gulpin_base_dlg0[] = { /* custom */
     DEBUGINFO_O(724),
     SELECT_ANIMATION(2),
-    MSG_NPC(1, _(" Hmmmm...")),
-    MSG_NPC(1, _(" I can erase moves you no\nlonger need.")),
-    ASK3(FALSE, /*default*/ 0, /* speaker */ 1, _(" Shall I delete a move?")),
+    MSG_NPC(1, _(" Gwaaah... *burp*")),
+    MSG_NPC(1, _(" I'm Gulpin. I can swallow\nany move you don't need.")),
+    ASK3(FALSE, /*default*/ 0, /* speaker */ 1, _(" Want me to gulp one down?")),
     CHOICE(/* label */  1, _("Delete a move")),
     CHOICE(/* label */  2, _("Not right now")),
   LABEL(1), /* = 0x01 */
@@ -704,7 +703,7 @@ static const struct ScriptCommand s_gs9_xatu_base_dlg0[] = { /* custom */
     SPECIAL_TEXT(SPECIAL_TEXT_MOVE_DELETER, 0, 0),
     JUMP_SCRIPT(END_TALK),
   LABEL(2), /* = 0x02 */
-    MSG_NPC(1, _(" Very well.")),
+    MSG_NPC(1, _(" Suit yourself. I'll be here.")),
     JUMP_SCRIPT(END_TALK),
 };
 
@@ -13053,22 +13052,22 @@ static const struct ScriptCommand s_gs9_g80_s0_lives0_dlg2[] = { /* 0x81d829c */
     WAIT(1),
     ALERT_CUE(6),
     PORTRAIT_REP(0x0001, 0x00000001),
-    MSG_NPC(1, _(" Pshehehehehe!")),
-    MSG_NPC(1, _(" That Lombre... He amuses\nme so!\nPshehehehehe!")),
+    MSG_NPC(1, _(" Heh heh heh!")),
+    MSG_NPC(1, _(" Spooked that Lombre by the\npond... he almost sank!\nToo easy.")),
     TEXTBOX_CLEAR,
     AWAIT_CUE(5),
     WAIT(30),
     ALERT_CUE(6),
     AWAIT_CUE(5),
     PORTRAIT_REP(0x0001, 0x00000000),
-    MSG_NPC(1, _(" Oh, long time no see.\nYou are well?")),
+    MSG_NPC(1, _(" Oh, it's you. Still kicking?")),
     PORTRAIT_REP(0x0001, 0x00000001),
-    MSG_NPC(1, _(" You see, I have heard about\nLombre's tale.\nIt is too funny.")),
+    MSG_NPC(1, _(" I collect screams and secrets.\nGot any juicy ones?")),
     PORTRAIT_REP(0x0001, 0x00000000),
-    MSG_NPC(1, _(" I have heard that Lombre\nalmost drowned at sea!")),
+    MSG_NPC(1, _(" Stick around. Nightmares are\nbound to show up.")),
     ALERT_CUE(6),
     PORTRAIT_REP(0x0001, 0x00000001),
-    MSG_NPC(1, _(" But that Lombre--he lives\nin water! How very pathetic!\nPshehehehehe!")),
+    MSG_NPC(1, _(" Heh heh... just don't blame\nme when shadows giggle.")),
     TEXTBOX_CLEAR,
     AWAIT_CUE(5),
     JUMPIF_SCENE_GT(SCENARIO_SUB2, 33, 2, /* to label */ 1),
@@ -14232,11 +14231,11 @@ static const struct GroundLivesData s_gs9_g0_s1_lives[] = { /* 0x81ddb58 */
     /*  1 */ {   4,   6,   0,   0, {  64,  43, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s1_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_medicham_base_dlg0,
+    /*  2 */ {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gengar_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_xatu_base_dlg0,
+    /*  3 */ {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14247,11 +14246,11 @@ static const struct GroundLivesData s_gs9_g0_s2_lives[] = { /* 0x81ddb88 */
     /*  1 */ {   4,   2,   0,   0, {   5,  46, 0, 0 }, {
         [0] = s_gs9_g0_s2_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_medicham_base_dlg0,
+    /*  2 */ {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gengar_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_xatu_base_dlg0,
+    /*  3 */ {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14262,11 +14261,11 @@ static const struct GroundLivesData s_gs9_g0_s3_lives[] = { /* 0x81ddbb8 */
     /*  1 */ {   4,   4,   0,   0, {  34,  64, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s3_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_medicham_base_dlg0,
+    /*  2 */ {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gengar_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_xatu_base_dlg0,
+    /*  3 */ {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14277,11 +14276,11 @@ static const struct GroundLivesData s_gs9_g0_s4_lives[] = { /* 0x81ddbe8 */
     /*  1 */ {   4,   0,   0,   0, {  34,  27, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s4_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_medicham_base_dlg0,
+    /*  2 */ {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gengar_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_xatu_base_dlg0,
+    /*  3 */ {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14292,11 +14291,11 @@ static const struct GroundLivesData s_gs9_g0_s5_lives[] = { /* 0x81ddc18 */
     /*  1 */ {   4,   4,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s5_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_medicham_base_dlg0,
+    /*  2 */ {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gengar_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_xatu_base_dlg0,
+    /*  3 */ {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14307,11 +14306,11 @@ static const struct GroundLivesData s_gs9_g0_s6_lives[] = { /* 0x81ddc48 */
     /*  1 */ {   4,   4,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g0_s6_lives1_dlg0,
     } },
-    /*  2 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_medicham_base_dlg0,
+    /*  2 */ {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gengar_base_dlg0,
     } },
-    /*  3 */ {  97,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_xatu_base_dlg0,
+    /*  3 */ {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
+        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15372,7 +15371,7 @@ static const struct GroundLivesData s_gs9_g79_s1_lives[] = { /* 0x81df370 */
 };
 
 static const struct GroundLivesData s_gs9_g80_s0_lives[] = { /* 0x81df388 */
-    /*  0 */ {  93,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
+    /*  0 */ {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
         [1] = s_gs9_g80_s0_lives0_dlg1,
         [2] = s_gs9_g80_s0_lives0_dlg2,
         [3] = s_gs9_g80_s0_lives0_dlg3,
@@ -15386,7 +15385,7 @@ static const struct GroundLivesData s_gs9_g81_s0_lives[] = { /* 0x81df3a0 */
     /*  1 */ {  34,   4,   0,   0, {  36,  44, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g81_s0_lives1_dlg0,
     } },
-    /*  2 */ {  97,   0,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
+    /*  2 */ {  76,   0,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g81_s0_lives2_dlg0,
     } },
     /*  3 */ { 104,   6,   0,   0, {  52,  42, CPOS_HALFTILE, CPOS_HALFTILE }, {

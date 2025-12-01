@@ -61,6 +61,7 @@
 #include "constants/dungeon.h"
 #include "credits1.h"
 #include "type_selection.h"
+#include "gengar_hint.h"
 #include "pokemon.h"
 #include "input.h"
 #include "rogue_version.h"
@@ -1294,4 +1295,5 @@ static void EnsureTypeSelectionLink(void)
 {
     (void)gTypeSelectionLinkAnchor;
     (void)gTypeSelectionUiLinkAnchor;
+    (void)gGengarHintLinkAnchor;
 }

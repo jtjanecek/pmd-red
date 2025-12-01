@@ -58,6 +58,10 @@ bool8 CreateFelicityBank(s32 mode)
     sFelicityBankWork = MemoryAlloc(sizeof(FelicityBankWork), 8);
     sFelicityBankWork->menuAction = 0;
     sFelicityBankWork->mode = mode;
+#ifdef DEV
+    // DEV override: keep the bank stocked for quick testing
+    gTeamInventoryRef->teamSavings = 5000;
+#endif
     CopyYellowMonsterNametoBuffer(gSpeakerNameBuffer, MONSTER_PERSIAN);
     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[7], MONSTER_PERSIAN);
     monName = GetMonSpecies(MONSTER_PERSIAN);

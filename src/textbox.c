@@ -26,6 +26,7 @@
 #include "ground_lives.h"
 #include "ground_map.h"
 #include "ground_main.h"
+#include "adventure_info.h"
 #include "ground_script.h"
 #include "gulpin_shop_801FB50.h"
 #include "input.h"
@@ -57,6 +58,8 @@
 #include "structs/str_file_system.h"
 #include "structs/str_mon_portrait.h"
 #include "type_selection.h"
+#include "gengar_hint.h"
+#include "items.h"
 
 struct TextboxPortrait
 {
@@ -127,6 +130,55 @@ static bool8 sTypeSelectionAutoPressSaved = FALSE;
 static s32 sTypeSelectionPrevEndFrames = 0;
 static s32 sTypeSelectionPrevMidFrames = 0;
 static bool8 sTypeSelectionMenuActive = FALSE;
+static bool8 sGengarHintMenuActive = FALSE;
+
+typedef enum GengarHintStage
+{
+    GENGAR_HINT_STAGE_NONE = 0,
+    GENGAR_HINT_STAGE_MESSAGE_WAIT,
+    GENGAR_HINT_STAGE_PAYMENT_MENU,
+    GENGAR_HINT_STAGE_HINT_MENU,
+} GengarHintStage;
+
+typedef struct GengarHintConversationState
+{
+    GengarHintStage stage;
+    s16 dungeonId;
+    MonPortraitMsg portrait;
+    bool8 portraitInitialized;
+} GengarHintConversationState;
+
+static EWRAM_DATA GengarHintConversationState sGengarHintState = {0};
+
+static void StartGengarHintConversation(void);
+static bool8 UpdateGengarHintConversation(void);
+static void ShowGengarHintMessage(const u8 *text);
+static s32 GetCurrentDungeonForHint(void);
+static bool8 HasEnoughMoneyForGengarHint(void);
+static void InitGengarHintPortrait(void);
+static void CleanupGengarHintPortrait(void);
+static MonPortraitMsg *GetGengarHintPortrait(void);
+
+static const u8 sGengarHintIntroText[] = _("Heh heh heh...\nI know something about the dungeon ahead.\nGive me 1000 {POKE} for a hint.");
+static const u8 sGengarHintChoicePrompt[] = _("Heh heh. Which hint would you like?");
+static const u8 sGengarHintGreedyText[] = _("Heheheh, don't get greedy!");
+static const u8 sGengarHintNoMoneyText[] = _("Hah, loser...\nYou don't have enough money!");
+static const u8 sGengarHintNoDungeonText[] = _("No dungeon lined up for you yet.");
+static const u8 sGengarHintDeclineText[] = _("Heh... suit yourself.");
+static const u8 sGengarHintOneText[] = _("Here's hint 1: ...");
+static const u8 sGengarHintTwoText[] = _("Here's hint 2: ...");
+
+static const MenuItem sGengarHintPaymentMenu[] = {
+    {_("Pay 1000 {POKE}"), 1},
+    {_("No thanks"), 0},
+    {NULL, -1},
+};
+
+static const MenuItem sGengarHintChoiceMenu[] = {
+    {_("Hint 1"), 1},
+    {_("Hint 2"), 2},
+    {NULL, -1},
+};
 
 void sub_809B028(const MenuItem *, s32 a1_, s32 a2, s32 a3, s32 a4_, const char *text);
 bool8 sub_809B18C(s32 *sp);
@@ -1503,6 +1555,26 @@ static bool8 sub_809B648(void)
                 }
             }
             return 1;
+        case SPECIAL_TEXT_GENGAR_HINT:
+            if (sGengarHintMenuActive) {
+                if (!UpdateGengarHintConversation())
+                    return 1;
+
+                CleanupGengarHintPortrait();
+                sGengarHintMenuActive = FALSE;
+                sTextbox->unk430 = -1;
+                sTextbox->unk420 = 3;
+                return 0;
+            }
+
+            if (sTextbox->unk420 == 1) {
+                ResetTextbox();
+                StartGengarHintConversation();
+                sGengarHintMenuActive = TRUE;
+                sTextbox->unk420 = 4;
+                return 1;
+            }
+            return 1;
         case SPECIAL_TEXT_TYPE_SELECTION:
             if (sTypeSelectionMenuActive) {
                 if (!TypeSelectionMenu_Update())
@@ -2119,4 +2191,133 @@ static void sub_809C550(void)
             break;
     }
     sTextbox->unk430 = val;
+}
+
+static void StartGengarHintConversation(void)
+{
+    sGengarHintState.dungeonId = (s16)GetCurrentDungeonForHint();
+    sGengarHintState.stage = GENGAR_HINT_STAGE_NONE;
+    InitGengarHintPortrait();
+
+    if (sGengarHintState.dungeonId < 0) {
+        ShowGengarHintMessage(sGengarHintNoDungeonText);
+        return;
+    }
+
+    if (GengarHint_HasHintForDungeon(sGengarHintState.dungeonId)) {
+        ShowGengarHintMessage(sGengarHintGreedyText);
+        return;
+    }
+
+    if (!HasEnoughMoneyForGengarHint()) {
+        ShowGengarHintMessage(sGengarHintNoMoneyText);
+        return;
+    }
+
+    CreateMenuDialogueBoxAndPortrait(sGengarHintIntroText, 0, 0, sGengarHintPaymentMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
+    sGengarHintState.stage = GENGAR_HINT_STAGE_PAYMENT_MENU;
+}
+
+static bool8 UpdateGengarHintConversation(void)
+{
+    s32 selection;
+
+    if (sGengarHintState.stage == GENGAR_HINT_STAGE_NONE)
+        return TRUE;
+
+    if (sub_80144A4(&selection) != 0)
+        return FALSE;
+
+    switch (sGengarHintState.stage) {
+        case GENGAR_HINT_STAGE_MESSAGE_WAIT:
+            sGengarHintState.stage = GENGAR_HINT_STAGE_NONE;
+            return TRUE;
+        case GENGAR_HINT_STAGE_PAYMENT_MENU:
+            if (selection == 1) {
+                AddToTeamMoney(-GENGAR_HINT_COST);
+                CreateMenuDialogueBoxAndPortrait(sGengarHintChoicePrompt, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
+                sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
+                return FALSE;
+            }
+            ShowGengarHintMessage(sGengarHintDeclineText);
+            return FALSE;
+        case GENGAR_HINT_STAGE_HINT_MENU:
+            if (selection == 1 || selection == 2) {
+                const u8 *hintText = (selection == 1) ? sGengarHintOneText : sGengarHintTwoText;
+
+                if (sGengarHintState.dungeonId >= 0)
+                    GengarHint_MarkHintGiven(sGengarHintState.dungeonId);
+
+                ShowGengarHintMessage(hintText);
+                return FALSE;
+            }
+            ShowGengarHintMessage(sGengarHintDeclineText);
+            return FALSE;
+        default:
+            sGengarHintState.stage = GENGAR_HINT_STAGE_NONE;
+            return TRUE;
+    }
+}
+
+static void ShowGengarHintMessage(const u8 *text)
+{
+    CreateDialogueBoxAndPortrait(text, 0, GetGengarHintPortrait(), STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS | STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS_2);
+    sGengarHintState.stage = GENGAR_HINT_STAGE_MESSAGE_WAIT;
+}
+
+static s32 GetCurrentDungeonForHint(void)
+{
+    DungeonLocation *location = GetDungeonLocationInfo();
+
+    if (location == NULL)
+        return -1;
+
+    if (location->id >= NUM_DUNGEONS)
+        return -1;
+
+    return location->id;
+}
+
+static bool8 HasEnoughMoneyForGengarHint(void)
+{
+    TeamInventory *inventory = GetMoneyItemsInfo();
+
+    if (inventory == NULL)
+        return FALSE;
+
+    return (inventory->teamMoney >= GENGAR_HINT_COST);
+}
+
+static void InitGengarHintPortrait(void)
+{
+    CleanupGengarHintPortrait();
+
+    sGengarHintState.portrait.faceFile = GetDialogueSpriteDataPtr(MONSTER_GENGAR);
+    if (sGengarHintState.portrait.faceFile == NULL)
+        return;
+
+    sGengarHintState.portrait.faceData = (PortraitGfx *)sGengarHintState.portrait.faceFile->data;
+    sGengarHintState.portrait.spriteId = 0;
+    sGengarHintState.portrait.flip = FALSE;
+    sGengarHintState.portrait.unkE = 0;
+    sGengarHintState.portrait.pos.x = 2;
+    sGengarHintState.portrait.pos.y = 8;
+    sGengarHintState.portraitInitialized = TRUE;
+}
+
+static void CleanupGengarHintPortrait(void)
+{
+    if (sGengarHintState.portrait.faceFile != NULL) {
+        CloseFile(sGengarHintState.portrait.faceFile);
+    }
+    MemoryFill8(&sGengarHintState.portrait, 0, sizeof(sGengarHintState.portrait));
+    sGengarHintState.portraitInitialized = FALSE;
+}
+
+static MonPortraitMsg *GetGengarHintPortrait(void)
+{
+    if (sGengarHintState.portraitInitialized && sGengarHintState.portrait.faceData != NULL)
+        return &sGengarHintState.portrait;
+
+    return NULL;
 }

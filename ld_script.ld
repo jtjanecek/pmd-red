@@ -205,6 +205,7 @@ SECTIONS {
         src/pokemon_mail.o(.text);
         src/type_selection.o(.text);
         src/type_selection_ui.o(.text);
+        src/gengar_hint.o(.text);
         src/code_803C1B4.o(.text);
         src/personality_test1.o(.text);
         src/personality_test2.o(.text);
@@ -594,6 +595,7 @@ SECTIONS {
         src/pokemon_mail.o(.rodata);
         src/type_selection.o(.rodata);
         src/type_selection_ui.o(.rodata);
+        src/gengar_hint.o(.rodata);
         src/data/type_boss_table.o(.rodata);
         src/data/type_tileset_table.o(.rodata);
         src/data/type_hint_table.o(.rodata);

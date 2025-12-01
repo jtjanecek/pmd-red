@@ -11,6 +11,7 @@
 #include "code_80958E8.h"
 #include "constants/difficulty.h"
 #include "type_selection.h"
+#include "gengar_hint.h"
 
 enum
 {
@@ -51,7 +52,8 @@ struct UnkStruct_sub_8011DAC
     u32 unk440;
     u32 savedMailInfo;
     TypeSelectionSaveData typeSelection;
-    u8 unk448[0x533C];
+    GengarHintSaveData gengarHints;
+    u8 unk448[0x532C];
 };
 
 // size: 0x60

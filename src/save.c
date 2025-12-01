@@ -19,6 +19,7 @@
 #include "adventure_save.h"
 #include "training_maze.h"
 #include "rescue_scenario.h"
+#include "gengar_hint.h"
 
 // size: 0x800
 struct unk_struct
@@ -34,7 +35,8 @@ struct unk_struct
     u8 skipBasicRescues;
     u8 recruitAll;
     TypeSelectionSaveData typeSelection;
-    u32 padding[481];
+    GengarHintSaveData gengarHints;
+    u32 padding[477];
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
@@ -257,6 +259,7 @@ u32 ReadSaveFromPak(u32 *a)
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
             TypeSelection_ReadSaveData(&playerSave->typeSelection);
+            GengarHint_ReadSaveData(&playerSave->gengarHints);
         }
         else {
             gUnknown_203B184->unk054 = playerSave->unk41C;
@@ -267,6 +270,7 @@ u32 ReadSaveFromPak(u32 *a)
             SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
             SetRecruitAllSetting(playerSave->recruitAll);
             TypeSelection_ReadSaveData(&playerSave->typeSelection);
+            GengarHint_ReadSaveData(&playerSave->gengarHints);
         }
     }
     if (!saveStatus)
@@ -356,6 +360,7 @@ u32 sub_8011FA8(void)
             SetSkipBasicRescuesSetting(r5->skipBasicRescues);
             SetRecruitAllSetting(r5->recruitAll);
             TypeSelection_ReadSaveData(&r5->typeSelection);
+            GengarHint_ReadSaveData(&r5->gengarHints);
         }
     }
     MemoryFree(r5);
@@ -398,6 +403,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
+    GengarHint_WriteSaveData(&playerSave->gengarHints);
   }
   else {
     playerSave->unk41C = gUnknown_203B184->unk054;
@@ -407,6 +413,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
+    GengarHint_WriteSaveData(&playerSave->gengarHints);
   }
    playerSave->checksum = 0x5071412;
   gameName = GetGameInternalName();
@@ -467,6 +474,7 @@ u32 sub_80121E0(u32 r0)
     r4->skipBasicRescues = GetSkipBasicRescuesSetting();
     r4->recruitAll = GetRecruitAllSetting();
     TypeSelection_WriteSaveData(&r4->typeSelection);
+    GengarHint_WriteSaveData(&r4->gengarHints);
 
     gameName = GetGameInternalName();
     strncpy(r4->gameInternalName, gameName, ARRAY_COUNT(r4->gameInternalName));
@@ -549,6 +557,7 @@ void InitializePlayerData(void)
     InitializeGameOptions(TRUE);
     InitializeExclusivePokemon();
     TypeSelection_ResetForNewRun();
+    GengarHint_ResetAll();
 }
 
 

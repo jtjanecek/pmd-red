@@ -681,12 +681,8 @@ static const struct ScriptCommand s_gs9_g0_s5_lives1_dlg0[] = { /* 0x819cd04 */
 static const struct ScriptCommand s_gs9_gengar_base_dlg0[] = { /* custom */
     DEBUGINFO_O(710),
     SELECT_ANIMATION(2),
-    MSG_NPC(1, _(" Heh heh heh...")),
-    MSG_NPC(1, _(" Been pulling pranks all day.\nGot any spooky gossip?")),
     TEXTBOX_CLEAR,
-    MSG_NPC(1, _(" Oh, it's you.\nStill chasing glory?")),
-    MSG_NPC(1, _(" If you want nightmares,\nI've got plenty to share.")),
-    MSG_NPC(1, _(" Or just watch me scare the\nsquare crowds. Heh heh!")),
+    SPECIAL_TEXT(SPECIAL_TEXT_GENGAR_HINT, 0, 0),
     JUMP_SCRIPT(END_TALK),
 };
 

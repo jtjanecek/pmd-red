@@ -161,12 +161,13 @@ static MonPortraitMsg *GetGengarHintPortrait(void);
 
 static const u8 sGengarHintIntroText[] = _("Heh heh heh...\nI know something about the dungeon ahead.\nGive me 1000 {POKE} for a hint.");
 static const u8 sGengarHintChoicePrompt[] = _("Heh heh. Which hint would you like?");
-static const u8 sGengarHintGreedyText[] = _("Heheheh, don't get greedy!");
-static const u8 sGengarHintNoMoneyText[] = _("Hah, loser...\nYou don't have enough money!");
+static const u8 sGengarHintGreedyText[] = _("Trying again? Heh...\nSomeone's feeling a little desperate.");
+static const u8 sGengarHintNoMoneyText[] = _("Heh heh...\nNo {POKE}, no hint. \nThat's how it works, genius.");
 static const u8 sGengarHintNoDungeonText[] = _("No dungeon lined up for you yet.");
-static const u8 sGengarHintDeclineText[] = _("Heh... suit yourself.");
+static const u8 sGengarHintDeclineText[] = _("Heh heh... suit yourself.");
 static const u8 sGengarHintOneText[] = _("Here's hint 1: ...");
 static const u8 sGengarHintTwoText[] = _("Here's hint 2: ...");
+
 
 static const MenuItem sGengarHintPaymentMenu[] = {
     {_("Pay 1000 {POKE}"), 1},

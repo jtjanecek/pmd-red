@@ -280,7 +280,10 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     // If boss fight enabled, use boss tileset; otherwise normal generation
     if (result->bossFight.enabled) {
         // Use the boss room's tileset (set in PopulateBossFightConfig) for the entire floor
-        result->tileset = result->bossFight.roomTileset;
+        // UNLESS it's 0 (special value meaning "keep normal tileset" for custom arenas)
+        if (result->bossFight.roomTileset != 0) {
+            result->tileset = result->bossFight.roomTileset;
+        }
         result->spawnCount = 0;  // No normal spawns in boss rooms
     } else {
         PopulateSpawnTable(result, &rng, dungeonId, floorId);
@@ -1017,7 +1020,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         }
         else {
             // Other types -> Use custom boss arena (NOT fixed room reuse!)
-            result->bossFight.roomTileset = 64;        // Default to Skarmory tileset for now
+            // Use the normal dungeon tileset (already set in result->tileset at line 275)
+            result->bossFight.roomTileset = 0;         // Special value: keep normal tileset
             result->bossFight.useFixedRoomLayout = FALSE;  // Custom procedural arena
             result->bossFight.fixedRoomNumber = 0;     // Not used
             roomName = "CustomArena";

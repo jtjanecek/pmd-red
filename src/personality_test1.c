@@ -263,6 +263,10 @@ u32 HandleTestTrackerState(void)
         case PERSONALITY_TEST_END:
             if (!sPersonalityTestTracker->seedChosen) {
                 sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
+#ifdef DEV
+                // In DEV builds, always use seed -6903 for consistent testing
+                sPersonalityTestTracker->rngSeed = -6903;
+#endif
                 sPersonalityTestTracker->seedChosen = TRUE;
             }
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
@@ -327,6 +331,10 @@ static void HandleSeedSelection(void)
         case SEED_MENU_RANDOM:
         {
             s32 generatedSeed = GenerateRandomSeed();
+#ifdef DEV
+            // In DEV builds, always use seed -6903 for consistent testing
+            generatedSeed = -6903;
+#endif
             sPersonalityTestTracker->rngSeed = generatedSeed;
             sPersonalityTestTracker->unk4.customSeed = generatedSeed;
             sPersonalityTestTracker->seedChosen = TRUE;

@@ -19,6 +19,9 @@ typedef struct CustomFixedRoom {
 #define CUSTOM_TILE_PLAYER_SPAWN    16
 #define CUSTOM_TILE_SPECIAL         17
 #define CUSTOM_TILE_STAIRS_UP       18
+#define CUSTOM_TILE_STAIRS_19       19
+#define CUSTOM_TILE_STAIRS_20       20
+#define CUSTOM_TILE_STAIRS_21       21
 #define CUSTOM_TILE_STAIRS_PART_1   22
 #define CUSTOM_TILE_STAIRS_PART_2   23
 #define CUSTOM_TILE_STAIRS_PART_3   24

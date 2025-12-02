@@ -989,15 +989,48 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     GetTypeBossMinionMoves(selectedBoss, result->bossFight.minionMoves, result->bossFight.minionUseCustomMoves);
     result->bossFight.minionFormation = SelectMinionFormation(seed, dungeonId, floorId);
 
-    // Use Skarmory boss fight tileset for all boss arenas
-    result->bossFight.roomTileset = 64;  // Skarmory boss fight tileset
+    // Select boss room based on dungeon type (not boss type!)
+    {
+        u8 dungeonType = TYPE_NONE;
+        const char *roomName = "unknown";
+
+        // Get the current dungeon's type
+        if (TypeSelection_HasActiveType())
+            dungeonType = TypeSelection_GetActiveType();
+        else if (TypeSelection_HasCommittedType())
+            dungeonType = TypeSelection_GetCommittedType();
+
+        // Choose tileset and layout based on dungeon type
+        if (dungeonType == TYPE_STEEL) {
+            // Steel dungeon -> Use Skarmory's boss room (extracted pattern)
+            result->bossFight.roomTileset = 64;        // Mt. Steel boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 1;     // Skarmory arena (Room 1)
+            roomName = "Skarmory";
+        }
+        else if (dungeonType == TYPE_BUG) {
+            // Bug dungeon -> Use Sinister Woods boss room (extracted pattern)
+            result->bossFight.roomTileset = 65;        // Sinister Woods boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 2;     // Team Meanies arena (Room 2)
+            roomName = "SinisterWoods";
+        }
+        else {
+            // Other types -> Use custom boss arena (NOT fixed room reuse!)
+            result->bossFight.roomTileset = 64;        // Default to Skarmory tileset for now
+            result->bossFight.useFixedRoomLayout = FALSE;  // Custom procedural arena
+            result->bossFight.fixedRoomNumber = 0;     // Not used
+            roomName = "CustomArena";
+        }
+
+        MGBA_Warnf("[BossRoom] dungeonType=%d tileset=%d useFixed=%d layout=%d room=%s",
+                   dungeonType, result->bossFight.roomTileset,
+                   result->bossFight.useFixedRoomLayout,
+                   result->bossFight.fixedRoomNumber, roomName);
+    }
 
     // Set behavior for boss identification
     result->bossFight.monsterBehavior = 0;  // Will define this constant later
-
-    // Use Fixed Room 1 for boss arena layout
-    result->bossFight.useFixedRoomLayout = TRUE;
-    result->bossFight.fixedRoomNumber = 1;  // Fixed Room 1
 
     MaybeApplyBossWeather(&result->bossFight, rng);
 

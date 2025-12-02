@@ -40,10 +40,49 @@ static const CustomFixedRoom sFixedRoom1 = {
     .tiles = sFixedRoom1_Tiles
 };
 
+// Fixed Room 2 - 13 rows x 13 columns
+// Original source: Sinister Woods Team Meanies boss room pattern
+// Tile types: 2=wall, 4=stairs, 60=floor, 18-27=stairs components
+static const u8 sFixedRoom2_Tiles[] = {
+    // Row 0
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 1
+    2,   2,   2,   2,   2,  60,  60,  60,   2,   2,   2,   2,   2,
+    // Row 2
+    2,   2,  60,   2,   2,  60,  60,  60,   2,   2,  60,   2,   2,
+    // Row 3 - Stairs at center
+    2,  60,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   2,
+    // Row 4
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 5 - Stairs decoration part 1
+    2,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,   2,
+    // Row 6 - Stairs decoration part 2
+    2,  60,  60,  60,  60,  26,  25,  27,  60,  60,  60,   2,   2,
+    // Row 7
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 8 - Player spawn area
+    2,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   2,
+    // Row 9 - Stairs decoration bottom
+    2,   2,  60,   2,   2,  20,  18,  19,   2,   2,  60,   2,   2,
+    // Row 10
+    2,   2,   2,   2,   2,  60,  60,  60,   2,   2,   2,   2,   2,
+    // Row 11
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 12
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+};
+
+static const CustomFixedRoom sFixedRoom2 = {
+    .width = 13,
+    .height = 13,
+    .tiles = sFixedRoom2_Tiles
+};
+
 // Array of all custom rooms
 static const CustomFixedRoom *sCustomRooms[] = {
     NULL,           // Index 0 unused
-    &sFixedRoom1,   // Index 1
+    &sFixedRoom1,   // Index 1 - Skarmory
+    &sFixedRoom2,   // Index 2 - Sinister Woods (Team Meanies)
 };
 
 #define CUSTOM_ROOM_COUNT (sizeof(sCustomRooms) / sizeof(sCustomRooms[0]))
@@ -104,6 +143,9 @@ static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
             MGBA_Warnf("[CustomRoom] Stairs position marked: (%d, %d)", worldX, worldY);
             break;
 
+        case CUSTOM_TILE_STAIRS_19:
+        case CUSTOM_TILE_STAIRS_20:
+        case CUSTOM_TILE_STAIRS_21:
         case CUSTOM_TILE_STAIRS_PART_1:
         case CUSTOM_TILE_STAIRS_PART_2:
         case CUSTOM_TILE_STAIRS_PART_3:

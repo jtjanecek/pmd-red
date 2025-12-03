@@ -6416,12 +6416,12 @@ static const u8 sFixedRoom3_Tiles[] = {
 // Fixed Room 4 - 17 rows x 14 columns (Mt. Blaze Peak Moltres boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns and reposition stairs/loot
 static const u8 sFixedRoom4_Tiles[] = {
-    // Row 0 - Boss spawn at top with secondary walls
-    6,   6,   6,   6,   6,   6,  17,   4,   6,   6,   6,   6,   6,   2,
-    // Row 1 - Loot drops with water
-    10,  10,  10,  68,  68,  68,  60,  10,  10,  60,  10,  10,  10,   2,
-    // Row 2
-    60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 0 - Secondary walls across top (no stairs - avoiding island tile)
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+    // Row 1 - Water with ONLY two single walkable floor tiles (jets at columns 3 and 9)
+    10,  10,  10,  60,  10,  10,  10,  10,  10,  60,  10,  10,  10,   2,
+    // Row 2 - Boss spawn and loot with stairs
+    60,  60,  60,  68,  17,  68,   4,  60,  60,  60,  60,  60,  60,   2,
     // Row 3
     2,   60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,   2,
     // Row 4 - Stairs decoration

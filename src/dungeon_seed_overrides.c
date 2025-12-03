@@ -1005,7 +1005,14 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
 
         // Choose tileset and layout based on dungeon type
         if (dungeonType == TYPE_STEEL) {
-            // Steel dungeon -> Use Skarmory's boss room (extracted pattern)
+            // Steel dungeon -> Use Articuno's boss room (Frosty Grotto)
+            result->bossFight.roomTileset = 68;        // Frosty Grotto boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 5;     // Articuno arena (Room 5)
+            roomName = "Articuno";
+        }
+        else if (dungeonType == TYPE_FIGHTING) {
+            // Fighting dungeon -> Use Skarmory's boss room (Mt. Steel)
             result->bossFight.roomTileset = 64;        // Mt. Steel boss tileset
             result->bossFight.useFixedRoomLayout = TRUE;
             result->bossFight.fixedRoomNumber = 1;     // Skarmory arena (Room 1)

@@ -6452,6 +6452,35 @@ static const u8 sFixedRoom4_Tiles[] = {
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
 
+// Fixed Room 5 - 12 rows x 12 columns (Frosty Grotto Articuno boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns
+static const u8 sFixedRoom5_Tiles[] = {
+    // Row 0
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+    // Row 1
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 2
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 3 - Boss spawn area and loot
+    6,  60,  60,  60,  60,  17,  68,  60,  60,  60,  60,   6,
+    // Row 4 - Stairs
+    6,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   6,
+    // Row 5 - Stairs decoration part 1
+    6,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
+    // Row 6 - Stairs decoration part 2
+    6,  60,  60,  60,  26,  25,  27,  60,  60,  60,  60,   6,
+    // Row 7 - Player spawn area
+    6,  60,  60,  60,  60,  60,  60,  60,  16,  60,  60,   6,
+    // Row 8
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 9
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 10
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+    // Row 11
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+};
+
 static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
 {
     if (tile == NULL)
@@ -6559,6 +6588,12 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
             width = 14;  // 14 columns
             height = 17; // 17 rows
             MGBA_Warnf("[CustomRoom] Selected room 4: %dx%d (cols x rows)", width, height);
+            break;
+        case 5:
+            tiles = sFixedRoom5_Tiles;
+            width = 12;  // 12 columns
+            height = 12; // 12 rows
+            MGBA_Warnf("[CustomRoom] Selected room 5: %dx%d (cols x rows)", width, height);
             break;
         default:
             MGBA_Warnf("[CustomRoom] Invalid room ID %d", roomId);

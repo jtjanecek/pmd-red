@@ -78,11 +78,50 @@ static const CustomFixedRoom sFixedRoom2 = {
     .tiles = sFixedRoom2_Tiles
 };
 
+// Fixed Room 5 - 12 rows x 12 columns
+// Original source: Frosty Grotto Articuno boss room pattern
+// Tile types: 2=wall, 6=secondary wall, 4=stairs, 60=floor, 17=boss spawn, 16=player spawn, 68=trap/item, 22-27=stairs components
+static const u8 sFixedRoom5_Tiles[] = {
+    // Row 0
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+    // Row 1
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 2
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 3 - Boss spawn area
+    6,  60,  60,  60,  60,  17,  68,  60,  60,  60,  60,   6,
+    // Row 4 - Stairs
+    6,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   6,
+    // Row 5 - Stairs decoration part 1
+    6,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
+    // Row 6 - Stairs decoration part 2
+    6,  60,  60,  60,  26,  25,  27,  60,  60,  60,  60,   6,
+    // Row 7 - Player spawn area (moved closer to boss)
+    6,  60,  60,  60,  60,  60,  60,  60,  16,  60,  60,   6,
+    // Row 8
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 9
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 10
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+    // Row 11
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+};
+
+static const CustomFixedRoom sFixedRoom5 = {
+    .width = 12,
+    .height = 12,
+    .tiles = sFixedRoom5_Tiles
+};
+
 // Array of all custom rooms
 static const CustomFixedRoom *sCustomRooms[] = {
     NULL,           // Index 0 unused
     &sFixedRoom1,   // Index 1 - Skarmory
     &sFixedRoom2,   // Index 2 - Sinister Woods (Team Meanies)
+    NULL,           // Index 3 - Zapdos (uses game's built-in room)
+    NULL,           // Index 4 - Moltres (uses game's built-in room)
+    &sFixedRoom5,   // Index 5 - Articuno
 };
 
 #define CUSTOM_ROOM_COUNT (sizeof(sCustomRooms) / sizeof(sCustomRooms[0]))

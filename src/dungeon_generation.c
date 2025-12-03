@@ -6317,6 +6317,9 @@ static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s
 #define CUSTOM_TILE_PLAYER_SPAWN    16
 #define CUSTOM_TILE_SPECIAL         17
 #define CUSTOM_TILE_STAIRS_UP       18
+#define CUSTOM_TILE_STAIRS_19       19
+#define CUSTOM_TILE_STAIRS_20       20
+#define CUSTOM_TILE_STAIRS_21       21
 #define CUSTOM_TILE_STAIRS_PART_1   22
 #define CUSTOM_TILE_STAIRS_PART_2   23
 #define CUSTOM_TILE_STAIRS_PART_3   24
@@ -6361,22 +6364,22 @@ static const u8 sFixedRoom1_Tiles[] = {
 static const u8 sFixedRoom2_Tiles[] = {
     // Row 0
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-    // Row 1
-    2,   2,   2,   2,   2,  60,  60,  60,   2,   2,   2,   2,   2,
-    // Row 2
-    2,   2,  60,   2,   2,  60,  60,  60,   2,   2,  60,   2,   2,
-    // Row 3 - Stairs at center (moved up 1 tile from row 4)
-    2,  60,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   2,
+    // Row 1 - Stairs at topmost walkable tile
+    2,   2,   2,   2,   2,  60,   4,  60,   2,   2,   2,   2,   2,
+    // Row 2 - Loot drops right below stairs
+    2,   2,  60,   2,   2,  68,  68,  68,   2,   2,  60,   2,   2,
+    // Row 3
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
     // Row 4 - Boss spawn area
     2,  60,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   2,
     // Row 5 - Stairs decoration part 1
     2,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,   2,
     // Row 6 - Stairs decoration part 2
     2,  60,  60,  60,  60,  26,  25,  27,  60,  60,  60,   2,   2,
-    // Row 7
-    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
-    // Row 8 - Player spawn area
+    // Row 7 - Player spawn area (moved up 1 tile)
     2,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   2,
+    // Row 8
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
     // Row 9 - Stairs decoration bottom
     2,   2,  60,   2,   2,  20,  18,  19,   2,   2,  60,   2,   2,
     // Row 10
@@ -6415,13 +6418,16 @@ static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
             MGBA_Warnf("[CustomRoom] Set player spawn to (%d,%d)", worldX, worldY);
             break;
         case CUSTOM_TILE_STAIRS_DOWN:
-        case CUSTOM_TILE_STAIRS_UP:
             SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
             tile->room = 0;
             gDungeon->stairsSpawn.x = worldX;
             gDungeon->stairsSpawn.y = worldY;
             MGBA_Warnf("[CustomRoom] Set stairs spawn to (%d,%d)", worldX, worldY);
             break;
+        case CUSTOM_TILE_STAIRS_UP:
+        case CUSTOM_TILE_STAIRS_19:
+        case CUSTOM_TILE_STAIRS_20:
+        case CUSTOM_TILE_STAIRS_21:
         case CUSTOM_TILE_STAIRS_PART_1:
         case CUSTOM_TILE_STAIRS_PART_2:
         case CUSTOM_TILE_STAIRS_PART_3:

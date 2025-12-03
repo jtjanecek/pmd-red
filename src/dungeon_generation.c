@@ -6356,6 +6356,37 @@ static const u8 sFixedRoom1_Tiles[] = {
     2,   2,   2,   6,   6,   6,   2,   2,   2
 };
 
+// Fixed Room 2 - 13 rows x 13 columns (Sinister Woods Team Meanies boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns
+static const u8 sFixedRoom2_Tiles[] = {
+    // Row 0
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 1
+    2,   2,   2,   2,   2,  60,  60,  60,   2,   2,   2,   2,   2,
+    // Row 2
+    2,   2,  60,   2,   2,  60,  60,  60,   2,   2,  60,   2,   2,
+    // Row 3 - Stairs at center (moved up 1 tile from row 4)
+    2,  60,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   2,
+    // Row 4 - Boss spawn area
+    2,  60,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   2,
+    // Row 5 - Stairs decoration part 1
+    2,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,   2,
+    // Row 6 - Stairs decoration part 2
+    2,  60,  60,  60,  60,  26,  25,  27,  60,  60,  60,   2,   2,
+    // Row 7
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 8 - Player spawn area
+    2,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   2,
+    // Row 9 - Stairs decoration bottom
+    2,   2,  60,   2,   2,  20,  18,  19,   2,   2,  60,   2,   2,
+    // Row 10
+    2,   2,   2,   2,   2,  60,  60,  60,   2,   2,   2,   2,   2,
+    // Row 11
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 12
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2
+};
+
 static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
 {
     if (tile == NULL)
@@ -6442,6 +6473,12 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
             width = 9;   // 9 columns
             height = 17; // 17 rows
             MGBA_Warnf("[CustomRoom] Selected room 1: %dx%d (cols x rows)", width, height);
+            break;
+        case 2:
+            tiles = sFixedRoom2_Tiles;
+            width = 13;  // 13 columns
+            height = 13; // 13 rows
+            MGBA_Warnf("[CustomRoom] Selected room 2: %dx%d (cols x rows)", width, height);
             break;
         default:
             MGBA_Warnf("[CustomRoom] Invalid room ID %d", roomId);

@@ -554,32 +554,12 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
         MGBA_Warnf("[Dungeon] Post-init: About to call sub_803E748/sub_803E7C8");
 
-        // CRITICAL FIX: Skip fade-in ANIMATION for boss floors with fixed rooms
-        // The fade-in loop calls DungeonRunFrameActions which tries to render entities,
-        // but boss entities in fixed rooms aren't fully initialized yet, causing crashes
-        // However, we still need to call sub_803E874 to initialize the screen/rendering
-        {
-            const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
-            bool8 skipFadeIn = (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout);
-
-            if (skipFadeIn) {
-                MGBA_Warnf("[Dungeon] Skipping fade-in animation for fixed room boss floor");
-                // Initialize screen/rendering but skip the animation loop
-                gUnknown_203B40D = 0;
-                gDungeonBrightness = 0x1F;
-
-                // CRITICAL: Call sub_803E874 to initialize screen rendering/palette
-                // Without this, the screen stays black until something else triggers rendering
-                MGBA_Warnf("[Dungeon] Calling sub_803E874 to initialize screen rendering");
-                sub_803E874(FALSE, 0x1F);
-                MGBA_Warnf("[Dungeon] Screen rendering initialized, ready for display");
-            }
-            else if (gDungeon->unk7 == 0) {
-                sub_803E748();
-            }
-            else {
-                sub_803E7C8();
-            }
+        // Normal fade-in animation for all floors
+        if (gDungeon->unk7 == 0) {
+            sub_803E748();
+        }
+        else {
+            sub_803E7C8();
         }
         MGBA_Warnf("[Dungeon] Post-init: About to call sub_8040094");
         sub_8040094(0);

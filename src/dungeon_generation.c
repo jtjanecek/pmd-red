@@ -6335,14 +6335,16 @@ static const u8 sFixedRoom1_Tiles[] = {
     2,   2,   2,   2,   2,   2,   2,   2,   2,
     // Row 3: Upper area (now just traps, boss moved down)
     2,   2,   2,  68,  60,  68,   2,   2,   2,
-    // Row 4-5: Middle walls
+    // Row 4: Middle walls (loot moved up 1 tile)
+    68,   6,   6,   6,   6,   6,   6,   6,  68,
+    // Row 5: Middle walls
     2,   6,   6,   6,   6,   6,   6,   6,   2,
-   68,   6,   6,   6,   6,   6,   6,   6,  68,
-    // Row 6-7: Water edges
-    10,  10,  10,  10,  10,  10,  10,  10,  10,
-    10,  60,  60,  60,  17,  60,  60,  60,  10,  // Boss spawns here in main area
-    // Row 8-11: Floor with player spawn and stairs
-    60,  60,  60,  60,  4,   60,  60,  60,  60,  // Stairs at top of main area (column 4)
+    // Row 6: Water edges (stairs moved up 1 tile)
+    10,  10,  10,  10,  4,   10,  10,  10,  10,
+    // Row 7: Boss spawn in main area
+    10,  60,  60,  60,  17,  60,  60,  60,  10,
+    // Row 8: Floor
+    60,  60,  60,  60,  60,  60,  60,  60,  60,
     60,  60,  60,  60,  60,  60,  60,  60,  60,
     60,  60,  60,  60,  16,  60,  60,  60,  60,  // Player at center (column 4)
     60,  60,  60,  60,  60,  60,  60,  60,  60,

@@ -18,18 +18,18 @@ static const u8 sFixedRoom1_Tiles[] = {
     6,   2,   2,   2,   2,   2,   2,   2,   6,   0,   0,   0,   0,   0,   0,   0,   0,
     // Row 2
     2,   2,   2,   2,   2,   2,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,
-    // Row 3 - Boss spawns here at center (tile 17)
+    // Row 3 - Loot drops on sides (moved up 1 tile)
     2,   2,   2,  68,  17,  68,   2,   2,   2,   0,   0,   0,   0,   0,   0,   0,   0,
-    // Row 4 - Item spawns on sides
+    // Row 4 - Boss spawns here at center (tile 17)
     68,   6,   6,   6,   6,   6,   6,   6,  68,   0,   0,   0,   0,   0,   0,   0,   0,
     // Row 5
     2,   6,   6,   6,   6,   6,   6,   6,   2,   0,   0,   0,   0,   0,   0,   0,   0,
-    // Row 6
-    10,  10,  10,  10,  10,  10,  10,  10,  10,   0,   0,   0,   0,   0,   0,   0,   0,
-    // Row 7
-    10,  60,  60,  60,  60,  60,  60,  60,  10,   0,   0,   0,   0,   0,   0,   0,   0,
-    // Row 8 - Stairs at center, player to the left
+    // Row 6 - Stairs at center, player to the left (moved up 1 tile)
     60,  60,  60,  16,   4,  60,  60,  60,  60,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 7
+    10,  10,  10,  10,  10,  10,  10,  10,  10,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 8 - Water row
+    10,  60,  60,  60,  60,  60,  60,  60,  10,   0,   0,   0,   0,   0,   0,   0,   0,
     // Row 9 - Empty floor (partner will spawn here)
     60,  60,  60,  60,  60,  60,  60,  60,  60,   0,   0,   0,   0,   0,   0,   0,   0
 };

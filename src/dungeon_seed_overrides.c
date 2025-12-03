@@ -1025,6 +1025,13 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             result->bossFight.fixedRoomNumber = 3;     // Zapdos arena (Room 3)
             roomName = "MtThunder";
         }
+        else if (dungeonType == TYPE_FIRE) {
+            // Fire dungeon -> Use Mt. Blaze boss room (extracted pattern)
+            result->bossFight.roomTileset = 67;        // Mt. Blaze boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 4;     // Moltres arena (Room 4)
+            roomName = "MtBlaze";
+        }
         else {
             // Other types -> Use custom boss arena (NOT fixed room reuse!)
             // Use the normal dungeon tileset (already set in result->tileset at line 275)

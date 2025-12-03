@@ -6393,16 +6393,16 @@ static const u8 sFixedRoom2_Tiles[] = {
 // Fixed Room 3 - 9 rows x 10 columns (Mt. Thunder Peak Zapdos boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns and reposition stairs/loot
 static const u8 sFixedRoom3_Tiles[] = {
-    // Row 0 - Stairs at topmost walkable tile
-    6,  60,  60,  60,   4,  60,  60,  60,   2,   0,
-    // Row 1 - Boss spawn (1 tile below top)
-    2,  60,  60,  60,  17,  60,  60,  60,   2,   0,
-    // Row 2 - Loot drops
-    60, 60,  60,  68,  68,  68,  60,  60,  60,   0,
-    // Row 3 - Stairs decoration
+    // Row 0 - Boss spawn at top, stairs to the side
+    6,  60,  60,  17,   4,  60,  60,  60,   2,   0,
+    // Row 1 - Loot drops
+    2,  60,  60,  68,  68,  68,  60,  60,   2,   0,
+    // Row 2 - Stairs decoration
     60, 60,  60,  23,  22,  24,  25,  60,  60,   0,
-    // Row 4 - Player spawn area (moved up 1 tile)
+    // Row 3 - Player spawn area (moved up 1 tile)
     60, 60,  60,  60,  16,  60,  60,  60,  60,   0,
+    // Row 4 - Stairs decoration
+    60, 60,  60,  60,  60,  26,  27,  60,  60,   0,
     // Row 5 - Stairs decoration
     60, 60,  60,  60,  60,  26,  27,  60,  60,   0,
     // Row 6
@@ -6411,6 +6411,45 @@ static const u8 sFixedRoom3_Tiles[] = {
     60, 60,  60,  60,  60,  60,  60,  60,  60,   0,
     // Row 8
     60, 60,  60,  60,  60,  60,  60,  60,  60,   0
+};
+
+// Fixed Room 4 - 17 rows x 14 columns (Mt. Blaze Peak Moltres boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns and reposition stairs/loot
+static const u8 sFixedRoom4_Tiles[] = {
+    // Row 0 - Boss spawn at top with secondary walls
+    6,   6,   6,   6,   6,   6,  17,   4,   6,   6,   6,   6,   6,   2,
+    // Row 1 - Loot drops with water
+    10,  10,  10,  68,  68,  68,  60,  10,  10,  60,  10,  10,  10,   2,
+    // Row 2
+    60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 3
+    2,   60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,   2,
+    // Row 4 - Stairs decoration
+    60,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,  60,   2,
+    // Row 5 - Stairs decoration
+    60,  60,  60,  60,  60,  27,  25,  26,  60,  60,  60,  60,  60,   2,
+    // Row 6 - Player spawn area
+    60,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,  60,   2,
+    // Row 7
+    60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 8
+    60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 9
+    2,   60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,   2,
+    // Row 10
+    60,  60,   2,  60,  60,  60,  60,  60,  60,  60,   2,  60,  60,   2,
+    // Row 11
+    60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 12 - Water at bottom
+    60,  10,  10,  10,  10,  10,  60,  10,  10,  10,  10,  10,  60,  10,
+    // Row 13 - Bottom secondary walls
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+    // Row 14 - Unused
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 15 - Unused
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    // Row 16 - Unused
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 };
 
 static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
@@ -6514,6 +6553,12 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
             width = 10;  // 10 columns
             height = 9;  // 9 rows
             MGBA_Warnf("[CustomRoom] Selected room 3: %dx%d (cols x rows)", width, height);
+            break;
+        case 4:
+            tiles = sFixedRoom4_Tiles;
+            width = 14;  // 14 columns
+            height = 17; // 17 rows
+            MGBA_Warnf("[CustomRoom] Selected room 4: %dx%d (cols x rows)", width, height);
             break;
         default:
             MGBA_Warnf("[CustomRoom] Invalid room ID %d", roomId);

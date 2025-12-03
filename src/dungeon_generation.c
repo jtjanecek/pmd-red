@@ -6366,12 +6366,12 @@ static const u8 sFixedRoom2_Tiles[] = {
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
     // Row 1 - Stairs at topmost walkable tile
     2,   2,   2,   2,   2,  60,   4,  60,   2,   2,   2,   2,   2,
-    // Row 2 - Loot drops right below stairs
-    2,   2,  60,   2,   2,  68,  68,  68,   2,   2,  60,   2,   2,
-    // Row 3
+    // Row 2 - Boss spawn (1 tile below top)
+    2,   2,  60,   2,   2,  60,  17,  60,   2,   2,  60,   2,   2,
+    // Row 3 - Loot drops
+    2,  60,  60,  60,  60,  68,  68,  68,  60,  60,  60,  60,   2,
+    // Row 4
     2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
-    // Row 4 - Boss spawn area
-    2,  60,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   2,
     // Row 5 - Stairs decoration part 1
     2,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,   2,
     // Row 6 - Stairs decoration part 2
@@ -6388,6 +6388,29 @@ static const u8 sFixedRoom2_Tiles[] = {
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
     // Row 12
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2
+};
+
+// Fixed Room 3 - 9 rows x 10 columns (Mt. Thunder Peak Zapdos boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns and reposition stairs/loot
+static const u8 sFixedRoom3_Tiles[] = {
+    // Row 0 - Stairs at topmost walkable tile
+    6,  60,  60,  60,   4,  60,  60,  60,   2,   0,
+    // Row 1 - Boss spawn (1 tile below top)
+    2,  60,  60,  60,  17,  60,  60,  60,   2,   0,
+    // Row 2 - Loot drops
+    60, 60,  60,  68,  68,  68,  60,  60,  60,   0,
+    // Row 3 - Stairs decoration
+    60, 60,  60,  23,  22,  24,  25,  60,  60,   0,
+    // Row 4 - Player spawn area (moved up 1 tile)
+    60, 60,  60,  60,  16,  60,  60,  60,  60,   0,
+    // Row 5 - Stairs decoration
+    60, 60,  60,  60,  60,  26,  27,  60,  60,   0,
+    // Row 6
+    60, 60,  60,  60,  60,  60,  60,  60,  60,   0,
+    // Row 7
+    60, 60,  60,  60,  60,  60,  60,  60,  60,   0,
+    // Row 8
+    60, 60,  60,  60,  60,  60,  60,  60,  60,   0
 };
 
 static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
@@ -6485,6 +6508,12 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
             width = 13;  // 13 columns
             height = 13; // 13 rows
             MGBA_Warnf("[CustomRoom] Selected room 2: %dx%d (cols x rows)", width, height);
+            break;
+        case 3:
+            tiles = sFixedRoom3_Tiles;
+            width = 10;  // 10 columns
+            height = 9;  // 9 rows
+            MGBA_Warnf("[CustomRoom] Selected room 3: %dx%d (cols x rows)", width, height);
             break;
         default:
             MGBA_Warnf("[CustomRoom] Invalid room ID %d", roomId);

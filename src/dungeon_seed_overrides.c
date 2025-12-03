@@ -1018,6 +1018,13 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             result->bossFight.fixedRoomNumber = 2;     // Team Meanies arena (Room 2)
             roomName = "SinisterWoods";
         }
+        else if (dungeonType == TYPE_ELECTRIC) {
+            // Electric dungeon -> Use Mt. Thunder boss room (extracted pattern)
+            result->bossFight.roomTileset = 66;        // Mt. Thunder boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 3;     // Zapdos arena (Room 3)
+            roomName = "MtThunder";
+        }
         else {
             // Other types -> Use custom boss arena (NOT fixed room reuse!)
             // Use the normal dungeon tileset (already set in result->tileset at line 275)

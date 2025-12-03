@@ -6420,16 +6420,16 @@ static const u8 sFixedRoom4_Tiles[] = {
     6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
     // Row 1 - Water with ONLY two single walkable floor tiles (jets at columns 3 and 9)
     10,  10,  10,  60,  10,  10,  10,  10,  10,  60,  10,  10,  10,   2,
-    // Row 2 - Boss spawn and loot with stairs
-    60,  60,  60,  68,  17,  68,   4,  60,  60,  60,  60,  60,  60,   2,
+    // Row 2 - Boss spawn moved 2 tiles right, loot and stairs
+    60,  60,  60,  68,   4,  68,  17,  60,  60,  60,  60,  60,  60,   2,
     // Row 3
     2,   60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,   2,
     // Row 4 - Stairs decoration
     60,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,  60,   2,
-    // Row 5 - Stairs decoration
-    60,  60,  60,  60,  60,  27,  25,  26,  60,  60,  60,  60,  60,   2,
-    // Row 6 - Player spawn area
-    60,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,  60,   2,
+    // Row 5 - Player spawn area (moved up 1 tile)
+    60,  60,  60,  60,  60,  27,  16,  26,  60,  60,  60,  60,  60,   2,
+    // Row 6 - Stairs decoration
+    60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
     // Row 7
     60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
     // Row 8

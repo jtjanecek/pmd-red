@@ -6344,10 +6344,10 @@ static const u8 sFixedRoom1_Tiles[] = {
     2,   6,   6,   6,   6,   6,   6,   6,   2,
     // Row 6: Water edges (stairs moved up 1 tile)
     10,  10,  10,  10,  4,   10,  10,  10,  10,
-    // Row 7: Boss spawn in main area
-    10,  60,  60,  60,  17,  60,  60,  60,  10,
-    // Row 8: Floor
-    60,  60,  60,  60,  60,  60,  60,  60,  60,
+    // Row 7: Minion spawn area (for BACK formation)
+    10,  60,  60,  60,  60,  60,  60,  60,  10,
+    // Row 8: Boss spawn in main area (moved down 1 row)
+    60,  60,  60,  60,  17,  60,  60,  60,  60,
     60,  60,  60,  60,  60,  60,  60,  60,  60,
     60,  60,  60,  60,  16,  60,  60,  60,  60,  // Player at center (column 4)
     60,  60,  60,  60,  60,  60,  60,  60,  60,
@@ -6393,13 +6393,13 @@ static const u8 sFixedRoom2_Tiles[] = {
 // Fixed Room 3 - 9 rows x 10 columns (Mt. Thunder Peak Zapdos boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns and reposition stairs/loot
 static const u8 sFixedRoom3_Tiles[] = {
-    // Row 0 - Boss spawn at top, stairs to the side
-    6,  60,  60,  17,   4,  60,  60,  60,   2,   0,
+    // Row 0 - Boss spawn at top, stairs to the side (boss moved 1 tile right)
+    6,  60,  60,  60,  17,   4,  60,  60,   2,   0,
     // Row 1 - Loot drops
-    2,  60,  60,  68,  68,  68,  60,  60,   2,   0,
+    2,  60,  60,  60,  68,  68,  68,  60,   2,   0,
     // Row 2 - Stairs decoration
-    60, 60,  60,  23,  22,  24,  25,  60,  60,   0,
-    // Row 3 - Player spawn area (moved up 1 tile)
+    60, 60,  60,  60,  23,  22,  24,  25,  60,   0,
+    // Row 3 - Player spawn area (moved left 1 tile)
     60, 60,  60,  60,  16,  60,  60,  60,  60,   0,
     // Row 4 - Stairs decoration
     60, 60,  60,  60,  60,  26,  27,  60,  60,   0,
@@ -6455,22 +6455,22 @@ static const u8 sFixedRoom4_Tiles[] = {
 // Fixed Room 5 - 12 rows x 12 columns (Frosty Grotto Articuno boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns
 static const u8 sFixedRoom5_Tiles[] = {
-    // Row 0
-    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
-    // Row 1
-    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 0 - Stairs at very top
+    6,   6,   6,   6,   6,   4,   6,   6,   6,   6,   6,   2,
+    // Row 1 - Boss spawn area and loot (moved up 2 rows, right 1 column)
+    6,   6,  60,  60,  60,  60,  17,  68,  60,  60,   6,   6,
     // Row 2
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 3 - Boss spawn area and loot
-    6,  60,  60,  60,  60,  17,  68,  60,  60,  60,  60,   6,
-    // Row 4 - Stairs
-    6,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   6,
-    // Row 5 - Stairs decoration part 1
-    6,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
-    // Row 6 - Stairs decoration part 2
-    6,  60,  60,  60,  26,  25,  27,  60,  60,  60,  60,   6,
-    // Row 7 - Player spawn area
-    6,  60,  60,  60,  60,  60,  60,  60,  16,  60,  60,   6,
+    // Row 3
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 4
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 5 - Player spawn area (moved up 2 tiles)
+    6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,   6,
+    // Row 6
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 7
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 8
     6,   6,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
     // Row 9
@@ -7008,7 +7008,7 @@ void SpawnBossFightEntities(BossFightConfig *config)
     spawnIndex = 1;
 
     minionSlots = ARRAY_COUNT(minionPositions);
-    MGBA_Warnf("[BossGen] Getting minion positions, count=%d", config->minionCount);
+    MGBA_Warnf("[BossGen] Getting minion positions, count=%d centerX=%d bossY=%d", config->minionCount, centerX, bossY);
     GetBossMinionPositions(config, centerX, bossY, minionPositions, minionSlots);
 
     MGBA_Warnf("[BossGen] Processing minions...");

@@ -553,6 +553,10 @@ void sub_80961B4(void)
 
 bool8 sub_80961D8(void)
 {
+    // Disabled Pelipper mail deliveries - never deliver mail to the mailbox
+    return FALSE;
+
+#if 0
     s32 num;
     s32 index;
     u32 floor;
@@ -642,6 +646,7 @@ _08096392:
     ShiftMailboxSlotsDown();
     SortMailboxSlots();
     return flag;
+#endif
 }
 
 bool8 sub_80963B4(void)

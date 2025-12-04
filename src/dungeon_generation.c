@@ -6517,60 +6517,60 @@ static const u8 sFixedRoom7_Tiles[] = {
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
 };
 
-// Fixed Room 8 - 13 rows x 13 columns (Sky Tower Rayquaza boss room)
+// Fixed Room 8 - 13 rows x 16 columns (Sky Tower Rayquaza boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns
-// Layout: Stairs at top, Boss 3 tiles above player
-// Special tile 36 (unknown terrain type, treat as floor)
+// Layout: Stairs at center, Boss 3 tiles above player
+// Special tile 36 above stairs (unknown terrain type, treat as floor)
 static const u8 sFixedRoom8_Tiles[] = {
     // Row 0
-    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-    // Row 1 - Stairs at top
-    6,   6,   6,   6,   6,   4,   6,   6,   6,   6,   6,   6,   6,
-    // Row 2 - Stairs decoration
-    6,   6,   6,  60,  23,  22,  24,  60,   6,   6,   6,   6,   6,
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   7,   0,   0,   0,
+    // Row 1
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   0,   0,   0,
+    // Row 2
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   0,   0,   0,
     // Row 3
-    6,   6,  60,  60,  26,  25,  27,  60,  60,   6,   6,   6,   6,
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   0,   0,   0,
     // Row 4 - Boss spawn (3 tiles above player at row 7)
-    6,   6,  60,  60,  60,  17,  60,  60,  60,  60,  60,   6,   6,
+    6,   6,   6,   6,   6,  60,  60,  17,   6,   6,   6,   6,   6,   0,   0,   0,
     // Row 5
-    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    6,   6,   6,  60,  60,  60,  60,  60,  60,  60,   6,   6,   6,   0,   0,   0,
     // Row 6
-    6,  60,  60,  60,  60,  60,  36,  60,  60,  60,  60,  60,   6,
-    // Row 7 - Player spawn
-    6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   6,
-    // Row 8
-    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 9
-    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 10
-    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,   0,   0,   0,
+    // Row 7 - Player spawn and special tile 36
+    6,  60,  60,  60,  60,  60,  36,  60,  60,  60,  60,  16,   6,   0,   0,   0,
+    // Row 8 - Stairs at center
+    6,  60,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   6,   0,   0,   0,
+    // Row 9 - Stairs decoration part 1
+    6,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,   0,   0,   0,
+    // Row 10 - Stairs decoration part 2
+    6,  60,  60,  60,  60,  27,  25,  26,  60,  60,  60,  60,   6,   0,   0,   0,
     // Row 11
-    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   0,   0,   0,
     // Row 12
-    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,   0,   0,   0,
 };
 
 // Fixed Room 15 - 13 rows x 13 columns (Mt. Faraway Ho-Oh boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns
-// Layout: Stairs at top, Boss 3 tiles above player
-// Special tile 42 (unknown terrain type, treat as floor)
+// Layout: Boss and player moved up 3 rows from original
+// Special tile 42 at original position (row 3)
 static const u8 sFixedRoom15_Tiles[] = {
     // Row 0
-    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-    // Row 1 - Stairs at top
-    6,   6,  60,  60,  60,  60,   4,  60,  60,  60,  60,   6,   6,
-    // Row 2 - Stairs decoration
-    6,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
-    // Row 3
-    6,  60,  60,  60,  60,  26,  25,  27,  60,  60,  60,  60,   6,
-    // Row 4 - Boss spawn (3 tiles above player at row 7)
-    6,  60,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   6,
-    // Row 5
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   7,
+    // Row 1 - Boss spawn (moved up 3 rows, 3 tiles above player at row 4)
+    6,   6,  60,  60,  60,  60,  17,  60,  60,  60,  60,   6,   6,
+    // Row 2
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 6
+    // Row 3 - Special tile 42 at original position
     6,  60,  60,  60,  60,  60,  42,  60,  60,  60,  60,  60,   6,
-    // Row 7 - Player spawn
+    // Row 4 - Player spawn (moved up 3 rows) and stairs
     6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   6,
+    // Row 5 - Stairs decoration part 1
+    6,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
+    // Row 6 - Stairs decoration part 2
+    6,  60,  60,  60,  60,  27,  25,  26,  60,  60,  60,  60,   6,
+    // Row 7 - Stairs at bottom
+    6,  60,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   6,
     // Row 8
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 9
@@ -6618,27 +6618,28 @@ static const u8 sFixedRoom21_Tiles[] = {
 
 // Fixed Room 22 - 13 rows x 12 columns (Stormy Sea Kyogre boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns
-// Layout: Stairs at top, Boss 3 tiles above player
-// Special tile 49 (unknown terrain type, treat as floor)
+// Layout: Boss and player moved up 3 rows, Boss moved right 1 tile
+// Special tile 49 at original position (row 5, col 6)
+// Note: Same terrain layout as Room 15 (Ho-Oh)
 static const u8 sFixedRoom22_Tiles[] = {
     // Row 0
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-    // Row 1 - Stairs at top
-    2,   2,  60,  60,  60,   4,  60,  60,  60,  60,   2,   2,
-    // Row 2 - Stairs decoration
-    2,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   2,
+    // Row 1 - Boss spawn (moved up 3 rows, right 1 tile, 3 tiles above player at row 4)
+    2,   2,  60,  60,  60,  60,  17,  60,  60,  60,   2,   2,
+    // Row 2
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
     // Row 3
-    2,  60,  60,  60,  26,  25,  27,  60,  60,  60,  60,   2,
-    // Row 4 - Boss spawn (3 tiles above player at row 7)
-    2,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   2,
-    // Row 5
     2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
-    // Row 6
-    2,  60,  60,  60,  60,  60,  49,  60,  60,  60,  60,  60,
-    // Row 7 - Player spawn
+    // Row 4 - Player spawn (moved up 3 rows)
     2,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,
-    // Row 8
-    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
+    // Row 5 - Special tile 49 at original position
+    2,  60,  60,  60,  60,  60,  49,  60,  60,  60,  60,  60,
+    // Row 6 - Stairs moved right 1 tile (from col 6 to col 7)
+    2,  60,  60,  60,  60,  60,  60,   4,  60,  60,  60,  60,
+    // Row 7 - Stairs decoration part 1
+    2,  60,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,
+    // Row 8 - Stairs decoration part 2
+    2,  60,  60,  60,  60,  60,  27,  25,  26,  60,  60,  60,
     // Row 9
     2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
     // Row 10
@@ -6782,7 +6783,7 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
             break;
         case 8:
             tiles = sFixedRoom8_Tiles;
-            width = 13;  // 13 columns
+            width = 16;  // 16 columns
             height = 13; // 13 rows
             MGBA_Warnf("[CustomRoom] Selected room 8: %dx%d (cols x rows)", width, height);
             break;

@@ -1039,6 +1039,13 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             result->bossFight.fixedRoomNumber = 4;     // Moltres arena (Room 4)
             roomName = "MtBlaze";
         }
+        else if (dungeonType == TYPE_ICE) {
+            // Ice dungeon -> Use Articuno's boss room with Mt. Freeze visuals
+            result->bossFight.roomTileset = 69;        // Mt. Freeze boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 5;     // Articuno arena (Room 5)
+            roomName = "MtFreeze";
+        }
         else {
             // Other types -> Use custom boss arena (NOT fixed room reuse!)
             // Use the normal dungeon tileset (already set in result->tileset at line 275)

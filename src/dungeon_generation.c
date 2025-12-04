@@ -6455,18 +6455,18 @@ static const u8 sFixedRoom4_Tiles[] = {
 // Fixed Room 5 - 12 rows x 12 columns (Frosty Grotto Articuno boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns
 static const u8 sFixedRoom5_Tiles[] = {
-    // Row 0 - Stairs at very top
-    6,   6,   6,   6,   6,   4,   6,   6,   6,   6,   6,   2,
-    // Row 1 - Boss spawn area and loot (moved up 2 rows, right 1 column)
-    6,   6,  60,  60,  60,  60,  17,  68,  60,  60,   6,   6,
+    // Row 0
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+    // Row 1 - Stairs moved down 1 tile, boss moved left 1 tile
+    6,   6,  60,  60,  60,  17,   4,  68,  60,  60,   6,   6,
     // Row 2
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 3
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 4
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 5 - Player spawn area (moved up 2 tiles)
-    6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,   6,
+    // Row 5 - Player spawn area (moved left 1 tile)
+    6,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   6,
     // Row 6
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 7

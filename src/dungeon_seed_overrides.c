@@ -1046,6 +1046,41 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             result->bossFight.fixedRoomNumber = 5;     // Articuno arena (Room 5)
             roomName = "MtFreeze";
         }
+        else if (dungeonType == TYPE_GROUND) {
+            // Ground dungeon -> Use Groudon's boss room (Magma Cavern)
+            result->bossFight.roomTileset = 70;        // Magma Cavern boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 7;     // Groudon arena (Room 7)
+            roomName = "MagmaCavern";
+        }
+        else if (dungeonType == TYPE_GHOST) {
+            // Ghost dungeon -> Use Rayquaza's boss room (Sky Tower)
+            result->bossFight.roomTileset = 71;        // Sky Tower boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 8;     // Rayquaza arena (Room 8)
+            roomName = "SkyTower";
+        }
+        else if (dungeonType == TYPE_FLYING) {
+            // Flying dungeon -> Use Ho-Oh's boss room (Mt. Faraway)
+            result->bossFight.roomTileset = 72;        // Mt. Faraway boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 15;    // Ho-Oh arena (Room 15)
+            roomName = "MtFaraway";
+        }
+        else if (dungeonType == TYPE_PSYCHIC) {
+            // Psychic dungeon -> Use Lugia's boss room (Silver Trench)
+            result->bossFight.roomTileset = 73;        // Silver Trench boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 21;    // Lugia arena (Room 21)
+            roomName = "SilverTrench";
+        }
+        else if (dungeonType == TYPE_WATER) {
+            // Water dungeon -> Use Kyogre's boss room (Stormy Sea)
+            result->bossFight.roomTileset = 74;        // Stormy Sea boss tileset
+            result->bossFight.useFixedRoomLayout = TRUE;
+            result->bossFight.fixedRoomNumber = 22;    // Kyogre arena (Room 22)
+            roomName = "StormySea";
+        }
         else {
             // Other types -> Use custom boss arena (NOT fixed room reuse!)
             // Use the normal dungeon tileset (already set in result->tileset at line 275)

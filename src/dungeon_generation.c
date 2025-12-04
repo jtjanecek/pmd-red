@@ -6326,7 +6326,14 @@ static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s
 #define CUSTOM_TILE_STAIRS_PART_4   25
 #define CUSTOM_TILE_STAIRS_PART_5   26
 #define CUSTOM_TILE_STAIRS_PART_6   27
+#define CUSTOM_TILE_LAVA_31         31
+#define CUSTOM_TILE_LAVA_35         35
+#define CUSTOM_TILE_SPECIAL_36      36
+#define CUSTOM_TILE_SPECIAL_42      42
+#define CUSTOM_TILE_SPECIAL_48      48
+#define CUSTOM_TILE_SPECIAL_49      49
 #define CUSTOM_TILE_FLOOR           60
+#define CUSTOM_TILE_LAVA_66         66
 #define CUSTOM_TILE_TRAP_ITEM       68
 
 // Fixed Room 1 - 17 rows x 9 columns (Skarmory boss room)
@@ -6481,6 +6488,167 @@ static const u8 sFixedRoom5_Tiles[] = {
     6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
 };
 
+// Fixed Room 7 - 11 rows x 11 columns (Magma Cavern Groudon boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns
+// Layout: Stairs at top (row 1), Boss 3 tiles above player (row 5), Player near bottom (row 8)
+// Lava tiles (31, 35, 66) match original visual positions
+static const u8 sFixedRoom7_Tiles[] = {
+    // Row 0
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 1 - Stairs at very top (originally had tile 35 at col 5)
+    2,   2,  60,  60,  60,   4,  60,  60,  60,   2,   2,
+    // Row 2 - Stairs decoration part 1 (originally had tile 66 at col 6)
+    2,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,
+    // Row 3 - Stairs decoration part 2 (originally had tile 31 at col 5, tile 66 at col 8)
+    2,  60,  60,  60,  26,  25,  27,  60,  66,  60,   2,
+    // Row 4 - Originally had tile 66 at col 3
+    2,  60,  60,  66,  60,  31,  60,  60,  60,  60,   2,
+    // Row 5 - Boss spawn area (3 tiles above player at row 8)
+    2,  60,  60,  60,  60,  17,  60,  60,  60,  60,   2,
+    // Row 6
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 7 - Originally had tile 66 at col 6
+    2,  60,  60,  60,  60,  35,  66,  60,  60,  60,   2,
+    // Row 8 - Player spawn area (originally had tile 66 at col 2 and col 7)
+    2,  60,  66,  60,  60,  16,  60,  66,  60,  60,   2,
+    // Row 9 - Originally had tile 66 at col 1 and col 9
+    2,  66,  60,  60,  60,  60,  60,  60,  60,  66,   2,
+    // Row 10
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+};
+
+// Fixed Room 8 - 13 rows x 13 columns (Sky Tower Rayquaza boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns
+// Layout: Stairs at top, Boss 3 tiles above player
+// Special tile 36 (unknown terrain type, treat as floor)
+static const u8 sFixedRoom8_Tiles[] = {
+    // Row 0
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+    // Row 1 - Stairs at top
+    6,   6,   6,   6,   6,   4,   6,   6,   6,   6,   6,   6,   6,
+    // Row 2 - Stairs decoration
+    6,   6,   6,  60,  23,  22,  24,  60,   6,   6,   6,   6,   6,
+    // Row 3
+    6,   6,  60,  60,  26,  25,  27,  60,  60,   6,   6,   6,   6,
+    // Row 4 - Boss spawn (3 tiles above player at row 7)
+    6,   6,  60,  60,  60,  17,  60,  60,  60,  60,  60,   6,   6,
+    // Row 5
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 6
+    6,  60,  60,  60,  60,  60,  36,  60,  60,  60,  60,  60,   6,
+    // Row 7 - Player spawn
+    6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   6,
+    // Row 8
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 9
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 10
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 11
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 12
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+};
+
+// Fixed Room 15 - 13 rows x 13 columns (Mt. Faraway Ho-Oh boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns
+// Layout: Stairs at top, Boss 3 tiles above player
+// Special tile 42 (unknown terrain type, treat as floor)
+static const u8 sFixedRoom15_Tiles[] = {
+    // Row 0
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+    // Row 1 - Stairs at top
+    6,   6,  60,  60,  60,  60,   4,  60,  60,  60,  60,   6,   6,
+    // Row 2 - Stairs decoration
+    6,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
+    // Row 3
+    6,  60,  60,  60,  60,  26,  25,  27,  60,  60,  60,  60,   6,
+    // Row 4 - Boss spawn (3 tiles above player at row 7)
+    6,  60,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   6,
+    // Row 5
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 6
+    6,  60,  60,  60,  60,  60,  42,  60,  60,  60,  60,  60,   6,
+    // Row 7 - Player spawn
+    6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   6,
+    // Row 8
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 9
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 10
+    6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
+    // Row 11
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+    // Row 12
+    6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
+};
+
+// Fixed Room 21 - 13 rows x 13 columns (Silver Trench Lugia boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns
+// Layout: Stairs at top, Boss 3 tiles above player
+// Special tile 48 (unknown terrain type, treat as floor)
+static const u8 sFixedRoom21_Tiles[] = {
+    // Row 0
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 1 - Stairs at top
+    2,   2,   2,   2,   2,  60,   4,  60,   2,   2,   2,   2,   2,
+    // Row 2 - Stairs decoration
+    2,   2,   2,   2,  60,  23,  22,  24,  60,   2,   2,   2,   2,
+    // Row 3
+    2,   2,  60,  60,  60,  26,  25,  27,  60,  60,  60,   2,   2,
+    // Row 4 - Boss spawn (3 tiles above player at row 7)
+    2,  60,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   2,
+    // Row 5
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 6
+    2,  60,  60,  60,  60,  60,  48,  60,  60,  60,  60,  60,   2,
+    // Row 7 - Player spawn
+    2,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   2,
+    // Row 8
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 9
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 10
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 11
+    2,   2,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,   2,
+    // Row 12
+    2,   2,   2,   2,  60,  60,  60,  60,  60,   2,   2,   2,   2,
+};
+
+// Fixed Room 22 - 13 rows x 12 columns (Stormy Sea Kyogre boss room)
+// Original extracted pattern from ROM, modified to add player/boss spawns
+// Layout: Stairs at top, Boss 3 tiles above player
+// Special tile 49 (unknown terrain type, treat as floor)
+static const u8 sFixedRoom22_Tiles[] = {
+    // Row 0
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 1 - Stairs at top
+    2,   2,  60,  60,  60,   4,  60,  60,  60,  60,   2,   2,
+    // Row 2 - Stairs decoration
+    2,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   2,
+    // Row 3
+    2,  60,  60,  60,  26,  25,  27,  60,  60,  60,  60,   2,
+    // Row 4 - Boss spawn (3 tiles above player at row 7)
+    2,  60,  60,  60,  60,  17,  60,  60,  60,  60,  60,   2,
+    // Row 5
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
+    // Row 6
+    2,  60,  60,  60,  60,  60,  49,  60,  60,  60,  60,  60,
+    // Row 7 - Player spawn
+    2,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,
+    // Row 8
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
+    // Row 9
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,
+    // Row 10
+    2,   2,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 11
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 12
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+};
+
 static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
 {
     if (tile == NULL)
@@ -6494,7 +6662,18 @@ static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
             tile->room = 0;
             break;
         case CUSTOM_TILE_WATER:
+        case CUSTOM_TILE_LAVA_31:
+        case CUSTOM_TILE_LAVA_35:
+        case CUSTOM_TILE_LAVA_66:
             SetTerrainType(tile, TERRAIN_TYPE_SECONDARY);
+            tile->room = 0;
+            break;
+        case CUSTOM_TILE_SPECIAL_36:
+        case CUSTOM_TILE_SPECIAL_42:
+        case CUSTOM_TILE_SPECIAL_48:
+        case CUSTOM_TILE_SPECIAL_49:
+            // Special decoration tiles - treat as normal floor
+            SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
             tile->room = 0;
             break;
         case CUSTOM_TILE_FLOOR:
@@ -6594,6 +6773,36 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
             width = 12;  // 12 columns
             height = 12; // 12 rows
             MGBA_Warnf("[CustomRoom] Selected room 5: %dx%d (cols x rows)", width, height);
+            break;
+        case 7:
+            tiles = sFixedRoom7_Tiles;
+            width = 11;  // 11 columns
+            height = 11; // 11 rows
+            MGBA_Warnf("[CustomRoom] Selected room 7: %dx%d (cols x rows)", width, height);
+            break;
+        case 8:
+            tiles = sFixedRoom8_Tiles;
+            width = 13;  // 13 columns
+            height = 13; // 13 rows
+            MGBA_Warnf("[CustomRoom] Selected room 8: %dx%d (cols x rows)", width, height);
+            break;
+        case 15:
+            tiles = sFixedRoom15_Tiles;
+            width = 13;  // 13 columns
+            height = 13; // 13 rows
+            MGBA_Warnf("[CustomRoom] Selected room 15: %dx%d (cols x rows)", width, height);
+            break;
+        case 21:
+            tiles = sFixedRoom21_Tiles;
+            width = 13;  // 13 columns
+            height = 13; // 13 rows
+            MGBA_Warnf("[CustomRoom] Selected room 21: %dx%d (cols x rows)", width, height);
+            break;
+        case 22:
+            tiles = sFixedRoom22_Tiles;
+            width = 12;  // 12 columns
+            height = 13; // 13 rows
+            MGBA_Warnf("[CustomRoom] Selected room 22: %dx%d (cols x rows)", width, height);
             break;
         default:
             MGBA_Warnf("[CustomRoom] Invalid room ID %d", roomId);

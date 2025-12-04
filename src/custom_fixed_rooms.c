@@ -114,6 +114,42 @@ static const CustomFixedRoom sFixedRoom5 = {
     .tiles = sFixedRoom5_Tiles
 };
 
+// Fixed Room 7 - 11 rows x 11 columns
+// Original source: Magma Cavern Groudon boss room pattern
+// Tile types: 2=wall, 4=stairs, 60=floor, 16=player spawn, 17=boss spawn, 22-27=stairs components, 31/35/66=lava tiles
+// Layout: Stairs at top (row 1), Boss 3 tiles above player (row 5), Player near bottom (row 8)
+// Lava tiles (31, 35, 66) match original visual positions
+static const u8 sFixedRoom7_Tiles[] = {
+    // Row 0
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+    // Row 1 - Stairs at very top (originally had tile 35 at col 5)
+    2,   2,  60,  60,  60,   4,  60,  60,  60,   2,   2,
+    // Row 2 - Stairs decoration part 1 (originally had tile 66 at col 6)
+    2,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,
+    // Row 3 - Stairs decoration part 2 (originally had tile 31 at col 5, tile 66 at col 8)
+    2,  60,  60,  60,  26,  25,  27,  60,  66,  60,   2,
+    // Row 4 - Originally had tile 66 at col 3
+    2,  60,  60,  66,  60,  31,  60,  60,  60,  60,   2,
+    // Row 5 - Boss spawn area (3 tiles above player at row 8)
+    2,  60,  60,  60,  60,  17,  60,  60,  60,  60,   2,
+    // Row 6
+    2,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
+    // Row 7 - Originally had tile 66 at col 6
+    2,  60,  60,  60,  60,  35,  66,  60,  60,  60,   2,
+    // Row 8 - Player spawn area (originally had tile 66 at col 2 and col 7)
+    2,  60,  66,  60,  60,  16,  60,  66,  60,  60,   2,
+    // Row 9 - Originally had tile 66 at col 1 and col 9
+    2,  66,  60,  60,  60,  60,  60,  60,  60,  66,   2,
+    // Row 10
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
+};
+
+static const CustomFixedRoom sFixedRoom7 = {
+    .width = 11,
+    .height = 11,
+    .tiles = sFixedRoom7_Tiles
+};
+
 // Array of all custom rooms
 static const CustomFixedRoom *sCustomRooms[] = {
     NULL,           // Index 0 unused
@@ -122,6 +158,8 @@ static const CustomFixedRoom *sCustomRooms[] = {
     NULL,           // Index 3 - Zapdos (uses game's built-in room)
     NULL,           // Index 4 - Moltres (uses game's built-in room)
     &sFixedRoom5,   // Index 5 - Articuno
+    NULL,           // Index 6 - Mt. Freeze (uses game's built-in room)
+    &sFixedRoom7,   // Index 7 - Groudon (Magma Cavern)
 };
 
 #define CUSTOM_ROOM_COUNT (sizeof(sCustomRooms) / sizeof(sCustomRooms[0]))
@@ -193,6 +231,14 @@ static void PlaceCustomTile(Tile *tile, u8 tileType, s32 worldX, s32 worldY)
         case CUSTOM_TILE_STAIRS_PART_6:
             // Stair decoration tiles - treat as normal floor
             SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
+            tile->room = 0;
+            break;
+
+        case CUSTOM_TILE_LAVA_31:
+        case CUSTOM_TILE_LAVA_35:
+        case CUSTOM_TILE_LAVA_66:
+            // Lava tiles - use secondary terrain (lava/water depending on dungeon)
+            SetTerrainType(tile, TERRAIN_TYPE_SECONDARY);
             tile->room = 0;
             break;
 

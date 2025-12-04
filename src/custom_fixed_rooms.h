@@ -28,7 +28,10 @@ typedef struct CustomFixedRoom {
 #define CUSTOM_TILE_STAIRS_PART_4   25
 #define CUSTOM_TILE_STAIRS_PART_5   26
 #define CUSTOM_TILE_STAIRS_PART_6   27
+#define CUSTOM_TILE_LAVA_31         31
+#define CUSTOM_TILE_LAVA_35         35
 #define CUSTOM_TILE_FLOOR           60
+#define CUSTOM_TILE_LAVA_66         66
 #define CUSTOM_TILE_TRAP_ITEM       68
 
 // Load a custom fixed room layout

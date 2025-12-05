@@ -14360,23 +14360,11 @@ static const struct GroundLivesData s_gs9_g5_s0_lives[] = { /* 0x81ddd08 */
     /*  1 */ {   4,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g5_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g5_s1_lives[] = { /* 0x81ddd38 */
     /*  0 */ {   0,   0,   0,   0, {  34,  28, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g5_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14387,23 +14375,11 @@ static const struct GroundLivesData s_gs9_g6_s1_lives[] = { /* 0x81ddd50 */
     /*  1 */ {   4,   6,   0,   0, {  37,  44, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g6_s1_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g6_s2_lives[] = { /* 0x81ddd80 */
     /*  0 */ {   0,   4,   0,   0, {  34,  44, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g6_s2_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14414,23 +14390,11 @@ static const struct GroundLivesData s_gs9_g7_s0_lives[] = { /* 0x81ddd98 */
     /*  1 */ {   4,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g7_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g7_s1_lives[] = { /* 0x81dddc8 */
     /*  0 */ {   0,   0,   0,   0, {  34,  28, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g7_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14441,23 +14405,11 @@ static const struct GroundLivesData s_gs9_g8_s0_lives[] = { /* 0x81ddde0 */
     /*  1 */ {   4,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g8_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g9_s0_lives[] = { /* 0x81dde10 */
     /*  0 */ { 124,   0,   0,   0, {  27,  37, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g9_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14465,23 +14417,11 @@ static const struct GroundLivesData s_gs9_g10_s0_lives[] = { /* 0x81dde28 */
     /*  0 */ { 134,   0,   0,   0, {  46,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g10_s0_lives0_dlg2,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g11_s0_lives[] = { /* 0x81dde40 */
     /*  0 */ { 115,   0,   0,   0, {  49,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g11_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14489,23 +14429,11 @@ static const struct GroundLivesData s_gs9_g12_s0_lives[] = { /* 0x81dde58 */
     /*  0 */ { 120,   0,   0,   0, {  52,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g12_s0_lives0_dlg2,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g13_s0_lives[] = { /* 0x81dde70 */
     /*  0 */ {  70,   0,   0,   0, {  55,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g13_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14513,35 +14441,17 @@ static const struct GroundLivesData s_gs9_g14_s0_lives[] = { /* 0x81dde88 */
     /*  0 */ { 128,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g14_s0_lives0_dlg2,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g15_s0_lives[] = { /* 0x81ddea0 */
     /*  0 */ { 123,   0,   0,   0, {  61,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g15_s0_lives0_dlg2,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g16_s0_lives[] = { /* 0x81ddeb8 */
     /*  0 */ {  82,   0,   0,   0, {  64,  39, 0, CPOS_HALFTILE }, {
         [2] = s_gs9_g16_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14552,35 +14462,17 @@ static const struct GroundLivesData s_gs9_g17_s0_lives[] = { /* 0x81dded0 */
     /*  1 */ {  34,   4,   0,   0, {  37,  46, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g17_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g17_s2_lives[] = { /* 0x81ddf00 */
     /*  0 */ {  34,   0,   0,   0, {  34,  35, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g17_s2_lives0_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g17_s3_lives[] = { /* 0x81ddf18 */
     /*  0 */ {  34,   0,   0,   0, {  34,  35, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g17_s3_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14594,24 +14486,12 @@ static const struct GroundLivesData s_gs9_g18_s0_lives[] = { /* 0x81ddf30 */
     /*  2 */ {  55,   4,   0,   0, {  54,  35, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g18_s0_lives2_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g19_s0_lives[] = { /* 0x81ddf78 */
     /*  0 */ {  34,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g19_s0_lives0_dlg0,
         [2] = s_gs9_g19_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14623,12 +14503,6 @@ static const struct GroundLivesData s_gs9_g19_s1_lives[] = { /* 0x81ddf90 */
         [0] = s_gs9_g19_s1_lives1_dlg0,
         [2] = s_gs9_g19_s1_lives1_dlg2,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g20_s0_lives[] = { /* 0x81ddfc0 */
@@ -14638,35 +14512,17 @@ static const struct GroundLivesData s_gs9_g20_s0_lives[] = { /* 0x81ddfc0 */
     /*  1 */ {  34,   0,   0,   0, {  34,  38, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g20_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g20_s1_lives[] = { /* 0x81ddff0 */
     /*  0 */ {  34,   0,   0,   0, {  34,  34, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g20_s1_lives0_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g20_s2_lives[] = { /* 0x81de008 */
     /*  0 */ {  34,   0,   0,   0, {  34,  34, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g20_s2_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14677,12 +14533,6 @@ static const struct GroundLivesData s_gs9_g21_s0_lives[] = { /* 0x81de020 */
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g21_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g22_s1_lives[] = { /* 0x81de050 */
@@ -14691,12 +14541,6 @@ static const struct GroundLivesData s_gs9_g22_s1_lives[] = { /* 0x81de050 */
     } },
     /*  1 */ {   7,   2,   0,   0, {   8,  40, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g22_s1_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14707,12 +14551,6 @@ static const struct GroundLivesData s_gs9_g22_s2_lives[] = { /* 0x81de080 */
     /*  1 */ {   7,   2,   0,   0, {   8,  40, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g22_s2_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g23_s0_lives[] = { /* 0x81de0b0 */
@@ -14722,23 +14560,11 @@ static const struct GroundLivesData s_gs9_g23_s0_lives[] = { /* 0x81de0b0 */
     /*  1 */ {  34,   6,   0,   0, {  37,  44, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g23_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g24_s1_lives[] = { /* 0x81de0e0 */
     /*  0 */ {   0,   0,   0,   0, {  34,  28, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g24_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14749,12 +14575,6 @@ static const struct GroundLivesData s_gs9_g25_s0_lives[] = { /* 0x81de0f8 */
     /*  1 */ {  34,   6,   0,   0, {  34,  50, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g25_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g26_s0_lives[] = { /* 0x81de128 */
@@ -14764,23 +14584,11 @@ static const struct GroundLivesData s_gs9_g26_s0_lives[] = { /* 0x81de128 */
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g26_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g26_s1_lives[] = { /* 0x81de158 */
     /*  0 */ {  66,   0,   0,   0, {  34,  30, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g26_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14790,12 +14598,6 @@ static const struct GroundLivesData s_gs9_g27_s0_lives[] = { /* 0x81de170 */
     } },
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g27_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14815,23 +14617,11 @@ static const struct GroundLivesData s_gs9_g28_s0_lives[] = { /* 0x81de1a0 */
     /*  4 */ {  62,   0,   0,   0, {  34,  38, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g28_s0_lives4_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g28_s1_lives[] = { /* 0x81de218 */
     /*  0 */ {  66,   0,   0,   0, {  34,  42, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g28_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14841,12 +14631,6 @@ static const struct GroundLivesData s_gs9_g29_s0_lives[] = { /* 0x81de230 */
     } },
     /*  1 */ {  34,   4,   0,   0, {  34,  45, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g29_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14906,12 +14690,6 @@ static const struct GroundLivesData s_gs9_g33_s0_lives[] = { /* 0x81de398 */
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g33_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g34_s0_lives[] = { /* 0x81de3c8 */
@@ -14927,23 +14705,11 @@ static const struct GroundLivesData s_gs9_g34_s0_lives[] = { /* 0x81de3c8 */
     /*  3 */ {  94,   0,   0,   0, {  36,  40, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g34_s0_lives3_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g35_s0_lives[] = { /* 0x81de428 */
     /*  0 */ {   0,   0,   0,   0, {  34,  28, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g35_s0_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14951,23 +14717,11 @@ static const struct GroundLivesData s_gs9_g35_s1_lives[] = { /* 0x81de440 */
     /*  0 */ {  34,   6,   0,   0, {  34,  43, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g35_s1_lives0_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g35_s2_lives[] = { /* 0x81de458 */
     /*  0 */ {  78,   4,   0,   0, {  34,  43, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g35_s2_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -14981,24 +14735,12 @@ static const struct GroundLivesData s_gs9_g36_s0_lives[] = { /* 0x81de470 */
     /*  2 */ {  78,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g36_s0_lives2_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g37_s0_lives[] = { /* 0x81de4b8 */
     /*  0 */ {  78,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g37_s0_lives0_dlg0,
         [2] = s_gs9_g37_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15008,12 +14750,6 @@ static const struct GroundLivesData s_gs9_g38_s0_lives[] = { /* 0x81de4d0 */
     } },
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g38_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15048,12 +14784,6 @@ static const struct GroundLivesData s_gs9_g40_s0_lives[] = { /* 0x81de5a8 */
     /*  1 */ {   7,   4,   0,   0, {  34,  44, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g40_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g42_s0_lives[] = { /* 0x81de5d8 */
@@ -15062,12 +14792,6 @@ static const struct GroundLivesData s_gs9_g42_s0_lives[] = { /* 0x81de5d8 */
     } },
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g42_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15078,12 +14802,6 @@ static const struct GroundLivesData s_gs9_g43_s0_lives[] = { /* 0x81de608 */
     /*  1 */ {   7,   4,   0,   0, {  34,  45, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g43_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g44_s0_lives[] = { /* 0x81de638 */
@@ -15092,12 +14810,6 @@ static const struct GroundLivesData s_gs9_g44_s0_lives[] = { /* 0x81de638 */
     } },
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g44_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15108,23 +14820,11 @@ static const struct GroundLivesData s_gs9_g45_s0_lives[] = { /* 0x81de668 */
     /*  1 */ {   7,   4,   0,   0, {  34,  45, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g45_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g45_s1_lives[] = { /* 0x81de698 */
     /*  0 */ {  55,   0,   0,   0, {  54,  31, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g45_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15135,12 +14835,6 @@ static const struct GroundLivesData s_gs9_g46_s0_lives[] = { /* 0x81de6b0 */
     /*  1 */ {  34,   6,   0,   0, {  36,  44, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g46_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g47_s0_lives[] = { /* 0x81de6e0 */
@@ -15150,12 +14844,6 @@ static const struct GroundLivesData s_gs9_g47_s0_lives[] = { /* 0x81de6e0 */
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g47_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g48_s0_lives[] = { /* 0x81de710 */
@@ -15164,12 +14852,6 @@ static const struct GroundLivesData s_gs9_g48_s0_lives[] = { /* 0x81de710 */
     } },
     /*  1 */ {  34,   6,   0,   0, {  38,  43, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g48_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15183,23 +14865,11 @@ static const struct GroundLivesData s_gs9_g48_s1_lives[] = { /* 0x81de740 */
     /*  2 */ {  90,   6,   0,   0, {  43,  41, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g48_s1_lives2_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g48_s2_lives[] = { /* 0x81de788 */
     /*  0 */ {  54,   6,   0,   0, {  42,  43, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g48_s2_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15210,24 +14880,12 @@ static const struct GroundLivesData s_gs9_g49_s0_lives[] = { /* 0x81de7a0 */
     /*  1 */ {  34,   4,   0,   0, {  34,  44, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g49_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g50_s0_lives[] = { /* 0x81de7d0 */
     /*  0 */ {  34,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g50_s0_lives0_dlg0,
         [2] = s_gs9_g50_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15239,12 +14897,6 @@ static const struct GroundLivesData s_gs9_g50_s2_lives[] = { /* 0x81de7e8 */
         [0] = s_gs9_g50_s2_lives1_dlg0,
         [2] = s_gs9_g50_s2_lives1_dlg2,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g50_s3_lives[] = { /* 0x81de818 */
@@ -15254,12 +14906,6 @@ static const struct GroundLivesData s_gs9_g50_s3_lives[] = { /* 0x81de818 */
     /*  1 */ {  34,   0,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g50_s3_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g51_s0_lives[] = { /* 0x81de848 */
@@ -15268,12 +14914,6 @@ static const struct GroundLivesData s_gs9_g51_s0_lives[] = { /* 0x81de848 */
     } },
     /*  1 */ {  34,   0,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g51_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15292,12 +14932,6 @@ static const struct GroundLivesData s_gs9_g52_s0_lives[] = { /* 0x81de878 */
     } },
     /*  4 */ {  90,   6,   0,   0, {  42,  40, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g52_s0_lives4_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15329,12 +14963,6 @@ static const struct GroundLivesData s_gs9_g53_s2_lives[] = { /* 0x81de998 */
     /*  0 */ {  68,   0,   0,   0, {  39,  33, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g53_s2_lives0_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g55_s0_lives[] = { /* 0x81de9b0 */
@@ -15344,23 +14972,11 @@ static const struct GroundLivesData s_gs9_g55_s0_lives[] = { /* 0x81de9b0 */
     /*  1 */ {   7,   4,   0,   0, {  34,  45, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g55_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g55_s1_lives[] = { /* 0x81de9e0 */
     /*  0 */ {  55,   4,   0,   0, {  54,  33, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g55_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15371,12 +14987,6 @@ static const struct GroundLivesData s_gs9_g57_s0_lives[] = { /* 0x81de9f8 */
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g57_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g58_s0_lives[] = { /* 0x81dea28 */
@@ -15386,23 +14996,11 @@ static const struct GroundLivesData s_gs9_g58_s0_lives[] = { /* 0x81dea28 */
     /*  1 */ {  34,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g58_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g58_s1_lives[] = { /* 0x81dea58 */
     /*  0 */ {  77,   4,   0,   0, {  52,  41, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g58_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15413,12 +15011,6 @@ static const struct GroundLivesData s_gs9_g59_s0_lives[] = { /* 0x81dea70 */
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g59_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g60_s0_lives[] = { /* 0x81deaa0 */
@@ -15428,24 +15020,12 @@ static const struct GroundLivesData s_gs9_g60_s0_lives[] = { /* 0x81deaa0 */
     /*  1 */ {  34,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g60_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g61_s0_lives[] = { /* 0x81dead0 */
     /*  0 */ {  34,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g61_s0_lives0_dlg0,
         [2] = s_gs9_g61_s0_lives0_dlg2,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15456,12 +15036,6 @@ static const struct GroundLivesData s_gs9_g61_s1_lives[] = { /* 0x81deae8 */
     /*  1 */ {  34,   0,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g61_s1_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g62_s0_lives[] = { /* 0x81deb18 */
@@ -15470,12 +15044,6 @@ static const struct GroundLivesData s_gs9_g62_s0_lives[] = { /* 0x81deb18 */
     } },
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g62_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15486,23 +15054,11 @@ static const struct GroundLivesData s_gs9_g63_s0_lives[] = { /* 0x81deb48 */
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g63_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g64_s1_lives[] = { /* 0x81deb78 */
     /*  0 */ {   0,   2,   0,   0, {   5,  40, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g64_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15513,12 +15069,6 @@ static const struct GroundLivesData s_gs9_g65_s0_lives[] = { /* 0x81deb90 */
     /*  1 */ {   7,   4,   0,   0, {  34,  44, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g65_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g67_s0_lives[] = { /* 0x81debc0 */
@@ -15527,12 +15077,6 @@ static const struct GroundLivesData s_gs9_g67_s0_lives[] = { /* 0x81debc0 */
     } },
     /*  1 */ {   7,   4,   0,   0, {  34,  32, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g67_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15591,12 +15135,6 @@ static const struct GroundLivesData s_gs9_g69_s0_lives[] = { /* 0x81ded28 */
     /*  3 */ {  94,   4,   0,   0, {  37,  45, CPOS_HALFTILE, 0 }, {
         [0] = s_gs9_g69_s0_lives3_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g71_s0_lives[] = { /* 0x81ded88 */
@@ -15605,12 +15143,6 @@ static const struct GroundLivesData s_gs9_g71_s0_lives[] = { /* 0x81ded88 */
     } },
     /*  1 */ {   7,   0,   0,   0, {  34,  64, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g71_s0_lives1_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15621,35 +15153,17 @@ static const struct GroundLivesData s_gs9_g72_s0_lives[] = { /* 0x81dedb8 */
     /*  1 */ {   7,   2,   0,   0, {  32,  41, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g72_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g72_s1_lives[] = { /* 0x81dede8 */
     /*  0 */ {   7,   2,   0,   0, {  32,  41, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g72_s1_lives0_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g72_s2_lives[] = { /* 0x81dee00 */
     /*  0 */ {   7,   2,   0,   0, {  32,  41, 0, CPOS_HALFTILE }, {
         [0] = s_gs9_g72_s2_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15665,12 +15179,6 @@ static const struct GroundLivesData s_gs9_g74_s0_lives[] = { /* 0x81dee18 */
     } },
     /*  3 */ { 110,   6,   0,   0, {  60,  43, CPOS_HALFTILE, 0 }, {
         [0] = s_gs9_g74_s0_lives3_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15714,12 +15222,6 @@ static const struct GroundLivesData s_gs9_g75_s1_lives[] = { /* 0x81def38 */
     /*  3 */ { 114,   4,   0,   0, {  36,  50, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g75_s1_lives3_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g75_s2_lives[] = { /* 0x81def98 */
@@ -15734,12 +15236,6 @@ static const struct GroundLivesData s_gs9_g75_s2_lives[] = { /* 0x81def98 */
     } },
     /*  3 */ { 114,   4,   0,   0, {  36,  50, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g75_s2_lives3_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15809,12 +15305,6 @@ static const struct GroundLivesData s_gs9_g77_s1_lives[] = { /* 0x81df130 */
     /*  4 */ { 114,   0,   0,   0, {  27,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g77_s1_lives4_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g77_s2_lives[] = { /* 0x81df1a8 */
@@ -15827,12 +15317,6 @@ static const struct GroundLivesData s_gs9_g77_s2_lives[] = { /* 0x81df1a8 */
     /*  2 */ { 114,   4,   0,   0, {  27,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g77_s2_lives2_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g77_s3_lives[] = { /* 0x81df1f0 */
@@ -15844,12 +15328,6 @@ static const struct GroundLivesData s_gs9_g77_s3_lives[] = { /* 0x81df1f0 */
     } },
     /*  2 */ { 114,   4,   0,   0, {  27,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g77_s3_lives2_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15896,23 +15374,11 @@ static const struct GroundLivesData s_gs9_g79_s0_lives[] = { /* 0x81df2f8 */
     /*  4 */ { 125,   4,   0,   0, {  36,  63, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g79_s0_lives4_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g79_s1_lives[] = { /* 0x81df370 */
     /*  0 */ { 124,   0,   0,   0, {  25,  24, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g79_s1_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -15946,12 +15412,6 @@ static const struct GroundLivesData s_gs9_g83_s0_lives[] = { /* 0x81df400 */
     /*  1 */ { 121,   6,   0,   0, {  54,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g83_s0_lives1_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g84_s0_lives[] = { /* 0x81df430 */
@@ -15966,12 +15426,6 @@ static const struct GroundLivesData s_gs9_g84_s0_lives[] = { /* 0x81df430 */
         [0] = s_gs9_g84_s0_lives2_dlg0,
         [2] = s_gs9_g84_s0_lives2_dlg2,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g85_s0_lives[] = { /* 0x81df478 */
@@ -15984,23 +15438,11 @@ static const struct GroundLivesData s_gs9_g85_s0_lives[] = { /* 0x81df478 */
     /*  2 */ {  32,   0,   0,   0, {  34,  40, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g85_s0_lives2_dlg0,
     } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
-    } },
 };
 
 static const struct GroundLivesData s_gs9_g86_s0_lives[] = { /* 0x81df4c0 */
     /*  0 */ {   0,   0,   0,   0, {  34,  28, CPOS_HALFTILE, CPOS_HALFTILE }, {
         [0] = s_gs9_g86_s0_lives0_dlg0,
-    } },
-    {  91,   0,   0,   0, {  63,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gengar_base_dlg0,
-    } },
-    {  76,   0,   0,   0, {  58,  39, 0, CPOS_HALFTILE }, {
-        [2] = s_gs9_gulpin_base_dlg0,
     } },
 };
 
@@ -16516,7 +15958,7 @@ static const struct GroundScriptSector s_gs9_g5_sectors[] = { /* 0x81dfe30 */
 };
 
 static const struct GroundScriptSector s_gs9_g6_sectors[] = { /* 0x81dfe80 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), 0,NULL, LPARRAY(s_gs9_g6_s0_effs), 0,NULL, 1,&sStationScripts[6], },
+    { 0,NULL, 0,NULL, LPARRAY(s_gs9_g6_s0_effs), 0,NULL, 1,&sStationScripts[6], },
     { LPARRAY(s_gs9_g6_s1_lives), 0,NULL, 0,NULL, 0,NULL, 0,NULL, },
     { LPARRAY(s_gs9_g6_s2_lives), 0,NULL, 0,NULL, 0,NULL, 0,NULL, },
 };
@@ -16589,7 +16031,7 @@ static const struct GroundScriptSector s_gs9_g21_sectors[] = { /* 0x81e0240 */
 };
 
 static const struct GroundScriptSector s_gs9_g22_sectors[] = { /* 0x81e0268 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[15], },
+    { 0,NULL, 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[15], },
     { LPARRAY(s_gs9_g22_s1_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[16], },
     { LPARRAY(s_gs9_g22_s2_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[17], },
 };
@@ -16599,7 +16041,7 @@ static const struct GroundScriptSector s_gs9_g23_sectors[] = { /* 0x81e02e0 */
 };
 
 static const struct GroundScriptSector s_gs9_g24_sectors[] = { /* 0x81e0308 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), LPARRAY(s_gs9_g24_s0_objs), 0,NULL, LPARRAY(s_gs9_g24_s0_evts), 1,&sStationScripts[19], },
+    { 0,NULL, LPARRAY(s_gs9_g24_s0_objs), 0,NULL, LPARRAY(s_gs9_g24_s0_evts), 1,&sStationScripts[19], },
     { LPARRAY(s_gs9_g24_s1_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[20], },
 };
 
@@ -16672,7 +16114,7 @@ static const struct GroundScriptSector s_gs9_g40_sectors[] = { /* 0x81e0650 */
 };
 
 static const struct GroundScriptSector s_gs9_g41_sectors[] = { /* 0x81e0678 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[37], },
+    { 0,NULL, 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[37], },
 };
 
 static const struct GroundScriptSector s_gs9_g42_sectors[] = { /* 0x81e06a0 */
@@ -16737,7 +16179,7 @@ static const struct GroundScriptSector s_gs9_g55_sectors[] = { /* 0x81e09c0 */
 };
 
 static const struct GroundScriptSector s_gs9_g56_sectors[] = { /* 0x81e0a10 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[53], },
+    { 0,NULL, 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[53], },
 };
 
 static const struct GroundScriptSector s_gs9_g57_sectors[] = { /* 0x81e0a38 */
@@ -16771,7 +16213,7 @@ static const struct GroundScriptSector s_gs9_g63_sectors[] = { /* 0x81e0b78 */
 };
 
 static const struct GroundScriptSector s_gs9_g64_sectors[] = { /* 0x81e0ba0 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[62], },
+    { 0,NULL, 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[62], },
     { LPARRAY(s_gs9_g64_s1_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[63], },
 };
 
@@ -16780,7 +16222,7 @@ static const struct GroundScriptSector s_gs9_g65_sectors[] = { /* 0x81e0bf0 */
 };
 
 static const struct GroundScriptSector s_gs9_g66_sectors[] = { /* 0x81e0c18 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[65], },
+    { 0,NULL, 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[65], },
 };
 
 static const struct GroundScriptSector s_gs9_g67_sectors[] = { /* 0x81e0c40 */
@@ -16796,7 +16238,7 @@ static const struct GroundScriptSector s_gs9_g69_sectors[] = { /* 0x81e0c90 */
 };
 
 static const struct GroundScriptSector s_gs9_g70_sectors[] = { /* 0x81e0cb8 */
-    { LPARRAY(s_gs9_gengar_gulpin_lives), 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[69], },
+    { 0,NULL, 0,NULL, 0,NULL, 0,NULL, 1,&sStationScripts[69], },
 };
 
 static const struct GroundScriptSector s_gs9_g71_sectors[] = { /* 0x81e0ce0 */

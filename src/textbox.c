@@ -160,6 +160,7 @@ static void CleanupGengarHintPortrait(void);
 static MonPortraitMsg *GetGengarHintPortrait(void);
 
 static const u8 sGengarHintIntroText[] = _("Heh heh heh...\nI know something about the dungeon ahead.\nGive me 1000 {POKE} for a hint.");
+static const u8 sGengarHintFreeIntroText[] = _("Heh heh... you're new here.\nI'll give you a free hint this time.\nWhich would you like?");
 static const u8 sGengarHintChoicePrompt[] = _("Heh heh. Which hint would you like?");
 static const u8 sGengarHintGreedyText[] = _("Trying again? Heh...\nSomeone's feeling a little desperate.");
 static const u8 sGengarHintNoMoneyText[] = _("Heh heh...\nNo {POKE}, no hint. \nThat's how it works, genius.");
@@ -2196,6 +2197,8 @@ static void sub_809C550(void)
 
 static void StartGengarHintConversation(void)
 {
+    bool8 tinyWoodsCleared;
+
     sGengarHintState.dungeonId = (s16)GetCurrentDungeonForHint();
     sGengarHintState.stage = GENGAR_HINT_STAGE_NONE;
     InitGengarHintPortrait();
@@ -2210,6 +2213,17 @@ static void StartGengarHintConversation(void)
         return;
     }
 
+    // Check if Tiny Woods (first dungeon) has been cleared
+    tinyWoodsCleared = GetScriptVarArrayValue(NULL, DUNGEON_CLEAR_LIST, DUNGEON_TINY_WOODS) != 0;
+
+    // If Tiny Woods hasn't been cleared yet, give free hints
+    if (!tinyWoodsCleared) {
+        CreateMenuDialogueBoxAndPortrait(sGengarHintFreeIntroText, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
+        sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
+        return;
+    }
+
+    // Otherwise, use the normal paid hint flow
     if (!HasEnoughMoneyForGengarHint()) {
         ShowGengarHintMessage(sGengarHintNoMoneyText);
         return;

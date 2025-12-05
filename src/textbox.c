@@ -2208,7 +2208,8 @@ static void StartGengarHintConversation(void)
         return;
     }
 
-    if (GengarHint_HasHintForDungeon(sGengarHintState.dungeonId)) {
+    // If we already gave a hint for this dungeon AND no dungeon has been completed since, show greedy message
+    if (GengarHint_HasHintForDungeon(sGengarHintState.dungeonId) && !GengarHint_WasDungeonCompletedSinceLastHint()) {
         ShowGengarHintMessage(sGengarHintGreedyText);
         return;
     }
@@ -2260,8 +2261,11 @@ static bool8 UpdateGengarHintConversation(void)
             if (selection == 1 || selection == 2) {
                 const u8 *hintText = (selection == 1) ? sGengarHintOneText : sGengarHintTwoText;
 
-                if (sGengarHintState.dungeonId >= 0)
+                if (sGengarHintState.dungeonId >= 0) {
                     GengarHint_MarkHintGiven(sGengarHintState.dungeonId);
+                    // Clear the dungeon completed flag since we just gave a hint
+                    GengarHint_ClearDungeonCompletedFlag();
+                }
 
                 ShowGengarHintMessage(hintText);
                 return FALSE;

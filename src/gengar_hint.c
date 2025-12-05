@@ -106,6 +106,22 @@ void GengarHint_ClearDungeonCompletedFlag(void)
     sGengarHintState.data.dungeonCompletedSinceLastHint = 0;
 }
 
+bool8 GengarHint_HasReceivedFirstHint(void)
+{
+    bool8 result;
+    EnsureInitialized();
+    result = sGengarHintState.data.hasReceivedFirstHint != 0;
+    MGBA_Printf(0, "[GENGAR-HINT] HasReceivedFirstHint = %d", result);
+    return result;
+}
+
+void GengarHint_MarkFirstHintReceived(void)
+{
+    MGBA_Printf(0, "[GENGAR-HINT] MarkFirstHintReceived - setting flag to 1");
+    EnsureInitialized();
+    sGengarHintState.data.hasReceivedFirstHint = 1;
+}
+
 static bool8 IsDungeonIdValid(s32 dungeonId)
 {
     if (dungeonId < 0 || dungeonId >= NUM_DUNGEONS)
@@ -130,4 +146,6 @@ const void *const gGengarHintLinkAnchor[] = {
     (const void *)GengarHint_SetDungeonCompleted,
     (const void *)GengarHint_WasDungeonCompletedSinceLastHint,
     (const void *)GengarHint_ClearDungeonCompletedFlag,
+    (const void *)GengarHint_HasReceivedFirstHint,
+    (const void *)GengarHint_MarkFirstHintReceived,
 };

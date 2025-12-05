@@ -2197,8 +2197,6 @@ static void sub_809C550(void)
 
 static void StartGengarHintConversation(void)
 {
-    bool8 tinyWoodsCleared;
-
     sGengarHintState.dungeonId = (s16)GetCurrentDungeonForHint();
     sGengarHintState.stage = GENGAR_HINT_STAGE_NONE;
     InitGengarHintPortrait();
@@ -2214,22 +2212,14 @@ static void StartGengarHintConversation(void)
         return;
     }
 
-    // Check if Tiny Woods (first dungeon) has been cleared
-    tinyWoodsCleared = GetScriptVarArrayValue(NULL, DUNGEON_CLEAR_LIST, DUNGEON_TINY_WOODS) != 0;
-
-    // If Tiny Woods hasn't been cleared yet, give free hints
-    if (!tinyWoodsCleared) {
+    // If player has never received a hint before (first time EVER), give free hint with special "new here" text
+    if (!GengarHint_HasReceivedFirstHint()) {
         CreateMenuDialogueBoxAndPortrait(sGengarHintFreeIntroText, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
         sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
         return;
     }
 
-    // Otherwise, use the normal paid hint flow
-    if (!HasEnoughMoneyForGengarHint()) {
-        ShowGengarHintMessage(sGengarHintNoMoneyText);
-        return;
-    }
-
+    // After first hint, ALWAYS show the intro text and payment menu
     CreateMenuDialogueBoxAndPortrait(sGengarHintIntroText, 0, 0, sGengarHintPaymentMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
     sGengarHintState.stage = GENGAR_HINT_STAGE_PAYMENT_MENU;
 }
@@ -2250,6 +2240,13 @@ static bool8 UpdateGengarHintConversation(void)
             return TRUE;
         case GENGAR_HINT_STAGE_PAYMENT_MENU:
             if (selection == 1) {
+                // Player said "Yes" - check if they have money
+                if (!HasEnoughMoneyForGengarHint()) {
+                    // No money - always refuse (never give free hints after first time)
+                    ShowGengarHintMessage(sGengarHintNoMoneyText);
+                    return FALSE;
+                }
+                // Has money - deduct it and proceed
                 AddToTeamMoney(-GENGAR_HINT_COST);
                 CreateMenuDialogueBoxAndPortrait(sGengarHintChoicePrompt, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
                 sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
@@ -2265,6 +2262,8 @@ static bool8 UpdateGengarHintConversation(void)
                     GengarHint_MarkHintGiven(sGengarHintState.dungeonId);
                     // Clear the dungeon completed flag since we just gave a hint
                     GengarHint_ClearDungeonCompletedFlag();
+                    // Mark that player has received their first hint
+                    GengarHint_MarkFirstHintReceived();
                 }
 
                 ShowGengarHintMessage(hintText);

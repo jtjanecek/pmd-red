@@ -11,7 +11,8 @@ typedef struct GengarHintSaveData
 {
     u8 hintFlags[GENGAR_HINT_FLAG_BYTES];
     u8 dungeonCompletedSinceLastHint;  // Set to 1 when dungeon is cleared, reset when hint is given
-    u8 reserved[2];
+    u8 hasReceivedFirstHint;  // Set to 1 after first hint is given
+    u8 reserved[1];
 } GengarHintSaveData;
 
 void GengarHint_Init(void);
@@ -24,6 +25,8 @@ void GengarHint_ClearHintForDungeon(s32 dungeonId);
 void GengarHint_SetDungeonCompleted(void);
 bool8 GengarHint_WasDungeonCompletedSinceLastHint(void);
 void GengarHint_ClearDungeonCompletedFlag(void);
+bool8 GengarHint_HasReceivedFirstHint(void);
+void GengarHint_MarkFirstHintReceived(void);
 extern const void *const gGengarHintLinkAnchor[];
 
 #endif // GUARD_GENGAR_HINT_H

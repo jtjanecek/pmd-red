@@ -1397,3 +1397,23 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
     UpdateTrapsVisibility();
     UpdateMinimap();
 }
+
+// Deterministically select which floor (0-indexed) should have a Kecleon shop
+// Returns a floor index between 0 and (maxFloors - 2), excluding the boss floor
+s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed)
+{
+    DungeonSeedRng rng;
+    s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
+    s32 maxNonBossFloor;
+
+    // Ensure we have at least 2 floors (one for Kecleon, one for boss)
+    if (floorCount < 2)
+        return 0;
+
+    // Boss is on the final floor (floorCount - 1), so Kecleon can be on 0 to (floorCount - 2)
+    maxNonBossFloor = floorCount - 1;  // Exclusive upper bound for range function
+
+    // Use a dedicated salt for Kecleon shop placement
+    rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x4B45434C);
+    return DungeonSeedRng_NextRange(&rng, 0, maxNonBossFloor);
+}

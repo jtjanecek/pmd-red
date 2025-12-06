@@ -30,6 +30,8 @@
 #include "ground_script.h"
 #include "gulpin_shop_801FB50.h"
 #include "input.h"
+#include "dungeon_info.h"
+#include "dungeon_seed_overrides.h"
 #include "move_deleter.h"
 #include "kangaskhan_storage1.h"
 #include "kangaskhan_storage2.h"
@@ -155,6 +157,7 @@ static bool8 UpdateGengarHintConversation(void);
 static void ShowGengarHintMessage(const u8 *text);
 static s32 GetCurrentDungeonForHint(void);
 static bool8 HasEnoughMoneyForGengarHint(void);
+static const u8 *BuildKecleonShopHintText(void);
 static void InitGengarHintPortrait(void);
 static void CleanupGengarHintPortrait(void);
 static MonPortraitMsg *GetGengarHintPortrait(void);
@@ -166,8 +169,9 @@ static const u8 sGengarHintGreedyText[] = _("Trying again? Heh...\nSomeone's fee
 static const u8 sGengarHintNoMoneyText[] = _("Heh heh...\nNo {POKE}, no hint. \nThat's how it works, genius.");
 static const u8 sGengarHintNoDungeonText[] = _("No dungeon lined up for you yet.");
 static const u8 sGengarHintDeclineText[] = _("Heh heh... suit yourself.");
-static const u8 sGengarHintOneText[] = _("Here's hint 1: ...");
+static const u8 sGengarHintNoSeedText[] = _("Heh heh... No shop rumors without a seed.");
 static const u8 sGengarHintTwoText[] = _("Here's hint 2: ...");
+static EWRAM_DATA u8 sGengarHintShopBuffer[96] = {0};
 
 
 static const MenuItem sGengarHintPaymentMenu[] = {
@@ -177,7 +181,7 @@ static const MenuItem sGengarHintPaymentMenu[] = {
 };
 
 static const MenuItem sGengarHintChoiceMenu[] = {
-    {_("Hint 1"), 1},
+    {_("Kecleon shop rurmors"), 1},
     {_("Hint 2"), 2},
     {NULL, -1},
 };
@@ -2253,15 +2257,15 @@ static bool8 UpdateGengarHintConversation(void)
                 return FALSE;
             }
             ShowGengarHintMessage(sGengarHintDeclineText);
-            return FALSE;
-        case GENGAR_HINT_STAGE_HINT_MENU:
-            if (selection == 1 || selection == 2) {
-                const u8 *hintText = (selection == 1) ? sGengarHintOneText : sGengarHintTwoText;
+        return FALSE;
+    case GENGAR_HINT_STAGE_HINT_MENU:
+        if (selection == 1 || selection == 2) {
+            const u8 *hintText = (selection == 1) ? BuildKecleonShopHintText() : sGengarHintTwoText;
 
-                if (sGengarHintState.dungeonId >= 0) {
-                    GengarHint_MarkHintGiven(sGengarHintState.dungeonId);
-                    // Clear the dungeon completed flag since we just gave a hint
-                    GengarHint_ClearDungeonCompletedFlag();
+            if (sGengarHintState.dungeonId >= 0) {
+                GengarHint_MarkHintGiven(sGengarHintState.dungeonId);
+                // Clear the dungeon completed flag since we just gave a hint
+                GengarHint_ClearDungeonCompletedFlag();
                     // Mark that player has received their first hint
                     GengarHint_MarkFirstHintReceived();
                 }
@@ -2304,6 +2308,26 @@ static bool8 HasEnoughMoneyForGengarHint(void)
         return FALSE;
 
     return (inventory->teamMoney >= GENGAR_HINT_COST);
+}
+
+static const u8 *BuildKecleonShopHintText(void)
+{
+    s32 seed;
+    s32 dungeonId = sGengarHintState.dungeonId;
+
+    if (dungeonId < 0 || dungeonId >= NUM_DUNGEONS)
+        return sGengarHintNoDungeonText;
+
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return sGengarHintNoSeedText;
+
+    {
+        s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor((u8)dungeonId, seed);
+        s32 displayFloor = GetDungeonStartingFloor(dungeonId) + kecleonFloor + 1;
+
+        sprintfStatic(sGengarHintShopBuffer, _("Heh heh... Shop rumor says floor %d."), displayFloor);
+        return sGengarHintShopBuffer;
+    }
 }
 
 static void InitGengarHintPortrait(void)

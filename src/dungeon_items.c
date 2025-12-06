@@ -27,6 +27,7 @@
 #include "structs/str_item_text.h"
 #include "dungeon_vram.h"
 #include "sprite.h"
+#include "mgba_log.h"
 
 static void MusicBoxCreation(void);
 static u8 sub_8046D70(void);
@@ -94,7 +95,9 @@ void CreateFloorItems(void)
     s32 x = DungeonRandInt(DUNGEON_MAX_SIZE_X);
     s32 y = DungeonRandInt(DUNGEON_MAX_SIZE_Y);
 
+    MGBA_Warnf("[CreateItems] START: x=%d y=%d", x, y);
     gDungeon->numItems = 0;
+    MGBA_Warnf("[CreateItems] Starting main loop");
     for (yCounter = 0; yCounter < DUNGEON_MAX_SIZE_Y; yCounter++) {
         y++;
         if (y == DUNGEON_MAX_SIZE_Y) {
@@ -107,17 +110,26 @@ void CreateFloorItems(void)
             if (x == DUNGEON_MAX_SIZE_X) {
                 x = 0;
             }
+
+            if (xCounter == 0 && yCounter % 5 == 0) {
+                MGBA_Warnf("[CreateItems] Loop progress: y=%d/%d x=%d", yCounter, DUNGEON_MAX_SIZE_Y, xCounter);
+            }
+
             tile = GetTile(x,y);
 
             if (!(tile->terrainFlags & TERRAIN_TYPE_STAIRS) && (tile->spawnOrVisibilityFlags.spawn & SPAWN_FLAG_ITEM)) {
                 DungeonPos pos;
-                bool8 shopFlag = FALSE;
+                bool8 shopFlag;
+
+                MGBA_Warnf("[CreateItems] Found item spawn at (%d,%d)", x, y);
+                shopFlag = FALSE;
                 pos.x = x;
                 pos.y = y;
 
                 if (tile->terrainFlags & TERRAIN_TYPE_SHOP) {
                     shopFlag = TRUE;
                     spawnType = ITEM_SPAWN_IN_SHOP;
+                    MGBA_Warnf("[CreateItems] Shop item at (%d,%d)", x, y);
                 }
                 else
                 {
@@ -128,18 +140,26 @@ void CreateFloorItems(void)
                         spawnType = (tile->terrainFlags & TERRAIN_TYPE_IN_MONSTER_HOUSE) ? ITEM_SPAWN_IN_MONSTER_HOUSE : ITEM_SPAWN_NORMAL;
                     }
                 }
+                MGBA_Warnf("[CreateItems] Getting random item, spawnType=%d", spawnType);
                 itemID = GetRandomFloorItem(spawnType);
+                MGBA_Warnf("[CreateItems] Got itemID=%d", itemID);
                 if (!IsShoppableItem(itemID)) {
                     shopFlag = FALSE;
                 }
+                MGBA_Warnf("[CreateItems] Creating item with sticky chance");
                 CreateItemWithStickyChance(&item,itemID,FORCE_STICKY_RANDOM);
+                MGBA_Warnf("[CreateItems] Item created, shopFlag=%d", shopFlag);
                 if (shopFlag) {
                     item.flags |= flag;
+                    MGBA_Warnf("[CreateItems] Spawning shop item at (%d,%d) id=%d", x, y, itemID);
                 }
+                MGBA_Warnf("[CreateItems] About to SpawnItem at (%d,%d)", x, y);
                 SpawnItem(&pos,&item,TRUE);
+                MGBA_Warnf("[CreateItems] SpawnItem complete");
             }
         }
     }
+    MGBA_Warnf("[CreateItems] Loop complete, spawned %d items", gDungeon->numItems);
 }
 
 void TryLeaderItemPickUp(struct DungeonPos *pos, bool8 printMsg)

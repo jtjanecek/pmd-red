@@ -28,6 +28,7 @@
 #include "constants/type.h"
 #include "dungeon_misc.h"
 #include "sprite.h"
+#include "mgba_log.h"
 #include "dungeon_strings.h"
 #include "dungeon_engine.h"
 #include "warp_target.h"
@@ -221,6 +222,9 @@ static void sub_807EFFC(bool8 arg0)
         PlaySoundEffect(0x14c);
         AddToTeamMoney(gDungeon->unk644.unk4C);
         local_24 = gDungeon->unk644.unk48;
+        MGBA_Warnf("[KecleonShop] Looping shop bounds: (%d,%d)-(%d,%d)",
+                   gDungeon->kecleonShopPos.minX, gDungeon->kecleonShopPos.minY,
+                   gDungeon->kecleonShopPos.maxX, gDungeon->kecleonShopPos.maxY);
         for (x = gDungeon->kecleonShopPos.minX; x <= gDungeon->kecleonShopPos.maxX; x++) {
             for (y = gDungeon->kecleonShopPos.minY; y <= gDungeon->kecleonShopPos.maxY; y++) {
                 const Tile *tile;

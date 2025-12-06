@@ -87,6 +87,22 @@ static void ApplySeedOverridesToCurrentFloor(void)
         MGBA_Warnf("[BossGen] Weather override applied: weather=%d", overrides.bossFight.weather);
     }
 
+    // Apply Kecleon shop override: exactly 1 shop per dungeon on a deterministic floor
+    {
+        s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(gDungeon->unk644.dungeonLocation.id, seed);
+        s32 targetFloor = gDungeon->startFloorId + kecleonFloor + 1; // dungeon floors appear 1-indexed
+
+        if (gDungeon->unk644.dungeonLocation.floor == targetFloor) {
+            // This floor should have a Kecleon shop - set 100% chance
+            gDungeon->floorProperties.kecleonShopChance = 100;
+            MGBA_Warnf("[Kecleon] Shop enabled: dungeonId=%d floor=%d seed=%d",
+                       gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, seed);
+        } else {
+            // No Kecleon shop on other floors - set 0% chance
+            gDungeon->floorProperties.kecleonShopChance = 0;
+        }
+    }
+
     // If boss fight is enabled, set up boss spawn table (not normal enemies)
     if (overrides.bossFight.enabled) {
         s32 spawnIndex = 0;

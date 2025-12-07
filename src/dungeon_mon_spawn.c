@@ -1013,7 +1013,7 @@ void sub_806C3C0(void)
                 if (spawned != NULL && spStruct.species == MONSTER_KECLEON) {
                     s32 seed = 0;
                     u32 roll = 0;
-                    u32 threshold = 100; // TODO: tune chance; currently 100% for testing
+                    u32 threshold = 0; // 0% chance to auto-faint Kecleon
 
                     if (DungeonSeedOverrides_IsEnabled(&seed)) {
                         roll = DungeonSeedOverrides_GetDungeonRngSeed(seed,

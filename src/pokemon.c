@@ -236,6 +236,9 @@ Pokemon *TryAddPokemonToRecruited(Pokemon *pokemon)
     s32 species = pokemon->speciesNum;
     u32 friendArea = sMonsterParameters[species].friendArea;
 
+    if (GetFriendSum_808D480() >= MAX_RECRUITED_POKEMON)
+        return NULL;
+
     if (!gFriendAreas[friendArea])
         return NULL;
     for (i = 0; i < NUM_MONSTERS; i++) {

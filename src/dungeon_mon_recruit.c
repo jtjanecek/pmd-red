@@ -35,6 +35,23 @@
 
 static void nullsub_96(Entity *pokemon,Entity *target);
 static void sub_806F910(void);
+static bool8 HasReachedRecruitmentCap(void);
+
+static bool8 HasReachedRecruitmentCap(void)
+{
+    s32 i;
+    s32 total = GetFriendSum_808D480();
+
+    // Count recruits already saved plus any fresh dungeon joins that haven't been persisted yet.
+    for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
+        DungeonMon *mon = &gRecruitedPokemonRef->dungeonTeam[i];
+        if (DungeonMonExists(mon) && mon->recruitedPokemonId == -1) {
+            total++;
+        }
+    }
+
+    return total >= MAX_RECRUITED_POKEMON;
+}
 
 bool8 TryRecruitMonster(Entity *attacker, Entity *target)
 {
@@ -194,6 +211,9 @@ bool8 IsMonsterRecruitable(s32 species)
 {
     s32 id = (s16) species;
     if (!gDungeon->unk644.canRecruit) {
+        return FALSE;
+    }
+    else if (HasReachedRecruitmentCap()) {
         return FALSE;
     }
     else if (!sub_808529C(id)) {

@@ -26,6 +26,7 @@
 #include "file_system.h"
 #include "move_orb_effects_1.h"
 #include "moves.h"
+#include "mgba_log.h"
 #include "number_util.h"
 #include "pokemon.h"
 #include "pokemon_3.h"
@@ -1001,6 +1002,8 @@ void sub_806C3C0(void)
             spStruct.unk2 = strPtr->unkArray[i].unk2;
             spStruct.unk4 = 0;
             spStruct.unk10 = 0;
+            MGBA_Warnf("[SpawnQueue] Spawning queued entity species=%d pos=(%d,%d) unk2=%d",
+                       spStruct.species, spStruct.pos.x, spStruct.pos.y, spStruct.unk2);
             SpawnWildMon(&spStruct, TRUE);
         }
     }

@@ -27,6 +27,7 @@
 #include "dungeon_seed_overrides.h"
 #include "dungeon_cutscene.h"
 #include "moves.h"
+#include "dungeon_misc.h"
 
 #include "dungeon_auto_explore.h"
 enum CardinalDirection
@@ -136,8 +137,6 @@ static EWRAM_DATA s32 sNumRooms = 0;
 static EWRAM_DATA s32 sFloorLayout = 0;
 static EWRAM_DATA s32 sNumTilesReachableFromStairs = 0;
 static EWRAM_DATA DungeonPos sKecleonShopMiddlePos = {0};
-static EWRAM_DATA bool8 sSkipKecleonTrim = FALSE;
-static EWRAM_DATA bool8 sForceKecleonShop = FALSE;
 
 struct FixedRoomsData
 {
@@ -183,8 +182,6 @@ void GenerateFloor(void)
     sHasKecleonShop = FALSE;
     sHasMonsterHouse = 0;
     sHasMaze = FALSE;
-    sSkipKecleonTrim = FALSE;
-    sForceKecleonShop = FALSE;
     gUnknown_202F1A8 = (gDungeonWaterType[gDungeon->tileset] == DUNGEON_WATER_TYPE_WATER);
     sStairsRoomIndex = 0xFF;
     sFloorSize = 0;
@@ -475,13 +472,6 @@ void GenerateFloor(void)
         // We don't care about validating because this is our bailout, so we're done!
     }
 
-    // REMOVED: Don't spawn Kecleon during GenerateFloor - it should be spawned later by the game
-    // The vanilla game spawns Kecleon shopkeepers dynamically, not during floor generation
-    if (sKecleonShopMiddlePos.x >= 0 && sKecleonShopMiddlePos.y >= 0) {
-        MGBA_Warnf("[ShopGen] NOT spawning Kecleon entity during GenerateFloor (vanilla spawns it later)");
-        MGBA_Warnf("[ShopGen] Kecleon position stored: (%d,%d)", sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
-    }
-
     if (sKecleonShopPosition.minX >= 0) {
         sub_8051654(floorProps);
         MGBA_Warnf("[ShopGen] Final shop bounds=(%d,%d)-(%d,%d) center=(%d,%d)",
@@ -492,6 +482,18 @@ void GenerateFloor(void)
                    gDungeon->kecleonShopPos.minX, gDungeon->kecleonShopPos.minY,
                    gDungeon->kecleonShopPos.maxX, gDungeon->kecleonShopPos.maxY);
         gDungeon->unk3A0A = 1;
+
+        // Queue a natural shopkeeper spawn on the shop floor so the game flags it as a shopkeeper
+        if (sKecleonShopMiddlePos.x >= 0 && sKecleonShopMiddlePos.y >= 0) {
+            Tile *centerTile = GetTileMut(sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
+
+            // Keep the shopkeeper tile free of item spawns to avoid overlapping with shop stock
+            centerTile->spawnOrVisibilityFlags.spawn &= ~(SPAWN_FLAG_ITEM);
+            sub_806C330(sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y, MONSTER_KECLEON, 0);
+            // Proactively load the shopkeeper sprite so VRAM init doesn't read a NULL handle
+            LoadPokemonSprite(MONSTER_KECLEON, TRUE);
+            MGBA_Warnf("[ShopGen] Queued shopkeeper spawn at (%d,%d)", sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
+        }
     }
     else {
         gDungeon->unk3A0A = 0;
@@ -3321,128 +3323,24 @@ static bool8 TryAssignKecleonShop(struct GridCell grid[GRID_CELL_LEN][GRID_CELL_
 }
 
 // Ensure tiny fallback shops are widened to safe dimensions and reflagged
-static void ExpandKecleonShopBoundsIfNeeded(bool8 forceKecleonShop)
-{
-    s32 width = sKecleonShopPosition.maxX - sKecleonShopPosition.minX;
-    s32 height = sKecleonShopPosition.maxY - sKecleonShopPosition.minY;
-    s32 x, y;
-    s32 extraX, extraY;
-    s32 expandLeft, expandRight, expandUp, expandDown;
-    FloorProperties *floorProps = &gDungeon->floorProperties;
-
-    if (!forceKecleonShop)
-        return;
-
-    if (width >= 5 && height >= 4)
-        return;
-
-    // Expand around current bounds while staying inside the map
-    extraX = (width < 5) ? (5 - width) : 0;
-    extraY = (height < 4) ? (4 - height) : 0;
-    expandLeft = extraX / 2;
-    expandRight = extraX - expandLeft;
-    expandUp = extraY / 2;
-    expandDown = extraY - expandUp;
-
-    if (sKecleonShopPosition.minX - expandLeft < 1)
-        expandLeft = sKecleonShopPosition.minX - 1;
-    if (sKecleonShopPosition.maxX + expandRight > DUNGEON_MAX_SIZE_X - 2)
-        expandRight = (DUNGEON_MAX_SIZE_X - 2) - sKecleonShopPosition.maxX;
-    if (sKecleonShopPosition.minY - expandUp < 1)
-        expandUp = sKecleonShopPosition.minY - 1;
-    if (sKecleonShopPosition.maxY + expandDown > DUNGEON_MAX_SIZE_Y - 2)
-        expandDown = (DUNGEON_MAX_SIZE_Y - 2) - sKecleonShopPosition.maxY;
-
-    sKecleonShopPosition.minX -= expandLeft;
-    sKecleonShopPosition.maxX += expandRight;
-    sKecleonShopPosition.minY -= expandUp;
-    sKecleonShopPosition.maxY += expandDown;
-
-    // Reflag shop tiles across the expanded bounds
-    gDungeon->kecleonShopPos.minX = sKecleonShopPosition.minX;
-    gDungeon->kecleonShopPos.maxX = sKecleonShopPosition.maxX - 1;
-    gDungeon->kecleonShopPos.minY = sKecleonShopPosition.minY;
-    gDungeon->kecleonShopPos.maxY = sKecleonShopPosition.maxY - 1;
-
-    for (x = sKecleonShopPosition.minX; x < sKecleonShopPosition.maxX; x++) {
-        for (y = sKecleonShopPosition.minY; y < sKecleonShopPosition.maxY; y++) {
-            Tile *tile = GetTileMut(x, y);
-            tile->terrainFlags |= TERRAIN_TYPE_SHOP;
-            tile->spawnOrVisibilityFlags.spawn &= ~(SPAWN_FLAG_MONSTER | SPAWN_FLAG_STAIRS);
-        }
-    }
-
-    sKecleonShopMiddlePos.x = (sKecleonShopPosition.minX + sKecleonShopPosition.maxX) / 2;
-    sKecleonShopMiddlePos.y = (sKecleonShopPosition.minY + sKecleonShopPosition.maxY) / 2;
-
-    MGBA_Warnf("[ShopGen] Expanded shop bounds to (%d,%d)-(%d,%d) force=%d",
-               sKecleonShopPosition.minX, sKecleonShopPosition.minY,
-               sKecleonShopPosition.maxX, sKecleonShopPosition.maxY, forceKecleonShop);
-
-    // Clamp layout again to avoid bad indices after expansion
-    if (floorProps->kecleonShopLayout >= ARRAY_COUNT(sKecleonShopItemSpawnChances)) {
-        floorProps->kecleonShopLayout = 0;
-    }
-
-    // If we had to expand from a tiny footprint, skip the trim/item pass to avoid risky ranges
-    if (width < 5 || height < 4) {
-        sSkipKecleonTrim = TRUE;
-    }
-}
-
 static void GenerateKecleonShop(struct GridCell grid[GRID_CELL_LEN][GRID_CELL_LEN], s32 gridSizeX, s32 gridSizeY, s32 chance)
 {
-    bool8 forceKecleonShop = FALSE;
-    s32 seed;
-
-    if (DungeonSeedOverrides_IsEnabled(&seed)) {
-        s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(gDungeon->unk644.dungeonLocation.id, seed);
-        s32 targetFloor = gDungeon->startFloorId + kecleonFloor + 1; // Floors appear 1-indexed in runtime state
-        if (gDungeon->unk644.dungeonLocation.floor == targetFloor) {
-            forceKecleonShop = TRUE;
-            sForceKecleonShop = TRUE;
-            MGBA_Warnf("[ShopGen] Forcing shop on seeded floor (dungeon=%d floor=%d)",
-                       gDungeon->unk644.dungeonLocation.id,
-                       gDungeon->unk644.dungeonLocation.floor);
-
-            // Ensure layout is valid for forced shops even if the source floor never had one
-            if (gDungeon->floorProperties.kecleonShopLayout >= ARRAY_COUNT(sKecleonShopItemSpawnChances)) {
-                MGBA_Warnf("[ShopGen] Clamping invalid layout for forced shop: layout=%d -> 0", gDungeon->floorProperties.kecleonShopLayout);
-                gDungeon->floorProperties.kecleonShopLayout = 0;
-            }
-        }
-    }
-
     sKecleonShopMiddlePos.x = -1;
     sKecleonShopMiddlePos.y = -1;
 
-	if ((sHasMonsterHouse || GetFloorType() == FLOOR_TYPE_RESCUE || chance == 0) && !forceKecleonShop)
+	if (sHasMonsterHouse || GetFloorType() == FLOOR_TYPE_RESCUE || chance == 0)
         return;
-	if (!forceKecleonShop && chance <= DungeonRandInt(100))
+	if (chance <= DungeonRandInt(100))
         return;
 
-    MGBA_Warnf("[ShopGen] Rolling shop: chance=%d grid=%dx%d force=%d", chance, gridSizeX, gridSizeY, forceKecleonShop);
+    MGBA_Warnf("[ShopGen] Rolling shop: chance=%d grid=%dx%d", chance, gridSizeX, gridSizeY);
 
     // First pass: vanilla sizing rules (>=5x4, no secondary structures)
     if (TryAssignKecleonShop(grid, gridSizeX, gridSizeY, 5, 4, FALSE)) {
-        ExpandKecleonShopBoundsIfNeeded(forceKecleonShop);
-        MGBA_Warnf("[ShopGen] Post-assign (primary): bounds=(%d,%d)-(%d,%d) skipTrim=%d",
+        MGBA_Warnf("[ShopGen] Post-assign (primary): bounds=(%d,%d)-(%d,%d)",
                    sKecleonShopPosition.minX, sKecleonShopPosition.minY,
-                   sKecleonShopPosition.maxX, sKecleonShopPosition.maxY,
-                   sSkipKecleonTrim);
+                   sKecleonShopPosition.maxX, sKecleonShopPosition.maxY);
         return;
-    }
-
-    // Fallback for deterministic runs: relax room size and secondary structure filters to guarantee a shop
-    if (forceKecleonShop && !sHasKecleonShop) {
-        MGBA_Warnf("[ShopGen] Fallback placement for seeded shop (relaxed constraints)");
-        if (TryAssignKecleonShop(grid, gridSizeX, gridSizeY, 3, 3, TRUE)) {
-            ExpandKecleonShopBoundsIfNeeded(forceKecleonShop);
-            MGBA_Warnf("[ShopGen] Post-assign (fallback): bounds=(%d,%d)-(%d,%d) skipTrim=%d",
-                       sKecleonShopPosition.minX, sKecleonShopPosition.minY,
-                       sKecleonShopPosition.maxX, sKecleonShopPosition.maxY,
-                       sSkipKecleonTrim);
-        }
     }
 }
 
@@ -6218,46 +6116,6 @@ static void sub_8051654(FloorProperties *floorProps)
     s32 rangeX = 3, rangeY = 3;
     s32 xIndex, yIndex;
     s32 r10;
-
-    if (sSkipKecleonTrim) {
-        MGBA_Warnf("[ShopGen] Skipping trim/item pass due to expanded small shop");
-        MGBA_Warnf("[ShopGen] Skip: gDungeon->kecleonShopPos=(%d,%d)-(%d,%d)",
-                   gDungeon->kecleonShopPos.minX, gDungeon->kecleonShopPos.minY,
-                   gDungeon->kecleonShopPos.maxX, gDungeon->kecleonShopPos.maxY);
-        return;
-    }
-    if (sForceKecleonShop) {
-        MGBA_Warnf("[ShopGen] Forced shop: placing items without trim");
-        MGBA_Warnf("[ShopGen] Forced: gDungeon->kecleonShopPos=(%d,%d)-(%d,%d)",
-                   gDungeon->kecleonShopPos.minX, gDungeon->kecleonShopPos.minY,
-                   gDungeon->kecleonShopPos.maxX, gDungeon->kecleonShopPos.maxY);
-
-        // For forced shops, skip trim but still place items in a 3x3 grid around center
-        middleX = (sKecleonShopPosition.minX + sKecleonShopPosition.maxX) / 2 - 1;
-        middleY = (sKecleonShopPosition.minY + sKecleonShopPosition.maxY) / 2 - 1;
-        xIndex = 0;
-        for (x = middleX; x < middleX + 3; x++, xIndex++) {
-            yIndex = 0;
-            for (y = middleY; y < middleY + 3; y++, yIndex++) {
-                Tile *tile;
-                if (x < 0 || x >= DUNGEON_MAX_SIZE_X || y < 0 || y >= DUNGEON_MAX_SIZE_Y)
-                    continue;
-                tile = GetTileMut(x, y);
-                if (!(tile->terrainFlags & TERRAIN_TYPE_SHOP))
-                    continue;
-                if ((tile->terrainFlags & TERRAIN_TYPE_IN_MONSTER_HOUSE))
-                    continue;
-                if ((tile->terrainFlags & TERRAIN_TYPE_NATURAL_JUNCTION))
-                    continue;
-
-                if (sKecleonShopItemSpawnChances[floorProps->kecleonShopLayout][yIndex][xIndex] > DungeonRandInt(100)) {
-                    tile->spawnOrVisibilityFlags.spawn |= SPAWN_FLAG_ITEM;
-                    MGBA_Warnf("[ShopGen] Forced: Placing item spawn at (%d,%d) xIdx=%d yIdx=%d", x, y, xIndex, yIndex);
-                }
-            }
-        }
-        return;
-    }
 
     MGBA_Warnf("[ShopGen] Trim start: bounds=(%d,%d)-(%d,%d) layout=%d",
                sKecleonShopPosition.minX, sKecleonShopPosition.minY,

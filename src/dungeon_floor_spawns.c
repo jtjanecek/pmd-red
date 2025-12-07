@@ -87,19 +87,42 @@ static void ApplySeedOverridesToCurrentFloor(void)
         MGBA_Warnf("[BossGen] Weather override applied: weather=%d", overrides.bossFight.weather);
     }
 
-    // Apply Kecleon shop override: exactly 1 shop per dungeon on a deterministic floor
+    // Seeded shop floor: bias the chosen floor to roll a shop using natural generation
     {
         s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(gDungeon->unk644.dungeonLocation.id, seed);
         s32 targetFloor = gDungeon->startFloorId + kecleonFloor + 1; // dungeon floors appear 1-indexed
 
         if (gDungeon->unk644.dungeonLocation.floor == targetFloor) {
-            // This floor should have a Kecleon shop - set 100% chance
             gDungeon->floorProperties.kecleonShopChance = 100;
-            MGBA_Warnf("[Kecleon] Shop enabled: dungeonId=%d floor=%d seed=%d",
-                       gDungeon->unk644.dungeonLocation.id, gDungeon->unk644.dungeonLocation.floor, seed);
-        } else {
-            // No Kecleon shop on other floors - set 0% chance
-            gDungeon->floorProperties.kecleonShopChance = 0;
+            MGBA_Warnf("[Kecleon] Seeded shop floor: dungeonId=%d floor=%d seed=%d chance=%d",
+                       gDungeon->unk644.dungeonLocation.id,
+                       gDungeon->unk644.dungeonLocation.floor,
+                       seed,
+                       gDungeon->floorProperties.kecleonShopChance);
+
+            // Ensure Kecleon sprite data is loaded by adding it to the spawn table if missing
+            {
+                bool8 found = FALSE;
+                s32 emptyIndex = -1;
+
+                for (i = 0; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
+                    s16 species = ExtractSpeciesIndex(&gDungeon->fileMonsterSpawns[i]);
+                    if (species == 0 && emptyIndex == -1) {
+                        emptyIndex = i;
+                    }
+                    if (species == MONSTER_KECLEON) {
+                        found = TRUE;
+                        break;
+                    }
+                }
+
+                if (!found && emptyIndex >= 0) {
+                    SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[emptyIndex], MONSTER_KECLEON);
+                    gDungeon->fileMonsterSpawns[emptyIndex].randNum[0] = 1;
+                    gDungeon->fileMonsterSpawns[emptyIndex].randNum[1] = 1;
+                    MGBA_Warnf("[Kecleon] Injected Kecleon into spawn table at index %d for sprite load", emptyIndex);
+                }
+            }
         }
     }
 

@@ -21,6 +21,7 @@
 #include "training_maze.h"
 #include "rescue_scenario.h"
 #include "gengar_hint.h"
+#include "skarmory_recruit.h"
 
 // size: 0x800
 struct unk_struct
@@ -37,7 +38,8 @@ struct unk_struct
     u8 recruitAll;
     TypeSelectionSaveData typeSelection;
     GengarHintSaveData gengarHints;
-    u32 padding[477];
+    u32 padding[474];
+    SkarmoryRecruitSaveData skarmoryRecruit;
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
@@ -110,13 +112,15 @@ void SetSkipBasicRescuesSetting(u8 value)
 
 u8 GetRecruitAllSetting(void)
 {
+    if (gRecruitAllSetting >= NUM_RECRUIT_ALL_SETTINGS)
+        gRecruitAllSetting = RECRUIT_ALL_NORMAL;
     return gRecruitAllSetting;
 }
 
 void SetRecruitAllSetting(u8 value)
 {
-    if (value > 2)
-        value = 0;
+    if (value >= NUM_RECRUIT_ALL_SETTINGS)
+        value = RECRUIT_ALL_NORMAL;
     gRecruitAllSetting = value;
 }
 
@@ -256,23 +260,25 @@ u32 ReadSaveFromPak(u32 *a)
             sub_8011C28(playerSave->unk41C);
             sub_8011C40(playerSave->unk418);
             SetRNGSeed(playerSave->RngState);
-            SetGameDifficultySetting(playerSave->difficulty);
-            SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
-            SetRecruitAllSetting(playerSave->recruitAll);
-            TypeSelection_ReadSaveData(&playerSave->typeSelection);
-            GengarHint_ReadSaveData(&playerSave->gengarHints);
-        }
-        else {
-            gUnknown_203B184->unk054 = playerSave->unk41C;
-            gUnknown_203B184->unk050 = playerSave->unk418;
-            gUnknown_203B184->difficulty = playerSave->difficulty;
-            gUnknown_203B184->RngState = playerSave->RngState;
-            SetGameDifficultySetting(playerSave->difficulty);
-            SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
-            SetRecruitAllSetting(playerSave->recruitAll);
-            TypeSelection_ReadSaveData(&playerSave->typeSelection);
-            GengarHint_ReadSaveData(&playerSave->gengarHints);
-        }
+        SetGameDifficultySetting(playerSave->difficulty);
+        SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
+        SetRecruitAllSetting(playerSave->recruitAll);
+        TypeSelection_ReadSaveData(&playerSave->typeSelection);
+        GengarHint_ReadSaveData(&playerSave->gengarHints);
+        SkarmoryRecruit_ReadSaveData(&playerSave->skarmoryRecruit);
+    }
+    else {
+        gUnknown_203B184->unk054 = playerSave->unk41C;
+        gUnknown_203B184->unk050 = playerSave->unk418;
+        gUnknown_203B184->difficulty = playerSave->difficulty;
+        gUnknown_203B184->RngState = playerSave->RngState;
+        SetGameDifficultySetting(playerSave->difficulty);
+        SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
+        SetRecruitAllSetting(playerSave->recruitAll);
+        TypeSelection_ReadSaveData(&playerSave->typeSelection);
+        GengarHint_ReadSaveData(&playerSave->gengarHints);
+        SkarmoryRecruit_ReadSaveData(&playerSave->skarmoryRecruit);
+    }
     }
     if (!saveStatus)
     {
@@ -405,6 +411,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->recruitAll = GetRecruitAllSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
     GengarHint_WriteSaveData(&playerSave->gengarHints);
+    SkarmoryRecruit_WriteSaveData(&playerSave->skarmoryRecruit);
   }
   else {
     playerSave->unk41C = gUnknown_203B184->unk054;
@@ -415,6 +422,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->recruitAll = GetRecruitAllSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
     GengarHint_WriteSaveData(&playerSave->gengarHints);
+    SkarmoryRecruit_WriteSaveData(&playerSave->skarmoryRecruit);
   }
    playerSave->checksum = 0x5071412;
   gameName = GetGameInternalName();
@@ -564,6 +572,7 @@ void InitializePlayerData(void)
     InitializeExclusivePokemon();
     TypeSelection_ResetForNewRun();
     GengarHint_ResetAll();
+    SkarmoryRecruit_Reset();
 }
 
 

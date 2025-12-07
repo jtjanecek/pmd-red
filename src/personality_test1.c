@@ -95,6 +95,7 @@ static void StartSkipBasicRescuesSelection(void);
 static void HandleSkipBasicRescuesSelection(void);
 static void StartRecruitAllSelection(void);
 static void HandleRecruitAllSelection(void);
+static bool8 ShouldEnableAutoRecruitAllDebug(void);
 static void StartDifficultySelection(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
@@ -147,7 +148,7 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->usingCustomSeed = FALSE;
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
     sPersonalityTestTracker->unk4.skipBasicRescues = 0; // Default to No
-    sPersonalityTestTracker->unk4.recruitAll = 0; // Default to No
+    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NORMAL; // Default to No
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
     
@@ -165,10 +166,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
-    sPersonalityTestTracker->unk4.recruitAll = 2; // No Recruitable
+    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_AUTO;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;
-    SetRecruitAllSetting(2);
+    SetRecruitAllSetting(RECRUIT_ALL_AUTO);
     SetSkipBasicRescuesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_NIGHTMARE);
     
@@ -422,6 +423,14 @@ static void StartRecruitAllSelection(void)
     sPersonalityTestTracker->TestState = PERSONALITY_RECRUIT_ALL_SELECTION;
 }
 
+static bool8 ShouldEnableAutoRecruitAllDebug(void)
+{
+    // Hidden debug toggle: hold L+R+SELECT while confirming "All Recruitable"
+    // to set the AutoRecruitAll preset without exposing it on the menu.
+    u16 held = gRealInputs.held;
+    return (held & (L_BUTTON | R_BUTTON | SELECT_BUTTON)) == (L_BUTTON | R_BUTTON | SELECT_BUTTON);
+}
+
 // PlaySolo selection removed; always proceed to partner selection.
 
 static void StartDifficultySelection(void)
@@ -605,8 +614,12 @@ static void HandleRecruitAllSelection(void)
     if (sub_80144A4(&selection) != 0)
         return;
 
-    if (selection < 0 || selection > 2)
-        selection = 0; // Default to Normal
+    if (selection < 0 || selection > RECRUIT_ALL_NONE)
+        selection = RECRUIT_ALL_NORMAL; // Default to Normal
+
+    if (selection == RECRUIT_ALL_ALL && ShouldEnableAutoRecruitAllDebug()) {
+        selection = RECRUIT_ALL_AUTO;
+    }
 
     sPersonalityTestTracker->unk4.recruitAll = (u8)selection;
     SetRecruitAllSetting((u8)selection);

@@ -3,6 +3,7 @@
 #include "textbox.h"
 #include "constants/dungeon.h"
 #include "constants/monster.h"
+#include "constants/item.h"
 #include "code_800558C.h"
 #include "code_800D090.h"
 #include "confirm_name_menu.h"
@@ -23,6 +24,7 @@
 #include "felicity_bank.h"
 #include "flash.h"
 #include "friend_list_menu.h"
+#include "friend_area.h"
 #include "ground_lives.h"
 #include "ground_map.h"
 #include "ground_main.h"
@@ -32,6 +34,7 @@
 #include "input.h"
 #include "dungeon_info.h"
 #include "dungeon_seed_overrides.h"
+#include "skarmory_recruit.h"
 #include "move_deleter.h"
 #include "kangaskhan_storage1.h"
 #include "kangaskhan_storage2.h"
@@ -58,6 +61,7 @@
 #include "game_options.h"
 #include "script_item.h"
 #include "structs/menu.h"
+#include "save.h"
 #include "structs/str_file_system.h"
 #include "structs/str_mon_portrait.h"
 #include "type_selection.h"
@@ -188,6 +192,47 @@ static const MenuItem sGengarHintPaymentMenu[] = {
 static const MenuItem sGengarHintChoiceMenu[] = {
     {_("Kecleon shop rurmors"), 1},
     {_("Hint 2"), 2},
+    {NULL, -1},
+};
+
+static bool8 sSkarmoryRecruitMenuActive = FALSE;
+
+typedef enum SkarmoryRecruitStage
+{
+    SKARMORY_RECRUIT_STAGE_NONE = 0,
+    SKARMORY_RECRUIT_STAGE_PROMPT,
+    SKARMORY_RECRUIT_STAGE_MESSAGE_WAIT,
+} SkarmoryRecruitStage;
+
+typedef struct SkarmoryRecruitConversationState
+{
+    SkarmoryRecruitStage stage;
+    s16 species;
+    MonPortraitMsg portrait;
+    bool8 portraitInitialized;
+} SkarmoryRecruitConversationState;
+
+static EWRAM_DATA SkarmoryRecruitConversationState sSkarmoryRecruitState = {0};
+static EWRAM_DATA u8 sSkarmoryRecruitBuffer[128] = {0};
+
+static void StartSkarmoryRecruitConversation(void);
+static bool8 UpdateSkarmoryRecruitConversation(void);
+static void ShowSkarmoryRecruitMessage(const u8 *text);
+static bool8 HasEnoughMoneyForSkarmoryRecruit(void);
+static bool8 TrySkarmoryRecruitRecruitment(s16 species);
+static void InitSkarmoryRecruitPortrait(void);
+static void CleanupSkarmoryRecruitPortrait(void);
+static MonPortraitMsg *GetSkarmoryRecruitPortrait(void);
+
+static const u8 sSkarmoryRecruitUnavailableText[] = _("Need a completed run before I can deploy new recruits.");
+static const u8 sSkarmoryRecruitNoMoneyText[] = _("Airlift costs 50 {POKE}. You're short.");
+static const u8 sSkarmoryRecruitDeclineText[] = _("Copy. I'll stay on overwatch.");
+static const u8 sSkarmoryRecruitRosterFullText[] = _("No room to station them. Clear some space.");
+static const u8 sSkarmoryRecruitDisabledText[] = _("Recruitment's locked out right now.");
+
+static const MenuItem sSkarmoryRecruitMenu[] = {
+    {_("Recruit for 50 {POKE}"), 1},
+    {_("Not right now"), 0},
     {NULL, -1},
 };
 
@@ -1586,6 +1631,26 @@ static bool8 sub_809B648(void)
                 return 1;
             }
             return 1;
+        case SPECIAL_TEXT_SKARMORY_RECRUIT:
+            if (sSkarmoryRecruitMenuActive) {
+                if (!UpdateSkarmoryRecruitConversation())
+                    return 1;
+
+                CleanupSkarmoryRecruitPortrait();
+                sSkarmoryRecruitMenuActive = FALSE;
+                sTextbox->unk430 = -1;
+                sTextbox->unk420 = 3;
+                return 0;
+            }
+
+            if (sTextbox->unk420 == 1) {
+                ResetTextbox();
+                StartSkarmoryRecruitConversation();
+                sSkarmoryRecruitMenuActive = TRUE;
+                sTextbox->unk420 = 4;
+                return 1;
+            }
+            return 1;
         case SPECIAL_TEXT_TYPE_SELECTION:
             if (sTypeSelectionMenuActive) {
                 if (!TypeSelectionMenu_Update())
@@ -2415,6 +2480,140 @@ static MonPortraitMsg *GetGengarHintPortrait(void)
 {
     if (sGengarHintState.portraitInitialized && sGengarHintState.portrait.faceData != NULL)
         return &sGengarHintState.portrait;
+
+    return NULL;
+}
+
+static void StartSkarmoryRecruitConversation(void)
+{
+    sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_NONE;
+    sSkarmoryRecruitState.species = -1;
+    InitSkarmoryRecruitPortrait();
+
+    if (GetRecruitAllSetting() == RECRUIT_ALL_NONE) {
+        ShowSkarmoryRecruitMessage(sSkarmoryRecruitDisabledText);
+        return;
+    }
+
+    if (!SkarmoryRecruit_IsAvailable()) {
+        ShowSkarmoryRecruitMessage(sSkarmoryRecruitUnavailableText);
+        return;
+    }
+
+    sSkarmoryRecruitState.species = SkarmoryRecruit_GetOfferedSpecies();
+    if (sSkarmoryRecruitState.species < 0) {
+        ShowSkarmoryRecruitMessage(sSkarmoryRecruitUnavailableText);
+        return;
+    }
+
+    CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[0], sSkarmoryRecruitState.species);
+    sprintfStatic(sSkarmoryRecruitBuffer, _("Air support option: %s for 50 {POKE}.\nBring them in?"), gFormatBuffer_Monsters[0]);
+    CreateMenuDialogueBoxAndPortrait(sSkarmoryRecruitBuffer, 0, 0, sSkarmoryRecruitMenu, 0, 3, 0, GetSkarmoryRecruitPortrait(), 0x101);
+    sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_PROMPT;
+}
+
+static bool8 UpdateSkarmoryRecruitConversation(void)
+{
+    s32 selection;
+
+    if (sSkarmoryRecruitState.stage == SKARMORY_RECRUIT_STAGE_NONE)
+        return TRUE;
+
+    if (sub_80144A4(&selection) != 0)
+        return FALSE;
+
+    switch (sSkarmoryRecruitState.stage) {
+        case SKARMORY_RECRUIT_STAGE_PROMPT:
+            if (selection == 1) {
+                if (!HasEnoughMoneyForSkarmoryRecruit()) {
+                    ShowSkarmoryRecruitMessage(sSkarmoryRecruitNoMoneyText);
+                    return FALSE;
+                }
+                if (TrySkarmoryRecruitRecruitment(sSkarmoryRecruitState.species)) {
+                    CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[0], sSkarmoryRecruitState.species);
+                    sprintfStatic(sSkarmoryRecruitBuffer, _("%s is en route. They'll await you at base."), gFormatBuffer_Monsters[0]);
+                    SkarmoryRecruit_MarkUsed();
+                    ShowSkarmoryRecruitMessage(sSkarmoryRecruitBuffer);
+                    return FALSE;
+                }
+                ShowSkarmoryRecruitMessage(sSkarmoryRecruitRosterFullText);
+                return FALSE;
+            }
+            ShowSkarmoryRecruitMessage(sSkarmoryRecruitDeclineText);
+            return FALSE;
+        case SKARMORY_RECRUIT_STAGE_MESSAGE_WAIT:
+            sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_NONE;
+            return TRUE;
+    }
+
+    sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_NONE;
+    return TRUE;
+}
+
+static void ShowSkarmoryRecruitMessage(const u8 *text)
+{
+    CreateDialogueBoxAndPortrait(text, 0, GetSkarmoryRecruitPortrait(), STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS | STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS_2);
+    sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_MESSAGE_WAIT;
+}
+
+static bool8 HasEnoughMoneyForSkarmoryRecruit(void)
+{
+    TeamInventory *inventory = GetMoneyItemsInfo();
+
+    if (inventory == NULL)
+        return FALSE;
+
+    return (inventory->teamMoney >= SKARMORY_RECRUIT_COST);
+}
+
+static bool8 TrySkarmoryRecruitRecruitment(s16 species)
+{
+    static const DungeonLocation recruitLocation = {.id = DUNGEON_RESCUE_TEAM_BASE_2, .floor = 0};
+    Pokemon *recruitPtr;
+
+    if (species <= 0)
+        return FALSE;
+
+    UnlockFriendArea(GetFriendArea(species));
+    recruitPtr = TryAddLevel1PokemonToRecruited(species, NULL, ITEM_NOTHING, &recruitLocation, NULL);
+    if (recruitPtr == NULL)
+        return FALSE;
+
+    AddToTeamMoney(-SKARMORY_RECRUIT_COST);
+    IncrementAdventureNumJoined();
+    return TRUE;
+}
+
+static void InitSkarmoryRecruitPortrait(void)
+{
+    CleanupSkarmoryRecruitPortrait();
+
+    sSkarmoryRecruitState.portrait.faceFile = GetDialogueSpriteDataPtr(MONSTER_SKARMORY);
+    if (sSkarmoryRecruitState.portrait.faceFile == NULL)
+        return;
+
+    sSkarmoryRecruitState.portrait.faceData = (PortraitGfx *)sSkarmoryRecruitState.portrait.faceFile->data;
+    sSkarmoryRecruitState.portrait.spriteId = 0;
+    sSkarmoryRecruitState.portrait.flip = FALSE;
+    sSkarmoryRecruitState.portrait.unkE = 0;
+    sSkarmoryRecruitState.portrait.pos.x = 2;
+    sSkarmoryRecruitState.portrait.pos.y = 8;
+    sSkarmoryRecruitState.portraitInitialized = TRUE;
+}
+
+static void CleanupSkarmoryRecruitPortrait(void)
+{
+    if (sSkarmoryRecruitState.portrait.faceFile != NULL) {
+        CloseFile(sSkarmoryRecruitState.portrait.faceFile);
+    }
+    MemoryFill8(&sSkarmoryRecruitState.portrait, 0, sizeof(sSkarmoryRecruitState.portrait));
+    sSkarmoryRecruitState.portraitInitialized = FALSE;
+}
+
+static MonPortraitMsg *GetSkarmoryRecruitPortrait(void)
+{
+    if (sSkarmoryRecruitState.portraitInitialized && sSkarmoryRecruitState.portrait.faceData != NULL)
+        return &sSkarmoryRecruitState.portrait;
 
     return NULL;
 }

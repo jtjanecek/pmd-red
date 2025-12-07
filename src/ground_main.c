@@ -37,6 +37,7 @@
 #include "adventure_info.h"
 #include "palette_util.h"
 #include "gengar_hint.h"
+#include "skarmory_recruit.h"
 
 EWRAM_DATA u32 gUnknown_20398A8 = {0};
 EWRAM_DATA s32 gUnknown_20398AC = {0};
@@ -218,6 +219,7 @@ u32 xxx_script_related_8098468(s32 param_1)
                         MGBA_Printf(0, "[HINT-CLEAR] Calling GengarHint_SetDungeonCompleted()");
                         GengarHint_SetDungeonCompleted();
                         MGBA_Printf(0, "[HINT-CLEAR] GengarHint_SetDungeonCompleted() completed");
+                        SkarmoryRecruit_SetDungeonCompleted(dungeonIndex);
 
                         // Check if this is the final dungeon (Dungeon 20) - trigger credits
                         if (DungeonSeedOverrides_ShouldTriggerCredits()) {

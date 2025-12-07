@@ -194,7 +194,6 @@ void GetFriendAreaCapacity(u8 areaId, FriendAreaCapacity *dst, bool8 checkPartne
     s32 max;
 
     r5 = 0;
-
     for (i = 0; i < areaId; i++)
         r5 += gFriendAreaSettings[i].num_pokemon;
 

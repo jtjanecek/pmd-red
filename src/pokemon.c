@@ -239,8 +239,12 @@ Pokemon *TryAddPokemonToRecruited(Pokemon *pokemon)
     if (GetFriendSum_808D480() >= MAX_RECRUITED_POKEMON)
         return NULL;
 
-    if (!gFriendAreas[friendArea])
-        return NULL;
+    if (!gFriendAreas[friendArea]) {
+        // Friend Areas are expected to be unlocked by default in this fork.
+        // If a recruit slips through before its area is marked open, unlock it
+        // so the recruit is not silently dropped on save.
+        UnlockFriendArea(friendArea);
+    }
     for (i = 0; i < NUM_MONSTERS; i++) {
         if (!PokemonExists(&gRecruitedPokemonRef->pokemon[i])) {
             u8 speciesFriendArea = sub_80923D4(i);

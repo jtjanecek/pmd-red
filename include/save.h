@@ -12,6 +12,7 @@
 #include "constants/difficulty.h"
 #include "type_selection.h"
 #include "gengar_hint.h"
+#include "skarmory_recruit.h"
 
 enum
 {
@@ -27,6 +28,15 @@ enum
     READ_SAVE_VALID,
     READ_SAVE_FAILED,
     READ_SAVE_CHECKSUM_ERROR
+};
+
+enum RecruitAllSetting
+{
+    RECRUIT_ALL_NORMAL = 0,
+    RECRUIT_ALL_ALL,
+    RECRUIT_ALL_NONE,
+    RECRUIT_ALL_AUTO,
+    NUM_RECRUIT_ALL_SETTINGS
 };
 
 // size: 0x57D4
@@ -53,7 +63,8 @@ struct UnkStruct_sub_8011DAC
     u32 savedMailInfo;
     TypeSelectionSaveData typeSelection;
     GengarHintSaveData gengarHints;
-    u8 unk448[0x532C];
+    u8 unk448[0x5320];
+    SkarmoryRecruitSaveData skarmoryRecruit;
 };
 
 // size: 0x60

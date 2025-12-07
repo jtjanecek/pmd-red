@@ -35,9 +35,9 @@
 
 static void nullsub_96(Entity *pokemon,Entity *target);
 static void sub_806F910(void);
-static bool8 HasReachedRecruitmentCap(void);
+static bool8 WouldExceedRecruitmentCap(s32 pendingNew);
 
-static bool8 HasReachedRecruitmentCap(void)
+static bool8 WouldExceedRecruitmentCap(s32 pendingNew)
 {
     s32 i;
     s32 total = GetFriendSum_808D480();
@@ -50,47 +50,54 @@ static bool8 HasReachedRecruitmentCap(void)
         }
     }
 
-    return total >= MAX_RECRUITED_POKEMON;
+    total += pendingNew;
+
+    return total > MAX_RECRUITED_POKEMON;
 }
 
 bool8 TryRecruitMonster(Entity *attacker, Entity *target)
 {
     s32 i;
-    s32 rand;
-    s32 recruitRate;
     EntityInfo *attackerInfo = GetEntInfo(attacker);
     EntityInfo *targetInfo = GetEntInfo(target);
     s32 foundIndex = -1;
     s32 size = GetBodySize(targetInfo->apparentID);
     u8 recruitSetting = GetRecruitAllSetting();
+    bool8 autoRecruitAll = recruitSetting == RECRUIT_ALL_AUTO;
 
-    if (recruitSetting == 2)
+    if (recruitSetting == RECRUIT_ALL_NONE)
         return FALSE;
 
-    if (gDungeon->fixedRoomNumber != FIXED_ROOM_FROSTY_GROTTO_ARTICUNO
-        && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_BLAZE_PEAK_MOLTRES
-        && gDungeon->fixedRoomNumber != FIXED_ROOM_WESTERN_CAVE_MEWTWO
-        && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_FARAWAY_HO_OH
-    ) {
-        if (gDungeon->fixedRoomNumber >= FIXED_ROOM_TEAM_SHIFTY_BOSS
-            && gDungeon->fixedRoomNumber <= FIXED_ROOM_RESCUE_TEAM_2_BOSS
+    // Hard stop if adding this target would exceed the total recruit cap.
+    if (WouldExceedRecruitmentCap(1))
+        return FALSE;
+
+    if (!autoRecruitAll) {
+        if (gDungeon->fixedRoomNumber != FIXED_ROOM_FROSTY_GROTTO_ARTICUNO
+            && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_BLAZE_PEAK_MOLTRES
+            && gDungeon->fixedRoomNumber != FIXED_ROOM_WESTERN_CAVE_MEWTWO
+            && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_FARAWAY_HO_OH
         ) {
-            if (gDungeon->unk644.unk18 == 0)
+            if (gDungeon->fixedRoomNumber >= FIXED_ROOM_TEAM_SHIFTY_BOSS
+                && gDungeon->fixedRoomNumber <= FIXED_ROOM_RESCUE_TEAM_2_BOSS
+            ) {
+                if (gDungeon->unk644.unk18 == 0)
+                    return FALSE;
+            }
+            else if (gDungeon->fixedRoomNumber == FIXED_ROOM_RESCUE_TEAM_MAZE_BOSS) {
+                if (gDungeon->unk644.unk15 == 0)
+                    return FALSE;
+                if (!sub_8097900(MONSTER_DEOXYS_NORMAL))
+                    return FALSE;
+            }
+            else if (!IsRecruitingEnabled(gDungeon->unk644.dungeonLocation.id)) {
                 return FALSE;
+            }
         }
-        else if (gDungeon->fixedRoomNumber == FIXED_ROOM_RESCUE_TEAM_MAZE_BOSS) {
-            if (gDungeon->unk644.unk15 == 0)
-                return FALSE;
-            if (!sub_8097900(MONSTER_DEOXYS_NORMAL))
-                return FALSE;
-        }
-        else if (!IsRecruitingEnabled(gDungeon->unk644.dungeonLocation.id)) {
-            return FALSE;
-        }
-    }
 
-    if (gDungeon->unk644.unk19 != 0)
-        return FALSE;
+        if (gDungeon->unk644.unk19 != 0)
+            return FALSE;
+    }
 
     // Legendaries can only be recruited once.
     if ((targetInfo->id == MONSTER_ARTICUNO ||
@@ -112,29 +119,44 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
         return FALSE;
     }
 
-    if (!IsMonsterRecruitable(targetInfo->id))
-        return FALSE;
-    if (abs((attacker->pos).x - (target->pos).x) >= 2 || abs((attacker->pos).y - (target->pos).y) >= 2)
-        return FALSE;
-    if (targetInfo->joinedAt.id == DUNGEON_JOIN_LOCATION_CLIENT_POKEMON)
-        return FALSE;
-    if (targetInfo->monsterBehavior == 1)
-        return FALSE;
-    if (!CanSeeTarget(target,attacker))
-        return FALSE;
+    if (!autoRecruitAll) {
+        if (!IsMonsterRecruitable(targetInfo->id))
+            return FALSE;
+        if (abs((attacker->pos).x - (target->pos).x) >= 2 || abs((attacker->pos).y - (target->pos).y) >= 2)
+            return FALSE;
+        if (targetInfo->joinedAt.id == DUNGEON_JOIN_LOCATION_CLIENT_POKEMON)
+            return FALSE;
+        if (targetInfo->monsterBehavior == 1)
+            return FALSE;
+        if (!CanSeeTarget(target,attacker))
+            return FALSE;
+    }
+    else {
+        // AutoRecruitAll: only respect the global recruit cap and avoid recruiting clients/allies.
+        if (WouldExceedRecruitmentCap(1))
+            return FALSE;
+        if (targetInfo->joinedAt.id == DUNGEON_JOIN_LOCATION_CLIENT_POKEMON)
+            return FALSE;
+        if (targetInfo->monsterBehavior == 1)
+            return FALSE;
+    }
 
     sub_806F910();
-    rand = DungeonRandInt(1000);
-    recruitRate = GetRecruitRate(targetInfo->id);
-    if (recruitRate == -999)
-        return FALSE;
+    {
+        s32 recruitRate = GetRecruitRate(targetInfo->id);
+        if (recruitRate == -999 && !autoRecruitAll)
+            return FALSE;
 
-    if (HasHeldItem(attacker, ITEM_FRIEND_BOW)) {
-        recruitRate += gFriendBowRecruitRateUpValue;
+        if (!autoRecruitAll) {
+            s32 rand = DungeonRandInt(1000);
+            if (HasHeldItem(attacker, ITEM_FRIEND_BOW)) {
+                recruitRate += gFriendBowRecruitRateUpValue;
+            }
+            recruitRate += gRecruitRateByLevel[attackerInfo->level];
+            if (rand >= recruitRate)
+                return FALSE;
+        }
     }
-    recruitRate += gRecruitRateByLevel[attackerInfo->level];
-    if (rand >= recruitRate)
-        return FALSE;
 
     for (i = 0; i <= (MAX_TEAM_BODY_SIZE - size); i++) {
         s32 j;
@@ -213,7 +235,7 @@ bool8 IsMonsterRecruitable(s32 species)
     if (!gDungeon->unk644.canRecruit) {
         return FALSE;
     }
-    else if (HasReachedRecruitmentCap()) {
+    else if (WouldExceedRecruitmentCap(1)) {
         return FALSE;
     }
     else if (!sub_808529C(id)) {
@@ -355,10 +377,13 @@ bool8 CanEntityBeRecruited(Entity *param_1)
     EntityInfo *info = GetEntInfo(param_1);
     s32 validIndex = -1;
     s32 size = GetBodySize(info->apparentID);
+    u8 recruitSetting = GetRecruitAllSetting();
 
-    if (GetRecruitAllSetting() == 2)
+    if (recruitSetting == RECRUIT_ALL_NONE)
         return FALSE;
-    if (!IsMonsterRecruitable(info->id))
+    if (recruitSetting != RECRUIT_ALL_AUTO && !IsMonsterRecruitable(info->id))
+        return FALSE;
+    if (recruitSetting == RECRUIT_ALL_AUTO && WouldExceedRecruitmentCap(1))
         return FALSE;
 
     sub_806F910();

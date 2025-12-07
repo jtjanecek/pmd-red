@@ -707,7 +707,7 @@ const struct ScriptCommand s_gs9_skarmory_base_dlg0[] = { /* custom */
     DEBUGINFO_O(740),
     SELECT_ANIMATION(2),
     MSG_NPC(1, _(" Skarmory reporting in. I'm keeping\nwatch over the base.")),
-    MSG_NPC(1, _(" Need air support? Just give a shout.")),
+    SPECIAL_TEXT(SPECIAL_TEXT_SKARMORY_RECRUIT, 0, 0),
     JUMP_SCRIPT(END_TALK),
 };
 

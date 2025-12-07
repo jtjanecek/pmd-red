@@ -703,6 +703,14 @@ static const struct ScriptCommand s_gs9_gulpin_base_dlg0[] = { /* custom */
     JUMP_SCRIPT(END_TALK),
 };
 
+const struct ScriptCommand s_gs9_skarmory_base_dlg0[] = { /* custom */
+    DEBUGINFO_O(740),
+    SELECT_ANIMATION(2),
+    MSG_NPC(1, _(" Skarmory reporting in. I'm keeping\nwatch over the base.")),
+    MSG_NPC(1, _(" Need air support? Just give a shout.")),
+    JUMP_SCRIPT(END_TALK),
+};
+
 static const struct ScriptCommand s_gs9_g0_s6_lives0_dlg0[] = { /* 0x819cd44 */
     DEBUGINFO_O(690),
     CALL_SCRIPT(LIVES_WARP_ARRIVE_FUNC),

@@ -23,6 +23,7 @@
 #include "textbox.h"
 #include "code_809D148.h"
 #include "ground_script_file.h"
+#include "data_script.h"
 
 struct GroundLivesMeta_Sub1
 {
@@ -96,6 +97,11 @@ struct GroundLives
 
 IWRAM_INIT struct GroundLives *gGroundLives = NULL;
 
+#define TEAM_BASE_GROUND_SCRIPT_ID 9
+#define TEAM_BASE_SKARMORY_KIND 69
+
+extern const ScriptCommand s_gs9_skarmory_base_dlg0[];
+
 struct GroundLiveTypeData
 {
     s16 unk0;
@@ -128,6 +134,46 @@ static void CallbackLivesSetEventIndex(void *livesPtr_, u16 a1);
 static void CallbackLivesSetUnk_80AB194(void *livesPtr_, s32 a1_, s32 a2);
 static void nullsub_211(void *livesPtr_, u16 a1);
 static bool8 CallbackLivesSpriteRelatedCheck_80AB1C0(void *livesPtr_);
+
+static const GroundLivesData sTeamBaseSkarmory = {
+    .kind = TEAM_BASE_SKARMORY_KIND,
+    .unk1 = 0,
+    .width = 0,
+    .height = 0,
+    .pos = { 54, 39, 0, CPOS_HALFTILE },
+    .scripts = {
+        [2] = s_gs9_skarmory_base_dlg0,
+    },
+};
+
+static bool8 HasTeamBaseSkarmory(void)
+{
+    s32 i;
+
+    if (gGroundLives == NULL) {
+        return FALSE;
+    }
+
+    for (i = 0; i < UNK_3001B84_ARR_COUNT; i++) {
+        if (gGroundLives->array[i].unk2 == TEAM_BASE_SKARMORY_KIND) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+static void MaybeAddTeamBaseSkarmory(s32 scriptId, s32 group, s32 sector)
+{
+    if (scriptId != TEAM_BASE_GROUND_SCRIPT_ID) {
+        return;
+    }
+    if (HasTeamBaseSkarmory()) {
+        return;
+    }
+
+    GroundLives_Add(-1, &sTeamBaseSkarmory, group, sector);
+}
 static bool8 CallbackLivesSpriteRelated_80AB1E4(void *livesPtr_);
 static void CallbackLivesGetFlags(void *livesPtr_, u32 *flags);
 static void CallbackLivesSetFlags(void *livesPtr_, u32 flags);
@@ -279,6 +325,8 @@ void GroundLives_Select(s32 scriptID, s32 group, s32 sector)
     {
         GroundLives_Add(-1,livesData,group_s32,sector_s32);
     }
+
+    MaybeAddTeamBaseSkarmory(scriptID_s32, group_s32, sector_s32);
 }
 
 void GroundLives_Cancel(s32 scriptID, s32 sector)

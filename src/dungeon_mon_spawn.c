@@ -24,6 +24,8 @@
 #include "dungeon_util.h"
 #include "exclusive_pokemon.h"
 #include "file_system.h"
+#include "dungeon_seed_overrides.h"
+#include "constants/dungeon_exit.h"
 #include "move_orb_effects_1.h"
 #include "moves.h"
 #include "mgba_log.h"
@@ -1004,7 +1006,31 @@ void sub_806C3C0(void)
             spStruct.unk10 = 0;
             MGBA_Warnf("[SpawnQueue] Spawning queued entity species=%d pos=(%d,%d) unk2=%d",
                        spStruct.species, spStruct.pos.x, spStruct.pos.y, spStruct.unk2);
-            SpawnWildMon(&spStruct, TRUE);
+            {
+                Entity *spawned = SpawnWildMon(&spStruct, TRUE);
+
+                // Seeded chance to immediately KO shopkeeper (player theft will trigger robbery naturally)
+                if (spawned != NULL && spStruct.species == MONSTER_KECLEON) {
+                    s32 seed = 0;
+                    u32 roll = 0;
+                    u32 threshold = 100; // TODO: tune chance; currently 100% for testing
+
+                    if (DungeonSeedOverrides_IsEnabled(&seed)) {
+                        roll = DungeonSeedOverrides_GetDungeonRngSeed(seed,
+                                                                     gDungeon->unk644.dungeonLocation.id,
+                                                                     gDungeon->unk644.dungeonLocation.floor) % 100;
+                    } else {
+                        roll = DungeonRandInt(100);
+                    }
+
+                    if (roll < threshold) {
+                        EntityInfo *info = GetEntInfo(spawned);
+                        info->HP = 0;
+                        HandleFaint(spawned, DUNGEON_EXIT_DELETED_FOR_EVENT, spawned);
+                        MGBA_Warnf("[SpawnQueue] Kecleon auto-fainted roll=%u threshold=%u (robbery will trigger on item pickup)", roll, threshold);
+                    }
+                }
+            }
         }
     }
 }

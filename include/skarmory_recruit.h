@@ -2,6 +2,7 @@
 #define GUARD_SKARMORY_RECRUIT_H
 
 #include "global.h"
+#include "pokemon.h"
 
 #define SKARMORY_RECRUIT_COST 50
 
@@ -21,6 +22,8 @@ void SkarmoryRecruit_SetDungeonCompleted(s16 dungeonId);
 bool8 SkarmoryRecruit_IsAvailable(void);
 s16 SkarmoryRecruit_GetOfferedSpecies(void);
 void SkarmoryRecruit_MarkUsed(void);
+u8 SkarmoryRecruit_GetRecommendedLevel(void);
+void SkarmoryRecruit_SetRecruitLevel(Pokemon *pokemon);
 extern const void *const gSkarmoryRecruitLinkAnchor[];
 
 #endif // GUARD_SKARMORY_RECRUIT_H

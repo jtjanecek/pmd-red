@@ -224,9 +224,9 @@ static void InitSkarmoryRecruitPortrait(void);
 static void CleanupSkarmoryRecruitPortrait(void);
 static MonPortraitMsg *GetSkarmoryRecruitPortrait(void);
 
-static const u8 sSkarmoryRecruitUnavailableText[] = _("Need a completed run before I can deploy new recruits.");
+static const u8 sSkarmoryRecruitUnavailableText[] = _("I don't have anyone else\navailable yet.");
 static const u8 sSkarmoryRecruitNoMoneyText[] = _("Airlift costs 50 {POKE}. You're short.");
-static const u8 sSkarmoryRecruitDeclineText[] = _("Copy. I'll stay on overwatch.");
+static const u8 sSkarmoryRecruitDeclineText[] = _("Copy.");
 static const u8 sSkarmoryRecruitRosterFullText[] = _("No room to station them. Clear some space.");
 static const u8 sSkarmoryRecruitDisabledText[] = _("Recruitment's locked out right now.");
 
@@ -2507,7 +2507,7 @@ static void StartSkarmoryRecruitConversation(void)
     }
 
     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[0], sSkarmoryRecruitState.species);
-    sprintfStatic(sSkarmoryRecruitBuffer, _("Air support option: %s for 50 {POKE}.\nBring them in?"), gFormatBuffer_Monsters[0]);
+    sprintfStatic(sSkarmoryRecruitBuffer, _("You want reinforcements?\n%s is available."), gFormatBuffer_Monsters[0]);
     CreateMenuDialogueBoxAndPortrait(sSkarmoryRecruitBuffer, 0, 0, sSkarmoryRecruitMenu, 0, 3, 0, GetSkarmoryRecruitPortrait(), 0x101);
     sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_PROMPT;
 }
@@ -2579,6 +2579,7 @@ static bool8 TrySkarmoryRecruitRecruitment(s16 species)
     if (recruitPtr == NULL)
         return FALSE;
 
+    SkarmoryRecruit_SetRecruitLevel(recruitPtr);
     AddToTeamMoney(-SKARMORY_RECRUIT_COST);
     IncrementAdventureNumJoined();
     return TRUE;

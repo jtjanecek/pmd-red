@@ -44,6 +44,7 @@
 #include "portrait_placement.h"
 #include "pokemon.h"
 #include "save_write.h"
+#include "event_flag.h"
 #include "mgba_log.h"
 #include "string_format.h"
 #include "text_1.h"
@@ -62,6 +63,9 @@
 #include "type_selection.h"
 #include "gengar_hint.h"
 #include "items.h"
+
+// Pending dungeon selection from ground_main.c (script dungeon id)
+extern s16 gUnknown_20398C4;
 
 struct TextboxPortrait
 {
@@ -161,6 +165,7 @@ static const u8 *BuildKecleonShopHintText(void);
 static void InitGengarHintPortrait(void);
 static void CleanupGengarHintPortrait(void);
 static MonPortraitMsg *GetGengarHintPortrait(void);
+static s32 GetQueuedDungeonForHint(void);
 
 static const u8 sGengarHintIntroText[] = _("Heh heh heh...\nI know something about the dungeon ahead.\nGive me 1000 {POKE} for a hint.");
 static const u8 sGengarHintFreeIntroText[] = _("Heh heh... you're new here.\nI'll give you a free hint this time.\nWhich would you like?");
@@ -2289,8 +2294,14 @@ static void ShowGengarHintMessage(const u8 *text)
 
 static s32 GetCurrentDungeonForHint(void)
 {
-    DungeonLocation *location = GetDungeonLocationInfo();
+    s32 dungeonId = GetQueuedDungeonForHint();
+    DungeonLocation *location;
 
+    // Fallback: if no queued dungeon, use last known location
+    if (dungeonId >= 0)
+        return dungeonId;
+
+    location = GetDungeonLocationInfo();
     if (location == NULL)
         return -1;
 
@@ -2298,6 +2309,50 @@ static s32 GetCurrentDungeonForHint(void)
         return -1;
 
     return location->id;
+}
+
+// Determine the queued dungeon using script vars (DUNGEON_ENTER / DUNGEON_ENTER_INDEX).
+// This reflects the next dungeon the player is about to enter, not the last cleared one.
+static s32 GetQueuedDungeonForHint(void)
+{
+    s16 scriptDungeonSelect = (s16)GetScriptVarValue(NULL, DUNGEON_SELECT);
+    s16 scriptDungeonId = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER);
+    s16 scriptDungeonIndex = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
+    s32 dungeonId = -1;
+
+    // When overrides are active, prefer the sequential run's current dungeon.
+    if (DungeonSeedOverrides_IsEnabled(NULL)) {
+        s16 currentDungeon = DungeonSeedOverrides_GetCurrentDungeon();
+        if (currentDungeon >= 0)
+            dungeonId = currentDungeon;
+    }
+
+    if (dungeonId == -1 && scriptDungeonSelect != -1) {
+        dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonSelect);
+    }
+
+    // Some script dungeons use the index var (0x51 = job list)
+    if (dungeonId == -1) {
+        if (scriptDungeonId == 0x51 && scriptDungeonIndex != -1) {
+            dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonIndex);
+        }
+        else if (scriptDungeonId != -1) {
+            dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonId);
+        }
+        else if (scriptDungeonIndex != -1) {
+            dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonIndex);
+        }
+    }
+
+    // Fallback: use last queued script dungeon id from ground_main
+    if (dungeonId == -1 && gUnknown_20398C4 != -1) {
+        dungeonId = ScriptDungeonIdToDungeonId(gUnknown_20398C4);
+    }
+
+    if (dungeonId == DUNGEON_INVALID)
+        dungeonId = -1;
+
+    return dungeonId;
 }
 
 static bool8 HasEnoughMoneyForGengarHint(void)

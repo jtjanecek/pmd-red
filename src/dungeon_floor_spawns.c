@@ -22,9 +22,61 @@
 #include "structs/dungeon_mapparam.h"
 #include "dungeon_seed_overrides.h"
 #include "mgba_log.h"
+#include "save.h"
+#include "constants/difficulty.h"
 
 static bool8 TryGetSeedOverrideValue(s32 *seedOut);
 static void ApplySeedOverridesToCurrentFloor(void);
+static u8 GetSeededKecleonFaintChance(u32 difficulty);
+static u8 RollSeededKecleonFaintChance(s32 seed, s32 dungeonId, u8 faintChance);
+
+static EWRAM_DATA u8 sSeededKecleonFaintChance = 0;
+static EWRAM_DATA u8 sSeededKecleonFaintRoll = 0xFF;
+static EWRAM_DATA bool8 sSeededKecleonSpawnShopkeeper = TRUE;
+
+u8 DungeonFloorSpawns_GetSeededKecleonFaintChance(void)
+{
+    return sSeededKecleonFaintChance;
+}
+
+u8 DungeonFloorSpawns_GetSeededKecleonFaintRoll(void)
+{
+    return sSeededKecleonFaintRoll;
+}
+
+bool8 DungeonFloorSpawns_ShouldSpawnKecleonShopkeeper(void)
+{
+    return sSeededKecleonSpawnShopkeeper;
+}
+
+static u8 GetSeededKecleonFaintChance(u32 difficulty)
+{
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            return 70;
+        case DIFFICULTY_NIGHTMARE:
+            return 25;
+        case DIFFICULTY_NORMAL:
+        default:
+            return 90;
+    }
+}
+
+// Deterministically roll 0-99 using the personality seed and dungeon id.
+static u8 RollSeededKecleonFaintChance(s32 seed, s32 dungeonId, u8 faintChance)
+{
+    u32 rngSeed;
+    u32 hash;
+
+    if (faintChance == 0)
+        return 0xFF;
+
+    // Use the seeded RNG helper but salt it to a fixed per-dungeon roll (no floor dependency).
+    rngSeed = DungeonSeedOverrides_GetDungeonRngSeed(seed, (u8)dungeonId, 0);
+    rngSeed ^= 0x4B45434C; // "KECL"
+    hash = (rngSeed ^ (rngSeed >> 16)) * 1664525 + 1013904223;
+    return (u8)(hash % 100);
+}
 
 static bool8 TryGetSeedOverrideValue(s32 *seedOut)
 {
@@ -66,6 +118,9 @@ static void ApplySeedOverridesToCurrentFloor(void)
     s32 seed;
     s32 i;
 
+    sSeededKecleonFaintChance = 0;
+    sSeededKecleonFaintRoll = 0xFF;
+    sSeededKecleonSpawnShopkeeper = TRUE;
     if (!TryGetSeedOverrideValue(&seed))
         return;
 
@@ -93,12 +148,23 @@ static void ApplySeedOverridesToCurrentFloor(void)
         s32 targetFloor = gDungeon->startFloorId + kecleonFloor + 1; // dungeon floors appear 1-indexed
 
         if (gDungeon->unk644.dungeonLocation.floor == targetFloor) {
-            gDungeon->floorProperties.kecleonShopChance = 100;
-            MGBA_Warnf("[Kecleon] Seeded shop floor: dungeonId=%d floor=%d seed=%d chance=%d",
+            u32 difficulty = GetGameDifficultySetting();
+            u8 faintChance = GetSeededKecleonFaintChance(difficulty);
+            u8 roll = RollSeededKecleonFaintChance(seed, gDungeon->unk644.dungeonLocation.id, faintChance);
+
+            gDungeon->floorProperties.kecleonShopChance = 100; // Always generate the shop; NPC may faint
+            sSeededKecleonFaintChance = faintChance;
+            sSeededKecleonFaintRoll = roll;
+            sSeededKecleonSpawnShopkeeper = !(faintChance > 0 && roll < faintChance);
+            MGBA_Warnf("[Kecleon] Seeded shop floor: dungeonId=%d floor=%d seed=%d shopChance=%d difficulty=%d faintChance=%d",
                        gDungeon->unk644.dungeonLocation.id,
                        gDungeon->unk644.dungeonLocation.floor,
                        seed,
-                       gDungeon->floorProperties.kecleonShopChance);
+                       gDungeon->floorProperties.kecleonShopChance,
+                       difficulty,
+                       faintChance);
+            MGBA_Warnf("[Kecleon] Shopkeeper roll: faintChance=%d roll=%d spawn=%d",
+                       faintChance, roll, sSeededKecleonSpawnShopkeeper);
 
             // Ensure Kecleon sprite data is loaded by adding it to the spawn table if missing
             {

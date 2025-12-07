@@ -6,6 +6,9 @@
 
 // Getter for current floor's boss fight configuration
 const BossFightConfig* DungeonFloorSpawns_GetBossFightConfig(void);
+u8 DungeonFloorSpawns_GetSeededKecleonFaintChance(void);
+u8 DungeonFloorSpawns_GetSeededKecleonFaintRoll(void);
+bool8 DungeonFloorSpawns_ShouldSpawnKecleonShopkeeper(void);
 
 void sub_803D4AC(void);
 void SetFloorItemMonsterSpawns(void);

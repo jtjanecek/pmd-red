@@ -486,13 +486,22 @@ void GenerateFloor(void)
         // Queue a natural shopkeeper spawn on the shop floor so the game flags it as a shopkeeper
         if (sKecleonShopMiddlePos.x >= 0 && sKecleonShopMiddlePos.y >= 0) {
             Tile *centerTile = GetTileMut(sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
+            u8 faintChance = DungeonFloorSpawns_GetSeededKecleonFaintChance();
+            u8 faintRoll = DungeonFloorSpawns_GetSeededKecleonFaintRoll();
+            bool8 spawnShopkeeper = DungeonFloorSpawns_ShouldSpawnKecleonShopkeeper();
 
             // Keep the shopkeeper tile free of item spawns to avoid overlapping with shop stock
             centerTile->spawnOrVisibilityFlags.spawn &= ~(SPAWN_FLAG_ITEM);
-            sub_806C330(sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y, MONSTER_KECLEON, 0);
-            // Proactively load the shopkeeper sprite so VRAM init doesn't read a NULL handle
-            LoadPokemonSprite(MONSTER_KECLEON, TRUE);
-            MGBA_Warnf("[ShopGen] Queued shopkeeper spawn at (%d,%d)", sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y);
+            if (spawnShopkeeper) {
+                sub_806C330(sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y, MONSTER_KECLEON, 0);
+                // Proactively load the shopkeeper sprite so VRAM init doesn't read a NULL handle
+                LoadPokemonSprite(MONSTER_KECLEON, TRUE);
+                MGBA_Warnf("[ShopGen] Queued shopkeeper spawn at (%d,%d) faintChance=%d",
+                           sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y, faintChance);
+            }
+            else {
+                MGBA_Warnf("[ShopGen] Skipped shopkeeper spawn due to faint roll: faintChance=%d roll=%d", faintChance, faintRoll);
+            }
         }
     }
     else {

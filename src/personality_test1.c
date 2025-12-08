@@ -166,10 +166,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
-    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_AUTO;
+    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;
-    SetRecruitAllSetting(RECRUIT_ALL_AUTO);
+    SetRecruitAllSetting(RECRUIT_ALL_NONE);
     SetSkipBasicRescuesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_NIGHTMARE);
     

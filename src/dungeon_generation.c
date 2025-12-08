@@ -6389,10 +6389,10 @@ static const u8 sFixedRoom1_Tiles[] = {
     68,   6,   6,   6,   6,   6,   6,   6,  68,
     // Row 5: Middle walls
     2,   6,   6,   6,   6,   6,   6,   6,   2,
-    // Row 6: Water edges (stairs moved up 1 tile)
-    10,  10,  10,  10,  4,   10,  10,  10,  10,
-    // Row 7: Minion spawn area (for BACK formation)
-    10,  60,  60,  60,  60,  60,  60,  60,  10,
+    // Row 6: Water edges (moat row)
+    10,  10,  10,  10,  10,  10,  10,  10,  10,
+    // Row 7: Minion spawn area (for BACK formation) + stairs anchor (moves drop one tile down)
+    10,  60,  60,  60,   4,  60,  60,  60,  10,
     // Row 8: Boss spawn in main area (moved down 1 row)
     60,  60,  60,  60,  17,  60,  60,  60,  60,
     60,  60,  60,  60,  60,  60,  60,  60,  60,
@@ -6440,11 +6440,11 @@ static const u8 sFixedRoom2_Tiles[] = {
 // Fixed Room 3 - 9 rows x 10 columns (Mt. Thunder Peak Zapdos boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns and reposition stairs/loot
 static const u8 sFixedRoom3_Tiles[] = {
-    // Row 0 - Boss spawn at top, stairs to the side (boss moved 1 tile right)
+    // Row 0 - Boss spawn shifted left, stairs to the side
     6,  60,  60,  60,  17,   4,  60,  60,   2,   0,
     // Row 1 - Loot drops
-    2,  60,  60,  60,  68,  68,  68,  60,   2,   0,
-    // Row 2 - Stairs decoration
+    2,  60,  60,  68,  68,  68,  60,  60,   2,   0,
+    // Row 2 - Stairs decoration (aligned with new stair column)
     60, 60,  60,  60,  23,  22,  24,  25,  60,   0,
     // Row 3 - Player spawn area (moved left 1 tile)
     60, 60,  60,  60,  16,  60,  60,  60,  60,   0,
@@ -6467,12 +6467,12 @@ static const u8 sFixedRoom4_Tiles[] = {
     6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
     // Row 1 - Water with ONLY two single walkable floor tiles (jets at columns 3 and 9)
     10,  10,  10,  60,  10,  10,  10,  10,  10,  60,  10,  10,  10,   2,
-    // Row 2 - Boss spawn moved 2 tiles right, loot and stairs
+    // Row 2 - Stairs/loot shifted left, boss centered
     60,  60,  60,  68,   4,  68,  17,  60,  60,  60,  60,  60,  60,   2,
     // Row 3
     2,   60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,   2,
-    // Row 4 - Stairs decoration
-    60,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,  60,   2,
+    // Row 4 - Stairs decoration (aligned to new stairs column)
+    60,  60,  60,  23,  22,  24,  60,  60,  60,  60,  60,  60,  60,   2,
     // Row 5 - Player spawn area (moved up 1 tile)
     60,  60,  60,  60,  60,  27,  16,  26,  60,  60,  60,  60,  60,   2,
     // Row 6 - Stairs decoration
@@ -6560,8 +6560,8 @@ static const u8 sFixedRoom7_Tiles[] = {
 // Fixed Room 8 - 13 rows x 13 columns (Sky Tower Rayquaza boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns
 // Perfectly symmetric vertically and horizontally
-// Boss at row 4, Player at row 7 (3 tiles apart), Stairs at row 10 (bottom)
-// Special tile 36 at row 7 center (original position)
+// Boss at row 5, Player at row 8 (3 tiles apart), Stairs at row 4 (moved up)
+// Special tile 36 now sits left of the player (player shifted right 5 tiles)
 static const u8 sFixedRoom8_Tiles[] = {
     // Row 0
     6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
@@ -6571,47 +6571,47 @@ static const u8 sFixedRoom8_Tiles[] = {
     6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
     // Row 3
     6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,
-    // Row 4 - Boss spawn (3 tiles above player at row 7)
+    // Row 4 - Stairs row (keep tight center, leave walls elsewhere)
+    6,   6,   6,   6,  23,   4,  24,   6,   6,   6,   6,   6,   6,
+    // Row 5 - Boss spawn (3 tiles above player at row 8)
     6,   6,   6,   6,   6,  60,  17,  60,   6,   6,   6,   6,   6,
-    // Row 5
-    6,   6,   6,  60,  60,  60,  60,  60,  60,  60,   6,   6,   6,
     // Row 6
     6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
-    // Row 7 - Player spawn at left, special tile 36 at center (original position)
-    6,  16,  60,  60,  60,  60,  36,  60,  60,  60,  60,  60,   6,
-    // Row 8
+    // Row 7
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 8 - Player spawn moved right by 5 tiles; special tile left of player
+    6,  60,  60,  60,  60,  36,  16,  60,  60,  60,  60,  60,   6,
     // Row 9
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 10 - Stairs at center bottom
-    6,  60,  60,  60,  60,  23,   4,  24,  60,  60,  60,  60,   6,
-    // Row 11 - Stairs decoration
-    6,  60,  60,  60,  60,  27,  25,  26,  60,  60,  60,  60,   6,
+    // Row 10
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 11
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 12
     6,   6,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,   6,
 };
 
 // Fixed Room 15 - 13 rows x 13 columns (Mt. Faraway Ho-Oh boss room)
 // Original extracted pattern from ROM, modified to add player/boss spawns
-// Layout: Boss and player moved up 3 rows from original
+// Layout: Boss and player moved up 3 rows from original; stairs/loot moved up 6 tiles
 // Special tile 42 at original position (row 3)
 static const u8 sFixedRoom15_Tiles[] = {
     // Row 0
     6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   7,
-    // Row 1 - Boss spawn (moved up 3 rows, 3 tiles above player at row 4)
-    6,   6,  60,  60,  60,  60,  17,  60,  60,  60,  60,   6,   6,
-    // Row 2
-    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 1 - Boss spawn (moved up 3 rows, 3 tiles above player at row 4) with stairs shifted up/right
+    6,   6,  60,  60,  60,  60,   4,  17,  60,  60,  60,   6,   6,
+    // Row 2 - Stairs decoration (shifted up/right with stairs)
+    6,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
     // Row 3 - Special tile 42 at original position
     6,  60,  60,  60,  60,  60,  42,  60,  60,  60,  60,  60,   6,
     // Row 4 - Player spawn (moved up 3 rows) and stairs
     6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,  60,   6,
-    // Row 5 - Stairs decoration part 1
-    6,  60,  60,  60,  60,  23,  22,  24,  60,  60,  60,  60,   6,
-    // Row 6 - Stairs decoration part 2
-    6,  60,  60,  60,  60,  27,  25,  26,  60,  60,  60,  60,   6,
-    // Row 7 - Stairs at bottom
-    6,  60,  60,  60,  60,  60,   4,  60,  60,  60,  60,  60,   6,
+    // Row 5
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 6
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
+    // Row 7
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 8
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 9

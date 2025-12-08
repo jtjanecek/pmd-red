@@ -5,6 +5,7 @@
 #include "code_8099360.h"
 #include "common_strings.h"
 #include "input.h"
+#include "items.h"
 #include "kangaskhan_storage2.h"
 #include "kecleon_bros4.h"
 #include "memory.h"
@@ -48,6 +49,10 @@ bool8 sub_8017E1C(void)
     sUnknown_203B20C->menuAction1 = 0;
     sUnknown_203B20C->menuAction2 = 0;
     sUnknown_203B20C->menuAction3 = 0;
+#ifdef DEV
+    // DEV override: keep storage stocked with random items for quick testing
+    DevTopOffStorage();
+#endif
     UpdateKangaskhanStorage2State(KANGASKHAN_STORAGE_2_INIT);
     return TRUE;
 }

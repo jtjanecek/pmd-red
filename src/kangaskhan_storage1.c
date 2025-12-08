@@ -5,6 +5,7 @@
 #include "code_8099360.h"
 #include "common_strings.h"
 #include "input.h"
+#include "items.h"
 #include "kangaskhan_storage1.h"
 #include "kecleon_bros4.h"
 #include "memory.h"
@@ -53,6 +54,10 @@ bool8 CreateKangaskhanStorage(u32 mode)
     gKangaskhanStorageWork->menuAction2 = 0;
     gKangaskhanStorageWork->menuAction3 = 0;
     gKangaskhanStorageWork->mode = mode;
+#ifdef DEV
+    // DEV override: keep storage stocked with random items for quick testing
+    DevTopOffStorage();
+#endif
     CopyYellowMonsterNametoBuffer(gSpeakerNameBuffer, MONSTER_KANGASKHAN);
     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[7], MONSTER_KANGASKHAN);
     monName = GetMonSpecies(MONSTER_KANGASKHAN);

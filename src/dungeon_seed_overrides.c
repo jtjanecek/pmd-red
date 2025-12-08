@@ -6,6 +6,7 @@
 #include "constants/rescue_dungeon_id.h"
 #include "constants/bg_music.h"
 #include "constants/item.h"
+#include "constants/difficulty.h"
 #include "constants/move_id.h"
 #include "constants/weather.h"
 #include "pokemon_3.h"
@@ -18,6 +19,8 @@
 #include "dungeon_map.h"
 #include "dungeon_map_access.h"
 #include "dungeon_floor_spawns.h"
+#include "dungeon_info.h"
+#include "run_dungeon.h"
 #include "main_loops.h"
 #include "mgba_log.h"
 #include "pokemon.h"
@@ -91,6 +94,12 @@ static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rn
 static bool8 IsBossSpecies(s16 species);
 static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask);
 static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity);
+
+static const u8 sItemLimitsByDifficulty[NUM_DIFFICULTY_SETTINGS] = {
+    [DIFFICULTY_NORMAL] = INVENTORY_SIZE,
+    [DIFFICULTY_HARD] = 10,
+    [DIFFICULTY_NIGHTMARE] = 5,
+};
 
 static const s16 sPoolElectric[] = {MONSTER_PICHU, MONSTER_PIKACHU, MONSTER_PLUSLE, MONSTER_MINUN, MONSTER_MANECTRIC};
 static const s16 sPoolFire[] = {MONSTER_VULPIX, MONSTER_GROWLITHE, MONSTER_CHARMELEON, MONSTER_FLAREON, MONSTER_BLAZIKEN};
@@ -340,6 +349,62 @@ bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
         *seedOut = seed;
     MGBA_Warnf("[SeedOverrides] Enabled=TRUE seed=%d", seed);
     return TRUE;
+}
+
+s32 DungeonSeedOverrides_GetItemLimit(void)
+{
+    u32 difficulty = GetGameDifficultySetting();
+
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    return sItemLimitsByDifficulty[difficulty];
+}
+
+s32 DungeonSeedOverrides_ApplyItemLimit(void)
+{
+    s32 seed;
+    s32 limit;
+    s32 removed = 0;
+    s32 kept = 0;
+    s32 i;
+    s32 startCount;
+    u8 dungeonId;
+
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return 0;
+
+    if (gDungeon == NULL)
+        return 0;
+
+    dungeonId = gDungeon->unk644.dungeonLocation.id;
+    limit = GetMaxItemsAllowed(dungeonId);
+    if (limit >= INVENTORY_SIZE || limit <= 0)
+        return 0;
+
+    startCount = GetNumberOfFilledInventorySlots();
+
+    for (i = 0; i < INVENTORY_SIZE; i++) {
+        Item *item = &gTeamInventoryRef->teamItems[i];
+        if (item->flags & ITEM_FLAG_EXISTS) {
+            if (kept < limit) {
+                kept++;
+            }
+            else {
+                ZeroOutItem(item);
+                removed++;
+            }
+        }
+    }
+
+    if (removed > 0) {
+        FillInventoryGaps();
+    }
+
+    if (removed > 0) {
+        MGBA_Infof("[ItemLimit] Trimmed inventory from %d to %d (removed %d)", startCount, kept, removed);
+    }
+    return removed;
 }
 
 const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)

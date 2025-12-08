@@ -1162,8 +1162,9 @@ void sub_8043FD0(void)
 void EnforceMaxItemsAndMoney(void)
 {
     s32 i;
+    u8 dungeonId = gDungeon->unk644.dungeonLocation.id;
 
-    if (GetMaxItemsAllowed(gDungeon->unk644.dungeonLocation.id) == 0)
+    if (GetMaxItemsAllowed(dungeonId) == 0)
     {
         for (i = 0; i < INVENTORY_SIZE; i++) {
             ZeroOutItem(&gTeamInventoryRef->teamItems[i]);
@@ -1175,8 +1176,11 @@ void EnforceMaxItemsAndMoney(void)
             }
         }
     }
+    else {
+        DungeonSeedOverrides_ApplyItemLimit();
+    }
 
-    if (!IsMoneyAllowed(gDungeon->unk644.dungeonLocation.id)) {
+    if (!IsMoneyAllowed(dungeonId)) {
         gTeamInventoryRef->teamMoney = 0;
     }
 }

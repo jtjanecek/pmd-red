@@ -44,6 +44,9 @@ enum
 void LoadItemParameters(void);
 TeamInventory *GetMoneyItemsInfo(void);
 void InitializeMoneyItems(void);
+#ifdef DEV
+void DevTopOffStorage(void);
+#endif
 s32 GetNumberOfFilledInventorySlots(void);
 bool8 IsThrownItem(u8 id);
 void ItemIdToItem(Item *item, u8 id, bool8 makeSticky);

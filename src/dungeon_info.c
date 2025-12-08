@@ -2440,10 +2440,25 @@ bool8 IsLevelResetDungeon(u8 dungeon)
 
 u32 GetMaxItemsAllowed(u8 dungeon)
 {
+    u32 maxItems;
+
     // Allow full inventory in Level 1 dungeons
     if (IsLevelResetDungeon(dungeon))
         return INVENTORY_SIZE;
-    return gDungeons[dungeon].maxItemsAllowed;
+
+    maxItems = gDungeons[dungeon].maxItemsAllowed;
+
+    // Apply seeded run difficulty limits (reuses Deoxys-style item cap logic)
+    if (DungeonSeedOverrides_IsEnabled(NULL)) {
+        s32 difficultyLimit = DungeonSeedOverrides_GetItemLimit();
+
+        if (difficultyLimit < 0)
+            difficultyLimit = 0;
+        if ((u32)difficultyLimit < maxItems)
+            maxItems = (u32)difficultyLimit;
+    }
+
+    return maxItems;
 }
 
 bool8 IsMoneyAllowed(u8 dungeon)
@@ -2594,6 +2609,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
     bool32 param_5 = (bool8) (param_5_);
 
     s32 numInvSlots = GetNumberOfFilledInventorySlots();
+    s32 maxItemsAllowed = GetMaxItemsAllowed(dungeonIndex);
     s32 counter = 0;
     s32 sp_0xf0;
     bool8 requirementsAsk = FALSE;
@@ -2638,9 +2654,9 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         requirementFailed = TRUE;
     }
 
-    if (!IsLevelResetDungeon(dungeonIndex) && gDungeons[dungeonIndex].maxItemsAllowed != 0 && gDungeons[dungeonIndex].maxItemsAllowed < numInvSlots) {
-        gFormatArgs[0] = gDungeons[dungeonIndex].maxItemsAllowed;
-        gFormatArgs[1] = numInvSlots - gDungeons[dungeonIndex].maxItemsAllowed;
+    if (!IsLevelResetDungeon(dungeonIndex) && maxItemsAllowed != 0 && maxItemsAllowed < numInvSlots) {
+        gFormatArgs[0] = maxItemsAllowed;
+        gFormatArgs[1] = numInvSlots - maxItemsAllowed;
         FormatString((requirementFailed) ? gText_AlsoOnlyXItemsMayBeBroughtIntoDungeon : gText_OnlyXItemsMayBeBroughtIntoDungeon, text, &text[TXT_BUFFER_LEN], 0);
         AppendWithNewLines(buffer,text);
         requirementFailed = TRUE;
@@ -2721,7 +2737,7 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         strcat(buffer,gText_TeamWillEnterAtLv1);
         strcat(buffer,newLine);
     }
-    if (!IsLevelResetDungeon(dungeonIndex) && (gDungeons[dungeonIndex].maxItemsAllowed == 0) && (numInvSlots + sp_0xf0 != 0)) {
+    if (!IsLevelResetDungeon(dungeonIndex) && (maxItemsAllowed == 0) && (numInvSlots + sp_0xf0 != 0)) {
         if (!requirementsAsk) {
             strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
             strcat(buffer,newLine);

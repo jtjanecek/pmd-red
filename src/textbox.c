@@ -181,6 +181,7 @@ static const u8 sGengarHintDeclineText[] = _("Heh heh... suit yourself.");
 static const u8 sGengarHintNoSeedText[] = _("Heh heh... No shop rumors without a seed.");
 static const u8 sGengarHintTwoText[] = _("Here's hint 2: ...");
 static EWRAM_DATA u8 sGengarHintShopBuffer[96] = {0};
+static EWRAM_DATA u8 sDungeonEntryReqBuffer[200] = {0};
 
 
 static const MenuItem sGengarHintPaymentMenu[] = {
@@ -1700,8 +1701,25 @@ static bool8 sub_809B648(void)
             }
             return 1;
         case 0xc:
+            if (sTextbox->unk420 == 6) {
+                s32 temp;
+
+                if (sub_80144A4(&temp) != 0) {
+                    if (gRealInputs.pressed & (A_BUTTON | B_BUTTON)) {
+                        // Force the textbox to finish if it's stuck waiting
+                        sub_8014490();
+                    }
+                    return 1;
+                }
+                ResetTextbox();
+                DungeonListMenu_Free();
+                sTextbox->unk430 = -1;
+                return 0;
+            }
             if (sTextbox->unk420 == 1) {
-                s32 var = sub_80A2654(GetScriptVarValue(0,0x12));
+                s32 var;
+
+                var = sub_80A2654(GetScriptVarValue(0,0x12));
                 ResetTextbox();
                 if (!DungeonListMenu_Init(3,0,10,TRUE)) {
                     sTextbox->unk430 = -1;
@@ -1716,6 +1734,16 @@ static bool8 sub_809B648(void)
                 switch (DungeonListMenu_GetInput(1)) {
                     case 3: {
                         s32 rescueDungeonId = DungeonListMenu_GetCurrentRescueDungeonId();
+                        u8 dungeonId = RescueDungeonToDungeonId(rescueDungeonId);
+                        u32 reqResult = BufferDungeonRequirementsText(dungeonId, MONSTER_NONE, sDungeonEntryReqBuffer, FALSE, FALSE);
+
+                        if (reqResult != DUNGEON_REQUIREMENTS_PASS) {
+                            // Show the same requirements text that world map would have displayed
+                            CreateMenuDialogueBoxAndPortrait(sDungeonEntryReqBuffer, 0, 0, NULL, 0, 3, 0, NULL, STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS | STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS_2);
+                            sTextbox->unk420 = 6;
+                            return 1;
+                        }
+
                         SetScriptVarValue(0, 0x12, RescueDungeonToScriptDungeonId(rescueDungeonId));
                         sTextbox->unk430 = rescueDungeonId;
                         DungeonListMenu_Free();

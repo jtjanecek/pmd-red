@@ -51,6 +51,8 @@ bool8 DungeonSeedOverrides_IsInSequentialList(s16 rescueDungeonId);
 s16 DungeonSeedOverrides_GetCurrentDungeon(void);
 bool8 DungeonSeedOverrides_CanEnterDungeon(s16 rescueDungeonId);
 bool8 DungeonSeedOverrides_ShouldTriggerCredits(void);
+s32 DungeonSeedOverrides_GetItemLimit(void);
+s32 DungeonSeedOverrides_ApplyItemLimit(void);
 
 // Boss fight functions
 bool8 DungeonSeedOverrides_IsCustomBoss(Entity *pokemon);

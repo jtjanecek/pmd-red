@@ -128,6 +128,42 @@ void InitializeMoneyItems(void)
     gTeamInventoryRef->teamSavings = 0;
 }
 
+#ifdef DEV
+void DevTopOffStorage(void)
+{
+    const s32 targetItemCount = 15;
+    s32 storedCount = 0;
+    s32 i;
+
+    for (i = 0; i < STORAGE_SIZE; i++) {
+        storedCount += gTeamInventoryRef->teamStorage[i];
+        if (storedCount >= targetItemCount)
+            return;
+    }
+
+    while (storedCount < targetItemCount) {
+        Item item;
+        u8 itemId = ITEM_ORAN_BERRY;
+        s32 attempts = 0;
+
+        do {
+            itemId = GetRandomItemForSet(RANDOM_ITEMS_SET_1, RandInt(ITEM_SETS_RANDOM_CAP), RandInt(ITEM_SETS_RANDOM_CAP));
+            attempts++;
+        } while (!IsNotMoneyOrUsedTMItem(itemId) && attempts < 20);
+
+        if (!IsNotMoneyOrUsedTMItem(itemId))
+            itemId = ITEM_ORAN_BERRY;
+
+        ItemIdToItem(&item, itemId, FALSE);
+        MoveToStorage(&item);
+        if (IsThrownItem(item.id))
+            storedCount += item.quantity;
+        else
+            storedCount++;
+    }
+}
+#endif
+
 // arm9.bin::02060FE4
 s32 GetNumberOfFilledInventorySlots(void)
 {

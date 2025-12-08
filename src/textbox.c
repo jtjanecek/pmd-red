@@ -166,6 +166,7 @@ static void ShowGengarHintMessage(const u8 *text);
 static s32 GetCurrentDungeonForHint(void);
 static bool8 HasEnoughMoneyForGengarHint(void);
 static const u8 *BuildKecleonShopHintText(void);
+static const u8 *BuildSuperTrapHintText(void);
 static void InitGengarHintPortrait(void);
 static void CleanupGengarHintPortrait(void);
 static MonPortraitMsg *GetGengarHintPortrait(void);
@@ -178,9 +179,9 @@ static const u8 sGengarHintGreedyText[] = _("Trying again? Heh...\nSomeone's fee
 static const u8 sGengarHintNoMoneyText[] = _("Heh heh...\nNo {POKE}, no hint. \nThat's how it works, genius.");
 static const u8 sGengarHintNoDungeonText[] = _("No dungeon lined up for you yet.");
 static const u8 sGengarHintDeclineText[] = _("Heh heh... suit yourself.");
-static const u8 sGengarHintNoSeedText[] = _("Heh heh... No shop rumors without a seed.");
-static const u8 sGengarHintTwoText[] = _("Here's hint 2: ...");
+static const u8 sGengarHintNoSeedText[] = _("Heh heh... No dungeon rumors without a seed.");
 static EWRAM_DATA u8 sGengarHintShopBuffer[96] = {0};
+static EWRAM_DATA u8 sGengarHintSuperTrapBuffer[96] = {0};
 static EWRAM_DATA u8 sDungeonEntryReqBuffer[200] = {0};
 
 
@@ -191,8 +192,8 @@ static const MenuItem sGengarHintPaymentMenu[] = {
 };
 
 static const MenuItem sGengarHintChoiceMenu[] = {
-    {_("Kecleon shop rurmors"), 1},
-    {_("Hint 2"), 2},
+    {_("Kecleon shop rumors"), 1},
+    {_("SuperTrap floor rumor"), 2},
     {NULL, -1},
 };
 
@@ -2380,7 +2381,7 @@ static bool8 UpdateGengarHintConversation(void)
         return FALSE;
     case GENGAR_HINT_STAGE_HINT_MENU:
         if (selection == 1 || selection == 2) {
-            const u8 *hintText = (selection == 1) ? BuildKecleonShopHintText() : sGengarHintTwoText;
+            const u8 *hintText = (selection == 1) ? BuildKecleonShopHintText() : BuildSuperTrapHintText();
 
             if (sGengarHintState.dungeonId >= 0) {
                 GengarHint_MarkHintGiven(sGengarHintState.dungeonId);
@@ -2497,6 +2498,26 @@ static const u8 *BuildKecleonShopHintText(void)
 
         sprintfStatic(sGengarHintShopBuffer, _("Heh heh... Shop rumor says floor %d."), displayFloor);
         return sGengarHintShopBuffer;
+    }
+}
+
+static const u8 *BuildSuperTrapHintText(void)
+{
+    s32 seed;
+    s32 dungeonId = sGengarHintState.dungeonId;
+
+    if (dungeonId < 0 || dungeonId >= NUM_DUNGEONS)
+        return sGengarHintNoDungeonText;
+
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return sGengarHintNoSeedText;
+
+    {
+        s32 superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor((u8)dungeonId, seed);
+        s32 displayFloor = GetDungeonStartingFloor(dungeonId) + superTrapFloor + 1;
+
+        sprintfStatic(sGengarHintSuperTrapBuffer, _("Heh heh... Traps everywhere on floor %d."), displayFloor);
+        return sGengarHintSuperTrapBuffer;
     }
 }
 

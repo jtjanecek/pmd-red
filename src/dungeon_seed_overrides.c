@@ -37,6 +37,7 @@
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_PREFIX_BUFFER_LEN 16
 #define SEEDED_TRAP_DENSITY_DEFAULT 15
+#define SEEDED_TRAP_DENSITY_SUPER 56
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
 // Exactly 20 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
@@ -285,10 +286,19 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     ClearFloorOverrides(result);
     rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xC0FFEE);
     result->tileset = SelectTileset(floorId);
-    // Force maximum trap density and a uniform trap table when overrides are active
+    // Use a seeded trap density and a uniform trap table; specific floors can override density below
     result->trapDensityOverride = SEEDED_TRAP_DENSITY_DEFAULT;
     result->hasTrapTable = TRUE;
     BuildUniformTrapTable(result->trapSpawnChances);
+    {
+        s32 superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor(dungeonId, seed);
+        s32 superTrapFloorId = GetDungeonStartingFloor(dungeonId) + superTrapFloor + 1; // Floors are 1-indexed in mapparam
+
+        if (floorId == superTrapFloorId) {
+            result->trapDensityOverride = SEEDED_TRAP_DENSITY_SUPER;
+            MGBA_Warnf("[Traps] SuperTrap floor: dungeon=%d floor=%d density=%d", dungeonId, floorId, result->trapDensityOverride);
+        }
+    }
 
     // NEW: Procedurally generate boss fight configuration
     PopulateBossFightConfig(result, &rng, dungeonId, floorId, seed);
@@ -1497,6 +1507,32 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
     // Update minimap and visibility
     UpdateTrapsVisibility();
     UpdateMinimap();
+}
+
+s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed)
+{
+    DungeonSeedRng rng;
+    s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
+    s32 maxNonBossFloor;
+    s32 kecleonFloor;
+    s32 selected;
+
+    if (floorCount < 2)
+        return 0;
+
+    // Avoid the boss floor (last floor) so traps don't conflict with boss rooms
+    maxNonBossFloor = floorCount - 1;
+    if (maxNonBossFloor <= 1)
+        return 0;
+
+    // Draw once; if it collides with the Kecleon shop floor, bump deterministically
+    kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(dungeonId, seed);
+    rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x54524150); // "TRAP"
+    selected = DungeonSeedRng_NextRange(&rng, 0, maxNonBossFloor);
+    if (selected == kecleonFloor) {
+        selected = (selected + 1) % maxNonBossFloor;
+    }
+    return selected;
 }
 
 // Deterministically select which floor (0-indexed) should have a Kecleon shop

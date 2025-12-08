@@ -18,6 +18,7 @@
 #include "dungeon_vram.h"
 #include "dungeon_util.h"
 #include "friend_area.h"
+#include "dungeon_seed_overrides.h"
 #include "pokemon.h"
 #include "pokemon_3.h"
 #include "position_util.h"
@@ -36,6 +37,7 @@
 static void nullsub_96(Entity *pokemon,Entity *target);
 static void sub_806F910(void);
 static bool8 WouldExceedRecruitmentCap(s32 pendingNew);
+static s32 ComputeRecruitChancePercent(const EntityInfo *targetInfo, bool8 hasFriendBow);
 
 static bool8 WouldExceedRecruitmentCap(s32 pendingNew)
 {
@@ -55,15 +57,36 @@ static bool8 WouldExceedRecruitmentCap(s32 pendingNew)
     return total > MAX_RECRUITED_POKEMON;
 }
 
+static s32 ComputeRecruitChancePercent(const EntityInfo *targetInfo, bool8 hasFriendBow)
+{
+    DungeonRecruitOverride recruitOverride;
+    s32 chance;
+
+    (void)targetInfo;
+
+    DungeonSeedOverrides_GetRecruitOverride(&recruitOverride);
+
+    chance = recruitOverride.baseRecruitPercent;
+    if (hasFriendBow)
+        chance += recruitOverride.friendBowBonusPercent;
+
+    if (chance < 0)
+        chance = 0;
+    if (chance > 100)
+        chance = 100;
+
+    return chance;
+}
+
 bool8 TryRecruitMonster(Entity *attacker, Entity *target)
 {
     s32 i;
-    EntityInfo *attackerInfo = GetEntInfo(attacker);
     EntityInfo *targetInfo = GetEntInfo(target);
     s32 foundIndex = -1;
     s32 size = GetBodySize(targetInfo->apparentID);
     u8 recruitSetting = GetRecruitAllSetting();
     bool8 autoRecruitAll = recruitSetting == RECRUIT_ALL_AUTO;
+    bool8 hasFriendBow = HasHeldItem(attacker, ITEM_FRIEND_BOW);
 
     if (recruitSetting == RECRUIT_ALL_NONE)
         return FALSE;
@@ -142,20 +165,14 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     }
 
     sub_806F910();
-    {
-        s32 recruitRate = GetRecruitRate(targetInfo->id);
-        if (recruitRate == -999 && !autoRecruitAll)
+    if (!autoRecruitAll) {
+        s32 recruitChancePercent = ComputeRecruitChancePercent(targetInfo, hasFriendBow);
+
+        if (recruitChancePercent <= 0)
             return FALSE;
 
-        if (!autoRecruitAll) {
-            s32 rand = DungeonRandInt(1000);
-            if (HasHeldItem(attacker, ITEM_FRIEND_BOW)) {
-                recruitRate += gFriendBowRecruitRateUpValue;
-            }
-            recruitRate += gRecruitRateByLevel[attackerInfo->level];
-            if (rand >= recruitRate)
-                return FALSE;
-        }
+        if (DungeonRandInt(100) >= recruitChancePercent)
+            return FALSE;
     }
 
     for (i = 0; i <= (MAX_TEAM_BODY_SIZE - size); i++) {

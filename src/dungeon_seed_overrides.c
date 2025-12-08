@@ -108,6 +108,18 @@ static const u8 sItemLimitsByDifficulty[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NIGHTMARE] = 5,
 };
 
+static const s16 sRecruitBaseChancePercent[NUM_DIFFICULTY_SETTINGS] = {
+    [DIFFICULTY_NORMAL] = 10,
+    [DIFFICULTY_HARD] = 5,
+    [DIFFICULTY_NIGHTMARE] = 1,
+};
+
+static const s16 sRecruitFriendBowBonusPercent[NUM_DIFFICULTY_SETTINGS] = {
+    [DIFFICULTY_NORMAL] = 5,
+    [DIFFICULTY_HARD] = 3,
+    [DIFFICULTY_NIGHTMARE] = 1,
+};
+
 static const s16 sPoolElectric[] = {MONSTER_PICHU, MONSTER_PIKACHU, MONSTER_PLUSLE, MONSTER_MINUN, MONSTER_MANECTRIC};
 static const s16 sPoolFire[] = {MONSTER_VULPIX, MONSTER_GROWLITHE, MONSTER_CHARMELEON, MONSTER_FLAREON, MONSTER_BLAZIKEN};
 static const s16 sPoolWater[] = {MONSTER_SQUIRTLE, MONSTER_WARTORTLE, MONSTER_POLIWHIRL, MONSTER_SEADRA, MONSTER_LANTURN};
@@ -426,6 +438,21 @@ s32 DungeonSeedOverrides_ApplyItemLimit(void)
         MGBA_Infof("[ItemLimit] Trimmed inventory from %d to %d (removed %d)", startCount, kept, removed);
     }
     return removed;
+}
+
+void DungeonSeedOverrides_GetRecruitOverride(DungeonRecruitOverride *result)
+{
+    u32 difficulty;
+
+    if (result == NULL)
+        return;
+
+    difficulty = GetGameDifficultySetting();
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    result->baseRecruitPercent = sRecruitBaseChancePercent[difficulty];
+    result->friendBowBonusPercent = sRecruitFriendBowBonusPercent[difficulty];
 }
 
 const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)

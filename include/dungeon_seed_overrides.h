@@ -48,6 +48,11 @@ typedef struct DungeonSeedFloorOverrides {
     u16 trapSpawnChances[NUM_TRAPS];                     // Cumulative trap weights (0-10000)
 } DungeonSeedFloorOverrides;
 
+typedef struct DungeonRecruitOverride {
+    s16 baseRecruitPercent;       // Base recruit chance in percent (0-100)
+    s16 friendBowBonusPercent;    // Flat Friend Bow bonus applied on top of base
+} DungeonRecruitOverride;
+
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result);
 s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId);
 u32 DungeonSeedOverrides_GetDungeonRngSeed(s32 seed, u8 dungeonId, s32 floorId);
@@ -70,5 +75,7 @@ void DungeonSeedOverrides_SetStairsPosition(s32 x, s32 y);
 s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed);
 // Trap functions
 s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed);
+// Recruit functions
+void DungeonSeedOverrides_GetRecruitOverride(DungeonRecruitOverride *result);
 
 #endif // GUARD_DUNGEON_SEED_OVERRIDES_H

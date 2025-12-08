@@ -22,6 +22,7 @@ static const struct ScriptCommand s_gs223_g1_s0_station_sref_script[] = { /* 0x8
     MSG_ON_BG(_("{CENTER_ALIGN}Welcome to Rogue Rescue Team!")),
     MSG_ON_BG(_("{CENTER_ALIGN}Thanks for playing this ROM hack.\n{CENTER_ALIGN}And I hope you enjoy!")),
     MSG_ON_BG(_("{CENTER_ALIGN}I will ask you some questions that\n{CENTER_ALIGN}will modify the experience of the game.")),
+    MSG_ON_BG(_("{CENTER_ALIGN}After your selections\n{CENTER_ALIGN}the game will automatically save and restart.")),
     MSG_ON_BG(_("{CENTER_ALIGN}For more information, refer to the README\n{CENTER_ALIGN}https://github.com/jtjanecek/rogue-rescue-team")),
     MSG_ON_BG(_("{CENTER_ALIGN}Are you ready?")),
     MSG_ON_BG(_("{CENTER_ALIGN}OK...{WAIT_PRESS}\n{CENTER_ALIGN}Let the interview begin!")),

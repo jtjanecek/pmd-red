@@ -36,7 +36,7 @@
 #define SEEDED_MAX_SPAWNS 16
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_PREFIX_BUFFER_LEN 16
-#define SEEDED_MAX_TRAP_DENSITY 56
+#define SEEDED_TRAP_DENSITY_DEFAULT 15
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
 // Exactly 20 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
@@ -286,7 +286,7 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xC0FFEE);
     result->tileset = SelectTileset(floorId);
     // Force maximum trap density and a uniform trap table when overrides are active
-    result->trapDensityOverride = SEEDED_MAX_TRAP_DENSITY;
+    result->trapDensityOverride = SEEDED_TRAP_DENSITY_DEFAULT;
     result->hasTrapTable = TRUE;
     BuildUniformTrapTable(result->trapSpawnChances);
 

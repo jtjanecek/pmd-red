@@ -141,6 +141,22 @@ static void ApplySeedOverridesToCurrentFloor(void)
         gDungeon->floorProperties.weather = overrides.bossFight.weather;
         MGBA_Warnf("[BossGen] Weather override applied: weather=%d", overrides.bossFight.weather);
     }
+    // Trap overrides: force max density and a uniform trap table
+    if (overrides.trapDensityOverride >= 0) {
+        s32 density = overrides.trapDensityOverride;
+        if (density > 56) {
+            density = 56;
+        }
+        gDungeon->floorProperties.trapDensity = (u8)density;
+        MGBA_Warnf("[Traps] Density override applied: density=%d", density);
+    }
+    if (overrides.hasTrapTable) {
+        s32 i;
+        for (i = 0; i < NUM_TRAPS; i++) {
+            gDungeon->trapSpawnChances[i] = overrides.trapSpawnChances[i];
+        }
+        MGBA_Warnf("[Traps] Trap table override applied (uniform all traps)");
+    }
 
     // Seeded shop floor: bias the chosen floor to roll a shop using natural generation
     {

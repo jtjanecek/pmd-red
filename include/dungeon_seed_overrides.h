@@ -4,6 +4,7 @@
 #include "global.h"
 #include "structs/str_spawn_pokemon_data.h"
 #include "structs/str_dungeon.h"
+#include "constants/trap.h"
 
 typedef enum {
     MINION_FORMATION_DEFAULT = 0,
@@ -40,6 +41,9 @@ typedef struct DungeonSeedFloorOverrides {
     s32 spawnCount;                                      // Number of entries populated in spawns[]
     SpawnPokemonData spawns[MONSTER_SPAWNS_ARR_COUNT];   // Generated spawn table
     BossFightConfig bossFight;                           // Boss fight configuration (procedurally generated)
+    s16 trapDensityOverride;                             // -1 to keep default trapDensity
+    bool8 hasTrapTable;                                  // TRUE if trapSpawnChances should override mapparam
+    u16 trapSpawnChances[NUM_TRAPS];                     // Cumulative trap weights (0-10000)
 } DungeonSeedFloorOverrides;
 
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result);

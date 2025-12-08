@@ -7,6 +7,7 @@
 #include "constants/bg_music.h"
 #include "constants/item.h"
 #include "constants/difficulty.h"
+#include "constants/trap.h"
 #include "constants/move_id.h"
 #include "constants/weather.h"
 #include "pokemon_3.h"
@@ -35,6 +36,7 @@
 #define SEEDED_MAX_SPAWNS 16
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_PREFIX_BUFFER_LEN 16
+#define SEEDED_MAX_TRAP_DENSITY 56
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
 // Exactly 20 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
@@ -83,6 +85,7 @@ static u8 SelectTileset(s32 floorId);
 static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
 static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result);
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed);
+static void BuildUniformTrapTable(u16 *trapTable);
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
@@ -282,6 +285,10 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     ClearFloorOverrides(result);
     rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0xC0FFEE);
     result->tileset = SelectTileset(floorId);
+    // Force maximum trap density and a uniform trap table when overrides are active
+    result->trapDensityOverride = SEEDED_MAX_TRAP_DENSITY;
+    result->hasTrapTable = TRUE;
+    BuildUniformTrapTable(result->trapSpawnChances);
 
     // NEW: Procedurally generate boss fight configuration
     PopulateBossFightConfig(result, &rng, dungeonId, floorId, seed);
@@ -445,6 +452,11 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
 
     result->tileset = 0;
     result->spawnCount = 0;
+    result->trapDensityOverride = -1;
+    result->hasTrapTable = FALSE;
+    for (i = 0; i < NUM_TRAPS; i++) {
+        result->trapSpawnChances[i] = 0;
+    }
     for (i = 0; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
         result->spawns[i].bits = 0;
         result->spawns[i].randNum[0] = 0;
@@ -474,6 +486,30 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
         result->bossFight.bossMoves[i] = MOVE_NOTHING;
     }
     result->bossFight.useCustomMoves = FALSE;
+}
+
+static void BuildUniformTrapTable(u16 *trapTable)
+{
+    s32 i;
+    u32 accum = 0;
+    u32 base = 10000 / NUM_TRAPS;
+    u32 remainder = 10000 % NUM_TRAPS;
+
+    if (trapTable == NULL)
+        return;
+
+    for (i = 0; i < NUM_TRAPS; i++) {
+        u32 increment = base;
+        if (remainder > 0) {
+            increment++;
+            remainder--;
+        }
+        accum += increment;
+        trapTable[i] = (u16)accum;
+    }
+
+    // Safety: force the last entry to 10000 to match the expected cumulative cap
+    trapTable[NUM_TRAPS - 1] = 10000;
 }
 
 static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId)

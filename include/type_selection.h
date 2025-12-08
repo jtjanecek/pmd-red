@@ -9,6 +9,7 @@
 #define TYPE_SELECTION_MAX_BOSSES_PER_TYPE 2
 #define TYPE_SELECTION_MINIONS_PER_BOSS 2
 #define TYPE_SELECTION_MAX_TILESETS_PER_TYPE 8
+#define TYPE_SELECTION_MAX_WEATHERS_PER_TYPE 8
 #define BOSS_WEATHER_CHANCE_SCALE 1000
 
 typedef struct TypeHintDefinition
@@ -48,6 +49,12 @@ typedef struct TypeTilesetPool
     u8 count;
 } TypeTilesetPool;
 
+typedef struct TypeWeatherPool
+{
+    u8 weathers[TYPE_SELECTION_MAX_WEATHERS_PER_TYPE];
+    u8 count;
+} TypeWeatherPool;
+
 typedef struct TypeSelectionSaveData
 {
     u8 pickCount[NUM_TYPES];
@@ -77,6 +84,7 @@ extern const u32 gTypeHintCount;
 extern const TypeBossPool gTypeBossTable[NUM_TYPES];
 extern const TypeBossWeatherPool gTypeBossWeatherTable[NUM_TYPES];
 extern const TypeTilesetPool gTypeTilesetTable[NUM_TYPES];
+extern const TypeWeatherPool gTypeWeatherTable[NUM_TYPES];
 
 void TypeSelection_Init(void);
 void TypeSelection_ResetForNewRun(void);

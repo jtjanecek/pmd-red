@@ -140,6 +140,9 @@ static void ApplySeedOverridesToCurrentFloor(void)
     if (overrides.bossFight.enabled && overrides.bossFight.applyWeather) {
         gDungeon->floorProperties.weather = overrides.bossFight.weather;
         MGBA_Warnf("[BossGen] Weather override applied: weather=%d", overrides.bossFight.weather);
+    } else if (!overrides.bossFight.enabled && overrides.applyWeather) {
+        gDungeon->floorProperties.weather = overrides.weather;
+        MGBA_Warnf("[Weather] Floor override applied: weather=%d", overrides.weather);
     }
     // Trap overrides: force max density and a uniform trap table
     if (overrides.trapDensityOverride >= 0) {

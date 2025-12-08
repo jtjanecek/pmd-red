@@ -601,6 +601,7 @@ SECTIONS {
         src/data/type_boss_table.o(.rodata);
         src/data/type_tileset_table.o(.rodata);
         src/data/type_hint_table.o(.rodata);
+        src/data/type_weather_table.o(.rodata);
         src/personality_test1.o(.rodata);
         src/personality_test2.o(.rodata);
         src/code_803D0D8.o(.rodata);

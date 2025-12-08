@@ -40,6 +40,8 @@ typedef struct DungeonSeedFloorOverrides {
     u8 tileset;                                          // Tileset selected for this floor
     s32 spawnCount;                                      // Number of entries populated in spawns[]
     SpawnPokemonData spawns[MONSTER_SPAWNS_ARR_COUNT];   // Generated spawn table
+    u8 weather;                                          // Weather override for the floor
+    bool8 applyWeather;                                  // Should the floor override weather?
     BossFightConfig bossFight;                           // Boss fight configuration (procedurally generated)
     s16 trapDensityOverride;                             // -1 to keep default trapDensity
     bool8 hasTrapTable;                                  // TRUE if trapSpawnChances should override mapparam

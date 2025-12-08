@@ -38,6 +38,7 @@
 #define SEEDED_PREFIX_BUFFER_LEN 16
 #define SEEDED_TRAP_DENSITY_DEFAULT 15
 #define SEEDED_TRAP_DENSITY_SUPER 56
+#define SEEDED_FLOOR_WEATHER_CHANCE_PERCENT 20
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
 // Exactly 20 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
@@ -87,6 +88,8 @@ static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng
 static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result);
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed);
 static void BuildUniformTrapTable(u16 *trapTable);
+static bool8 SelectWeatherForType(u8 dungeonType, DungeonSeedRng *rng, u8 *weatherOut);
+static void MaybeApplyFloorWeather(DungeonSeedFloorOverrides *result, s32 seed, u8 dungeonId, s32 floorId);
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
@@ -302,6 +305,7 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
 
     // NEW: Procedurally generate boss fight configuration
     PopulateBossFightConfig(result, &rng, dungeonId, floorId, seed);
+    MaybeApplyFloorWeather(result, seed, dungeonId, floorId);
 
     // If boss fight enabled, use boss tileset; otherwise normal generation
     if (result->bossFight.enabled) {
@@ -467,6 +471,8 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     for (i = 0; i < NUM_TRAPS; i++) {
         result->trapSpawnChances[i] = 0;
     }
+    result->weather = WEATHER_CLEAR;
+    result->applyWeather = FALSE;
     for (i = 0; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
         result->spawns[i].bits = 0;
         result->spawns[i].randNum[0] = 0;
@@ -520,6 +526,67 @@ static void BuildUniformTrapTable(u16 *trapTable)
 
     // Safety: force the last entry to 10000 to match the expected cumulative cap
     trapTable[NUM_TRAPS - 1] = 10000;
+}
+
+static bool8 SelectWeatherForType(u8 dungeonType, DungeonSeedRng *rng, u8 *weatherOut)
+{
+    const TypeWeatherPool *pool;
+    s32 choice;
+
+    if (weatherOut == NULL || rng == NULL)
+        return FALSE;
+    if (dungeonType >= NUM_TYPES)
+        return FALSE;
+
+    pool = &gTypeWeatherTable[dungeonType];
+    if (pool->count == 0)
+        return FALSE;
+
+    choice = DungeonSeedRng_NextRange(rng, 0, pool->count);
+    if (choice < 0 || choice >= pool->count)
+        return FALSE;
+
+    *weatherOut = pool->weathers[choice];
+    return TRUE;
+}
+
+static void MaybeApplyFloorWeather(DungeonSeedFloorOverrides *result, s32 seed, u8 dungeonId, s32 floorId)
+{
+    DungeonSeedRng rng;
+    u8 dungeonType = TYPE_NONE;
+    u8 weather = WEATHER_CLEAR;
+
+    if (result == NULL)
+        return;
+
+    // Keep boss floors governed by their own weather rules.
+    if (result->bossFight.enabled)
+        return;
+
+    if (TypeSelection_HasActiveType())
+        dungeonType = TypeSelection_GetActiveType();
+    else if (TypeSelection_HasCommittedType())
+        dungeonType = TypeSelection_GetCommittedType();
+
+    if (dungeonType == TYPE_NONE || dungeonType >= NUM_TYPES)
+        return;
+    if (gTypeWeatherTable[dungeonType].count == 0)
+        return;
+
+    // Deterministic 20% roll per floor; independent RNG salt to avoid
+    // perturbing other seeded systems.
+    rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0x57454154); // "WEAT"
+    if (DungeonSeedRng_NextRange(&rng, 0, 100) >= SEEDED_FLOOR_WEATHER_CHANCE_PERCENT)
+        return;
+    if (!SelectWeatherForType(dungeonType, &rng, &weather))
+        return;
+    if (weather >= WEATHER_RANDOM)
+        return;
+
+    result->applyWeather = TRUE;
+    result->weather = weather;
+    MGBA_Warnf("[Weather] Floor override: seed=%d dungeon=%d floor=%d type=%d weather=%d",
+               seed, dungeonId, floorId, dungeonType, weather);
 }
 
 static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId)

@@ -45,6 +45,7 @@
 #include "save.h"
 #include "save.h"
 #include "save_read.h"
+#include "items.h"
 #include "sprite.h"
 #include "string_format.h"
 #include "text_1.h"
@@ -138,6 +139,16 @@ static const unkTalkTable sTalkKindTable[5] = {
     [3] = { .unk0 = 3, .species = MONSTER_CHIKORITA },
     [4] = { .unk0 = 2, .species = MONSTER_NONE },
 };
+
+// Block dungeon entry if the party exceeds the allowed item count for the target dungeon.
+static bool8 ShouldBlockDungeonForItemLimit(u8 dungeonId)
+{
+    s32 limit = GetMaxItemsAllowed(dungeonId);
+
+    if (limit <= 0)
+        return FALSE;
+    return (GetNumberOfFilledInventorySlots() > limit);
+}
 
 // arm9.bin::0200E0A8
 void GameLoop(void)
@@ -698,6 +709,10 @@ static u32 RunGameMode_Async(u32 a0)
             s32 scriptDungeonId = (s16) GetScriptVarValue(NULL, DUNGEON_SELECT);
             u8 dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonId);
             if (dungeonId == DUNGEON_INVALID) {
+                mode = MODE_GROUND;
+                continue;
+            }
+            if (ShouldBlockDungeonForItemLimit(dungeonId)) {
                 mode = MODE_GROUND;
                 continue;
             }

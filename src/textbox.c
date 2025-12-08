@@ -1701,6 +1701,24 @@ static bool8 sub_809B648(void)
             }
             return 1;
         case 0xc:
+            if (sTextbox->unk420 == 6) {
+                s32 temp;
+
+                // Wait for the simple warning dialog to finish, then close it.
+                if (sub_80144A4(&temp) != 0)
+                    return 1;
+                ResetTextbox();
+                // Clear any pending dungeon selection so we stay on the ground.
+                SetScriptVarValue(0, 0x12, -1);
+                SetScriptVarValue(NULL, DUNGEON_SELECT, -1);
+                SetScriptVarValue(NULL, DUNGEON_ENTER, -1);
+                SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
+                gUnknown_20398C4 = -1;
+                sTextbox->unk430 = -1;
+                SetTextboxType(0, TRUE);
+                sTextbox->unk420 = 3;
+                return 0;
+            }
             if (sTextbox->unk420 == 1) {
                 s32 var;
 
@@ -1723,10 +1741,29 @@ static bool8 sub_809B648(void)
                         u32 reqResult = BufferDungeonRequirementsText(dungeonId, MONSTER_NONE, sDungeonEntryReqBuffer, FALSE, FALSE);
 
                         if (reqResult != DUNGEON_REQUIREMENTS_PASS) {
-                            // Block entry immediately; let the player fix inventory without opening a textbox that can lock
+                            s32 limit = GetMaxItemsAllowed(dungeonId);
+                            s32 itemCount = GetNumberOfFilledInventorySlots();
+                            s32 over = itemCount - limit;
+
+                            if (limit < 0)
+                                limit = 0;
+                            if (over < 1)
+                                over = 1;
+
                             DungeonListMenu_Free();
+                            SetScriptVarValue(NULL, DUNGEON_SELECT, -1);
+                            SetScriptVarValue(NULL, DUNGEON_ENTER, -1);
+                            SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
+                            gUnknown_20398C4 = -1;
+                            SetTextboxType(TEXTBOX_TYPE_NORMAL, TRUE);
+                            sprintfStatic(sDungeonEntryReqBuffer,
+                                          _("Please deposit %d item(s)\nbefore continuing.\nItem limit: %d"),
+                                          over,
+                                          limit);
+                            CreateMenuDialogueBoxAndPortrait(sDungeonEntryReqBuffer, 0, 0, NULL, 0, 3, 0, NULL, STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS | STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS_2);
+                            sTextbox->unk420 = 6;
                             sTextbox->unk430 = -1;
-                            return 0;
+                            return 1;
                         }
 
                         SetScriptVarValue(0, 0x12, RescueDungeonToScriptDungeonId(rescueDungeonId));

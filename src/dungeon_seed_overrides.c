@@ -1295,6 +1295,23 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             roomName = "CustomArena";
         }
 
+        // Fire dungeons: avoid the back-line minion formation so adds don't spawn behind the boss
+        if (dungeonType == TYPE_FIRE && result->bossFight.minionFormation == MINION_FORMATION_BACK) {
+            result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
+        }
+        // Electric dungeons: same constraint as Fire, keep minions off the back line
+        if (dungeonType == TYPE_ELECTRIC && result->bossFight.minionFormation == MINION_FORMATION_BACK) {
+            result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
+        }
+        // Flying dungeons: also avoid back-line minions so adds don't spawn behind the boss
+        if (dungeonType == TYPE_FLYING && result->bossFight.minionFormation == MINION_FORMATION_BACK) {
+            result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
+        }
+        // Steel dungeons: keep minions off the back line in the Articuno room
+        if (dungeonType == TYPE_STEEL && result->bossFight.minionFormation == MINION_FORMATION_BACK) {
+            result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
+        }
+
         MGBA_Warnf("[BossRoom] dungeonType=%d tileset=%d useFixed=%d layout=%d room=%s",
                    dungeonType, result->bossFight.roomTileset,
                    result->bossFight.useFixedRoomLayout,

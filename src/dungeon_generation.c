@@ -6510,10 +6510,10 @@ static const u8 sFixedRoom5_Tiles[] = {
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 3
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 4
-    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
-    // Row 5 - Player spawn area (shifted right 1 tile)
+    // Row 4 - Player spawn area (moved up 1 tile, shifted right 1 tile)
     6,  60,  60,  60,  60,  60,  16,  60,  60,  60,  60,   6,
+    // Row 5
+    6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 6
     6,  60,  60,  60,  60,  60,  60,  60,  60,  60,  60,   6,
     // Row 7
@@ -6538,17 +6538,17 @@ static const u8 sFixedRoom7_Tiles[] = {
     // Row 1 - Stairs at very top (originally had tile 35 at col 5)
     2,   2,  60,  60,  60,   4,  60,  60,  60,   2,   2,
     // Row 2 - Stairs decoration part 1 (originally had tile 66 at col 6)
-    2,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,
+    2,  60,  60,  60,  23,  22,  66,  60,  60,  60,   2,
     // Row 3 - Stairs decoration part 2 (originally had tile 31 at col 5, tile 66 at col 8)
     2,  60,  60,  60,  26,  25,  27,  60,  66,  60,   2,
     // Row 4 - Originally had tile 66 at col 3
-    2,  60,  60,  66,  60,  31,  60,  60,  60,  60,   2,
+    2,  60,  60,  66,  60,  60,  60,  60,  60,  60,   2,
     // Row 5 - Boss spawn area (3 tiles above player at row 8)
     2,  60,  60,  60,  60,  17,  60,  60,  60,  60,   2,
     // Row 6
     2,  60,  60,  60,  60,  60,  60,  60,  60,  60,   2,
     // Row 7 - Originally had tile 66 at col 6
-    2,  60,  60,  60,  60,  35,  66,  60,  60,  60,   2,
+    2,  60,  60,  60,  60,  60,  66,  60,  60,  60,   2,
     // Row 8 - Player spawn area (originally had tile 66 at col 2 and col 7)
     2,  60,  66,  60,  60,  16,  60,  66,  60,  60,   2,
     // Row 9 - Originally had tile 66 at col 1 and col 9

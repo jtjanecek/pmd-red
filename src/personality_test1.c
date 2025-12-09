@@ -40,6 +40,9 @@ extern void sub_8096488(void);
 // Forward declaration for dev mode level up function
 extern void sub_8043FD0(void);
 
+// Partner roster used by starter/partner selection menus
+extern const s16 gPartners[NUM_PARTNERS];
+
 enum
 {
     PERSONALITY_SEED_PROMPT,
@@ -124,6 +127,8 @@ static void HandleDifficultySelection(void);
 UNUSED static void ApplySkipStartMinimal(void);
 // Skip-cutscene override is disabled for now; no postgame force.
 static void ApplySkipPostgameBootstrap(void);
+static s16 DevPickRandomMon(void);
+static s16 DevPickRandomPartnerDistinctFrom(s16 starter);
 
 bool8 CreateTestTracker(void)
 {
@@ -134,6 +139,35 @@ bool8 CreateTestTracker(void)
     // sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
     sub_8099690(1);
     return TRUE;
+}
+
+static s16 DevPickRandomMon(void)
+{
+    // Draw from the full starter/partner roster
+    return gPartners[RandInt(NUM_PARTNERS)];
+}
+
+static s16 DevPickRandomPartnerDistinctFrom(s16 starter)
+{
+    s16 selection;
+    s32 attempts;
+
+    // Try a bunch of random draws that avoid duplicating the starter
+    for (attempts = 0; attempts < 256; attempts++) {
+        selection = DevPickRandomMon();
+        if (selection != starter)
+            return selection;
+    }
+
+    // Deterministic fallback scan
+    for (attempts = 0; attempts < NUM_PARTNERS; attempts++) {
+        selection = gPartners[attempts];
+        if (selection != starter)
+            return selection;
+    }
+
+    // Worst case: allow a duplicate so we never return MONSTER_NONE
+    return DevPickRandomMon();
 }
 
 static void InitializeTestStats(void)
@@ -155,17 +189,19 @@ static void InitializeTestStats(void)
     // DEV: Skip personality quiz and set dev defaults
     // To enable dev mode, compile with: make DEV=1
     // This will skip the personality quiz and set:
-    // - Main: Charizard
-    // - Solo: Yes  
-    // - Partner: Magikarp
+    // - Main: Random
+    // - Solo: Yes
+    // - Partner: Random (distinct from main when possible)
     // - Recruitment: No Recruitable
     // - Skip basic rescues: Yes
     // - Skip Cutscenes: Yes
     // - Difficulty: Normal
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
-    sPersonalityTestTracker->unk4.PartnerID = MONSTER_CHARIZARD;
+    sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
+    sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
+    CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
+    CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;

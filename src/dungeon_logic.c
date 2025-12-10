@@ -1388,6 +1388,19 @@ u8 GetMoveTypeForMonster(Entity *pokemon, Move *pokeMove)
 {
     if (pokeMove->id == MOVE_HIDDEN_POWER)
         return GetEntInfo(pokemon)->hiddenPower.hiddenPowerType;
+    else if (pokeMove->id == MOVE_REGULAR_ATTACK) {
+        // Regular attack: use Special Attack if it's higher than Attack
+        EntityInfo *info = GetEntInfo(pokemon);
+        if (info->atk[1] > info->atk[0]) {
+            // Special Attack is higher - return a special type to trigger special damage calculation
+            // Use TYPE_PSYCHIC as the "special" indicator (arbitrary choice of special type)
+            return TYPE_PSYCHIC;
+        }
+        else {
+            // Attack is higher or equal - return TYPE_NONE (physical)
+            return TYPE_NONE;
+        }
+    }
     else
         return GetMoveType(pokeMove);
 }

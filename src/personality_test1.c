@@ -200,7 +200,7 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     // sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
     // sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_ALAKAZAM;
     sPersonalityTestTracker->unk4.PartnerID = MONSTER_BULBASAUR;
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);

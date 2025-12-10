@@ -1119,6 +1119,8 @@ void CalcDamage(Entity *attacker, Entity *target, u8 moveType, s32 movePower, s3
 {
     EntityInfo *attackerInfo = GetEntInfo(attacker);
     EntityInfo *targetInfo = GetEntInfo(target);
+    // splitIndex: 0 = Physical (Attack/Defense), 1 = Special (Sp.Atk/Sp.Def)
+    // For MOVE_REGULAR_ATTACK, GetMoveTypeForMonster returns TYPE_PSYCHIC if Sp.Atk > Atk, TYPE_NONE otherwise
     s32 splitIndex = (!IsTypePhysical(moveType)) ? 1 : 0;
 
     sub_806F500();

@@ -417,22 +417,49 @@ s32 DungeonSeedOverrides_ApplyItemLimit(void)
 
     startCount = GetNumberOfFilledInventorySlots();
 
+    MGBA_Warnf("[ApplyItemLimit] BEFORE: startCount=%d limit=%d", startCount, limit);
+    // First pass: clean up any obviously broken items before counting
     for (i = 0; i < INVENTORY_SIZE; i++) {
         Item *item = &gTeamInventoryRef->teamItems[i];
         if (item->flags & ITEM_FLAG_EXISTS) {
+            MGBA_Warnf("[ApplyItemLimit]   [%d] id=%d flags=0x%02x quantity=%d", i, item->id, item->flags, item->quantity);
+            // If an item is flagged as existing but has no valid ID, it's broken - clean it up
+            if (item->id == ITEM_NOTHING) {
+                MGBA_Warnf("[ApplyItemLimit] Cleaning up broken item at slot %d (EXISTS but id=NOTHING)", i);
+                ZeroOutItem(item);
+            }
+        }
+    }
+
+    // Recount after cleanup
+    startCount = GetNumberOfFilledInventorySlots();
+
+    for (i = 0; i < INVENTORY_SIZE; i++) {
+        Item *item = &gTeamInventoryRef->teamItems[i];
+        // Only process real items (EXISTS flag and valid ID)
+        // Ghost items have EXISTS flag but id=ITEM_NOTHING
+        if ((item->flags & ITEM_FLAG_EXISTS) && item->id != ITEM_NOTHING) {
             if (kept < limit) {
                 kept++;
             }
             else {
+                MGBA_Warnf("[ApplyItemLimit] Removing item at slot %d (id=%d)", i, item->id);
                 ZeroOutItem(item);
                 removed++;
             }
+        }
+        else if (item->flags & ITEM_FLAG_EXISTS) {
+            // Clean up ghost items (EXISTS flag but invalid ID)
+            MGBA_Warnf("[ApplyItemLimit] Cleaning up ghost item at slot %d (id=%d)", i, item->id);
+            ZeroOutItem(item);
         }
     }
 
     if (removed > 0) {
         FillInventoryGaps();
     }
+
+    MGBA_Warnf("[ApplyItemLimit] AFTER: kept=%d removed=%d finalCount=%d", kept, removed, GetNumberOfFilledInventorySlots());
 
     if (removed > 0) {
         MGBA_Infof("[ItemLimit] Trimmed inventory from %d to %d (removed %d)", startCount, kept, removed);
@@ -1373,13 +1400,23 @@ static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
     }
 
     // If dungeon is in the sequential list, prepend "Dungeon X/YY" format
+    // where X is the progression number (# completed + 1), not the dungeon's array index
     if (dungeonIndex != -1) {
+        s32 progressionNumber = 1;  // Start at 1 for the first dungeon
+
+        // Count how many dungeons have been conquered before this one
+        for (i = 0; i < dungeonIndex; i++) {
+            if (RescueScenarioConquered(sSequentialDungeonList[i])) {
+                progressionNumber++;
+            }
+        }
+
         if (typeLabel != NULL) {
             sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d) %s",
-                          dungeonIndex + 1, SEQUENTIAL_DUNGEON_COUNT, typeLabel);
+                          progressionNumber, SEQUENTIAL_DUNGEON_COUNT, typeLabel);
         } else {
             sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d)",
-                          dungeonIndex + 1, SEQUENTIAL_DUNGEON_COUNT);
+                          progressionNumber, SEQUENTIAL_DUNGEON_COUNT);
         }
         sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
     } else {

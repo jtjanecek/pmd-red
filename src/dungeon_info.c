@@ -15,6 +15,7 @@
 #include "dungeon_data.h"
 #include "save.h"
 #include "dungeon_seed_overrides.h"
+#include "mgba_log.h"
 
 static void AppendWithNewLines(u8 *dst, const u8 *src);
 
@@ -2441,21 +2442,29 @@ bool8 IsLevelResetDungeon(u8 dungeon)
 u32 GetMaxItemsAllowed(u8 dungeon)
 {
     u32 maxItems;
+    u32 vanillaLimit;
 
     // Allow full inventory in Level 1 dungeons
     if (IsLevelResetDungeon(dungeon))
         return INVENTORY_SIZE;
 
-    maxItems = gDungeons[dungeon].maxItemsAllowed;
+    vanillaLimit = gDungeons[dungeon].maxItemsAllowed;
+    maxItems = vanillaLimit;
 
     // Apply seeded run difficulty limits (reuses Deoxys-style item cap logic)
     if (DungeonSeedOverrides_IsEnabled(NULL)) {
         s32 difficultyLimit = DungeonSeedOverrides_GetItemLimit();
 
+        MGBA_Warnf("[ItemLimit] dungeon=%d vanillaLimit=%d difficultyLimit=%d", dungeon, vanillaLimit, difficultyLimit);
+
         if (difficultyLimit < 0)
             difficultyLimit = 0;
-        if ((u32)difficultyLimit < maxItems)
+        // If maxItems is 0 (no vanilla limit), use difficulty limit
+        // Otherwise, use the stricter of the two limits
+        if (maxItems == 0 || (u32)difficultyLimit < maxItems)
             maxItems = (u32)difficultyLimit;
+
+        MGBA_Warnf("[ItemLimit] final maxItems=%d", maxItems);
     }
 
     return maxItems;
@@ -2620,6 +2629,8 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
     newLine[0] = '\n';
     newLine[1] = 0;
 
+    MGBA_Warnf("[BufferDungeonReq] START: dungeon=%d numInvSlots=%d maxItemsAllowed=%d", dungeonIndex, numInvSlots, maxItemsAllowed);
+
     InlineStrcpy(buffer,""); // Empty string
     sp_0xf0 = 0;
 
@@ -2655,6 +2666,8 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
     }
 
     if (!IsLevelResetDungeon(dungeonIndex) && maxItemsAllowed != 0 && maxItemsAllowed < numInvSlots) {
+        MGBA_Warnf("[BufferDungeonReq] ITEM LIMIT FAILED: dungeon=%d maxItemsAllowed=%d numInvSlots=%d sp_0xf0=%d",
+                   dungeonIndex, maxItemsAllowed, numInvSlots, sp_0xf0);
         gFormatArgs[0] = maxItemsAllowed;
         gFormatArgs[1] = numInvSlots - maxItemsAllowed;
         FormatString((requirementFailed) ? gText_AlsoOnlyXItemsMayBeBroughtIntoDungeon : gText_OnlyXItemsMayBeBroughtIntoDungeon, text, &text[TXT_BUFFER_LEN], 0);
@@ -2728,33 +2741,39 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         strcat(buffer,gText_GameWilllBeSavedBeforeEntering);
         strcat(buffer,newLine);
     }
-    if (gDungeons[dungeonIndex].levelResetTo1) {
-        if (!requirementsAsk) {
-            strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
+    // Skip vanilla dungeon restriction warnings when seeded overrides are enabled
+    // In seeded runs, we allow items/money and don't reset levels
+    if (!DungeonSeedOverrides_IsEnabled(NULL)) {
+        if (gDungeons[dungeonIndex].levelResetTo1) {
+            if (!requirementsAsk) {
+                strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
+                strcat(buffer,newLine);
+                requirementsAsk = TRUE;
+            }
+            strcat(buffer,gText_TeamWillEnterAtLv1);
             strcat(buffer,newLine);
-            requirementsAsk = TRUE;
         }
-        strcat(buffer,gText_TeamWillEnterAtLv1);
-        strcat(buffer,newLine);
-    }
-    if (!IsLevelResetDungeon(dungeonIndex) && (maxItemsAllowed == 0) && (numInvSlots + sp_0xf0 != 0)) {
-        if (!requirementsAsk) {
-            strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
+        if (!IsLevelResetDungeon(dungeonIndex) && (maxItemsAllowed == 0) && (numInvSlots + sp_0xf0 != 0)) {
+            if (!requirementsAsk) {
+                strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
+                strcat(buffer,newLine);
+                requirementsAsk = TRUE;
+            }
+            strcat(buffer,gText_AllItemsLostOnEntering);
             strcat(buffer,newLine);
-            requirementsAsk = TRUE;
         }
-        strcat(buffer,gText_AllItemsLostOnEntering);
-        strcat(buffer,newLine);
-    }
-    if (!IsLevelResetDungeon(dungeonIndex) && (!gDungeons[dungeonIndex].keepMoney) && (gTeamInventoryRef->teamMoney != 0)) {
-        if (!requirementsAsk) {
-            strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
-            strcat(buffer,newLine);
-            requirementsAsk = TRUE;
+        if (!IsLevelResetDungeon(dungeonIndex) && (!gDungeons[dungeonIndex].keepMoney) && (gTeamInventoryRef->teamMoney != 0)) {
+            if (!requirementsAsk) {
+                strcpy(buffer,gText_IsOkToEnterWithFollowingRules);
+                strcat(buffer,newLine);
+                requirementsAsk = TRUE;
+            }
+            strcat(buffer, gText_AllMoneyLostOnEntering);
+            InlineStrcat(buffer,newLine);
         }
-        strcat(buffer, gText_AllMoneyLostOnEntering);
-        InlineStrcat(buffer,newLine);
     }
+
+    MGBA_Warnf("[BufferDungeonReq] END: requirementsAsk=%d requirementFailed=%d", requirementsAsk, requirementFailed);
 
     if (requirementsAsk) {
         return DUNGEON_REQUIREMENTS_ASK;

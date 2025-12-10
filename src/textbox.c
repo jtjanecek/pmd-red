@@ -1745,26 +1745,40 @@ static bool8 sub_809B648(void)
                             s32 limit = GetMaxItemsAllowed(dungeonId);
                             s32 itemCount = GetNumberOfFilledInventorySlots();
                             s32 over = itemCount - limit;
+                            s32 i;
 
-                            if (limit < 0)
-                                limit = 0;
-                            if (over < 1)
-                                over = 1;
+                            MGBA_Warnf("[TextboxItemCheck] dungeonId=%d limit=%d itemCount=%d over=%d reqResult=%d", dungeonId, limit, itemCount, over, reqResult);
+                            MGBA_Warnf("[TextboxItemCheck] Listing all inventory items:");
+                            for (i = 0; i < INVENTORY_SIZE; i++) {
+                                Item *item = &gTeamInventoryRef->teamItems[i];
+                                if (item->flags & ITEM_FLAG_EXISTS) {
+                                    MGBA_Warnf("[TextboxItemCheck]   [%d] id=%d flags=0x%02x quantity=%d", i, item->id, item->flags, item->quantity);
+                                }
+                            }
 
-                            DungeonListMenu_Free();
-                            SetScriptVarValue(NULL, DUNGEON_SELECT, -1);
-                            SetScriptVarValue(NULL, DUNGEON_ENTER, -1);
-                            SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
-                            gUnknown_20398C4 = -1;
-                            SetTextboxType(TEXTBOX_TYPE_NORMAL, TRUE);
-                            sprintfStatic(sDungeonEntryReqBuffer,
-                                          _("Please deposit %d item(s)\nbefore continuing.\nItem limit: %d"),
-                                          over,
-                                          limit);
-                            CreateMenuDialogueBoxAndPortrait(sDungeonEntryReqBuffer, 0, 0, NULL, 0, 3, 0, NULL, STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS | STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS_2);
-                            sTextbox->unk420 = 6;
-                            sTextbox->unk430 = -1;
-                            return 1;
+                            // Only show the item limit error if we actually have too many items
+                            // reqResult might be ASK for other reasons (money loss, etc.)
+                            if (limit > 0 && itemCount > limit) {
+                                if (limit < 0)
+                                    limit = 0;
+                                if (over < 1)
+                                    over = 1;
+
+                                DungeonListMenu_Free();
+                                SetScriptVarValue(NULL, DUNGEON_SELECT, -1);
+                                SetScriptVarValue(NULL, DUNGEON_ENTER, -1);
+                                SetScriptVarValue(NULL, DUNGEON_ENTER_INDEX, -1);
+                                gUnknown_20398C4 = -1;
+                                SetTextboxType(TEXTBOX_TYPE_NORMAL, TRUE);
+                                sprintfStatic(sDungeonEntryReqBuffer,
+                                              _("Please deposit %d item(s)\nbefore continuing.\nItem limit: %d"),
+                                              over,
+                                              limit);
+                                CreateMenuDialogueBoxAndPortrait(sDungeonEntryReqBuffer, 0, 0, NULL, 0, 3, 0, NULL, STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS | STR_FORMAT_FLAG_WAIT_FOR_BUTTON_PRESS_2);
+                                sTextbox->unk420 = 6;
+                                sTextbox->unk430 = -1;
+                                return 1;
+                            }
                         }
 
                         SetScriptVarValue(0, 0x12, RescueDungeonToScriptDungeonId(rescueDungeonId));

@@ -16,6 +16,7 @@
 #include "strings.h"
 #include "dungeon_info.h"
 #include "dungeon_data.h"
+#include "mgba_log.h"
 
 EWRAM_DATA OpenedFile *gItemParametersFile = {NULL};
 EWRAM_DATA ItemDataEntry *gItemParametersData = {NULL}; // NDS=0213BEF0
@@ -173,7 +174,9 @@ s32 GetNumberOfFilledInventorySlots(void)
   count = 0;
   for(i = 0; i < INVENTORY_SIZE; i++)
   {
-    if ((gTeamInventoryRef->teamItems[i].flags & ITEM_FLAG_EXISTS) != 0) {
+    Item *item = &gTeamInventoryRef->teamItems[i];
+    // Skip ghost items: items with EXISTS flag but invalid ID
+    if ((item->flags & ITEM_FLAG_EXISTS) != 0 && item->id != ITEM_NOTHING) {
       count++;
     }
   }
@@ -555,6 +558,15 @@ void FillInventoryGaps(void)
   // fill inventory gaps
   s32 slot_checking = 0;
   s32 last_filled = 0;
+  s32 i;
+
+  MGBA_Warnf("[FillInventoryGaps] BEFORE:");
+  for (i = 0; i < INVENTORY_SIZE; i++) {
+    Item *item = &gTeamInventoryRef->teamItems[i];
+    if (item->flags & ITEM_FLAG_EXISTS) {
+      MGBA_Warnf("[FillInventoryGaps]   [%d] id=%d quantity=%d flags=0x%02x", i, item->id, item->quantity, item->flags);
+    }
+  }
 
   do {
     while (slot_checking < INVENTORY_SIZE) {

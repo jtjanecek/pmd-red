@@ -926,7 +926,7 @@
     },
     {
         "name": "MoveNameReturn",
-        "basePower": 2,
+        "basePower": 25,
         "type": "TYPE_NORMAL",
         "targetingFlags": "0b0000000000000000",
         "aiTargetingFlags": "0b0000000000000000",
@@ -6370,7 +6370,7 @@
     },
     {
         "name": "MoveNameFrustration",
-        "basePower": 2,
+        "basePower": 25,
         "type": "TYPE_NORMAL",
         "targetingFlags": "0b0000000000000000",
         "aiTargetingFlags": "0b0000000000000000",

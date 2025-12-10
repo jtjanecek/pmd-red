@@ -1285,15 +1285,15 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             result->bossFight.fixedRoomNumber = 7;     // Groudon arena (Room 7)
             roomName = "MagmaCavern";
         }
-        else if (dungeonType == TYPE_GHOST) {
-            // Ghost dungeon -> Use Rayquaza's boss room (Sky Tower)
+        else if (dungeonType == TYPE_FLYING) {
+            // Flying dungeon -> Use Rayquaza's boss room (Sky Tower)
             result->bossFight.roomTileset = 71;        // Sky Tower boss tileset
             result->bossFight.useFixedRoomLayout = TRUE;
             result->bossFight.fixedRoomNumber = 8;     // Rayquaza arena (Room 8)
             roomName = "SkyTower";
         }
-        else if (dungeonType == TYPE_FLYING) {
-            // Flying dungeon -> Use Ho-Oh's boss room (Mt. Faraway)
+        else if (dungeonType == TYPE_ROCK) {
+            // Rock dungeon -> Use Ho-Oh's boss room (Mt. Faraway)
             result->bossFight.roomTileset = 72;        // Mt. Faraway boss tileset
             result->bossFight.useFixedRoomLayout = TRUE;
             result->bossFight.fixedRoomNumber = 15;    // Ho-Oh arena (Room 15)

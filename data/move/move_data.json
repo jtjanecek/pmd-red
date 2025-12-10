@@ -1589,7 +1589,7 @@
     },
     {
         "name": "MoveNameSilverWind",
-        "basePower": 12,
+        "basePower": 4,
         "type": "TYPE_BUG",
         "targetingFlags": "0b0000000000110000",
         "aiTargetingFlags": "0b0000000000110000",
@@ -1603,7 +1603,7 @@
         "critChance": 12,
         "cannotHitFrozen": true,
         "ignoresTaunted": true,
-        "rangeID": "MOVE_RANGE_ROOM_FOES",
+        "rangeID": "MOVE_RANGE_ROOM_EXCEPT_USER",
         "description": "MoveDescriptionSilverWind",
         "useText": "MoveUseTextUse"
     },
@@ -1972,7 +1972,7 @@
         "critChance": 12,
         "cannotHitFrozen": true,
         "ignoresTaunted": true,
-        "rangeID": "MOVE_RANGE_ROOM_FOES",
+        "rangeID": "MOVE_RANGE_ROOM_EXCEPT_USER",
         "description": "MoveDescriptionFreezeChanceRoom",
         "useText": "MoveUseTextUse"
     },
@@ -4470,7 +4470,7 @@
     },
     {
         "name": "MoveNameHeatWave",
-        "basePower": 10,
+        "basePower": 4,
         "type": "TYPE_FIRE",
         "targetingFlags": "0b0000000000110000",
         "aiTargetingFlags": "0b0000000000110000",
@@ -4484,7 +4484,7 @@
         "critChance": 12,
         "cannotHitFrozen": false,
         "ignoresTaunted": true,
-        "rangeID": "MOVE_RANGE_ROOM_FOES",
+        "rangeID": "MOVE_RANGE_ROOM_EXCEPT_USER",
         "description": "MoveDescriptionHeatWave",
         "useText": "MoveUseTextUse"
     },

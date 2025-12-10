@@ -143,6 +143,10 @@ static void ApplySeedOverridesToCurrentFloor(void)
     } else if (!overrides.bossFight.enabled && overrides.applyWeather) {
         gDungeon->floorProperties.weather = overrides.weather;
         MGBA_Warnf("[Weather] Floor override applied: weather=%d", overrides.weather);
+    } else {
+        // No weather override - force clear weather
+        gDungeon->floorProperties.weather = WEATHER_CLEAR;
+        MGBA_Warnf("[Weather] No override - forcing WEATHER_CLEAR");
     }
     // Trap overrides: force max density and a uniform trap table
     if (overrides.trapDensityOverride >= 0) {
@@ -332,6 +336,9 @@ void SetFloorItemMonsterSpawns(void)
     }
 
     CloseFile(file);
+    // Force weather to clear before applying overrides
+    // Only our override system should set weather
+    gDungeon->floorProperties.weather = WEATHER_CLEAR;
     ApplySeedOverridesToCurrentFloor();
     MGBA_Warnf("[FloorInit] End: tileset=%d weather=%d bossEnabled=%d boss=%d enemyDensity=%d spawnsLoaded=%d",
                gDungeon->floorProperties.tileset,

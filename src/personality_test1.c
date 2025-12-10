@@ -127,8 +127,8 @@ static void HandleDifficultySelection(void);
 UNUSED static void ApplySkipStartMinimal(void);
 // Skip-cutscene override is disabled for now; no postgame force.
 static void ApplySkipPostgameBootstrap(void);
-static s16 DevPickRandomMon(void);
-static s16 DevPickRandomPartnerDistinctFrom(s16 starter);
+// static s16 DevPickRandomMon(void);
+// static s16 DevPickRandomPartnerDistinctFrom(s16 starter);
 
 bool8 CreateTestTracker(void)
 {
@@ -141,34 +141,34 @@ bool8 CreateTestTracker(void)
     return TRUE;
 }
 
-static s16 DevPickRandomMon(void)
-{
-    // Draw from the full starter/partner roster
-    return gPartners[RandInt(NUM_PARTNERS)];
-}
+// static s16 DevPickRandomMon(void)
+// {
+//     // Draw from the full starter/partner roster
+//     return gPartners[RandInt(NUM_PARTNERS)];
+// }
 
-static s16 DevPickRandomPartnerDistinctFrom(s16 starter)
-{
-    s16 selection;
-    s32 attempts;
+// static s16 DevPickRandomPartnerDistinctFrom(s16 starter)
+// {
+//     s16 selection;
+//     s32 attempts;
 
-    // Try a bunch of random draws that avoid duplicating the starter
-    for (attempts = 0; attempts < 256; attempts++) {
-        selection = DevPickRandomMon();
-        if (selection != starter)
-            return selection;
-    }
+//     // Try a bunch of random draws that avoid duplicating the starter
+//     for (attempts = 0; attempts < 256; attempts++) {
+//         selection = DevPickRandomMon();
+//         if (selection != starter)
+//             return selection;
+//     }
 
-    // Deterministic fallback scan
-    for (attempts = 0; attempts < NUM_PARTNERS; attempts++) {
-        selection = gPartners[attempts];
-        if (selection != starter)
-            return selection;
-    }
+//     // Deterministic fallback scan
+//     for (attempts = 0; attempts < NUM_PARTNERS; attempts++) {
+//         selection = gPartners[attempts];
+//         if (selection != starter)
+//             return selection;
+//     }
 
-    // Worst case: allow a duplicate so we never return MONSTER_NONE
-    return DevPickRandomMon();
-}
+//     // Worst case: allow a duplicate so we never return MONSTER_NONE
+//     return DevPickRandomMon();
+// }
 
 static void InitializeTestStats(void)
 {
@@ -198,8 +198,10 @@ static void InitializeTestStats(void)
     // - Difficulty: Normal
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
-    sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
+    // sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
+    // sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
+    sPersonalityTestTracker->unk4.PartnerID = MONSTER_BULBASAUR;
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;

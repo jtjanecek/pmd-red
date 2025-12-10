@@ -750,7 +750,7 @@
     },
     {
         "name": "MoveNameDoubleslap",
-        "basePower": 4,
+        "basePower": 3,
         "type": "TYPE_NORMAL",
         "targetingFlags": "0b0000000000000000",
         "aiTargetingFlags": "0b0000000000000000",
@@ -1542,7 +1542,7 @@
         "critChance": 12,
         "affectedByMagicCoat": true,
         "cannotHitFrozen": true,
-        "rangeID": "MOVE_RANGE_ROOM_FOES",
+        "rangeID": "MOVE_RANGE_FRONT_FOE",
         "description": "MoveDescriptionSpore",
         "useText": "MoveUseTextUse"
     },
@@ -1855,7 +1855,7 @@
         "critChance": 12,
         "isSnatchable": true,
         "cannotHitFrozen": true,
-        "rangeID": "MOVE_RANGE_ROOM_ALLIES",
+        "rangeID": "MOVE_RANGE_USER",
         "description": "MoveDescriptionAgility",
         "useText": "MoveUseTextUse"
     },
@@ -3168,7 +3168,7 @@
     },
     {
         "name": "MoveNameBulletSeed",
-        "basePower": 10,
+        "basePower": 5,
         "type": "TYPE_GRASS",
         "targetingFlags": "0b0000000001010010",
         "aiTargetingFlags": "0b0000000001010000",
@@ -5541,7 +5541,7 @@
     },
     {
         "name": "MoveNameBoneRush",
-        "basePower": 12,
+        "basePower": 6,
         "type": "TYPE_GROUND",
         "targetingFlags": "0b0000000010000000",
         "aiTargetingFlags": "0b0000000010000000",
@@ -6063,7 +6063,7 @@
     },
     {
         "name": "MoveNameFurySwipes",
-        "basePower": 4,
+        "basePower": 3,
         "type": "TYPE_NORMAL",
         "targetingFlags": "0b0000000000000000",
         "aiTargetingFlags": "0b0000000000000000",

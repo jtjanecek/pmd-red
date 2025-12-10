@@ -617,17 +617,8 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         MGBA_Warnf("[Dungeon] Post-leader-check: Weather setup");
         if (!r6) {
             if (gDungeon->unk5 == 0) {
-                // CRITICAL FIX: Skip sub_807E5AC for boss floors with fixed rooms
-                // This function crashes when accessing tile data in fixed room layouts
-                const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
-                bool8 skipWeatherInit = (bossFight != NULL && bossFight->enabled && bossFight->useFixedRoomLayout);
-
-                if (skipWeatherInit) {
-                    MGBA_Warnf("[Dungeon] Skipping sub_807E5AC for fixed room boss floor");
-                } else {
-                    MGBA_Warnf("[Dungeon] Calling sub_807E5AC");
-                    sub_807E5AC();
-                }
+                MGBA_Warnf("[Dungeon] Calling sub_807E5AC");
+                sub_807E5AC();
 
                 if (GetApparentWeather(NULL) != 0) {
                     MGBA_Warnf("[Dungeon] Calling sub_807E7FC");

@@ -1093,6 +1093,8 @@ static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rn
     bossFight->weather = WEATHER_CLEAR;
 
     config = GetBossWeatherConfigForSpecies(bossFight->bossSpecies);
+    MGBA_Warnf("[BossWeather] species=%d config=%p enabled=%d",
+               bossFight->bossSpecies, config, config ? config->enabled : -1);
     if (config == NULL || !config->enabled)
         return;
 
@@ -1101,18 +1103,22 @@ static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rn
         difficulty = DIFFICULTY_NORMAL;
 
     chance = config->chance[difficulty];
+    MGBA_Warnf("[BossWeather] difficulty=%d chance=%d scale=%d weather=%d",
+               difficulty, chance, BOSS_WEATHER_CHANCE_SCALE, config->weather);
     if (chance == 0)
         return;
 
     if (chance >= BOSS_WEATHER_CHANCE_SCALE) {
         bossFight->applyWeather = TRUE;
         bossFight->weather = config->weather;
+        MGBA_Warnf("[BossWeather] Applied (100%% chance): weather=%d", config->weather);
         return;
     }
 
     if (DungeonSeedRng_NextRange(rng, 0, BOSS_WEATHER_CHANCE_SCALE) < chance) {
         bossFight->applyWeather = TRUE;
         bossFight->weather = config->weather;
+        MGBA_Warnf("[BossWeather] Applied (rolled): weather=%d", config->weather);
     }
 }
 

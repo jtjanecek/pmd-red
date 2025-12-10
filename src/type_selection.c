@@ -322,10 +322,18 @@ bool8 TypeSelection_EnsureInitialCommittedType(void)
 
 void TypeSelection_HandleDungeonStart(void)
 {
-    if (!TypeSelection_IsFeatureEnabled())
+    if (!TypeSelection_IsFeatureEnabled()) {
+        MGBA_Warnf("[TypeSelection] HandleDungeonStart: feature not enabled");
         return;
+    }
     if (!sTypeSelectionState.initialized)
         TypeSelection_Init();
+
+    MGBA_Warnf("[TypeSelection] HandleDungeonStart: committedValid=%d committed=%d activeValid=%d active=%d",
+               sTypeSelectionState.data.committedTypeValid,
+               sTypeSelectionState.data.committedType,
+               sTypeSelectionState.data.activeTypeValid,
+               sTypeSelectionState.data.activeType);
 
     // Ensure a deterministic initial type if none has been picked yet.
     (void)TypeSelection_EnsureInitialCommittedType();
@@ -333,6 +341,7 @@ void TypeSelection_HandleDungeonStart(void)
     SanitizeTilesetState();
 
     if (sTypeSelectionState.data.committedTypeValid) {
+        MGBA_Warnf("[TypeSelection] Activating committed type %d -> active", sTypeSelectionState.data.committedType);
         sTypeSelectionState.data.activeType = sTypeSelectionState.data.committedType;
         sTypeSelectionState.data.activeTypeValid = TRUE;
         sTypeSelectionState.data.committedTypeValid = FALSE;
@@ -343,9 +352,11 @@ void TypeSelection_HandleDungeonStart(void)
             && IsBossInPool(sTypeSelectionState.data.activeType, sTypeSelectionState.data.committedBoss)) {
             sTypeSelectionState.data.activeBoss = sTypeSelectionState.data.committedBoss;
             sTypeSelectionState.data.activeBossValid = TRUE;
+            MGBA_Warnf("[TypeSelection] Activated boss: %d", sTypeSelectionState.data.activeBoss);
         } else {
             sTypeSelectionState.data.activeBoss = MONSTER_NONE;
             sTypeSelectionState.data.activeBossValid = FALSE;
+            MGBA_Warnf("[TypeSelection] No valid boss to activate");
         }
 
         sTypeSelectionState.data.committedBossValid = FALSE;
@@ -355,6 +366,7 @@ void TypeSelection_HandleDungeonStart(void)
             && IsTilesetInPool(sTypeSelectionState.data.activeType, sTypeSelectionState.data.committedTileset)) {
             sTypeSelectionState.data.activeTileset = sTypeSelectionState.data.committedTileset;
             sTypeSelectionState.data.activeTilesetValid = TRUE;
+            MGBA_Warnf("[TypeSelection] Activated tileset: %d", sTypeSelectionState.data.activeTileset);
         } else {
             sTypeSelectionState.data.activeTileset = 0;
             sTypeSelectionState.data.activeTilesetValid = FALSE;
@@ -362,7 +374,12 @@ void TypeSelection_HandleDungeonStart(void)
 
         sTypeSelectionState.data.committedTilesetValid = FALSE;
         sTypeSelectionState.data.committedTileset = 0;
+    } else if (sTypeSelectionState.data.activeTypeValid) {
+        // If we already have an active type (from a previous call), keep it
+        MGBA_Warnf("[TypeSelection] Active type already set (%d), keeping it", sTypeSelectionState.data.activeType);
     } else {
+        // No committed type and no active type - clear everything
+        MGBA_Warnf("[TypeSelection] No committed or active type, clearing state");
         sTypeSelectionState.data.activeTypeValid = FALSE;
         sTypeSelectionState.data.activeBossValid = FALSE;
         sTypeSelectionState.data.activeType = TYPE_NONE;
@@ -370,6 +387,11 @@ void TypeSelection_HandleDungeonStart(void)
         sTypeSelectionState.data.activeTilesetValid = FALSE;
         sTypeSelectionState.data.activeTileset = 0;
     }
+
+    MGBA_Warnf("[TypeSelection] HandleDungeonStart DONE: activeValid=%d active=%d boss=%d",
+               sTypeSelectionState.data.activeTypeValid,
+               sTypeSelectionState.data.activeType,
+               sTypeSelectionState.data.activeBoss);
 }
 
 static void ResetPendingHints(void)

@@ -150,7 +150,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
     r6 = setupPtr->info.sub0.unk4;
     r9 = setupPtr->info.sub0.unkD;
     r10 = setupPtr->info.sub0.unkC;
-    MGBA_Warnf("[Dungeon] Setup parameters loaded");
+    MGBA_Warnf("[Dungeon] Setup parameters loaded: r6=%d (rescue/continue flag)", r6);
     gSerializedData_203B41C = setupPtr->info.unk74;
     gDungeon = setupPtr->info.dungeon;
     if (!r6) {
@@ -168,11 +168,17 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
     gPlayerDotMapPosition.x = 100;
 
     if (!r6) {
+        MGBA_Warnf("[Dungeon] Fresh start: initializing dungeon state");
         gDungeon->unk644.unk34 = setupPtr->info.sub0.unkB;
         gDungeon->unk644.dungeonSeed = setupPtr->info.dungeonSeed;
         gDungeon->unk644.windTurns = GetTurnLimit(setupPtr->info.sub0.unk0.id);
         gDungeon->unk644.windPhase = 0;
         gDungeon->unk644.unk37 = GetRescuesAllowed(setupPtr->info.sub0.unk0.id);
+        TypeSelection_HandleDungeonStart();
+    } else {
+        MGBA_Warnf("[Dungeon] Rescue/continue: calling TypeSelection_HandleDungeonStart anyway");
+        // CRITICAL: Also handle type selection for rescue/continue scenarios
+        // Otherwise type state is lost when retrying after a faint
         TypeSelection_HandleDungeonStart();
     }
     gDungeon->unk644.unk54 = 0;

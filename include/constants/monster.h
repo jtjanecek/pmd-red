@@ -429,7 +429,7 @@
 
 #define NUM_RECRUITABLE_MONSTERS 386
 #define NUM_MONSTERS NUM_RECRUITABLE_MONSTERS  // Legacy alias for recruitable storage
-#define NUM_PARTNERS MONSTER_DECOY  // Keep personality test at full size
+#define NUM_PARTNERS 387  // Actual size of gPartners array (with Munchlax and Decoy, minus Unown/Castform forms)
 #define MONSTER_MAX (MONSTER_RAYQUAZA_CUTSCENE + 1)
 
 #define IS_CASTFORM_FORM_MONSTER(id)((id == MONSTER_CASTFORM_SNOWY || id == MONSTER_CASTFORM_SUNNY || id == MONSTER_CASTFORM_RAINY))

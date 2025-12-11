@@ -16,7 +16,7 @@
 
 static EWRAM_DATA OpenedFile *sWazaParametersFile = { NULL }; // NDS=213C188
 static EWRAM_DATA MoveDataEntry *sMovesData = { NULL }; // NDS=213C18C
-static EWRAM_DATA MoveLearnset *sMoveLearnsets = { NULL }; // NDS=0213C184 | 420 entries, aka (MONSTER_DEOXYS_SPEED + 1), aka (MONSTER_MUNCHLAX)
+static EWRAM_DATA MoveLearnset *sMoveLearnsets = { NULL }; // NDS=0213C184 | 421 entries up to MONSTER_DECOY
 
 static void CopyAndResetMove(Move *, Move *);
 static bool8 sub_80933D8(s32, Move *);

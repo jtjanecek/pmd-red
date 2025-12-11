@@ -18,6 +18,7 @@
 #include "dungeon_range.h"
 #include "dungeon_message.h"
 #include "dungeon_message_log.h"
+#include "mgba_log.h"
 #include "save.h"
 #include "dungeon_logic.h"
 #include "constants/ability.h"
@@ -189,10 +190,13 @@ void SetDungeonMonsFromTeam(void)
     int recruitedId;
 
     index = 0;
+    MGBA_Warnf("[TeamLoad] Starting team load, NUM_MONSTERS=%d", NUM_MONSTERS);
     for (recruitedId = 0; recruitedId < NUM_MONSTERS; recruitedId++) {
         Pokemon lvl1Mon;
         Pokemon *pokeStruct = &gRecruitedPokemonRef->pokemon[recruitedId];
         if (PokemonExists(pokeStruct) && PokemonFlag2(pokeStruct)) {
+            MGBA_Warnf("[TeamLoad] Loading slot %d: species=%d isLeader=%d isPartner=%d",
+                recruitedId, pokeStruct->speciesNum, pokeStruct->isTeamLeader, IsMonPartner(pokeStruct));
             RecruitedPokemonToDungeonMon(&gRecruitedPokemonRef->dungeonTeam[index],recruitedId);
             // Do not reset to Level 1: preserve original level/stats when entering
             if (FALSE && IsLevelResetDungeon(gDungeon->unk644.dungeonLocation.id)) {
@@ -216,6 +220,7 @@ void SetDungeonMonsFromTeam(void)
                 break;
         }
     }
+    MGBA_Warnf("[TeamLoad] Loaded %d team members", index);
     for (; index < MAX_TEAM_MEMBERS; index++) {
         gRecruitedPokemonRef->dungeonTeam[index].flags = 0;
     }

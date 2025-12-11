@@ -19959,7 +19959,7 @@
     "types": [
       "TYPE_NORMAL"
     ],
-    "friendArea": "BEAU_PLAINS",
+    "friendArea": "FRIGID_CAVERN",
     "abilities": [
       "ABILITY_PRESSURE"
     ],
@@ -20002,7 +20002,7 @@
     "types": [
       "TYPE_STEEL"
     ],
-    "friendArea": "MAGNETIC_QUARRY",
+    "friendArea": "FRIGID_CAVERN",
     "abilities": [
       "ABILITY_PRESSURE"
     ],

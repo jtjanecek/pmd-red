@@ -429,7 +429,7 @@
 
 #define NUM_RECRUITABLE_MONSTERS 387
 #define NUM_MONSTERS NUM_RECRUITABLE_MONSTERS  // Legacy alias for recruitable storage
-#define NUM_PARTNERS 387  // Actual size of gPartners array (with Munchlax and Decoy, minus Unown/Castform forms)
+#define NUM_PARTNERS 388  // Actual size of gPartners array (with Munchlax, Decoy, and Deoxys Normal, minus Unown/Castform forms)
 #define MONSTER_MAX (MONSTER_RAYQUAZA_CUTSCENE + 1)
 
 #define IS_CASTFORM_FORM_MONSTER(id)((id == MONSTER_CASTFORM_SNOWY || id == MONSTER_CASTFORM_SUNNY || id == MONSTER_CASTFORM_RAINY))

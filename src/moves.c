@@ -156,9 +156,7 @@ static const u8 gDummyMoves[] = {0};
 const u8 *GetLevelUpMoves(s16 species)
 {
     s32 id = SpeciesId(species);
-    if (species == MONSTER_DECOY || species == MONSTER_NONE)
-        return gDummyMoves;
-    if (id == MONSTER_MUNCHLAX)
+    if (species == MONSTER_NONE)
         return gDummyMoves;
 
     return sMoveLearnsets[id].levelUpMoves;
@@ -167,9 +165,7 @@ const u8 *GetLevelUpMoves(s16 species)
 const u8 *GetHMTMMoves(s16 species)
 {
     s32 id = SpeciesId(species);
-    if (species == MONSTER_DECOY || species == MONSTER_NONE)
-        return gDummyMoves;
-    if (id == MONSTER_MUNCHLAX)
+    if (species == MONSTER_NONE)
         return gDummyMoves;
 
     return sMoveLearnsets[id].HMTMMoves;

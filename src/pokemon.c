@@ -1071,9 +1071,7 @@ s32 GetMovesLearnedAtLevel(u16* dst, s16 species, s32 level, s32 IQPoints)
   _species = SpeciesId(species);
   count = 0;
 
-  if (species == MONSTER_DECOY) return 0;
   if (species == MONSTER_NONE) return 0;
-  if (species == MONSTER_MUNCHLAX) return 0;
   // get stream
   stream = GetLevelUpMoves(_species);
 
@@ -1114,9 +1112,7 @@ bool8 CanMonLearnMove(u16 moveID, s16 _species)
   s32 species = _species;
   const u8* learnsetPtr;
 
-  if (species == MONSTER_DECOY) return 0;
   if (species == MONSTER_NONE) return 0;
-  if (species == MONSTER_MUNCHLAX) return 0;
   if (moveID == MOVE_STRUGGLE) return 0;
 
   learnsetPtr = GetLevelUpMoves(_species);
@@ -1147,9 +1143,7 @@ s32 sub_808E218(unkStruct_808E218_arg* a1, Pokemon* pokemon)
 
   count = 0;
   a1->count = 0;
-  if (pokemon->speciesNum == MONSTER_DECOY) return 0;
   if (pokemon->speciesNum == MONSTER_NONE) return 0;
-  if (pokemon->speciesNum == MONSTER_MUNCHLAX) return 0;
 
   sequence_length = GetEvolutionSequence(pokemon, evolve_sequence);
   for (i = 0; i < sequence_length; i++) {

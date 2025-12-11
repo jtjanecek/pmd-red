@@ -33,7 +33,7 @@ endif
 
 # Dev flag to skip personality quiz
 # Default to DEV=1 so developer conveniences are enabled without passing the flag.
-DEV         ?= 1
+DEV         ?= 0
 
 PREFIX := arm-none-eabi-
 OBJCOPY := $(PREFIX)objcopy
@@ -172,13 +172,13 @@ OBJS_REL := $(patsubst $(BUILD_DIR)/%,%,$(ALL_OBJECTS))
 
 SUBDIRS := $(sort $(dir $(ALL_OBJECTS)))
 
-TYPE_CHOICES_CSV := docs/type_choices.csv
+TYPE_CHOICES_CSV := rogue_files/type_choices.csv
 TYPE_HINT_TABLE_SRC := src/data/type_hint_table.c
 TYPE_HINT_GENERATOR := scripts/build_type_hint_table.py
-TYPE_BOSSES_CSV := docs/type_bosses.csv
+TYPE_BOSSES_CSV := rogue_files/type_bosses.csv
 TYPE_BOSS_TABLE_SRC := src/data/type_boss_table.c
 TYPE_BOSS_GENERATOR := scripts/build_type_boss_table.py
-TYPE_WEATHER_CSV := docs/weather.csv
+TYPE_WEATHER_CSV := rogue_files/weather.csv
 TYPE_WEATHER_TABLE_SRC := src/data/type_weather_table.c
 TYPE_WEATHER_GENERATOR := scripts/build_type_weather_table.py
 

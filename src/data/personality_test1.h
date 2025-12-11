@@ -5,37 +5,25 @@ ALIGNED(4) static const u8 gSeedModePrompt[] = _(
     "{CENTER_ALIGN}The seed randomizes tilesets and Pokemon."
 );
 static const MenuItem gSeedModeMenu[] = {
-    { _("Normal"), 0 },
-    { _("Random"), 1 },
-    { _("Custom"), 2 },
+    { _("Random"), 0 },
+    { _("Custom"), 1 },
     { NULL, -1 },
 };
 
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the dungeon seed\n{CENTER_ALIGN}using the number pad.");
-ALIGNED(4) static const u8 gSkipBasicRescuesPrompt[] = _(
-    "{CENTER_ALIGN}Skip Basic Rescues between Story Missions?\n"
-    "{CENTER_ALIGN}This will skip the requirement to complete\n"
-    "{CENTER_ALIGN}normal Rescues between story missions."
-);
-static const MenuItem gSkipBasicRescuesMenu[] = {
-    { _("No"), 0 },
-    { _("Yes"), 1 },
-    { NULL, -1 },
-};
 ALIGNED(4) static const u8 gRecruitAllPrompt[] = _(
     "{CENTER_ALIGN}Recruitment Settings:\n"
     "{CENTER_ALIGN}All Recruitable - Can recruit fully evolved\n"
     "{CENTER_ALIGN}No Recruitable - No in-dungeon recruits"
 );
 static const MenuItem gRecruitAllMenu[] = {
-    { _("Normal"), 0 },
-    { _("All Recruitable"), 1 },
-    { _("No Recruitable"), 2 },
+    { _("All Recruitable"), 0 },
+    { _("No Recruitable"), 1 },
     { NULL, -1 },
 };
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
     "{CENTER_ALIGN}Normal: Similar difficulty to the base game.\n"
-    "{CENTER_ALIGN}Hard: Stronger enemies. More bosses.\n"
+    "{CENTER_ALIGN}Hard: Stronger enemies.\n"
     "{CENTER_ALIGN}Nightmare: Only the best will survive."
 );
 static const MenuItem gDifficultyMenu[] = {

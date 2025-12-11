@@ -78,9 +78,8 @@ static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
 
 #define INT32_MAX_VALUE 2147483647
 #define INT32_MIN_VALUE (-2147483647 - 1)
-#define SEED_MENU_NORMAL 0
-#define SEED_MENU_RANDOM 1
-#define SEED_MENU_CUSTOM 2
+#define SEED_MENU_RANDOM 0
+#define SEED_MENU_CUSTOM 1
 #define NAMING_SCREEN_NUMERIC 6
 #define NAMING_SCREEN_PLAYER 0
 #define NAMING_SCREEN_TEAM 1
@@ -94,8 +93,9 @@ static void AdvanceToPickPartnerPrompt(void);
 static void AdvanceToTestEnd(void);
 static void CallCreatePartnerSelectionMenu(void);
 static void InitializeTestStats(void);
-static void StartSkipBasicRescuesSelection(void);
-static void HandleSkipBasicRescuesSelection(void);
+// Skip basic rescues menu removed
+// static void StartSkipBasicRescuesSelection(void);
+// static void HandleSkipBasicRescuesSelection(void);
 static void StartRecruitAllSelection(void);
 static void HandleRecruitAllSelection(void);
 static bool8 ShouldEnableAutoRecruitAllDebug(void);
@@ -181,9 +181,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->seedChosen = FALSE;
     sPersonalityTestTracker->usingCustomSeed = FALSE;
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
-    sPersonalityTestTracker->unk4.skipBasicRescues = 0; // Default to No
-    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NORMAL; // Default to No
+    sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Always skip basic rescues
+    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_ALL; // Default to All Recruitable
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
+    SetSkipBasicRescuesSetting(1);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
     
     // DEV: Skip personality quiz and set dev defaults
@@ -239,9 +240,10 @@ u32 HandleTestTrackerState(void)
         case PERSONALITY_SEED_CUSTOM_INPUT:
             HandleCustomSeedInput();
             break;
-        case PERSONALITY_SKIP_BASIC_RESCUES_SELECTION:
-            HandleSkipBasicRescuesSelection();
-            break;
+        // Skip basic rescues menu removed
+        // case PERSONALITY_SKIP_BASIC_RESCUES_SELECTION:
+        //     HandleSkipBasicRescuesSelection();
+        //     break;
         case PERSONALITY_RECRUIT_ALL_SELECTION:
             HandleRecruitAllSelection();
             break;
@@ -358,15 +360,6 @@ static void HandleSeedSelection(void)
         return;
 
     switch (selection) {
-        case SEED_MENU_NORMAL:
-        {
-            //sPersonalityTestTracker->rngSeed = -1;
-            sPersonalityTestTracker->unk4.customSeed = -1;
-            sPersonalityTestTracker->seedChosen = TRUE;
-            sPersonalityTestTracker->usingCustomSeed = FALSE;
-            StartSkipBasicRescuesSelection();
-            break;
-        }
         case SEED_MENU_RANDOM:
         {
             s32 generatedSeed = GenerateRandomSeed();
@@ -378,7 +371,7 @@ static void HandleSeedSelection(void)
             sPersonalityTestTracker->unk4.customSeed = generatedSeed;
             sPersonalityTestTracker->seedChosen = TRUE;
             sPersonalityTestTracker->usingCustomSeed = FALSE;
-            StartSkipBasicRescuesSelection();
+            StartRecruitAllSelection();
             break;
         }
         case SEED_MENU_CUSTOM:
@@ -430,7 +423,7 @@ static void HandleCustomSeedInput(void)
         case 3:
             if (TryStoreCustomSeed()) {
                 CleanupNamingScreen();
-                StartSkipBasicRescuesSelection();
+                StartRecruitAllSelection();
             }
             break;
     }
@@ -449,11 +442,12 @@ static void StartGenderSelection(void)
     sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_GENDER;
 }
 
-static void StartSkipBasicRescuesSelection(void)
-{
-    CreateMenuDialogueBoxAndPortrait(gSkipBasicRescuesPrompt, 0, 0, gSkipBasicRescuesMenu, 0, 3, 0, 0, 0x101);
-    sPersonalityTestTracker->TestState = PERSONALITY_SKIP_BASIC_RESCUES_SELECTION;
-}
+// Skip basic rescues menu removed - always skips basic rescues by default
+// static void StartSkipBasicRescuesSelection(void)
+// {
+//     CreateMenuDialogueBoxAndPortrait(gSkipBasicRescuesPrompt, 0, 0, gSkipBasicRescuesMenu, 0, 3, 0, 0, 0x101);
+//     sPersonalityTestTracker->TestState = PERSONALITY_SKIP_BASIC_RESCUES_SELECTION;
+// }
 
 static void StartRecruitAllSelection(void)
 {
@@ -630,37 +624,48 @@ static void SetPlayerGender(void)
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
 }
 
-static void HandleSkipBasicRescuesSelection(void)
-{
-    s32 selection;
-
-    if (sub_80144A4(&selection) != 0)
-        return;
-
-    if (selection < 0 || selection > 1)
-        selection = 0; // Default to No
-
-    sPersonalityTestTracker->unk4.skipBasicRescues = (u8)selection;
-    SetSkipBasicRescuesSetting((u8)selection);
-    StartRecruitAllSelection();
-}
+// Skip basic rescues menu removed - always skips basic rescues by default
+// static void HandleSkipBasicRescuesSelection(void)
+// {
+//     s32 selection;
+//
+//     if (sub_80144A4(&selection) != 0)
+//         return;
+//
+//     if (selection < 0 || selection > 1)
+//         selection = 0; // Default to No
+//
+//     sPersonalityTestTracker->unk4.skipBasicRescues = (u8)selection;
+//     SetSkipBasicRescuesSetting((u8)selection);
+//     StartRecruitAllSelection();
+// }
 
 static void HandleRecruitAllSelection(void)
 {
     s32 selection;
+    s32 recruitAllValue;
 
     if (sub_80144A4(&selection) != 0)
         return;
 
-    if (selection < 0 || selection > RECRUIT_ALL_NONE)
-        selection = RECRUIT_ALL_NORMAL; // Default to Normal
-
-    if (selection == RECRUIT_ALL_ALL && ShouldEnableAutoRecruitAllDebug()) {
-        selection = RECRUIT_ALL_AUTO;
+    // Map menu selection to RECRUIT_ALL constants
+    // Menu: 0 = "All Recruitable", 1 = "No Recruitable"
+    if (selection == 0) {
+        recruitAllValue = RECRUIT_ALL_ALL;
+        // Hidden debug toggle: hold L+R+SELECT while confirming "All Recruitable"
+        if (ShouldEnableAutoRecruitAllDebug()) {
+            recruitAllValue = RECRUIT_ALL_AUTO;
+        }
+    }
+    else if (selection == 1) {
+        recruitAllValue = RECRUIT_ALL_NONE;
+    }
+    else {
+        recruitAllValue = RECRUIT_ALL_ALL; // Default to All Recruitable
     }
 
-    sPersonalityTestTracker->unk4.recruitAll = (u8)selection;
-    SetRecruitAllSetting((u8)selection);
+    sPersonalityTestTracker->unk4.recruitAll = (u8)recruitAllValue;
+    SetRecruitAllSetting((u8)recruitAllValue);
     StartDifficultySelection();
 }
 

@@ -13,10 +13,13 @@
 #include "text_2.h"
 #include "pokemon_types.h"
 #include "strings.h"
+#include "friend_list_menu.h"
+#include "mgba_log.h"
 
 static EWRAM_DATA OpenedFile *sWazaParametersFile = { NULL }; // NDS=213C188
 static EWRAM_DATA MoveDataEntry *sMovesData = { NULL }; // NDS=213C18C
 static EWRAM_DATA MoveLearnset *sMoveLearnsets = { NULL }; // NDS=0213C184 | 421 entries up to MONSTER_DECOY
+extern MoveDataEntry gMoveData[]; // ROM copy of move data (pointers are known-good)
 
 static void CopyAndResetMove(Move *, Move *);
 static bool8 sub_80933D8(s32, Move *);
@@ -40,6 +43,9 @@ void LoadWazaParameters(void)
 
     sMovesData = ((MoveDataFile *)(sWazaParametersFile->data))->moveData;
     sMoveLearnsets = ((MoveDataFile *)(sWazaParametersFile->data))->moveLearnsets;
+    // The ROM copy (gMoveData) has canonical pointers; prefer it in case the
+    // file-archive copy gets corrupted.
+    sMovesData = gMoveData;
 }
 
 static u8 GetColorForMove(Move *move)
@@ -63,6 +69,9 @@ void BufferMoveName(u8 *buffer, Move *move, const MoveBufferStruct *bufferParams
     u32 color;
     u32 basePP;
     u8 ginsengBoostStr[12];
+    const u8 *rawName = sMovesData[move->id].name;
+    static const u8 sFallbackMoveName[] = "(invalid move)";
+    extern const u8 MoveNameTackle[];
 
     color = GetColorForMove(move);
 
@@ -73,6 +82,29 @@ void BufferMoveName(u8 *buffer, Move *move, const MoveBufferStruct *bufferParams
         sprintfStatic(ginsengBoostStr, _("%+d"), move->ginseng);
     else
         ginsengBoostStr[0] = '\0';
+
+    if (FriendListMenu_DebugIsMovesState()) {
+        MGBA_Warnf("[Moves] BufferMoveName id=%u namePtr=%p first3=\"%02X %02X %02X\"", move->id, rawName, rawName[0], rawName[1], rawName[2]);
+        if (move->id == MOVE_TACKLE) {
+            const MoveDataEntry *romEntry = &gMoveData[move->id];
+            MGBA_Warnf("[Moves][Tackle] sMovesData=%p gMoveData=%p romEntry=%p romName=%p tackleSym=%p", sMovesData, gMoveData, romEntry, romEntry->name, MoveNameTackle);
+        }
+    }
+
+    // Some corrupted move entries (e.g. Bulbasaur crash) point at padding (0xFF...),
+    // which will hang the textbox renderer. Guard against bad pointers.
+    if (rawName == NULL ||
+        rawName < (const u8 *)0x08000000 ||
+        rawName >= (const u8 *)0x0A000000 ||
+        rawName[0] == 0xFF) {
+        const u8 *romName = gMoveData[move->id].name;
+        MGBA_Warnf("[Moves] BufferMoveName: invalid name pointer for id=%u (raw=%p), trying ROM copy %p", move->id, rawName, romName);
+        rawName = romName;
+        if (rawName == NULL || rawName[0] == 0xFF) {
+            MGBA_Warnf("[Moves] BufferMoveName: ROM copy also invalid, using fallback");
+            rawName = sFallbackMoveName;
+        }
+    }
 
     if (bufferParams->redColor)
         color = COLOR_RED;

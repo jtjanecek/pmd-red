@@ -26,5 +26,6 @@ bool8 sub_8099394(u8 *param);
 void sub_80993C0(bool8 param);
 void sub_80993D8(void);
 void sub_80993E4(void);
+extern u32 gGroundMainLoopTicker;
 
 #endif // GUARD_GROUND_MAIN_H

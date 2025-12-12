@@ -35,6 +35,8 @@
 
 static EWRAM_INIT struct unk_203B250 *sUnknown_203B250 = {NULL};
 static EWRAM_INIT u32 sUnknown_203B254 = {0};
+static EWRAM_INIT u32 sFriendListMovesHeartbeat = {0};
+static EWRAM_INIT u32 sFriendListActiveHeartbeat = {0};
 
 #include "data/code_801D014.h"
 
@@ -102,6 +104,21 @@ u32 sub_801D0DC(void)
     u32 retval;
 
     MGBA_Warnf("[code_801D014] sub_801D0DC: entered, state=%d", sUnknown_203B250->state);
+    if (FriendListMenu_DebugIsActive()) {
+        sFriendListActiveHeartbeat++;
+        MGBA_Warnf("[code_801D014][Heartbeat] FriendList active frame=%u state=%d", sFriendListActiveHeartbeat, sUnknown_203B250->state);
+    }
+    if (FriendListMenu_DebugIsMovesState()) {
+        sFriendListMovesHeartbeat++;
+        MGBA_Warnf("[code_801D014][Heartbeat] FriendList MOVES frame=%u", sFriendListMovesHeartbeat);
+    }
+    else {
+        if (sFriendListMovesHeartbeat != 0 && sUnknown_203B250->state != 0xF) {
+            MGBA_Warnf("[code_801D014][Heartbeat] MOVES heartbeat reset (state=%d)", sUnknown_203B250->state);
+            sFriendListMovesHeartbeat = 0;
+        }
+    }
+    MGBA_Warnf("[code_801D014] sub_801D0DC: dispatching state switch");
     switch (sUnknown_203B250->state) {
         case 0:
         case 1:
@@ -115,13 +132,13 @@ u32 sub_801D0DC(void)
             break;
         case 5:
             sub_801D798();
-            break;
-        case 6:
-        case 7:
-            MGBA_Warnf("[code_801D014] sub_801D0DC: calling sub_801D7CC");
-            sub_801D7CC();
-            MGBA_Warnf("[code_801D014] sub_801D0DC: sub_801D7CC returned");
-            break;
+        break;
+    case 6:
+    case 7:
+        MGBA_Warnf("[code_801D014] sub_801D0DC: calling sub_801D7CC");
+        sub_801D7CC();
+        MGBA_Warnf("[code_801D014] sub_801D0DC: sub_801D7CC returned");
+        break;
         case 8:
             sub_801D808();
             break;
@@ -378,6 +395,7 @@ static void sub_801D680(void)
     s32 menuAction;
 
     menuAction = 0;
+    MGBA_Warnf("[code_801D014] sub_801D680: entering, currFriendAreaLocation=%d", sUnknown_203B250->currFriendAreaLocation);
 
     if (!sub_8012FD8(&sUnknown_203B250->unk18)) {
         sub_8013114(&sUnknown_203B250->unk18, &menuAction);
@@ -385,6 +403,7 @@ static void sub_801D680(void)
             sUnknown_203B250->menuAction = menuAction;
     }
 
+    MGBA_Warnf("[code_801D014] sub_801D680: post-input menuAction=%d state=%d", menuAction, sUnknown_203B250->state);
     switch (menuAction) {
         case 2:
             sub_801D208(3);
@@ -462,8 +481,10 @@ static void sub_801D798(void)
             break;
         case 2:
         case 3:
-            if (sub_802604C())
+            if (sub_802604C()) {
                 sUnknown_203B250->unk7 = sUnknown_203B250->currFriendAreaLocation;
+                MGBA_Warnf("[code_801D014] sub_801D798: returning with unk7=%d", sUnknown_203B250->unk7);
+            }
 
             CleanPartyListMenu();
             sub_801D208(2);

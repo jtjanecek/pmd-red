@@ -55,6 +55,7 @@ u8 sub_801EE10(u32 param_1, s16 species, Move *moves, u32 param_4, const u8 *tex
     species_s32 = species;
     param_4_u8 = param_4;
     gUnknown_203B270 = MemoryAlloc(sizeof(unkStruct_203B270), 8);
+    MGBA_Warnf("  sub_801EE10: ctx=%p movesPtr=%p", gUnknown_203B270, moves);
     gUnknown_203B270->unk4 = param_4_u8;
     gUnknown_203B270->unk5 = 1;
     gUnknown_203B270->unk6 = 1;
@@ -78,6 +79,7 @@ u8 sub_801EE10(u32 param_1, s16 species, Move *moves, u32 param_4, const u8 *tex
     gUnknown_203B270->moves = moves;
     gUnknown_203B270->text = text;
     iVar8 = iVar5 = sub_801F3F8();
+    MGBA_Warnf("  sub_801EE10: moveCount=%d (minPage=%d)", iVar5, iVar8);
     four = 4;
     if (iVar8 < four) {
         iVar8 = 4;
@@ -93,8 +95,23 @@ u8 sub_801EE10(u32 param_1, s16 species, Move *moves, u32 param_4, const u8 *tex
     ResetUnusedInputStruct();
     ShowWindows(&gUnknown_203B270->windows, TRUE, TRUE);
     CreateMenuOnWindow(&gUnknown_203B270->input,iVar5,iVar5,param_6);
+    MGBA_Warnf("  sub_801EE10: menuWinId=%d entriesPerPage=%d currPageEntries=%d totalEntries=%d currPage=%d",
+        gUnknown_203B270->input.windowId,
+        gUnknown_203B270->input.entriesPerPage,
+        gUnknown_203B270->input.currPageEntries,
+        gUnknown_203B270->input.totalEntriesCount,
+        gUnknown_203B270->input.currPage);
+    {
+        s32 w;
+        for (w = 0; w < MAX_WINDOWS; w++) {
+            WindowTemplate *win = &gUnknown_203B270->windows.id[w];
+            MGBA_Warnf("  sub_801EE10: window[%d] type=%d pos=(%d,%d) size=(%d,%d) unk10=%d header=%p",
+                w, win->type, win->pos.x, win->pos.y, win->width, win->height, win->unk10, win->header);
+        }
+    }
     sub_8013780(&gUnknown_203B270->input,0);
     sub_801F280(TRUE);
+    MGBA_Warnf("  sub_801EE10: menu init entries=%d currEntries=%d perPage=%d menuIndex=%d", gUnknown_203B270->input.totalEntriesCount, gUnknown_203B270->input.currPageEntries, gUnknown_203B270->input.entriesPerPage, gUnknown_203B270->input.menuIndex);
     MGBA_Warnf("  sub_801EE10: about to return 1");
     MGBA_Warnf("  sub_801EE10: stack and pointers look OK, returning now...");
     return 1;
@@ -114,6 +131,7 @@ u32 sub_801EF38(char param_1)
         sub_8013660(&gUnknown_203B270->input);
         return 0;
     }
+    MGBA_Warnf("sub_801EF38: entered (menuIdx=%d total=%d curr=%d)", gUnknown_203B270->input.menuIndex, gUnknown_203B270->input.totalEntriesCount, gUnknown_203B270->input.currPageEntries);
     switch(GetKeyPress(&gUnknown_203B270->input)) {
         case INPUT_B_BUTTON:
             PlayMenuSoundEffect(1);
@@ -332,6 +350,12 @@ void sub_801F280(bool8 param_1)
         sub_80073E0(gUnknown_203B270->unk54);
     }
     MGBA_Warnf("  sub_801F280: complete");
+    MGBA_Warnf("  sub_801F280: menuWinId=%d entriesPerPage=%d currPageEntries=%d totalEntries=%d currPage=%d",
+        gUnknown_203B270->input.windowId,
+        gUnknown_203B270->input.entriesPerPage,
+        gUnknown_203B270->input.currPageEntries,
+        gUnknown_203B270->input.totalEntriesCount,
+        gUnknown_203B270->input.currPage);
 }
 
 s32 sub_801F3F8(void)

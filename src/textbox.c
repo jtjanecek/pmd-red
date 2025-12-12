@@ -1111,6 +1111,20 @@ static u8 *sub_809B428(u8 *a0, s32 a1, u8 *a2)
 void sub_809B474(void)
 {
     const struct unkStruct_3001B64_unk418 *unkStructPtr;
+    static u32 sFriendListTextboxTick = 0;
+
+    if (!FriendListMenu_DebugIsActive()) {
+        sFriendListTextboxTick = 0;
+    }
+    else if (FriendListMenu_DebugIsMovesState() && sTextbox != NULL) {
+        sFriendListTextboxTick++;
+        if ((sFriendListTextboxTick & 0x7) == 0) {
+            MGBA_Warnf("[Textbox][FriendList] tick #%u type=%d unk420=%d state=%d", sFriendListTextboxTick, sTextbox->type, sTextbox->unk420, FriendListMenu_DebugGetState());
+        }
+    }
+    if (FriendListMenu_DebugIsMovesState()) {
+        MGBA_Warnf("[Textbox][FriendList] enter sub_809B474 type=%d unk420=%d state=%d", sTextbox != NULL ? sTextbox->type : -1, sTextbox != NULL ? sTextbox->unk420 : -1, FriendListMenu_DebugGetState());
+    }
 
     switch (sTextbox->type) {
         case 0:
@@ -1146,7 +1160,15 @@ void sub_809B474(void)
                 case 2:
                     unkStructPtr = sTextbox->unk418;
                     if (unkStructPtr != NULL) {
-                        s32 retVal = unkStructPtr->unkC();
+                        s32 retVal;
+
+                        if (FriendListMenu_DebugIsMovesState()) {
+                            MGBA_Warnf("[Textbox][FriendList] calling unkC state=%d unk420=%d", FriendListMenu_DebugGetState(), sTextbox->unk420);
+                        }
+                        retVal = unkStructPtr->unkC();
+                        if (FriendListMenu_DebugIsMovesState()) {
+                            MGBA_Warnf("[Textbox][FriendList] unkC returned %d (state=%d)", retVal, FriendListMenu_DebugGetState());
+                        }
                         if (retVal == 0 || retVal == 1)
                             break;
                         sTextbox->unk430 = (retVal == 2) ? -1 : 0;
@@ -1164,12 +1186,22 @@ void sub_809B474(void)
             }
             break;
     }
+    if (FriendListMenu_DebugIsMovesState()) {
+        MGBA_Warnf("[Textbox][FriendList] exit sub_809B474 type=%d unk420=%d state=%d", sTextbox != NULL ? sTextbox->type : -1, sTextbox != NULL ? sTextbox->unk420 : -1, FriendListMenu_DebugGetState());
+    }
     sub_809B57C();
 }
 
 void sub_809B57C(void)
 {
+    if (FriendListMenu_DebugIsMovesState()) {
+        MGBA_Warnf("[Textbox][FriendList] enter sub_809B57C type=%d unk420=%d state=%d", sTextbox->type, sTextbox->unk420, FriendListMenu_DebugGetState());
+        MGBA_Warnf("[Textbox][FriendList] about to DrawDialogueBoxString");
+    }
     DrawDialogueBoxString();
+    if (FriendListMenu_DebugIsMovesState()) {
+        MGBA_Warnf("[Textbox][FriendList] after DrawDialogueBoxString");
+    }
     switch (sTextbox->type) {
         case 1:
         case 2:
@@ -1202,6 +1234,9 @@ void sub_809B57C(void)
     }
     else {
         sub_8005838(0, 5);
+    }
+    if (FriendListMenu_DebugIsMovesState()) {
+        MGBA_Warnf("[Textbox][FriendList] exit sub_809B57C type=%d unk420=%d state=%d", sTextbox->type, sTextbox->unk420, FriendListMenu_DebugGetState());
     }
 }
 

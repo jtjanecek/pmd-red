@@ -16,6 +16,7 @@
 #include "mgba_log.h"
 #include "event_flag.h"
 #include "ground_map.h"
+#include "friend_list_menu.h"
 #include "play_time.h"
 #include "pokemon.h"
 #include "text_util.h"
@@ -52,6 +53,8 @@ EWRAM_DATA u32 gUnknown_20398C0 = {0};
 EWRAM_DATA s16 gUnknown_20398C4 = {0};
 EWRAM_DATA struct DungeonSetupInfo gUnknown_20398C8 = {0};
 EWRAM_DATA u8 gUnknown_2039950 = 0;
+EWRAM_DATA s32 gFriendListLoopBudget = 0;
+EWRAM_DATA u32 gGroundMainLoopTicker = 0;
 
 EWRAM_INIT bool8 gUnknown_203B49C = {0};
 EWRAM_INIT u8 gUnknown_203B49D = {0};
@@ -311,6 +314,17 @@ u32 xxx_script_related_8098468(s32 param_1)
         MGBA_Warnf("[GroundMain] Entering main loop, B9=%d A8=%d", gUnknown_20398B9, gUnknown_20398A8);
         loopCount = 0;
         while ( 1 ) {
+            gGroundMainLoopTicker++;
+            if (FriendListMenu_DebugIsMovesState() && gFriendListLoopBudget == 0) {
+                // Arm a small budget when we first notice the MOVES state so we can see where we stall.
+                gFriendListLoopBudget = 24;
+            }
+            if (FriendListMenu_DebugIsMovesState() && gFriendListLoopBudget > 0) {
+                MGBA_Warnf("[GroundMain][FriendList] checkpoint A (loop=%d tick=%u) state=%d slot=%d budget=%d", loopCount, gGroundMainLoopTicker, FriendListMenu_DebugGetState(), FriendListMenu_DebugGetSpeciesSlot(), gFriendListLoopBudget);
+                gFriendListLoopBudget--;
+            } else if (!FriendListMenu_DebugIsMovesState()) {
+                gFriendListLoopBudget = 0;
+            }
             xxx_call_update_bg_sound_input();
             sub_80A6E68();
             if (++loopCount % 1000 == 0) {
@@ -346,6 +360,13 @@ u32 xxx_script_related_8098468(s32 param_1)
             GroundEffect_Action();
             nullsub_105();
             sub_809B474();
+            if (FriendListMenu_DebugIsMovesState() && gFriendListLoopBudget == 0) {
+                gFriendListLoopBudget = 24;
+            }
+            if (FriendListMenu_DebugIsMovesState() && gFriendListLoopBudget > 0) {
+                MGBA_Warnf("[GroundMain][FriendList] checkpoint B after sub_809B474 (loop=%d tick=%u) state=%d slot=%d budget=%d", loopCount, gGroundMainLoopTicker, FriendListMenu_DebugGetState(), FriendListMenu_DebugGetSpeciesSlot(), gFriendListLoopBudget);
+                gFriendListLoopBudget--;
+            }
             GroundScript_Unlock();
             sub_809D25C();
             sub_80A59DC();
@@ -356,7 +377,17 @@ u32 xxx_script_related_8098468(s32 param_1)
             sub_8099744();
             UpdateSoundEffectCounters();
             IncrementPlayTime(gPlayTimeRef);
+            if (FriendListMenu_DebugIsMovesState()) {
+                MGBA_Warnf("[GroundMain][FriendList] pre WaitForNextFrame loop=%d tick=%u state=%d slot=%d", loopCount, gGroundMainLoopTicker, FriendListMenu_DebugGetState(), FriendListMenu_DebugGetSpeciesSlot());
+            }
             WaitForNextFrameAndAdvanceRNG();
+            if (FriendListMenu_DebugIsMovesState() && gFriendListLoopBudget == 0) {
+                gFriendListLoopBudget = 24;
+            }
+            if (FriendListMenu_DebugIsMovesState() && gFriendListLoopBudget > 0) {
+                MGBA_Warnf("[GroundMain][FriendList] checkpoint C after frame wait (loop=%d tick=%u) state=%d slot=%d budget=%d", loopCount, gGroundMainLoopTicker, FriendListMenu_DebugGetState(), FriendListMenu_DebugGetSpeciesSlot(), gFriendListLoopBudget);
+                gFriendListLoopBudget--;
+            }
             LoadBufferedInputs();
             nullsub_120();
             sub_80A5E70();

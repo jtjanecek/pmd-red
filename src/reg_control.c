@@ -4,7 +4,10 @@
 #include "crt0.h"
 #include "debug.h"
 #include "input.h"
+#include "mgba_log.h"
 #include "music.h"
+#include "friend_list_menu.h"
+#include "ground_main.h"
 #include "reg_control.h"
 #include "sprite.h"
 
@@ -39,6 +42,8 @@ static void VBlankIntr(void);
 static void VCountIntr(void);
 static void UnusedIntrFunc(void);
 static void Timer3Intr(void);
+static EWRAM_INIT u32 sVBlankMovesHeartbeat = {0};
+static EWRAM_INIT u32 sLastGroundLoopTick = {0};
 
 static const IntrCallback sInitialIntrTable[6] =
 {
@@ -239,6 +244,14 @@ static void VBlankIntr(void)
     s32 index;
 
     gUnknown_203B0A0++;
+    if (FriendListMenu_DebugIsMovesState()) {
+        sVBlankMovesHeartbeat++;
+        if ((sVBlankMovesHeartbeat & 0x1F) == 0) { // log every 32 frames to reduce spam
+            u32 loopDelta = gGroundMainLoopTicker - sLastGroundLoopTick;
+            MGBA_Warnf("[VBlank][Heartbeat] FriendList MOVES vframes=%u loopDelta=%u loopTick=%u", sVBlankMovesHeartbeat, loopDelta, gGroundMainLoopTicker);
+            sLastGroundLoopTick = gGroundMainLoopTicker;
+        }
+    }
     SoundVSync();
     BlinkSavingIcon();
 

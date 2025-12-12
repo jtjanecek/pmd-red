@@ -27,6 +27,7 @@
 #include "text_1.h"
 #include "text_2.h"
 #include "unk_ds_only_feature.h"
+#include "ground_main.h"
 
 // there might be more overlap with unkStruct_203B2BC
 // I was working on the moves and put the data that seemed to correspond to that
@@ -57,6 +58,7 @@ typedef struct unkStruct_203B2B4
 } unkStruct_203B2B4;
 
 static EWRAM_INIT unkStruct_203B2B4 *gUnknown_203B2B4 = {NULL};
+static EWRAM_INIT s32 sPrevFriendListState = -1;
 
 #include "data/friend_list_menu.h"
 
@@ -140,6 +142,10 @@ u32 sub_8025354(void)
 {
   u32 retval;
   MGBA_Warnf("[FriendList] sub_8025354: entered, state=%d", gUnknown_203B2B4->state);
+  if (sPrevFriendListState != gUnknown_203B2B4->state) {
+      MGBA_Warnf("[FriendList][State] change %d -> %d (ctx=%p)", sPrevFriendListState, gUnknown_203B2B4->state, gUnknown_203B2B4);
+      sPrevFriendListState = gUnknown_203B2B4->state;
+  }
   switch(gUnknown_203B2B4->state) {
     case FRIEND_LIST_MENU_STATE_EXIT:
         MGBA_Warnf("[FriendList] sub_8025354: EXIT state, returning 3");
@@ -177,6 +183,7 @@ u32 sub_8025354(void)
     case FRIEND_LIST_MENU_STATE_MOVES:
     case 0x10:
         MGBA_Warnf("[FriendList] sub_8025354: MOVES state, calling sub_8025DAC");
+        MGBA_Warnf("[FriendList] sub_8025354: MOVES state debug: menuAction1=%d moveIndex=%d moveID=%d", gUnknown_203B2B4->menuAction1, gUnknown_203B2B4->moveIndex, gUnknown_203B2B4->moveID);
         sub_8025DAC();
         MGBA_Warnf("[FriendList] sub_8025354: sub_8025DAC returned");
         break;
@@ -207,6 +214,32 @@ u8 sub_802540C(void)
 void CleanFriendListMenu(void)
 {
     TRY_FREE_AND_SET_NULL(gUnknown_203B2B4);
+}
+
+bool8 FriendListMenu_DebugIsMovesState(void)
+{
+    return (gUnknown_203B2B4 != NULL) && (gUnknown_203B2B4->state == FRIEND_LIST_MENU_STATE_MOVES);
+}
+
+bool8 FriendListMenu_DebugIsActive(void)
+{
+    return gUnknown_203B2B4 != NULL;
+}
+
+s32 FriendListMenu_DebugGetState(void)
+{
+    if (gUnknown_203B2B4 == NULL) {
+        return -1;
+    }
+    return gUnknown_203B2B4->state;
+}
+
+s16 FriendListMenu_DebugGetSpeciesSlot(void)
+{
+    if (gUnknown_203B2B4 == NULL) {
+        return -1;
+    }
+    return gUnknown_203B2B4->species;
 }
 
 static void SetFriendListMenuState(s32 newState)
@@ -267,6 +300,7 @@ static void sub_802544C(void)
 
 static void sub_8025518(void)
 {
+  int i;
   u32 uVar3;
   Item item;
 
@@ -334,8 +368,14 @@ static void sub_8025518(void)
         break;
     case FRIEND_LIST_MENU_STATE_MOVES:
         MGBA_Warnf("[FriendList] sub_8025518: MOVES case, species=%d", gUnknown_203B2B4->species);
+        MGBA_Warnf("[FriendList] sub_8025518: gGroundMainLoopTicker=%u", gGroundMainLoopTicker);
         MGBA_Warnf("[FriendList] sub_8025518: calling unk_CopyMoves4To8");
         unk_CopyMoves4To8(gUnknown_203B2B4->moves,gUnknown_203B2B4->pokeStruct->moves);
+        MGBA_Warnf("[FriendList] sub_8025518: move dump for recruited slot=%d (species=%d)", gUnknown_203B2B4->species, gUnknown_203B2B4->pokeStruct->speciesNum);
+        for (i = 0; i < 8; i++) {
+            Move *m = &gUnknown_203B2B4->moves[i];
+            MGBA_Warnf("[FriendList]   move[%d] flags=%02X/%02X id=%u pp=%u gin=%u", i, m->moveFlags, m->moveFlags2, m->id, m->PP, m->ginseng);
+        }
         MGBA_Warnf("[FriendList] sub_8025518: calling sub_801EE10");
         sub_801EE10(3,gUnknown_203B2B4->species,gUnknown_203B2B4->moves,0,NULL,0);
         MGBA_Warnf("[FriendList] sub_8025518: sub_801EE10 returned, breaking from switch");
@@ -504,6 +544,7 @@ static void sub_8025A84(void)
         MGBA_Warnf("[FriendList] sub_8025A84: menuAction=%d", menuAction);
         if(menuAction != FRIEND_LIST_MENU_NULL) gUnknown_203B2B4->menuAction1 = menuAction;
     }
+    MGBA_Warnf("[FriendList] sub_8025A84: post-input menuAction=%d state=%d", menuAction, gUnknown_203B2B4->state);
     switch(menuAction)
     {
         case FRIEND_LIST_MENU_VISIT:
@@ -681,6 +722,7 @@ static void sub_8025DAC(void)
     MGBA_Warnf("[FriendList] sub_8025DAC: calling sub_801EF38");
     result = sub_801EF38(1);
     MGBA_Warnf("[FriendList] sub_8025DAC: sub_801EF38 returned %d", result);
+    MGBA_Warnf("[FriendList] sub_8025DAC: moveIndex=%d moveID=%d menuAction1=%d menuAction2=%d", gUnknown_203B2B4->moveIndex, gUnknown_203B2B4->moveID, gUnknown_203B2B4->menuAction1, gUnknown_203B2B4->menuAction2);
 
     switch(result)
     {

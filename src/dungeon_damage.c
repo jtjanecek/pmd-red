@@ -49,6 +49,7 @@
 #include "move_orb_effects_5.h"
 #include "dungeon_tilemap.h"
 #include "effect_main.h"
+#include "mgba_log.h"
 
 static bool8 HandleDealingDamageInternal(Entity *attacker, Entity *target, struct DamageStruct *r5, bool32 isFalseSwipe, bool32 giveExp, s16 dungeonExitReason_, s32 arg8);
 static bool8 sub_806E100(s48_16 *param_1, Entity *pokemon, Entity *target, u8 type, DamageStruct *dmgStruct);
@@ -66,6 +67,16 @@ UNUSED static const s48_16 sUnusedModifier2 = { 0x0, 0x17FFE };
 static const s48_16 gUnknown_8106F3C = {0x0, 0x8000};
 static const s48_16 gUnknown_8106F44 = {0x0, 0xE666};
 static const s48_16 gUnknown_8106F4C = {0x0, 0x18000};
+
+static bool32 ShouldUseSpecialSplit(Entity *attacker, u8 moveType, u16 moveId)
+{
+    if (moveId == MOVE_REGULAR_ATTACK) {
+        EntityInfo *info = GetEntInfo(attacker);
+        return info->atk[1] > info->atk[0];
+    }
+
+    return !IsTypePhysical(moveType);
+}
 
 void HandleDealingDamage(Entity *attacker, Entity *target, struct DamageStruct *dmgStruct, bool32 isFalseSwipe, bool32 giveExp, s16 dungeonExitReason_, bool32 arg8, s32 argC)
 {
@@ -1015,14 +1026,14 @@ s32 WeightWeakTypePicker(Entity *user, Entity *target, u8 moveType)
     return weight + 2;
 }
 
-static void ApplyAtkDefStatBoosts(Entity *attacker, Entity *target, u8 moveType, s32 *atkStat, s32 *defStat, s32 rand)
+static void ApplyAtkDefStatBoosts(Entity *attacker, Entity *target, bool32 isSpecialSplit, s32 *atkStat, s32 *defStat, s32 rand)
 {
     bool32 isNotEnemy;
     s32 atkMultiplier = 1;
     s32 atkDivisor = 1;
     s32 defMultiplier = 1;
     s32 defDivisor = 1;
-    s32 splitIndex = (!IsTypePhysical(moveType)) ? 1 : 0;
+    s32 splitIndex = isSpecialSplit ? 1 : 0;
 
     if (AbilityIsActive(attacker, ABILITY_GUTS)) {
         EntityInfo *entInfo = GetEntInfo(attacker);
@@ -1120,8 +1131,16 @@ void CalcDamage(Entity *attacker, Entity *target, u8 moveType, s32 movePower, s3
     EntityInfo *attackerInfo = GetEntInfo(attacker);
     EntityInfo *targetInfo = GetEntInfo(target);
     // splitIndex: 0 = Physical (Attack/Defense), 1 = Special (Sp.Atk/Sp.Def)
-    // For MOVE_REGULAR_ATTACK, GetMoveTypeForMonster returns TYPE_PSYCHIC if Sp.Atk > Atk, TYPE_NONE otherwise
-    s32 splitIndex = (!IsTypePhysical(moveType)) ? 1 : 0;
+    // Regular Attack stays TYPE_NONE but uses the higher offensive stat to pick the split
+    bool32 useSpecialSplit = ShouldUseSpecialSplit(attacker, moveType, moveId);
+    s32 splitIndex = useSpecialSplit ? 1 : 0;
+    if (moveId == MOVE_REGULAR_ATTACK) {
+        MGBA_Infof("RegAtk split=%d atk0=%d atk1=%d def0=%d def1=%d lvl=%d pow=%d",
+                   useSpecialSplit,
+                   attackerInfo->atk[0], attackerInfo->atk[1],
+                   targetInfo->def[0], targetInfo->def[1],
+                   attackerInfo->level, movePower);
+    }
 
     sub_806F500();
     if (!attackerInfo->isTeamLeader && FixedPointToInt(attackerInfo->belly) == 0) {
@@ -1238,7 +1257,7 @@ void CalcDamage(Entity *attacker, Entity *target, u8 moveType, s32 movePower, s3
 
         attackerInfo->previousVisualFlags &= ~(0x100);
         attackerInfo->visualFlags &= ~(0x100);
-        ApplyAtkDefStatBoosts(attacker, target, moveType, &atkStat, &defStat, rand);
+        ApplyAtkDefStatBoosts(attacker, target, useSpecialSplit, &atkStat, &defStat, rand);
         FP48_16_FromS32(&unkSp1, atkStat - defStat);
         FP48_16_FromS32(&unkSp2, 8);
         F48_16_SDiv(&unkSp1, &unkSp1, &unkSp2);
@@ -1252,7 +1271,7 @@ void CalcDamage(Entity *attacker, Entity *target, u8 moveType, s32 movePower, s3
         else {
             s32 unkAtkStat2 = attackerInfo->atk[splitIndex];
             s32 unkDefStat2 = 1;
-            ApplyAtkDefStatBoosts(attacker, target, moveType, &unkAtkStat2, &unkDefStat2, rand);
+            ApplyAtkDefStatBoosts(attacker, target, useSpecialSplit, &unkAtkStat2, &unkDefStat2, rand);
             FP48_16_FromS32(&unkSp2, unkAtkStat2);
             FP48_16_FromS32(&unkSp3, 3);
             F48_16_SDiv(&unkSp2, &unkSp2, &unkSp3);

@@ -4,7 +4,7 @@
 The most recent logs (all the way from boot) with are in `execution.log` in the root of the directory. Read this to help debug.
 
 ## Building the ROM
-After any code changes, build with the command `make` to ensure it compiles.
+After any code changes, build with the command `make` to ensure it compiles. DO NOT RUN MAKE CLEAN as it will use all of your context
 
 # Rogue Rescue Team
 Information about the project in general.

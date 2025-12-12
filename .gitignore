@@ -50,3 +50,4 @@ build-cmake-*
 compile_commands.json
 
 gen/
+*.log

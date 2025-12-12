@@ -1,5 +1,6 @@
 #include "global.h"
 #include "globaldata.h"
+#include "mgba_log.h"
 #include "constants/friend_area.h"
 #include "bg_palette_buffer.h"
 #include "code_800D090.h"
@@ -98,6 +99,9 @@ bool8 sub_801D014(Pokemon *a0)
 
 u32 sub_801D0DC(void)
 {
+    u32 retval;
+
+    MGBA_Warnf("[code_801D014] sub_801D0DC: entered, state=%d", sUnknown_203B250->state);
     switch (sUnknown_203B250->state) {
         case 0:
         case 1:
@@ -114,7 +118,9 @@ u32 sub_801D0DC(void)
             break;
         case 6:
         case 7:
+            MGBA_Warnf("[code_801D014] sub_801D0DC: calling sub_801D7CC");
             sub_801D7CC();
+            MGBA_Warnf("[code_801D014] sub_801D0DC: sub_801D7CC returned");
             break;
         case 8:
             sub_801D808();
@@ -132,9 +138,12 @@ u32 sub_801D0DC(void)
             sub_801D878();
             break;
         default:
+            MGBA_Warnf("[code_801D014] sub_801D0DC: unknown state, returning 3");
             return 3;
     }
-    return 0;
+    retval = 0;
+    MGBA_Warnf("[code_801D014] sub_801D0DC: returning %d", retval);
+    return retval;
 }
 
 u32 sub_801D178(void)
@@ -464,13 +473,21 @@ static void sub_801D798(void)
 
 static void sub_801D7CC(void)
 {
-    switch (sub_8025354()) {
+    u32 result;
+
+    MGBA_Warnf("[code_801D014] sub_801D7CC: calling sub_8025354");
+    result = sub_8025354();
+    MGBA_Warnf("[code_801D014] sub_801D7CC: sub_8025354 returned %d", result);
+
+    switch (result) {
         case 0:
         case 1:
         default:
+            MGBA_Warnf("[code_801D014] sub_801D7CC: case 0/1/default, breaking");
             break;
         case 2:
         case 3:
+            MGBA_Warnf("[code_801D014] sub_801D7CC: case 2/3, cleaning up");
             sUnknown_203B250->unk7 = sub_802540C();
             CleanFriendListMenu();
 
@@ -480,6 +497,7 @@ static void sub_801D7CC(void)
                 sub_801D208(1);
             break;
     }
+    MGBA_Warnf("[code_801D014] sub_801D7CC: returning");
 }
 
 static void sub_801D808(void)

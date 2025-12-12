@@ -1,5 +1,6 @@
 #include "global.h"
 #include "globaldata.h"
+#include "mgba_log.h"
 #include "friend_list_menu.h"
 #include "constants/dungeon.h"
 #include "music_util.h"
@@ -137,47 +138,65 @@ bool8 CreateFriendListMenu(s32 param_1)
 
 u32 sub_8025354(void)
 {
+  u32 retval;
+  MGBA_Warnf("[FriendList] sub_8025354: entered, state=%d", gUnknown_203B2B4->state);
   switch(gUnknown_203B2B4->state) {
     case FRIEND_LIST_MENU_STATE_EXIT:
+        MGBA_Warnf("[FriendList] sub_8025354: EXIT state, returning 3");
         return 3;
     case 1:
     case 2:
         sub_80259F0();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_80259F0 returned");
         break;
     case 3:
         sub_8025A84();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025A84 returned");
         break;
     case FRIEND_LIST_MENU_STATE_SUMMARY:
         sub_8025BCC();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025BCC returned");
         break;
     case FRIEND_LIST_MENU_STATE_CHECK_IQ:
         sub_8025BE8();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025BE8 returned");
         break;
     case FRIEND_LIST_MENU_STATE_GIVE:
     case 0xc:
         sub_8025C04();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025C04 returned");
         break;
     case 0xd:
         sub_8025CB4();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025CB4 returned");
         break;
     case FRIEND_LIST_MENU_STATE_INFO:
         sub_8025D90();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025D90 returned");
         break;
     case FRIEND_LIST_MENU_STATE_MOVES:
     case 0x10:
+        MGBA_Warnf("[FriendList] sub_8025354: MOVES state, calling sub_8025DAC");
         sub_8025DAC();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025DAC returned");
         break;
     case 0x11:
         sub_8025E08();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025E08 returned");
         break;
     case 0x12:
         sub_8025E24();
+        MGBA_Warnf("[FriendList] sub_8025354: sub_8025E24 returned");
         break;
     default:
+        MGBA_Warnf("[FriendList] sub_8025354: UNKNOWN state, going to fallback");
         FriendListMenu_GotoFallbackState();
+        MGBA_Warnf("[FriendList] sub_8025354: FriendListMenu_GotoFallbackState returned");
         break;
   }
-  return 0;
+  retval = 0;
+  MGBA_Warnf("[FriendList] sub_8025354: returning %d", retval);
+  return retval;
 }
 
 u8 sub_802540C(void)
@@ -192,19 +211,27 @@ void CleanFriendListMenu(void)
 
 static void SetFriendListMenuState(s32 newState)
 {
+    MGBA_Warnf("[FriendList] SetFriendListMenuState: setting state to %d", newState);
     gUnknown_203B2B4->state = newState;
+    MGBA_Warnf("[FriendList] SetFriendListMenuState: calling sub_802544C");
     sub_802544C();
+    MGBA_Warnf("[FriendList] SetFriendListMenuState: calling sub_8025518");
     sub_8025518();
+    MGBA_Warnf("[FriendList] SetFriendListMenuState: returning");
 }
 
 static void sub_802544C(void)
 {
     s32 i;
 
+    MGBA_Warnf("[FriendList] sub_802544C: entered, state=%d", gUnknown_203B2B4->state);
+    MGBA_Warnf("[FriendList] sub_802544C: calling RestoreSavedWindows");
     RestoreSavedWindows(&gUnknown_203B2B4->unk118);
+    MGBA_Warnf("[FriendList] sub_802544C: RestoreSavedWindows done");
 
     switch (gUnknown_203B2B4->state) {
         case 3:
+            MGBA_Warnf("[FriendList] sub_802544C: state=3 case");
             if (gUnknown_203B2B4->unk0 == 0)
                 gUnknown_203B2B4->unk118.id[3] = sUnknown_80DD190;
 
@@ -213,19 +240,29 @@ static void sub_802544C(void)
             sub_8012CAC(&gUnknown_203B2B4->unk118.id[2], gUnknown_203B2B4->unkC8);
             break;
         case 13:
+            MGBA_Warnf("[FriendList] sub_802544C: state=13 case");
             sub_802591C();
             gUnknown_203B2B4->unk118.id[2] = sUnknown_80DD178;
             sub_8012CAC(&gUnknown_203B2B4->unk118.id[2], gUnknown_203B2B4->unkC8);
             break;
+        case 15:
+            MGBA_Warnf("[FriendList] sub_802544C: state=15 (MOVES) case - using default");
+            for (i = 0; i < 4; i++)
+                gUnknown_203B2B4->unk118.id[i] = sUnknown_80DD148;
+            break;
         default:
+            MGBA_Warnf("[FriendList] sub_802544C: default case");
             for (i = 0; i < 4; i++)
                 gUnknown_203B2B4->unk118.id[i] = sUnknown_80DD148;
             break;
 
     }
 
+    MGBA_Warnf("[FriendList] sub_802544C: calling ResetUnusedInputStruct");
     ResetUnusedInputStruct();
+    MGBA_Warnf("[FriendList] sub_802544C: calling ShowWindows");
     ShowWindows(&gUnknown_203B2B4->unk118, TRUE, TRUE);
+    MGBA_Warnf("[FriendList] sub_802544C: returning");
 }
 
 static void sub_8025518(void)
@@ -296,8 +333,12 @@ static void sub_8025518(void)
         CreateDialogueBoxAndPortrait(sLeftOnStandby,0,0,0x101);
         break;
     case FRIEND_LIST_MENU_STATE_MOVES:
+        MGBA_Warnf("[FriendList] sub_8025518: MOVES case, species=%d", gUnknown_203B2B4->species);
+        MGBA_Warnf("[FriendList] sub_8025518: calling unk_CopyMoves4To8");
         unk_CopyMoves4To8(gUnknown_203B2B4->moves,gUnknown_203B2B4->pokeStruct->moves);
+        MGBA_Warnf("[FriendList] sub_8025518: calling sub_801EE10");
         sub_801EE10(3,gUnknown_203B2B4->species,gUnknown_203B2B4->moves,0,NULL,0);
+        MGBA_Warnf("[FriendList] sub_8025518: sub_801EE10 returned, breaking from switch");
         break;
     case 0x10:
         sub_801F1B0(TRUE, FALSE);
@@ -312,6 +353,7 @@ static void sub_8025518(void)
     case FRIEND_LIST_MENU_STATE_EXIT:
         break;
   }
+  MGBA_Warnf("[FriendList] sub_8025518: exiting, state was %d", gUnknown_203B2B4->state);
 }
 
 static void sub_8025728(void)
@@ -452,10 +494,14 @@ static void sub_8025A84(void)
 {
     s32 menuAction = 0;
 
+    MGBA_Warnf("[FriendList] sub_8025A84: calling FriendList_HandleInput");
     FriendList_HandleInput(FALSE);
+    MGBA_Warnf("[FriendList] sub_8025A84: calling sub_8012FD8");
     if(!sub_8012FD8(&gUnknown_203B2B4->unk78))
     {
+        MGBA_Warnf("[FriendList] sub_8025A84: calling sub_8013114");
         sub_8013114(&gUnknown_203B2B4->unk78, &menuAction);
+        MGBA_Warnf("[FriendList] sub_8025A84: menuAction=%d", menuAction);
         if(menuAction != FRIEND_LIST_MENU_NULL) gUnknown_203B2B4->menuAction1 = menuAction;
     }
     switch(menuAction)
@@ -489,7 +535,9 @@ static void sub_8025A84(void)
             SetFriendListMenuState(FRIEND_LIST_MENU_STATE_STANDBY);
             break;
         case FRIEND_LIST_MENU_MOVES:
+            MGBA_Warnf("[FriendList] sub_8025A84: calling SetFriendListMenuState(MOVES)");
             SetFriendListMenuState(FRIEND_LIST_MENU_STATE_MOVES);
+            MGBA_Warnf("[FriendList] sub_8025A84: SetFriendListMenuState returned, breaking");
             break;
         case 8:
             SetFriendListMenuState(0x12);
@@ -507,6 +555,7 @@ static void sub_8025A84(void)
         case 3:
             break;
     }
+    MGBA_Warnf("[FriendList] sub_8025A84: returning, menuAction was %d", menuAction);
 }
 
 static void sub_8025BCC(void)
@@ -627,7 +676,13 @@ static void sub_8025D90(void)
 
 static void sub_8025DAC(void)
 {
-    switch(sub_801EF38(1))
+    u32 result;
+
+    MGBA_Warnf("[FriendList] sub_8025DAC: calling sub_801EF38");
+    result = sub_801EF38(1);
+    MGBA_Warnf("[FriendList] sub_8025DAC: sub_801EF38 returned %d", result);
+
+    switch(result)
     {
         case 3:
             gUnknown_203B2B4->moveIndex = sub_801F194();
@@ -640,6 +695,7 @@ static void sub_8025DAC(void)
             SetFriendListMenuState(0x11);
             break;
         case 2:
+            MGBA_Warnf("[FriendList] sub_8025DAC: closing moves menu");
             sub_801F214();
             sub_8094060(gUnknown_203B2B4->moves,gUnknown_203B2B4->pokeStruct->moves);
             SetFriendListMenuState(0x2);

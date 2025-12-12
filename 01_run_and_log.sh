@@ -2,8 +2,6 @@
 
 rm -f -- execution.log
 rm -f -- *.sav
-make clean && make
-
 
 # Write date header at top of log
 echo "Log created on: $(date)" > execution.log

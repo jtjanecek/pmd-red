@@ -1,5 +1,6 @@
 #include "global.h"
 #include "globaldata.h"
+#include "mgba_log.h"
 #include "pokemon.h"
 #include "constants/colors.h"
 #include "constants/monster.h"
@@ -1111,26 +1112,44 @@ bool8 CanMonLearnMove(u16 moveID, s16 _species)
   u16 HMTMMoveID;
   s32 species = _species;
   const u8* learnsetPtr;
+  s32 loop_count;
 
   if (species == MONSTER_NONE) return 0;
   if (moveID == MOVE_STRUGGLE) return 0;
 
+  MGBA_Warnf("CanMonLearnMove: species=%d, moveID=%d", species, moveID);
+
   learnsetPtr = GetLevelUpMoves(_species);
+  loop_count = 0;
   while (*learnsetPtr) {
     learnsetPtr = DecompressMoveID(learnsetPtr, &levelUpMoveID);
     learnsetPtr++;
     if (moveID == levelUpMoveID) {
+      MGBA_Warnf("  Found in levelup moves");
       return TRUE;
+    }
+    if (++loop_count > 100) {
+      MGBA_Warnf("  INFINITE LOOP in levelup!");
+      return FALSE;
     }
   }
 
+  MGBA_Warnf("  Checking HMTM moves...");
   learnsetPtr = GetHMTMMoves(species);
+  loop_count = 0;
   while (*learnsetPtr) {
     learnsetPtr = DecompressMoveID(learnsetPtr, &HMTMMoveID);
+    MGBA_Warnf("    HMTM iter %d: moveID=%d, looking for=%d", loop_count, HMTMMoveID, moveID);
     if (HMTMMoveID == moveID) {
+      MGBA_Warnf("  Found in HMTM moves");
       return TRUE;
     }
+    if (++loop_count > 100) {
+      MGBA_Warnf("  INFINITE LOOP in HMTM!");
+      return FALSE;
+    }
   }
+  MGBA_Warnf("  Not found");
   return FALSE;
 }
 
@@ -1141,20 +1160,30 @@ s32 sub_808E218(unkStruct_808E218_arg* a1, Pokemon* pokemon)
   struct EvolveStage evolve_sequence[3];
   s32 sequence_length;
 
+  MGBA_Warnf("sub_808E218: species=%d", pokemon->speciesNum);
   count = 0;
   a1->count = 0;
   if (pokemon->speciesNum == MONSTER_NONE) return 0;
 
   sequence_length = GetEvolutionSequence(pokemon, evolve_sequence);
+  MGBA_Warnf("  Evolution sequence length: %d", sequence_length);
   for (i = 0; i < sequence_length; i++) {
     const u8 *ptr;
     u16 result;
+    s32 iter;
 
+    MGBA_Warnf("  Processing evolution stage %d: species=%d, level=%d", i, evolve_sequence[i].speciesNum, evolve_sequence[i].level);
     ptr = GetLevelUpMoves(evolve_sequence[i].speciesNum);
+    MGBA_Warnf("    GetLevelUpMoves returned ptr=0x%08X, first byte=0x%02X", (u32)ptr, *ptr);
+    iter = 0;
     while (*ptr) {
       s32 value;
       ptr = DecompressMoveID(ptr, &result);
       value = *ptr++;
+      if (++iter > 100) {
+        MGBA_Warnf("    INFINITE LOOP in sub_808E218!");
+        break;
+      }
 
       if (value > evolve_sequence[i].level) {
         break;
@@ -1197,6 +1226,7 @@ s32 GetEvolutionSequence(Pokemon* pokemon, EvolveStage* a2)
     s32 species;
     s32 i;
 
+    MGBA_Warnf("GetEvolutionSequence: species=%d, level=%d", pokemon->speciesNum, pokemon->level);
     a2[0].speciesNum = pokemon->speciesNum;
     a2[0].level = pokemon->level;
 
@@ -1205,9 +1235,11 @@ s32 GetEvolutionSequence(Pokemon* pokemon, EvolveStage* a2)
 
     for (i = 0; i < 2; i++) {
         if (!pokemon->unkC[i].level) {
+            MGBA_Warnf("  unkC[%d].level is 0, stopping", i);
             break;
         }
         species = (s16) GetPokemonEvolveFrom(species);
+        MGBA_Warnf("  unkC[%d].level=%d, GetPokemonEvolveFrom=%d", i, pokemon->unkC[i].level, species);
         if (!species) {
             break;
         }
@@ -1215,6 +1247,7 @@ s32 GetEvolutionSequence(Pokemon* pokemon, EvolveStage* a2)
         a2[count].level = pokemon->unkC[i].level;
         count++;
     }
+    MGBA_Warnf("  Returning count=%d", count);
     return count;
 }
 

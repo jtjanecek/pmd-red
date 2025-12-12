@@ -1,5 +1,6 @@
 #include "global.h"
 #include "globaldata.h"
+#include "mgba_log.h"
 #include "constants/input.h"
 #include "music_util.h"
 #include "code_801EE10.h"
@@ -50,6 +51,7 @@ u8 sub_801EE10(u32 param_1, s16 species, Move *moves, u32 param_4, const u8 *tex
     u8 param_4_u8;
     s32 four;
 
+    MGBA_Warnf("sub_801EE10: recruited slot=%d", species);
     species_s32 = species;
     param_4_u8 = param_4;
     gUnknown_203B270 = MemoryAlloc(sizeof(unkStruct_203B270), 8);
@@ -71,6 +73,7 @@ u8 sub_801EE10(u32 param_1, s16 species, Move *moves, u32 param_4, const u8 *tex
             break;
     }
     gUnknown_203B270->pokeStruct = &gRecruitedPokemonRef->pokemon[species_s32];
+    MGBA_Warnf("  pokeStruct=0x%08X, speciesNum=%d", (u32)gUnknown_203B270->pokeStruct, gUnknown_203B270->pokeStruct->speciesNum);
     gUnknown_203B270->isTeamLeader = gUnknown_203B270->pokeStruct->isTeamLeader;
     gUnknown_203B270->moves = moves;
     gUnknown_203B270->text = text;
@@ -92,6 +95,8 @@ u8 sub_801EE10(u32 param_1, s16 species, Move *moves, u32 param_4, const u8 *tex
     CreateMenuOnWindow(&gUnknown_203B270->input,iVar5,iVar5,param_6);
     sub_8013780(&gUnknown_203B270->input,0);
     sub_801F280(TRUE);
+    MGBA_Warnf("  sub_801EE10: about to return 1");
+    MGBA_Warnf("  sub_801EE10: stack and pointers look OK, returning now...");
     return 1;
 }
 
@@ -326,6 +331,7 @@ void sub_801F280(bool8 param_1)
         PrintFormattedStringOnWindow(8,0,gUnknown_203B270->text,gUnknown_203B270->unk54,0);
         sub_80073E0(gUnknown_203B270->unk54);
     }
+    MGBA_Warnf("  sub_801F280: complete");
 }
 
 s32 sub_801F3F8(void)

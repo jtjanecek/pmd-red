@@ -1,5 +1,6 @@
 #include "global.h"
 #include "globaldata.h"
+#include "mgba_log.h"
 #include "constants/dungeon.h"
 #include "code_800D090.h"
 #include "music_util.h"
@@ -303,8 +304,10 @@ static void HandlePartyListMenuCallback(void)
             InitItemDescriptionWindow(&item);
             break;
         case PARTY_LIST_STATE_MOVES:
+            MGBA_Warnf("[PartyList] PARTY_LIST_STATE_MOVES: recruited slot=%d", sUnknown_203B2B8->pokeSpecies);
             unk_CopyMoves4To8(sUnknown_203B2B8->moves,sUnknown_203B2B8->pokeStruct->moves);
             sub_801EE10(3,sUnknown_203B2B8->pokeSpecies,sUnknown_203B2B8->moves,0,NULL,0);
+            MGBA_Warnf("[PartyList] sub_801EE10 returned");
             break;
         case 0x17:
             sub_801F1B0(TRUE, FALSE);
@@ -778,18 +781,24 @@ static void sub_8026CF0(void)
 
 static void sub_8026D0C(void)
 {
-    switch(sub_801EF38(1))
+    u32 result;
+
+    result = sub_801EF38(1);
+
+    switch(result)
     {
         case 0:
         case 1:
             break;
         case 3:
         case 4:
+            MGBA_Warnf("[PartyList] sub_801EF38 returned %d, exiting menu", result);
             sUnknown_203B2B8->moveIndex = sub_801F194();
             sUnknown_203B2B8->moveID = sUnknown_203B2B8->moves[sUnknown_203B2B8->moveIndex].id;
             SetPartyListMenuState(0x18);
             break;
         case 2:
+            MGBA_Warnf("[PartyList] sub_801EF38 returned %d, closing menu", result);
             sub_801F214();
             SetPartyListMenuState(PARTY_LIST_STATE_MAIN_MENU_1);
             break;

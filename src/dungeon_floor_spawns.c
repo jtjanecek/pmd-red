@@ -30,9 +30,16 @@ static void ApplySeedOverridesToCurrentFloor(void);
 static u8 GetSeededKecleonFaintChance(u32 difficulty);
 static u8 RollSeededKecleonFaintChance(s32 seed, s32 dungeonId, u8 faintChance);
 
+static EWRAM_DATA s16 sSeededTrapPercentOverride = -1;
 static EWRAM_DATA u8 sSeededKecleonFaintChance = 0;
 static EWRAM_DATA u8 sSeededKecleonFaintRoll = 0xFF;
 static EWRAM_DATA bool8 sSeededKecleonSpawnShopkeeper = TRUE;
+
+// Getter for trap percent override (percent of placeable tiles)
+s16 DungeonFloorSpawns_GetTrapPercentOverride(void)
+{
+    return sSeededTrapPercentOverride;
+}
 
 u8 DungeonFloorSpawns_GetSeededKecleonFaintChance(void)
 {
@@ -118,6 +125,7 @@ static void ApplySeedOverridesToCurrentFloor(void)
     s32 seed;
     s32 i;
 
+    sSeededTrapPercentOverride = -1;
     sSeededKecleonFaintChance = 0;
     sSeededKecleonFaintRoll = 0xFF;
     sSeededKecleonSpawnShopkeeper = TRUE;
@@ -149,9 +157,13 @@ static void ApplySeedOverridesToCurrentFloor(void)
         MGBA_Warnf("[Weather] No override - forcing WEATHER_CLEAR");
     }
     // Trap overrides: force max density and a uniform trap table
+    if (overrides.trapDensityPercent >= 0) {
+        sSeededTrapPercentOverride = overrides.trapDensityPercent;
+        MGBA_Warnf("[Traps] Percent override applied: percent=%d", overrides.trapDensityPercent);
+    }
     if (overrides.trapDensityOverride >= 0) {
         s32 density = overrides.trapDensityOverride;
-        if (density > 56) {
+        if (density > 56 && overrides.trapDensityPercent < 0) {
             density = 56;
         }
         gDungeon->floorProperties.trapDensity = (u8)density;

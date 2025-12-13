@@ -38,6 +38,7 @@
 #define SEEDED_PREFIX_BUFFER_LEN 16
 #define SEEDED_TRAP_DENSITY_DEFAULT 15
 #define SEEDED_TRAP_DENSITY_SUPER 56
+#define SEEDED_TRAP_PERCENT_SUPER 56
 #define SEEDED_FLOOR_WEATHER_CHANCE_PERCENT 20
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
@@ -311,7 +312,9 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
 
         if (floorId == superTrapFloorId) {
             result->trapDensityOverride = SEEDED_TRAP_DENSITY_SUPER;
-            MGBA_Warnf("[Traps] SuperTrap floor: dungeon=%d floor=%d density=%d", dungeonId, floorId, result->trapDensityOverride);
+            result->trapDensityPercent = SEEDED_TRAP_PERCENT_SUPER;
+            MGBA_Warnf("[Traps] SuperTrap floor: dungeon=%d floor=%d density=%d percent=%d",
+                       dungeonId, floorId, result->trapDensityOverride, result->trapDensityPercent);
         }
     }
 
@@ -521,6 +524,7 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     result->tileset = 0;
     result->spawnCount = 0;
     result->trapDensityOverride = -1;
+    result->trapDensityPercent = -1;
     result->hasTrapTable = FALSE;
     for (i = 0; i < NUM_TRAPS; i++) {
         result->trapSpawnChances[i] = 0;
@@ -1675,8 +1679,9 @@ s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed)
         return 0;
 
     // Avoid the boss floor (last floor) so traps don't conflict with boss rooms
-    maxNonBossFloor = floorCount - 1;
-    if (maxNonBossFloor <= 1)
+    // floorCount is "final floor + 1" so subtract 2 to drop the boss layer
+    maxNonBossFloor = floorCount - 2;
+    if (maxNonBossFloor <= 0)
         return 0;
 
     // Draw once; if it collides with the Kecleon shop floor, bump deterministically
@@ -1698,11 +1703,12 @@ s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed)
     s32 maxNonBossFloor;
 
     // Ensure we have at least 2 floors (one for Kecleon, one for boss)
-    if (floorCount < 2)
+    if (floorCount <= 2)
         return 0;
 
-    // Boss is on the final floor (floorCount - 1), so Kecleon can be on 0 to (floorCount - 2)
-    maxNonBossFloor = floorCount - 1;  // Exclusive upper bound for range function
+    // Boss is on the final floor (floorCount - 1), so Kecleon can be on 0 to (floorCount - 3)
+    // floorCount is "final floor + 1", so subtract 2 to remove the boss layer
+    maxNonBossFloor = floorCount - 2;  // Exclusive upper bound for range function
 
     // Use a dedicated salt for Kecleon shop placement
     rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x4B45434C);

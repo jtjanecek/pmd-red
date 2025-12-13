@@ -44,6 +44,7 @@ typedef struct DungeonSeedFloorOverrides {
     bool8 applyWeather;                                  // Should the floor override weather?
     BossFightConfig bossFight;                           // Boss fight configuration (procedurally generated)
     s16 trapDensityOverride;                             // -1 to keep default trapDensity
+    s16 trapDensityPercent;                              // -1 to disable; otherwise percent of placeable tiles to trap
     bool8 hasTrapTable;                                  // TRUE if trapSpawnChances should override mapparam
     u16 trapSpawnChances[NUM_TRAPS];                     // Cumulative trap weights (0-10000)
 } DungeonSeedFloorOverrides;

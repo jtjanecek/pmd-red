@@ -4450,28 +4450,49 @@ static void SpawnNonEnemies(FloorProperties *floorProps, bool8 isEmptyMonsterHou
 	}
 
 	if (count != 0) {
-		s32 numTraps = DungeonRandRange(floorProps->trapDensity / 2, floorProps->trapDensity);
+		s32 numTraps;
+		s32 trapPercentOverride = DungeonFloorSpawns_GetTrapPercentOverride();
+
+		if (trapPercentOverride >= 0) {
+			s32 percentRoll = DungeonRandRange(trapPercentOverride / 2, trapPercentOverride);
+
+			if (percentRoll > 100) {
+				percentRoll = 100;
+			}
+			numTraps = (count * percentRoll) / 100;
+			if (numTraps <= 0 && percentRoll > 0) {
+				numTraps = 1;
+			}
+			MGBA_Warnf("[Traps] Percent placement: placeable=%d percent=%d roll=%d traps=%d",
+					   count, trapPercentOverride, percentRoll, numTraps);
+		} else {
+			numTraps = DungeonRandRange(floorProps->trapDensity / 2, floorProps->trapDensity);
+		}
 
 		if (numTraps > 0) {
-            s32 trapIndex;
-            if (numTraps >= 56) {
-            	// Cap the number of traps at 56
-            	numTraps = 56;
-            }
+			s32 trapIndex;
 
-            // Randomly select among the valid trap spawn spots
-            ShuffleSpawnPositions(validSpawns, count);
-            trapIndex = DungeonRandInt(count);
-            for (i = 0; i < numTraps; i++) {
-            	Tile *tile = GetTileMut(validSpawns[trapIndex].x, validSpawns[trapIndex].y);
-                tile->spawnOrVisibilityFlags.spawn |= SPAWN_FLAG_TRAP;
+			if (trapPercentOverride < 0 && numTraps >= 56) {
+				// Cap the number of traps at 56 when using absolute densities
+				numTraps = 56;
+			}
+			if (numTraps > count) {
+				numTraps = count;
+			}
 
-                trapIndex++;
-                if (trapIndex == count) {
-                    // Wrap around to the start
-                    trapIndex = 0;
-                }
-            }
+			// Randomly select among the valid trap spawn spots
+			ShuffleSpawnPositions(validSpawns, count);
+			trapIndex = DungeonRandInt(count);
+			for (i = 0; i < numTraps; i++) {
+				Tile *tile = GetTileMut(validSpawns[trapIndex].x, validSpawns[trapIndex].y);
+				tile->spawnOrVisibilityFlags.spawn |= SPAWN_FLAG_TRAP;
+
+				trapIndex++;
+				if (trapIndex == count) {
+					// Wrap around to the start
+					trapIndex = 0;
+				}
+			}
 		}
 	}
 

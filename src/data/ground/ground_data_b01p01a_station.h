@@ -428,6 +428,12 @@ static const struct ScriptRef s_gs9_g0_s0_station_sref = { 404, 1, NULL /* ENTER
 
 static const struct ScriptCommand s_gs9_g0_s0_evt0_sref_script[] = { /* 0x819bed4 */
     DEBUGINFO_O(430),
+    JUMPIF_SCENE_LT(SCENARIO_MAIN, 4, 3, /* to label */ 0),
+    MSG_INSTANT(_("The way is blocked.")),
+    TEXTBOX_CLEAR,
+    RET,
+  LABEL(0), /* = 0x00 */
+    EXECUTE_STATION(-1, 22, 1),
     HALT,
 };
 

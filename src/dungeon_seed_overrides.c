@@ -24,6 +24,7 @@
 #include "run_dungeon.h"
 #include "main_loops.h"
 #include "mgba_log.h"
+#include "dungeon_generation.h"
 #include "pokemon.h"
 #include "items.h"
 #include "structs/map.h"
@@ -79,12 +80,39 @@ typedef struct SeedSpeciesPool {
     u8 count;
 } SeedSpeciesPool;
 
+typedef struct {
+    u8 layout;
+    s8 minRooms;
+    s8 maxRooms;
+    const char *label;
+} SeededLayoutOption;
+
+typedef struct {
+    u8 weightPercent;
+    SeededLayoutOption option;
+} SeededWeightedLayoutOption;
+
+typedef struct {
+    u8 primaryLayoutPercent;
+    u8 secondaryTerrainPercent;
+    SeededLayoutOption primaryLayout;
+    SeededWeightedLayoutOption alternateLayouts[5];
+    u8 floorConnectivityMin;
+    u8 floorConnectivityMax;
+    u8 extraHallwaysMin;
+    u8 extraHallwaysMax;
+    u8 allowDeadEndsPercent;
+} SeededFloorGenerationConfig;
+
 static void ClearFloorOverrides(DungeonSeedFloorOverrides *result);
 static DungeonSeedRng DungeonSeedRng_Init(s32 seed, u8 dungeonId, s32 floorId, u32 salt);
 static u32 DungeonSeedRng_Next(DungeonSeedRng *rng);
 static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max);
+static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8 dungeonId, s32 floorId);
 static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId);
 static u8 SelectTileset(s32 floorId);
+static SeededLayoutOption SelectAlternateLayout(DungeonSeedRng *rng);
+static s8 SelectRoomDensity(DungeonSeedRng *rng, const SeededLayoutOption *option);
 static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
 static void FinalizeSpawnWeights(DungeonSeedFloorOverrides *result);
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed);
@@ -119,6 +147,24 @@ static const s16 sRecruitFriendBowBonusPercent[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NORMAL] = 5,
     [DIFFICULTY_HARD] = 3,
     [DIFFICULTY_NIGHTMARE] = 1,
+};
+
+static const SeededFloorGenerationConfig sSeededFloorGenConfig = {
+    .primaryLayoutPercent = 85,
+    .secondaryTerrainPercent = 20,
+    .primaryLayout = {LAYOUT_LARGE, 8, 14, "Large"},
+    .alternateLayouts = {
+        {25, {LAYOUT_OUTER_RING, 8, 17, "OuterRing"}},
+        {25, {LAYOUT_CROSSROADS, 8, 14, "Crossroads"}},
+        {25, {LAYOUT_BEETLE, 5, 22, "Beetle"}},
+        {20, {LAYOUT_CROSS, 5, 17, "Cross"}},
+        {5,  {LAYOUT_OUTER_ROOMS, 5, 7, "OuterRooms"}},
+    },
+    .floorConnectivityMin = 10,
+    .floorConnectivityMax = 50,
+    .extraHallwaysMin = 0,
+    .extraHallwaysMax = 50,
+    .allowDeadEndsPercent = 50,
 };
 
 static const s16 sPoolElectric[] = {MONSTER_PICHU, MONSTER_PIKACHU, MONSTER_PLUSLE, MONSTER_MINUN, MONSTER_MANECTRIC};
@@ -340,6 +386,11 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
                result->spawnCount,
                result->bossFight.enabled,
                result->bossFight.bossSpecies);
+}
+
+void DungeonSeedOverrides_ApplyFloorProperties(FloorProperties *floorProps, s32 seed, u8 dungeonId, s32 floorId)
+{
+    ApplySeededFloorProperties(floorProps, seed, dungeonId, floorId);
 }
 
 s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
@@ -706,6 +757,120 @@ static u8 SelectTileset(s32 floorId)
     tileset = (u8)(floorId % SEEDED_TILESET_COUNT);
     MGBA_Infof("[SeedOverrides] Tileset (fallback) id=%d floor=%d", tileset, floorId);
     return tileset;
+}
+
+static s8 SelectRoomDensity(DungeonSeedRng *rng, const SeededLayoutOption *option)
+{
+    s32 minRooms;
+    s32 maxRooms;
+    s32 selected;
+
+    if (rng == NULL || option == NULL)
+        return -SEEDED_MIN_SPAWNS;
+
+    minRooms = option->minRooms;
+    maxRooms = option->maxRooms;
+    if (maxRooms < minRooms) {
+        s32 tmp = minRooms;
+        minRooms = maxRooms;
+        maxRooms = tmp;
+    }
+    if (minRooms < 2)
+        minRooms = 2;
+    if (maxRooms < minRooms)
+        maxRooms = minRooms;
+
+    selected = DungeonSeedRng_NextRange(rng, minRooms, maxRooms + 1);
+    return (s8)(-selected);
+}
+
+static SeededLayoutOption SelectAlternateLayout(DungeonSeedRng *rng)
+{
+    s32 i;
+    u32 roll;
+    u32 accum = 0;
+    SeededLayoutOption choice = sSeededFloorGenConfig.alternateLayouts[0].option;
+
+    if (rng == NULL)
+        return choice;
+
+    roll = (u32)DungeonSeedRng_NextRange(rng, 0, 100);
+    for (i = 0; i < (s32)ARRAY_COUNT(sSeededFloorGenConfig.alternateLayouts); i++) {
+        const SeededWeightedLayoutOption *entry = &sSeededFloorGenConfig.alternateLayouts[i];
+        accum += entry->weightPercent;
+        if (roll < accum) {
+            choice = entry->option;
+            break;
+        }
+    }
+
+    return choice;
+}
+
+static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8 dungeonId, s32 floorId)
+{
+    DungeonSeedRng rng;
+    SeededLayoutOption layoutChoice;
+    bool8 useAlternate;
+    bool8 allowSecondaryTerrain = FALSE;
+    u32 roll;
+    u8 roomFlags;
+    s32 roomCountForLog;
+    const char *layoutLabel;
+
+    if (floorProps == NULL)
+        return;
+
+    rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0x464C4F52); // "FLOR"
+    roll = (u32)DungeonSeedRng_NextRange(&rng, 0, 100);
+    useAlternate = (roll >= sSeededFloorGenConfig.primaryLayoutPercent);
+
+    if (!useAlternate) {
+        layoutChoice = sSeededFloorGenConfig.primaryLayout;
+        allowSecondaryTerrain = (DungeonSeedRng_NextRange(&rng, 0, 100) < sSeededFloorGenConfig.secondaryTerrainPercent);
+    } else {
+        layoutChoice = SelectAlternateLayout(&rng);
+        allowSecondaryTerrain = FALSE;
+    }
+
+    floorProps->layout = layoutChoice.layout;
+    floorProps->roomDensity = SelectRoomDensity(&rng, &layoutChoice);
+
+    roomFlags = floorProps->roomFlags & ~(ROOM_FLAG_ALLOW_SECONDARY_TERRAIN);
+    if (allowSecondaryTerrain)
+        roomFlags |= ROOM_FLAG_ALLOW_SECONDARY_TERRAIN;
+    floorProps->roomFlags = roomFlags;
+
+    floorProps->floorConnectivity = (u8)DungeonSeedRng_NextRange(&rng,
+                                                                 sSeededFloorGenConfig.floorConnectivityMin,
+                                                                 sSeededFloorGenConfig.floorConnectivityMax + 1);
+    floorProps->numExtraHallways = (u8)DungeonSeedRng_NextRange(&rng,
+                                                                sSeededFloorGenConfig.extraHallwaysMin,
+                                                                sSeededFloorGenConfig.extraHallwaysMax + 1);
+    floorProps->allowDeadEnds = (DungeonSeedRng_NextRange(&rng, 0, 100) < sSeededFloorGenConfig.allowDeadEndsPercent);
+
+    floorProps->monsterHouseChance = 0;
+    floorProps->kecleonShopChance = 0;
+    floorProps->buriedItemDensity = 0;
+    floorProps->visibilityRange = 0;
+    floorProps->secondaryStructuresBudget = 0;
+    floorProps->standaloneLakeDensity = 0;
+
+    roomCountForLog = (floorProps->roomDensity < 0) ? -floorProps->roomDensity : floorProps->roomDensity;
+    layoutLabel = (layoutChoice.label != NULL) ? layoutChoice.label : "unknown";
+    MGBA_Warnf("[FloorProps] seed=%d dungeon=%d floor=%d alt=%d layout=%d (%s) rooms=%d allowSecondary=%d roll=%u conn=%d extra=%d deadEnds=%d",
+               seed,
+               dungeonId,
+               floorId,
+               useAlternate,
+               layoutChoice.layout,
+               layoutLabel,
+               roomCountForLog,
+               allowSecondaryTerrain,
+               roll,
+               floorProps->floorConnectivity,
+               floorProps->numExtraHallways,
+               floorProps->allowDeadEnds);
 }
 
 static bool8 IsBossSpecies(s16 species)

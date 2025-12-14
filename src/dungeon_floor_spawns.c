@@ -177,6 +177,11 @@ static void ApplySeedOverridesToCurrentFloor(void)
         MGBA_Warnf("[Traps] Trap table override applied (uniform all traps)");
     }
 
+    DungeonSeedOverrides_ApplyFloorProperties(&gDungeon->floorProperties,
+                                              seed,
+                                              gDungeon->unk644.dungeonLocation.id,
+                                              gDungeon->unk644.dungeonLocation.floor);
+
     // Seeded shop floor: bias the chosen floor to roll a shop using natural generation
     {
         s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(gDungeon->unk644.dungeonLocation.id, seed);

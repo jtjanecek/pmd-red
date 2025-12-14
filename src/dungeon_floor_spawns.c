@@ -232,6 +232,21 @@ static void ApplySeedOverridesToCurrentFloor(void)
         }
     }
 
+    // Seeded Monster House floor: force 100% chance on its assigned floor
+    {
+        s32 monsterHouseFloor = DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(gDungeon->unk644.dungeonLocation.id, seed);
+        s32 targetFloor = gDungeon->startFloorId + monsterHouseFloor + 1; // dungeon floors appear 1-indexed
+
+        if (gDungeon->unk644.dungeonLocation.floor == targetFloor) {
+            gDungeon->floorProperties.monsterHouseChance = 100;
+            MGBA_Warnf("[MonsterHouse] Guaranteed floor: dungeonId=%d floor=%d seed=%d targetFloor=%d",
+                       gDungeon->unk644.dungeonLocation.id,
+                       gDungeon->unk644.dungeonLocation.floor,
+                       seed,
+                       targetFloor);
+        }
+    }
+
     // If boss fight is enabled, set up boss spawn table (not normal enemies)
     if (overrides.bossFight.enabled) {
         s32 spawnIndex = 0;

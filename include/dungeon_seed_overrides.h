@@ -77,6 +77,8 @@ void DungeonSeedOverrides_SetStairsPosition(s32 x, s32 y);
 s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed);
 // Trap functions
 s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed);
+// Monster House functions
+s32 DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(u8 dungeonId, s32 seed);
 // Recruit functions
 void DungeonSeedOverrides_GetRecruitOverride(DungeonRecruitOverride *result);
 

@@ -1929,6 +1929,49 @@ s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed)
     return selected;
 }
 
+s32 DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(u8 dungeonId, s32 seed)
+{
+    DungeonSeedRng rng;
+    s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
+    s32 maxNonBossFloor;
+    s32 kecleonFloor;
+    s32 superTrapFloor;
+    s32 candidates[SEEDED_MAX_FLOORS];
+    s32 candidateCount = 0;
+    s32 i;
+
+    if (floorCount < 2)
+        return 0;
+
+    maxNonBossFloor = floorCount - 2;
+    if (maxNonBossFloor <= 0)
+        return 0;
+
+    kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(dungeonId, seed);
+    superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor(dungeonId, seed);
+
+    // Build a list of eligible floors that aren't reserved by other guarantees
+    for (i = 0; i < maxNonBossFloor && i < SEEDED_MAX_FLOORS; i++) {
+        if (i == kecleonFloor || i == superTrapFloor)
+            continue;
+        candidates[candidateCount++] = i;
+    }
+
+    if (candidateCount == 0) {
+        MGBA_Warnf("[MonsterHouse] No open floors for guaranteed Monster House (dungeon=%d maxNonBoss=%d kec=%d trap=%d)",
+                   dungeonId, maxNonBossFloor, kecleonFloor, superTrapFloor);
+        return 0;
+    }
+
+    if (candidateCount == 1)
+        return candidates[0];
+
+    rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x4D4F4E48); // "MONH"
+    rng.state ^= (u32)kecleonFloor * 0x27D4EB2D;
+    rng.state ^= (u32)superTrapFloor * 0x45D9F3B;
+    return candidates[DungeonSeedRng_NextRange(&rng, 0, candidateCount)];
+}
+
 // Deterministically select which floor (0-indexed) should have a Kecleon shop
 // Returns a floor index between 0 and (maxFloors - 2), excluding the boss floor
 s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed)

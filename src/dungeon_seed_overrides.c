@@ -817,6 +817,9 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
     u8 roomFlags;
     s32 roomCountForLog;
     const char *layoutLabel;
+    u32 visRoll;
+    u8 difficulty;
+    u8 visibility = 0;
 
     if (floorProps == NULL)
         return;
@@ -852,13 +855,51 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
     floorProps->monsterHouseChance = 0;
     floorProps->kecleonShopChance = 0;
     floorProps->buriedItemDensity = 0;
-    floorProps->visibilityRange = 0;
-    floorProps->secondaryStructuresBudget = 0;
+    difficulty = GetGameDifficultySetting();
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    visRoll = (u32)DungeonSeedRng_NextRange(&rng, 0, 100);
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            if (visRoll < 70)
+                visibility = 0;
+            else if (visRoll < 85)
+                visibility = 1;
+            else
+                visibility = 2;
+            break;
+        case DIFFICULTY_NIGHTMARE:
+            if (visRoll < 60)
+                visibility = 0;
+            else if (visRoll < 80)
+                visibility = 1;
+            else
+                visibility = 2;
+            break;
+        case DIFFICULTY_NORMAL:
+        default:
+            if (visRoll < 80)
+                visibility = 0;
+            else if (visRoll < 90)
+                visibility = 1;
+            else
+                visibility = 2;
+            break;
+    }
+    floorProps->visibilityRange = visibility;
+    {
+        u8 budget = 0;
+        if (DungeonSeedRng_NextRange(&rng, 0, 100) >= 50) {
+            budget = (u8)DungeonSeedRng_NextRange(&rng, 1, 11);
+        }
+        floorProps->secondaryStructuresBudget = budget;
+    }
     floorProps->standaloneLakeDensity = 0;
 
     roomCountForLog = (floorProps->roomDensity < 0) ? -floorProps->roomDensity : floorProps->roomDensity;
     layoutLabel = (layoutChoice.label != NULL) ? layoutChoice.label : "unknown";
-    MGBA_Warnf("[FloorProps] seed=%d dungeon=%d floor=%d alt=%d layout=%d (%s) rooms=%d allowSecondary=%d roll=%u conn=%d extra=%d deadEnds=%d",
+    MGBA_Warnf("[FloorProps] seed=%d dungeon=%d floor=%d alt=%d layout=%d (%s) rooms=%d allowSecondary=%d roll=%u conn=%d extra=%d deadEnds=%d secondaryBudget=%d vis=%d visRoll=%u diff=%d",
                seed,
                dungeonId,
                floorId,
@@ -870,7 +911,11 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
                roll,
                floorProps->floorConnectivity,
                floorProps->numExtraHallways,
-               floorProps->allowDeadEnds);
+               floorProps->allowDeadEnds,
+               floorProps->secondaryStructuresBudget,
+               floorProps->visibilityRange,
+               visRoll,
+               difficulty);
 }
 
 static bool8 IsBossSpecies(s16 species)

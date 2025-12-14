@@ -150,10 +150,18 @@ typedef enum GengarHintStage
     GENGAR_HINT_STAGE_HINT_MENU,
 } GengarHintStage;
 
+typedef enum GengarHintType
+{
+    GENGAR_HINT_TYPE_KECLEON = 1,
+    GENGAR_HINT_TYPE_SUPER_TRAP = 2,
+    GENGAR_HINT_TYPE_MONSTER_HOUSE = 3,
+} GengarHintType;
+
 typedef struct GengarHintConversationState
 {
     GengarHintStage stage;
     s16 dungeonId;
+    u8 hintOptions[2];
     MonPortraitMsg portrait;
     bool8 portraitInitialized;
 } GengarHintConversationState;
@@ -167,6 +175,8 @@ static s32 GetCurrentDungeonForHint(void);
 static bool8 HasEnoughMoneyForGengarHint(void);
 static const u8 *BuildKecleonShopHintText(void);
 static const u8 *BuildSuperTrapHintText(void);
+static const u8 *BuildMonsterHouseHintText(void);
+static void BuildGengarHintChoiceMenu(void);
 static void InitGengarHintPortrait(void);
 static void CleanupGengarHintPortrait(void);
 static MonPortraitMsg *GetGengarHintPortrait(void);
@@ -182,6 +192,7 @@ static const u8 sGengarHintDeclineText[] = _("Heh heh... suit yourself.");
 static const u8 sGengarHintNoSeedText[] = _("Heh heh... No dungeon rumors without a seed.");
 static EWRAM_DATA u8 sGengarHintShopBuffer[96] = {0};
 static EWRAM_DATA u8 sGengarHintSuperTrapBuffer[96] = {0};
+static EWRAM_DATA u8 sGengarHintMonsterHouseBuffer[96] = {0};
 static EWRAM_DATA u8 sDungeonEntryReqBuffer[200] = {0};
 
 
@@ -191,11 +202,7 @@ static const MenuItem sGengarHintPaymentMenu[] = {
     {NULL, -1},
 };
 
-static const MenuItem sGengarHintChoiceMenu[] = {
-    {_("Kecleon shop rumors"), 1},
-    {_("SuperTrap floor rumor"), 2},
-    {NULL, -1},
-};
+static MenuItem sGengarHintChoiceMenu[3] = {0};
 
 static bool8 sSkarmoryRecruitMenuActive = FALSE;
 
@@ -2388,6 +2395,7 @@ static void StartGengarHintConversation(void)
 
     // If player has never received a hint before (first time EVER), give free hint with special "new here" text
     if (!GengarHint_HasReceivedFirstHint()) {
+        BuildGengarHintChoiceMenu();
         CreateMenuDialogueBoxAndPortrait(sGengarHintFreeIntroText, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
         sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
         return;
@@ -2422,6 +2430,7 @@ static bool8 UpdateGengarHintConversation(void)
                 }
                 // Has money - deduct it and proceed
                 AddToTeamMoney(-GENGAR_HINT_COST);
+                BuildGengarHintChoiceMenu();
                 CreateMenuDialogueBoxAndPortrait(sGengarHintChoicePrompt, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
                 sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
                 return FALSE;
@@ -2430,7 +2439,21 @@ static bool8 UpdateGengarHintConversation(void)
         return FALSE;
     case GENGAR_HINT_STAGE_HINT_MENU:
         if (selection == 1 || selection == 2) {
-            const u8 *hintText = (selection == 1) ? BuildKecleonShopHintText() : BuildSuperTrapHintText();
+            const u8 *hintText;
+            u8 hintType = (selection == 1) ? sGengarHintState.hintOptions[0] : sGengarHintState.hintOptions[1];
+
+            switch (hintType) {
+                case GENGAR_HINT_TYPE_SUPER_TRAP:
+                    hintText = BuildSuperTrapHintText();
+                    break;
+                case GENGAR_HINT_TYPE_MONSTER_HOUSE:
+                    hintText = BuildMonsterHouseHintText();
+                    break;
+                case GENGAR_HINT_TYPE_KECLEON:
+                default:
+                    hintText = BuildKecleonShopHintText();
+                    break;
+            }
 
             if (sGengarHintState.dungeonId >= 0) {
                 GengarHint_MarkHintGiven(sGengarHintState.dungeonId);
@@ -2568,6 +2591,95 @@ static const u8 *BuildSuperTrapHintText(void)
         sprintfStatic(sGengarHintSuperTrapBuffer, _("Heh heh... Traps everywhere on floor %d."), displayFloor);
         return sGengarHintSuperTrapBuffer;
     }
+}
+
+static const u8 *BuildMonsterHouseHintText(void)
+{
+    s32 seed;
+    s32 dungeonId = sGengarHintState.dungeonId;
+
+    if (dungeonId < 0 || dungeonId >= NUM_DUNGEONS)
+        return sGengarHintNoDungeonText;
+
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return sGengarHintNoSeedText;
+
+    {
+        s32 monsterHouseFloor = DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor((u8)dungeonId, seed);
+        s32 displayFloor = GetDungeonStartingFloor(dungeonId) + monsterHouseFloor + 1;
+
+        sprintfStatic(sGengarHintMonsterHouseBuffer, _("Heh heh... Massive monster\nhouse on floor %d."), displayFloor);
+        return sGengarHintMonsterHouseBuffer;
+    }
+}
+
+static void BuildGengarHintChoiceMenu(void)
+{
+    static const u8 *const sHintLabels[] = {
+        _("Kecleon shop rumors"),
+        _("SuperTrap floor rumor"),
+        _("Monster House rumor"),
+    };
+    u8 pool[3] = {GENGAR_HINT_TYPE_KECLEON, GENGAR_HINT_TYPE_SUPER_TRAP, GENGAR_HINT_TYPE_MONSTER_HOUSE};
+    u8 remaining = 3;
+    u32 state = 0xA511E9B5;
+    s32 seed;
+    s32 dungeonId = sGengarHintState.dungeonId;
+    s32 kecleonFloor = 0;
+    s32 superTrapFloor = 0;
+    s32 monsterHouseFloor = 0;
+    s32 i;
+
+    if (dungeonId < 0 || dungeonId >= NUM_DUNGEONS) {
+        sGengarHintState.hintOptions[0] = GENGAR_HINT_TYPE_KECLEON;
+        sGengarHintState.hintOptions[1] = GENGAR_HINT_TYPE_SUPER_TRAP;
+    } else if (DungeonSeedOverrides_IsEnabled(&seed)) {
+        kecleonFloor = DungeonSeedOverrides_GetKecleonFloor((u8)dungeonId, seed);
+        superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor((u8)dungeonId, seed);
+        monsterHouseFloor = DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor((u8)dungeonId, seed);
+        state ^= (u32)DungeonSeedOverrides_GetDungeonRngSeed(seed, (u8)dungeonId, 0);
+        state ^= ((u32)kecleonFloor << 8);
+        state ^= ((u32)superTrapFloor << 16);
+        state ^= ((u32)monsterHouseFloor << 24);
+    } else {
+        state ^= (u32)dungeonId * 0x27D4EB2D;
+    }
+
+    for (i = 0; i < 2; i++) {
+        u32 idx;
+
+        state = state * 1664525 + 1013904223;
+        idx = (remaining > 0) ? (state % remaining) : 0;
+        sGengarHintState.hintOptions[i] = pool[idx];
+        for (; idx + 1 < remaining; idx++)
+            pool[idx] = pool[idx + 1];
+        if (remaining > 0)
+            remaining--;
+    }
+
+    for (i = 0; i < 2; i++) {
+        u8 type = sGengarHintState.hintOptions[i];
+        u8 labelIndex = 0;
+
+        switch (type) {
+            case GENGAR_HINT_TYPE_SUPER_TRAP:
+                labelIndex = 1;
+                break;
+            case GENGAR_HINT_TYPE_MONSTER_HOUSE:
+                labelIndex = 2;
+                break;
+            case GENGAR_HINT_TYPE_KECLEON:
+            default:
+                labelIndex = 0;
+                break;
+        }
+
+        sGengarHintChoiceMenu[i].text = sHintLabels[labelIndex];
+        sGengarHintChoiceMenu[i].menuAction = i + 1;
+    }
+
+    sGengarHintChoiceMenu[2].text = NULL;
+    sGengarHintChoiceMenu[2].menuAction = -1;
 }
 
 static void InitGengarHintPortrait(void)

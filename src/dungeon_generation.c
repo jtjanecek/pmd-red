@@ -28,6 +28,7 @@
 #include "dungeon_cutscene.h"
 #include "moves.h"
 #include "dungeon_misc.h"
+#include "save.h"
 
 #include "dungeon_auto_explore.h"
 enum CardinalDirection
@@ -6302,6 +6303,8 @@ static void ResetInnerBoundaryTileRows(void)
 // Arena dimensions (slightly tighter than Fiery/Northwind Field bosses)
 #define ARENA_WIDTH 9
 #define ARENA_HEIGHT 10
+#define ARENA_MIN_WIDTH 7
+#define ARENA_MIN_HEIGHT 8
 #define ARENA_START_X 10
 #define ARENA_START_Y 10
 
@@ -6314,6 +6317,13 @@ static void ResetInnerBoundaryTileRows(void)
 // DEBUG: Global markers to track where we are
 static EWRAM_DATA s32 gBossArenaDebugMarker = {0};
 static EWRAM_DATA s32 gBossSpawnDebugMarker = {0};
+
+// Mutable rectangular arena dimensions (custom boss rooms only)
+static EWRAM_DATA s32 sBossArenaWidth = {ARENA_WIDTH};
+static EWRAM_DATA s32 sBossArenaHeight = {ARENA_HEIGHT};
+
+// Local RNG for custom boss arenas (seeded off dungeon id + personality seed)
+static EWRAM_DATA u32 sBossArenaRngState = {1};
 
 // Boss spawn position for fixed room boss fights (separate from stairs)
 static EWRAM_DATA s32 gBossFixedRoomSpawnX = {-1};
@@ -6367,6 +6377,157 @@ static void GetBossMinionPositions(const BossFightConfig *config, s32 centerX, s
         minionPositions[i][0] = centerX;
         minionPositions[i][1] = bossY;
     }
+}
+
+static void SeedBossArenaRng(void)
+{
+    s32 seed = -1;
+    u8 dungeonId = 0;
+    s32 floorId = 0;
+
+    DungeonSeedOverrides_IsEnabled(&seed);
+    if (seed < 0)
+        seed = sub_8011C34();
+
+    if (gDungeon != NULL) {
+        dungeonId = gDungeon->unk644.dungeonLocation.id;
+        floorId = gDungeon->unk644.dungeonLocation.floor;
+    }
+
+    if (seed < 0)
+        seed = 0;
+
+    sBossArenaRngState = DungeonSeedOverrides_GetDungeonRngSeed(seed, dungeonId, floorId) ^ 0xB055A4EA;
+    sBossArenaRngState |= 1;
+}
+
+static u32 BossArenaRngNext(void)
+{
+    sBossArenaRngState = sBossArenaRngState * 1664525 + 1013904223;
+    return sBossArenaRngState;
+}
+
+static s32 BossArenaRandRange(s32 min, s32 max)
+{
+    u32 span;
+
+    if (max <= min)
+        return min;
+
+    span = (u32)(max - min);
+    return min + (BossArenaRngNext() % span);
+}
+
+static void SelectCustomBossArenaSize(void)
+{
+    s32 widthRoll;
+    s32 heightRoll;
+
+    sBossArenaWidth = ARENA_WIDTH;
+    sBossArenaHeight = ARENA_HEIGHT;
+
+    widthRoll = BossArenaRandRange(0, 100);
+    if (widthRoll >= 60) {
+        s32 shrink = (widthRoll >= 90) ? 2 : 1;
+        sBossArenaWidth -= shrink;
+    }
+
+    heightRoll = BossArenaRandRange(0, 100);
+    if (heightRoll >= 60) {
+        s32 shrink = (heightRoll >= 90) ? 2 : 1;
+        sBossArenaHeight -= shrink;
+    }
+
+    if (sBossArenaWidth < ARENA_MIN_WIDTH)
+        sBossArenaWidth = ARENA_MIN_WIDTH;
+    if (sBossArenaHeight < ARENA_MIN_HEIGHT)
+        sBossArenaHeight = ARENA_MIN_HEIGHT;
+
+    MGBA_Warnf("[BossGen] Rect arena size selected: %dx%d (rolls %d/%d)",
+               sBossArenaWidth, sBossArenaHeight, widthRoll, heightRoll);
+}
+
+static bool8 IsBossArenaProtectedTile(s32 x, s32 y, s32 centerX, s32 bossY, s32 playerY, s32 stairsX, s32 stairsY, s32 dropX, s32 dropY, s32 minionPositions[][2], s32 minionCount)
+{
+    s32 i;
+
+    // Keep stairs row and ceiling untouched
+    if (y <= ARENA_START_Y + 1)
+        return TRUE;
+
+    // Don't overwrite stairs or drop tiles
+    if ((x == stairsX && y == stairsY) || (x == dropX && y == dropY))
+        return TRUE;
+
+    // Keep boss/player spawn tiles intact
+    if (x == centerX && (y == bossY || y == playerY))
+        return TRUE;
+
+    // Keep minion spawn tiles intact
+    for (i = 0; i < minionCount; i++) {
+        if (x == minionPositions[i][0] && y == minionPositions[i][1])
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+static void ScatterBossArenaSecondaryTerrain(const BossFightConfig *config, s32 centerX, s32 bossY, s32 playerY)
+{
+    s32 minionPositions[4][2] = {{0}};
+    s32 minionCount = 0;
+    s32 stairsX = centerX;
+    s32 stairsY = ARENA_START_Y + 1;
+    s32 dropX = stairsX;
+    s32 dropY = stairsY + 1;
+    s32 interiorArea;
+    s32 target;
+    s32 placed = 0;
+    s32 attempts = 0;
+    s32 maxAttempts;
+
+    if (config != NULL) {
+        minionCount = config->minionCount;
+        if (minionCount > ARRAY_COUNT(minionPositions))
+            minionCount = ARRAY_COUNT(minionPositions);
+        GetBossMinionPositions(config, centerX, bossY, minionPositions, ARRAY_COUNT(minionPositions));
+    }
+
+    if (sBossArenaWidth <= 2 || sBossArenaHeight <= 3)
+        return;
+
+    interiorArea = (sBossArenaWidth - 2) * (sBossArenaHeight - 3);
+    target = 2 + BossArenaRandRange(0, 4);  // 2-5 tiles
+    if (interiorArea > 40)
+        target += BossArenaRandRange(0, 3); // +0-2 for larger rooms
+    if (target > interiorArea)
+        target = interiorArea;
+
+    maxAttempts = target * 6;
+
+    while (placed < target && attempts < maxAttempts) {
+        s32 x = ARENA_START_X + 1 + BossArenaRandRange(0, sBossArenaWidth - 2);
+        s32 y = ARENA_START_Y + 2 + BossArenaRandRange(0, sBossArenaHeight - 3);
+        Tile *tile;
+
+        attempts++;
+
+        if (IsBossArenaProtectedTile(x, y, centerX, bossY, playerY, stairsX, stairsY, dropX, dropY, minionPositions, minionCount))
+            continue;
+
+        tile = GetTileMut(x, y);
+        if (tile == NULL)
+            continue;
+
+        if (GetTerrainType(tile) != TERRAIN_TYPE_NORMAL)
+            continue;
+
+        SetTerrainType(tile, TERRAIN_TYPE_SECONDARY);
+        tile->spawnOrVisibilityFlags.spawn &= ~(SPAWN_FLAG_STAIRS | SPAWN_FLAG_ITEM);
+        placed++;
+    }
+
+    MGBA_Warnf("[BossGen] Scatter secondary terrain: placed=%d target=%d attempts=%d", placed, target, attempts);
 }
 
 // Custom fixed room tile type constants
@@ -7049,6 +7210,9 @@ void GenerateBossArena(BossFightConfig *config)
     // CRITICAL: Reset floor tiles (we bypassed normal generation)
     ResetFloor();
     gBossArenaDebugMarker = 3;  // DEBUG: Floor reset
+    sBossArenaWidth = ARENA_WIDTH;
+    sBossArenaHeight = ARENA_HEIGHT;
+    SeedBossArenaRng();
 
     // Check if we should use a fixed room layout
     if (config->useFixedRoomLayout) {
@@ -7070,23 +7234,26 @@ void GenerateBossArena(BossFightConfig *config)
     else {
         // Use simple rectangular arena (original implementation)
         gBossArenaDebugMarker = 6;  // DEBUG: Using rectangular arena
+        SelectCustomBossArenaSize();
 
         // Calculate key positions
-        centerX = ARENA_START_X + ARENA_WIDTH / 2;
+        centerX = ARENA_START_X + sBossArenaWidth / 2;
         bossY = ARENA_START_Y + 2;
-        maxPlayerY = ARENA_START_Y + ARENA_HEIGHT - 2;  // Inside bottom wall
+        maxPlayerY = ARENA_START_Y + sBossArenaHeight - 2;  // Inside bottom wall
         playerY = bossY + 3;
         if (playerY > maxPlayerY)
             playerY = maxPlayerY;
 
+        MGBA_Warnf("[BossGen] Rect arena center=(%d,%d) size=%dx%d", centerX, bossY, sBossArenaWidth, sBossArenaHeight);
+
         // Create arena layout: walls around perimeter, normal floor inside
-        for (y = ARENA_START_Y; y < ARENA_START_Y + ARENA_HEIGHT; y++) {
-            for (x = ARENA_START_X; x < ARENA_START_X + ARENA_WIDTH; x++) {
+        for (y = ARENA_START_Y; y < ARENA_START_Y + sBossArenaHeight; y++) {
+            for (x = ARENA_START_X; x < ARENA_START_X + sBossArenaWidth; x++) {
                 tile = GetTileMut(x, y);
 
                 // Check if this is a perimeter tile (wall) or interior (floor)
-                if (x == ARENA_START_X || x == ARENA_START_X + ARENA_WIDTH - 1 ||
-                    y == ARENA_START_Y || y == ARENA_START_Y + ARENA_HEIGHT - 1) {
+                if (x == ARENA_START_X || x == ARENA_START_X + sBossArenaWidth - 1 ||
+                    y == ARENA_START_Y || y == ARENA_START_Y + sBossArenaHeight - 1) {
                     // Perimeter - create wall
                     SetTerrainType(tile, TERRAIN_TYPE_WALL);
                     tile->room = 0;  // Arena room
@@ -7104,6 +7271,7 @@ void GenerateBossArena(BossFightConfig *config)
         gDungeon->stairsSpawn.x = centerX;
         gDungeon->stairsSpawn.y = ARENA_START_Y + 1;
         DungeonSeedOverrides_SetStairsPosition(centerX, ARENA_START_Y + 1);
+        ScatterBossArenaSecondaryTerrain(config, centerX, bossY, playerY);
 
         gBossArenaDebugMarker = 7;  // DEBUG: Rectangular arena created
     }
@@ -7211,8 +7379,8 @@ void SpawnBossFightEntities(BossFightConfig *config)
         MGBA_Warnf("[BossGen] Using fixed room spawn: boss=(%d,%d)",
                    centerX, bossY);
     } else {
-        // For simple rectangular arena, use hardcoded coordinates
-        centerX = ARENA_START_X + ARENA_WIDTH / 2;
+        // For simple rectangular arena, use runtime dimensions
+        centerX = ARENA_START_X + sBossArenaWidth / 2;
         bossY = ARENA_START_Y + 2;
 
         MGBA_Warnf("[BossGen] Using rectangular arena spawn: boss=(%d,%d)", centerX, bossY);
@@ -7301,11 +7469,11 @@ void SpawnBossFightEntities(BossFightConfig *config)
         // For rectangular arenas, use hardcoded bounds
         // For fixed rooms, just validate against dungeon grid bounds
         if (!config->useFixedRoomLayout) {
-            if (spawnX <= ARENA_START_X || spawnX >= ARENA_START_X + ARENA_WIDTH - 1) {
+            if (spawnX <= ARENA_START_X || spawnX >= ARENA_START_X + sBossArenaWidth - 1) {
                 MGBA_Warnf("[BossGen] Minion %d rejected: X out of arena bounds", i);
                 continue;
             }
-            if (spawnY <= ARENA_START_Y || spawnY >= ARENA_START_Y + ARENA_HEIGHT - 1) {
+            if (spawnY <= ARENA_START_Y || spawnY >= ARENA_START_Y + sBossArenaHeight - 1) {
                 MGBA_Warnf("[BossGen] Minion %d rejected: Y out of arena bounds", i);
                 continue;
             }
@@ -7358,7 +7526,7 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         centerX = gBossFixedRoomSpawnX;
         bossY = gBossFixedRoomSpawnY;
     } else {
-        centerX = ARENA_START_X + ARENA_WIDTH / 2;
+        centerX = ARENA_START_X + sBossArenaWidth / 2;
         bossY = ARENA_START_Y + 2;
     }
 

@@ -888,6 +888,30 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
             break;
     }
     floorProps->visibilityRange = visibility;
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            floorProps->monsterHouseChance = 4;
+            break;
+        case DIFFICULTY_NIGHTMARE:
+            floorProps->monsterHouseChance = 6;
+            break;
+        case DIFFICULTY_NORMAL:
+        default:
+            floorProps->monsterHouseChance = 2;
+            break;
+    }
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            floorProps->itemStickyChance = 2;
+            break;
+        case DIFFICULTY_NIGHTMARE:
+            floorProps->itemStickyChance = 5;
+            break;
+        case DIFFICULTY_NORMAL:
+        default:
+            floorProps->itemStickyChance = 1;
+            break;
+    }
     {
         u8 budget = 0;
         if (DungeonSeedRng_NextRange(&rng, 0, 100) >= 50) {
@@ -899,7 +923,7 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
 
     roomCountForLog = (floorProps->roomDensity < 0) ? -floorProps->roomDensity : floorProps->roomDensity;
     layoutLabel = (layoutChoice.label != NULL) ? layoutChoice.label : "unknown";
-    MGBA_Warnf("[FloorProps] seed=%d dungeon=%d floor=%d alt=%d layout=%d (%s) rooms=%d allowSecondary=%d roll=%u conn=%d extra=%d deadEnds=%d secondaryBudget=%d vis=%d visRoll=%u diff=%d",
+    MGBA_Warnf("[FloorProps] seed=%d dungeon=%d floor=%d alt=%d layout=%d (%s) rooms=%d allowSecondary=%d roll=%u conn=%d extra=%d deadEnds=%d secondaryBudget=%d vis=%d visRoll=%u diff=%d sticky=%d",
                seed,
                dungeonId,
                floorId,
@@ -915,7 +939,8 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
                floorProps->secondaryStructuresBudget,
                floorProps->visibilityRange,
                visRoll,
-               difficulty);
+               difficulty,
+               floorProps->itemStickyChance);
 }
 
 static bool8 IsBossSpecies(s16 species)

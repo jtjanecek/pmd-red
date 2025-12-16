@@ -204,8 +204,8 @@ static void InitializeTestStats(void)
     // - Difficulty: Normal
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
-    sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    //sPersonalityTestTracker->unk4.StarterID = MONSTER_DECOY;
+    //sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_MUNCHLAX;
     //sPersonalityTestTracker->unk4.PartnerID = MONSTER_BULBASAUR;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);

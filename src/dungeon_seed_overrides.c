@@ -32,9 +32,11 @@
 
 #define SEEDED_TILESET_COUNT 75  // Max valid tileset ID (gNaturePowerCalledMoves uses max 74)
 #define SEEDED_MIN_FLOORS 3
-#define SEEDED_MAX_FLOORS 60
+#define SEEDED_MAX_FLOORS 100
 #define SEEDED_MIN_SPAWNS 6
 #define SEEDED_MAX_SPAWNS 16
+#define SEEDED_FIXED_SPAWN_COUNT 10
+#define SEEDED_MAIN_TYPE_PERCENT 80
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_PREFIX_BUFFER_LEN 16
 #define SEEDED_TRAP_DENSITY_DEFAULT 15
@@ -104,11 +106,17 @@ typedef struct {
     u8 allowDeadEndsPercent;
 } SeededFloorGenerationConfig;
 
+typedef struct {
+    u8 mainType;
+    u32 spawnMask;
+} TilesetTypeConfig;
+
 static void ClearFloorOverrides(DungeonSeedFloorOverrides *result);
 static DungeonSeedRng DungeonSeedRng_Init(s32 seed, u8 dungeonId, s32 floorId, u32 salt);
 static u32 DungeonSeedRng_Next(DungeonSeedRng *rng);
 static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max);
 static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8 dungeonId, s32 floorId);
+static s32 GetDungeonNumberForFloorScaling(u8 dungeonId);
 static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId);
 static u8 SelectTileset(s32 floorId);
 static SeededLayoutOption SelectAlternateLayout(DungeonSeedRng *rng);
@@ -130,6 +138,10 @@ static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rn
 static bool8 IsBossSpecies(s16 species);
 static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask);
 static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity);
+static u8 GetMainTypeForTileset(u8 tileset);
+static u32 GetCombinedSpawnMask(u8 tileset, u32 mainTypeMask);
+static s16 SelectSpeciesFromPool(DungeonSeedRng *rng, s16 *pool, s32 *poolCount, bool8 *selectedFlags);
+static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog);
 
 static const u8 sItemLimitsByDifficulty[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NORMAL] = INVENTORY_SIZE,
@@ -256,73 +268,84 @@ static const char *const sSeededSuffixTable[] = {
     "Wilds",
 };
 
-// Bitmask of allowed spawn types per tileset (from docs/tileset_types.csv).
-// Bit position matches the type constant value (TYPE_*). Index 0 is unused.
-static const u32 sTilesetSpawnTypeMask[SEEDED_TILESET_COUNT] = {
-    [0] = 0x00000000,
-    [1] = 0x00001012,
-    [2] = 0x00002202,
-    [3] = 0x00000802,
-    [4] = 0x00011310,
-    [5] = 0x00022080,
-    [6] = 0x00000600,
-    [7] = 0x00005102,
-    [8] = 0x00000086,
-    [9] = 0x00000042,
-    [10] = 0x00008402,
-    [11] = 0x00001410,
-    [12] = 0x00014900,
-    [13] = 0x00002202,
-    [14] = 0x00001212,
-    [15] = 0x00020048,
-    [16] = 0x00020048,
-    [17] = 0x00002206,
-    [18] = 0x00020048,
-    [19] = 0x00020048,
-    [20] = 0x00001012,
-    [21] = 0x00002202,
-    [22] = 0x00022204,
-    [23] = 0x00001092,
-    [24] = 0x00020048,
-    [25] = 0x00000212,
-    [26] = 0x00001012,
-    [27] = 0x00000422,
-    [28] = 0x00000800,
-    [29] = 0x00000422,
-    [30] = 0x00020800,
-    [31] = 0x00003200,
-    [32] = 0x00001018,
-    [33] = 0x00010108,
-    [34] = 0x00008400,
-    [35] = 0x0000C400,
-    [36] = 0x00008440,
-    [37] = 0x00002A00,
-    [38] = 0x00002202,
-    [39] = 0x00002202,
-    [40] = 0x0000004A,
-    [41] = 0x0000001A,
-    [42] = 0x00000022,
-    [43] = 0x00000420,
-    [44] = 0x00001606,
-    [45] = 0x00008042,
-    [46] = 0x00000006,
-    [47] = 0x00000042,
-    [48] = 0x00022004,
-    [49] = 0x00000008,
-    [50] = 0x00002210,
-    [51] = 0x00001012,
-    [52] = 0x00001012,
-    [53] = 0x00001012,
-    [54] = 0x00000048,
-    [55] = 0x00008000,
-    [56] = 0x00000612,
-    [57] = 0x00006900,
-    [58] = 0x00008A00,
-    [59] = 0x00002204,
-    [60] = 0x00000492,
-    [61] = 0x00010300,
-    [62] = 0x00001012,
-    [63] = 0x0000001A,
+// Spawn type masks (Spawn Types column only) and main type per tileset.
+// Source: rogue_files/tileset_types.csv. Bit position matches TYPE_*.
+static const TilesetTypeConfig sTilesetTypeConfig[SEEDED_TILESET_COUNT] = {
+    [0] = {TYPE_NONE, 0x00000000},
+    [1] = {TYPE_GRASS, 0x00001002},
+    [2] = {TYPE_NORMAL, 0x00002200},
+    [3] = {TYPE_PSYCHIC, 0x00000002},
+    [4] = {TYPE_DARK, 0x00001310},
+    [5] = {TYPE_FIGHTING, 0x00022000},
+    [6] = {TYPE_FLYING, 0x00000200},
+    [7] = {TYPE_GHOST, 0x00001102},
+    [8] = {TYPE_FIGHTING, 0x00000006},
+    [9] = {TYPE_ICE, 0x00000002},
+    [10] = {TYPE_DRAGON, 0x00000402},
+    [11] = {TYPE_GRASS, 0x00001400},
+    [12] = {TYPE_GHOST, 0x00010900},
+    [13] = {TYPE_GROUND, 0x00002002},
+    [14] = {TYPE_BUG, 0x00000212},
+    [15] = {TYPE_ICE, 0x00020008},
+    [16] = {TYPE_ICE, 0x00020008},
+    [17] = {TYPE_ROCK, 0x00000206},
+    [18] = {TYPE_ICE, 0x00020008},
+    [19] = {TYPE_STEEL, 0x00000048},
+    [20] = {TYPE_GRASS, 0x00001002},
+    [21] = {TYPE_GROUND, 0x00002002},
+    [22] = {TYPE_FIRE, 0x00022200},
+    [23] = {TYPE_NORMAL, 0x00001090},
+    [24] = {TYPE_STEEL, 0x00000048},
+    [25] = {TYPE_NORMAL, 0x00000210},
+    [26] = {TYPE_BUG, 0x00000410},
+    [27] = {TYPE_FLYING, 0x00000022},
+    [28] = {TYPE_PSYCHIC, 0x00004000},
+    [29] = {TYPE_ELECTRIC, 0x00000402},
+    [30] = {TYPE_STEEL, 0x00000800},
+    [31] = {TYPE_GROUND, 0x00003000},
+    [32] = {TYPE_WATER, 0x00001110},
+    [33] = {TYPE_POISON, 0x00010008},
+    [34] = {TYPE_DRAGON, 0x00000400},
+    [35] = {TYPE_FLYING, 0x0000C000},
+    [36] = {TYPE_ICE, 0x00008400},
+    [37] = {TYPE_GROUND, 0x00002800},
+    [38] = {TYPE_ROCK, 0x00000202},
+    [39] = {TYPE_ROCK, 0x00000202},
+    [40] = {TYPE_ICE, 0x0000000A},
+    [41] = {TYPE_GRASS, 0x0000000A},
+    [42] = {TYPE_ELECTRIC, 0x00000002},
+    [43] = {TYPE_ELECTRIC, 0x00000400},
+    [44] = {TYPE_GROUND, 0x00001406},
+    [45] = {TYPE_DRAGON, 0x00000042},
+    [46] = {TYPE_FIRE, 0x00000002},
+    [47] = {TYPE_ICE, 0x00000002},
+    [48] = {TYPE_FIRE, 0x00022000},
+    [49] = {TYPE_WATER, 0x00000100},
+    [50] = {TYPE_ROCK, 0x00000210},
+    [51] = {TYPE_GRASS, 0x00001002},
+    [52] = {TYPE_GRASS, 0x00001002},
+    [53] = {TYPE_GRASS, 0x00001002},
+    [54] = {TYPE_WATER, 0x00000140},
+    [55] = {TYPE_DRAGON, 0x00008000},
+    [56] = {TYPE_FLYING, 0x00000212},
+    [57] = {TYPE_POISON, 0x00006800},
+    [58] = {TYPE_PSYCHIC, 0x00008200},
+    [59] = {TYPE_FIRE, 0x00002200},
+    [60] = {TYPE_NORMAL, 0x00000490},
+    [61] = {TYPE_DARK, 0x00000320},
+    [62] = {TYPE_BUG, 0x00000012},
+    [63] = {TYPE_GRASS, 0x0000000A},
+    [64] = {TYPE_NONE, 0x00000000},
+    [65] = {TYPE_NONE, 0x00000000},
+    [66] = {TYPE_NONE, 0x00000000},
+    [67] = {TYPE_NONE, 0x00000000},
+    [68] = {TYPE_NONE, 0x00000000},
+    [69] = {TYPE_NONE, 0x00000000},
+    [70] = {TYPE_NONE, 0x00000000},
+    [71] = {TYPE_NONE, 0x00000000},
+    [72] = {TYPE_NONE, 0x00000000},
+    [73] = {TYPE_NONE, 0x00000000},
+    [74] = {TYPE_NONE, 0x00000000},
 };
 
 static u8 sSeededDungeonName1[NUM_DUNGEONS][SEEDED_DUNGEON_NAME_MAX_LEN];
@@ -393,12 +416,43 @@ void DungeonSeedOverrides_ApplyFloorProperties(FloorProperties *floorProps, s32 
     ApplySeededFloorProperties(floorProps, seed, dungeonId, floorId);
 }
 
+static s32 GetDungeonNumberForFloorScaling(u8 dungeonId)
+{
+    s32 i;
+
+    if (dungeonId >= NUM_DUNGEONS)
+        return 1;
+
+    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+        u8 listDungeonId = RescueDungeonToDungeonId(sSequentialDungeonList[i]);
+        if (listDungeonId == dungeonId)
+            return i + 1; // 1-indexed progression number
+    }
+
+    // Fallback: treat unknown dungeons as the first slot
+    return 1;
+}
+
 s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
 {
-    // For testing: all dungeons have 5 floors
-    (void)seed;
-    (void)dungeonId;
-    return 5;
+    s32 dungeonNumber = GetDungeonNumberForFloorScaling(dungeonId);
+    DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, dungeonNumber, 0x464C4354); // "FLCT"
+    s32 multiplier = DungeonSeedRng_NextRange(&rng, 2, 6); // 2-5 inclusive
+    s32 desiredFloors = 6 + multiplier * (dungeonNumber - 1);
+    s32 floorCount;
+
+    if (desiredFloors > 99)
+        desiredFloors = 99;
+
+    // Engine uses (final floor number + 1); add 1 so visible floor total matches desiredFloors.
+    floorCount = desiredFloors + 1;
+
+    if (floorCount > SEEDED_MAX_FLOORS)
+        floorCount = SEEDED_MAX_FLOORS;
+
+    MGBA_Warnf("[FloorCount] seed=%d dungeon=%d number=%d mult=%d floors=%d (engineCount=%d)",
+               seed, dungeonId, dungeonNumber, multiplier, desiredFloors, floorCount);
+    return floorCount;
 }
 
 u32 DungeonSeedOverrides_GetDungeonRngSeed(s32 seed, u8 dungeonId, s32 floorId)
@@ -1000,70 +1054,188 @@ static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity)
     return count;
 }
 
+static u8 GetMainTypeForTileset(u8 tileset)
+{
+    u8 type = TYPE_NONE;
+
+    if (TypeSelection_HasActiveType())
+        type = TypeSelection_GetActiveType();
+    else if (TypeSelection_HasCommittedType())
+        type = TypeSelection_GetCommittedType();
+
+    if (type > TYPE_NONE && type < NUM_TYPES)
+        return type;
+
+    if (tileset < SEEDED_TILESET_COUNT)
+        type = sTilesetTypeConfig[tileset].mainType;
+
+    if (type > TYPE_NONE && type < NUM_TYPES)
+        return type;
+
+    return TYPE_NONE;
+}
+
+static u32 GetCombinedSpawnMask(u8 tileset, u32 mainTypeMask)
+{
+    u32 mask = mainTypeMask;
+
+    if (tileset < SEEDED_TILESET_COUNT)
+        mask |= sTilesetTypeConfig[tileset].spawnMask;
+
+    return mask;
+}
+
+static s16 SelectSpeciesFromPool(DungeonSeedRng *rng, s16 *pool, s32 *poolCount, bool8 *selectedFlags)
+{
+    if (rng == NULL || pool == NULL || poolCount == NULL || selectedFlags == NULL)
+        return MONSTER_NONE;
+
+    while (*poolCount > 0) {
+        s32 idx = DungeonSeedRng_NextRange(rng, 0, *poolCount);
+        s16 species = pool[idx];
+        pool[idx] = pool[*poolCount - 1];
+        (*poolCount)--;
+
+        if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+            continue;
+        if (selectedFlags[species])
+            continue;
+
+        selectedFlags[species] = TRUE;
+        return species;
+    }
+
+    return MONSTER_NONE;
+}
+
+static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog)
+{
+    const SeedSpeciesPool *pool;
+    s32 attempts = 0;
+
+    if (rng == NULL || selectedFlags == NULL)
+        return MONSTER_NONE;
+
+    pool = &sSpeciesPools[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sSpeciesPools))];
+    while (attempts < 8) {
+        s16 species = pool->species[DungeonSeedRng_NextRange(rng, 0, pool->count)];
+        attempts++;
+
+        if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+            continue;
+        if (IsBossSpecies(species))
+            continue;
+        if (selectedFlags[species])
+            continue;
+
+        selectedFlags[species] = TRUE;
+        if (loggedFallback != NULL && !*loggedFallback) {
+            MGBA_Warnf("[SeedOverrides] Spawn fallback to generic pool (mask=0x%08x)", maskForLog);
+            *loggedFallback = TRUE;
+        }
+        return species;
+    }
+
+    return MONSTER_NONE;
+}
+
 static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId)
 {
     s32 entryCount;
     s32 i;
-    u32 typeMask = 0;
-    s16 candidates[MONSTER_MAX];
-    s32 candidateCount = 0;
+    u8 tileset = 0;
+    u8 mainType = TYPE_NONE;
+    u32 mainTypeMask = 0;
+    u32 spawnTypeMask = 0;
+    u32 combinedMask = 0;
+    s16 mainCandidates[MONSTER_MAX];
+    s16 spawnCandidates[MONSTER_MAX];
+    s16 combinedCandidates[MONSTER_MAX];
+    s32 mainCandidateCount = 0;
+    s32 spawnCandidateCount = 0;
+    s32 combinedCandidateCount = 0;
+    s32 mainQuota;
+    s32 spawnQuota;
+    bool8 selectedFlags[MONSTER_MAX];
     bool8 useBulbasaurOnly = FALSE;
     bool8 loggedFallback = FALSE;
     bool8 loggedInvalid = FALSE;
 
-    entryCount = DungeonSeedRng_NextRange(rng, SEEDED_MIN_SPAWNS, SEEDED_MAX_SPAWNS + 1);
+    if (result != NULL)
+        tileset = result->tileset;
+
+    entryCount = SEEDED_FIXED_SPAWN_COUNT;
     if (entryCount > MONSTER_SPAWNS_ARR_COUNT)
         entryCount = MONSTER_SPAWNS_ARR_COUNT;
 
-    if (result != NULL && result->tileset < SEEDED_TILESET_COUNT)
-        typeMask = sTilesetSpawnTypeMask[result->tileset];
+    mainType = GetMainTypeForTileset(tileset);
+    if (mainType > TYPE_NONE && mainType < NUM_TYPES)
+        mainTypeMask = (1u << mainType);
 
-    if (typeMask != 0)
-        candidateCount = BuildSpawnCandidates(typeMask, candidates, ARRAY_COUNT(candidates));
-    if (typeMask != 0 && candidateCount == 0)
+    if (tileset < SEEDED_TILESET_COUNT)
+        spawnTypeMask = sTilesetTypeConfig[tileset].spawnMask & ~mainTypeMask;
+
+    combinedMask = GetCombinedSpawnMask(tileset, mainTypeMask);
+
+    if (mainTypeMask != 0)
+        mainCandidateCount = BuildSpawnCandidates(mainTypeMask, mainCandidates, ARRAY_COUNT(mainCandidates));
+    if (spawnTypeMask != 0)
+        spawnCandidateCount = BuildSpawnCandidates(spawnTypeMask, spawnCandidates, ARRAY_COUNT(spawnCandidates));
+    if (combinedMask != 0)
+        combinedCandidateCount = BuildSpawnCandidates(combinedMask, combinedCandidates, ARRAY_COUNT(combinedCandidates));
+    if (combinedMask != 0 && combinedCandidateCount == 0)
         useBulbasaurOnly = TRUE;
 
-    MGBA_Infof("[SeedOverrides] Spawn selection tileset=%d mask=0x%08x candidates=%d bulbaOnly=%d",
-               (result != NULL ? result->tileset : -1), typeMask, candidateCount, useBulbasaurOnly);
+    for (i = 0; i < MONSTER_MAX; i++)
+        selectedFlags[i] = FALSE;
+
+    if (mainTypeMask == 0) {
+        mainQuota = 0;
+    } else {
+        mainQuota = (entryCount * SEEDED_MAIN_TYPE_PERCENT + 99) / 100;
+        if (mainQuota > entryCount)
+            mainQuota = entryCount;
+    }
+    spawnQuota = entryCount - mainQuota;
+
+    MGBA_Infof("[SeedOverrides] Spawn selection tileset=%d mainType=%d mainMask=0x%08x spawnMask=0x%08x combined=0x%08x mainCandidates=%d spawnCandidates=%d bulbaOnly=%d mainQuota=%d spawnQuota=%d",
+               tileset,
+               mainType,
+               mainTypeMask,
+               spawnTypeMask,
+               combinedMask,
+               mainCandidateCount,
+               spawnCandidateCount,
+               useBulbasaurOnly,
+               mainQuota,
+               spawnQuota);
 
     for (i = 0; i < entryCount; i++) {
-        const SeedSpeciesPool *pool;
         s16 species;
         s32 baseLevel;
         s32 levelVariance;
         s32 level;
+        bool8 fillingMain = (i < mainQuota);
 
         if (useBulbasaurOnly) {
             species = MONSTER_BULBASAUR;
-        } else if (candidateCount > 0) {
-            s32 idx = DungeonSeedRng_NextRange(rng, 0, candidateCount);
-            species = candidates[idx];
+            selectedFlags[species] = TRUE;
+        } else if (fillingMain) {
+            species = SelectSpeciesFromPool(rng, mainCandidates, &mainCandidateCount, selectedFlags);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromPool(rng, combinedCandidates, &combinedCandidateCount, selectedFlags);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromPool(rng, spawnCandidates, &spawnCandidateCount, selectedFlags);
         } else {
-            s32 attempts = 0;
-            pool = &sSpeciesPools[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sSpeciesPools))];
-            species = MONSTER_NONE;
-
-            while (attempts < 4) {
-                species = pool->species[DungeonSeedRng_NextRange(rng, 0, pool->count)];
-                if (!IsBossSpecies(species))
-                    break;
-                attempts++;
-            }
-
-            if (species == MONSTER_NONE || IsBossSpecies(species)) {
-                s32 j;
-                for (j = 0; j < pool->count; j++) {
-                    if (!IsBossSpecies(pool->species[j])) {
-                        species = pool->species[j];
-                        break;
-                    }
-                }
-                if (!loggedFallback) {
-                    MGBA_Warnf("[SeedOverrides] Spawn fallback to generic pool (mask=0x%08x)", typeMask);
-                    loggedFallback = TRUE;
-                }
-            }
+            species = SelectSpeciesFromPool(rng, spawnCandidates, &spawnCandidateCount, selectedFlags);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromPool(rng, combinedCandidates, &combinedCandidateCount, selectedFlags);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromPool(rng, mainCandidates, &mainCandidateCount, selectedFlags);
         }
+
+        if (species == MONSTER_NONE)
+            species = SelectGenericSpecies(rng, selectedFlags, &loggedFallback, combinedMask);
 
         if (species <= MONSTER_NONE || species >= MONSTER_MAX) {
             species = MONSTER_BULBASAUR;
@@ -1071,6 +1243,7 @@ static void PopulateSpawnTable(DungeonSeedFloorOverrides *result, DungeonSeedRng
                 MGBA_Warnf("[SeedOverrides] Spawn invalid species, forcing Bulbasaur (entry=%d)", i);
                 loggedInvalid = TRUE;
             }
+            selectedFlags[species] = TRUE;
         }
 
         baseLevel = 3 + (dungeonId % 10) + floorId;

@@ -31,6 +31,8 @@
 #include "type_selection.h"
 
 #define SEEDED_TILESET_COUNT 75  // Max valid tileset ID (gNaturePowerCalledMoves uses max 74)
+#define SEEDED_ITEM_DENSITY_MIN 3
+#define SEEDED_ITEM_DENSITY_MAX 6
 #define SEEDED_MIN_FLOORS 3
 #define SEEDED_MAX_FLOORS 100
 #define SEEDED_MIN_SPAWNS 6
@@ -973,11 +975,15 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
         }
         floorProps->secondaryStructuresBudget = budget;
     }
+    {
+        u8 itemDensity = (u8)DungeonSeedRng_NextRange(&rng, SEEDED_ITEM_DENSITY_MIN, SEEDED_ITEM_DENSITY_MAX + 1);
+        floorProps->itemDensity = itemDensity;
+    }
     floorProps->standaloneLakeDensity = 0;
 
     roomCountForLog = (floorProps->roomDensity < 0) ? -floorProps->roomDensity : floorProps->roomDensity;
     layoutLabel = (layoutChoice.label != NULL) ? layoutChoice.label : "unknown";
-    MGBA_Warnf("[FloorProps] seed=%d dungeon=%d floor=%d alt=%d layout=%d (%s) rooms=%d allowSecondary=%d roll=%u conn=%d extra=%d deadEnds=%d secondaryBudget=%d vis=%d visRoll=%u diff=%d sticky=%d",
+    MGBA_Warnf("[FloorProps] seed=%d dungeon=%d floor=%d alt=%d layout=%d (%s) rooms=%d allowSecondary=%d roll=%u conn=%d extra=%d deadEnds=%d secondaryBudget=%d vis=%d visRoll=%u diff=%d sticky=%d itemDensity=%d",
                seed,
                dungeonId,
                floorId,
@@ -994,7 +1000,8 @@ static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8
                floorProps->visibilityRange,
                visRoll,
                difficulty,
-               floorProps->itemStickyChance);
+               floorProps->itemStickyChance,
+               floorProps->itemDensity);
 }
 
 static bool8 IsBossSpecies(s16 species)

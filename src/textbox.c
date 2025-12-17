@@ -2565,9 +2565,18 @@ static const u8 *BuildKecleonShopHintText(void)
         return sGengarHintNoSeedText;
 
     {
-        s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor((u8)dungeonId, seed);
-        s32 displayFloor = GetDungeonStartingFloor(dungeonId) + kecleonFloor + 1;
+        s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
+        s32 displayFloor;
+        s32 chosenIndex = 0;
+        u32 hintRoll;
 
+        DungeonSeedOverrides_GetKecleonFloors((u8)dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
+
+        hintRoll = DungeonSeedOverrides_GetDungeonRngSeed(seed, (u8)dungeonId, 0) ^ 0x48494E54; // "HINT"
+        hintRoll = (hintRoll ^ (hintRoll >> 16)) * 1664525 + 1013904223;
+        chosenIndex = (s32)(hintRoll % SEEDED_KECLEON_SHOP_COUNT);
+
+        displayFloor = GetDungeonStartingFloor(dungeonId) + kecleonFloors[chosenIndex] + 1;
         sprintfStatic(sGengarHintShopBuffer, _("Heh heh... Shop rumor says floor %d."), displayFloor);
         return sGengarHintShopBuffer;
     }
@@ -2625,7 +2634,7 @@ static void BuildGengarHintChoiceMenu(void)
     u32 state = 0xA511E9B5;
     s32 seed;
     s32 dungeonId = sGengarHintState.dungeonId;
-    s32 kecleonFloor = 0;
+    s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
     s32 superTrapFloor = 0;
     s32 monsterHouseFloor = 0;
     s32 i;
@@ -2634,11 +2643,12 @@ static void BuildGengarHintChoiceMenu(void)
         sGengarHintState.hintOptions[0] = GENGAR_HINT_TYPE_KECLEON;
         sGengarHintState.hintOptions[1] = GENGAR_HINT_TYPE_SUPER_TRAP;
     } else if (DungeonSeedOverrides_IsEnabled(&seed)) {
-        kecleonFloor = DungeonSeedOverrides_GetKecleonFloor((u8)dungeonId, seed);
+        DungeonSeedOverrides_GetKecleonFloors((u8)dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
         superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor((u8)dungeonId, seed);
         monsterHouseFloor = DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor((u8)dungeonId, seed);
         state ^= (u32)DungeonSeedOverrides_GetDungeonRngSeed(seed, (u8)dungeonId, 0);
-        state ^= ((u32)kecleonFloor << 8);
+        state ^= ((u32)kecleonFloors[0] << 8);
+        state ^= ((u32)kecleonFloors[1] << 12);
         state ^= ((u32)superTrapFloor << 16);
         state ^= ((u32)monsterHouseFloor << 24);
     } else {

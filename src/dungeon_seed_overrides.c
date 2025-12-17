@@ -414,7 +414,8 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
 {
     DungeonSeedRng rng;
     bool8 isForcedKecleonFloor = FALSE;
-    s32 kecleonFloorId = 0;
+    s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
+    s32 i;
 
     if (result == NULL)
         return;
@@ -440,9 +441,14 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     }
 
     {
-        s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(dungeonId, seed);
-        kecleonFloorId = GetDungeonStartingFloor(dungeonId) + kecleonFloor + 1; // Floors are 1-indexed in mapparam
-        isForcedKecleonFloor = (floorId == kecleonFloorId);
+        s32 kecleonFloorId;
+
+        DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
+        for (i = 0; i < SEEDED_KECLEON_SHOP_COUNT; i++) {
+            kecleonFloorId = GetDungeonStartingFloor(dungeonId) + kecleonFloors[i] + 1; // Floors are 1-indexed in mapparam
+            if (floorId == kecleonFloorId)
+                isForcedKecleonFloor = TRUE;
+        }
     }
 
     InitSeededItemState(seed, dungeonId, floorId, isForcedKecleonFloor);
@@ -2578,35 +2584,44 @@ s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed)
 {
     DungeonSeedRng rng;
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
-    s32 maxNonBossFloor;
-    s32 kecleonFloor;
-    s32 selected;
+    s32 eligibleCount;
+    s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
+    s32 candidates[SEEDED_MAX_FLOORS];
+    s32 candidateCount = 0;
+    s32 i;
 
     if (floorCount < 2)
         return 0;
 
     // Avoid the boss floor (last floor) so traps don't conflict with boss rooms
     // floorCount is "final floor + 1" so subtract 2 to drop the boss layer
-    maxNonBossFloor = floorCount - 2;
-    if (maxNonBossFloor <= 0)
+    eligibleCount = floorCount - 2;
+    if (eligibleCount <= 0)
         return 0;
 
-    // Draw once; if it collides with the Kecleon shop floor, bump deterministically
-    kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(dungeonId, seed);
-    rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x54524150); // "TRAP"
-    selected = DungeonSeedRng_NextRange(&rng, 0, maxNonBossFloor);
-    if (selected == kecleonFloor) {
-        selected = (selected + 1) % maxNonBossFloor;
+    DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
+    for (i = 0; i < eligibleCount && i < SEEDED_MAX_FLOORS; i++) {
+        if (i == kecleonFloors[0] || i == kecleonFloors[1])
+            continue;
+        candidates[candidateCount++] = i;
     }
-    return selected;
+
+    if (candidateCount == 0) {
+        MGBA_Warnf("[SuperTrap] No open floors for guaranteed traps (dungeon=%d eligible=%d kec1=%d kec2=%d)",
+                   dungeonId, eligibleCount, kecleonFloors[0], kecleonFloors[1]);
+        return 0;
+    }
+
+    rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x54524150); // "TRAP"
+    return candidates[DungeonSeedRng_NextRange(&rng, 0, candidateCount)];
 }
 
 s32 DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(u8 dungeonId, s32 seed)
 {
     DungeonSeedRng rng;
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
-    s32 maxNonBossFloor;
-    s32 kecleonFloor;
+    s32 eligibleCount;
+    s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
     s32 superTrapFloor;
     s32 candidates[SEEDED_MAX_FLOORS];
     s32 candidateCount = 0;
@@ -2615,23 +2630,23 @@ s32 DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(u8 dungeonId, s32 seed)
     if (floorCount < 2)
         return 0;
 
-    maxNonBossFloor = floorCount - 2;
-    if (maxNonBossFloor <= 0)
+    eligibleCount = floorCount - 2;
+    if (eligibleCount <= 0)
         return 0;
 
-    kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(dungeonId, seed);
+    DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
     superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor(dungeonId, seed);
 
     // Build a list of eligible floors that aren't reserved by other guarantees
-    for (i = 0; i < maxNonBossFloor && i < SEEDED_MAX_FLOORS; i++) {
-        if (i == kecleonFloor || i == superTrapFloor)
+    for (i = 0; i < eligibleCount && i < SEEDED_MAX_FLOORS; i++) {
+        if (i == kecleonFloors[0] || i == kecleonFloors[1] || i == superTrapFloor)
             continue;
         candidates[candidateCount++] = i;
     }
 
     if (candidateCount == 0) {
-        MGBA_Warnf("[MonsterHouse] No open floors for guaranteed Monster House (dungeon=%d maxNonBoss=%d kec=%d trap=%d)",
-                   dungeonId, maxNonBossFloor, kecleonFloor, superTrapFloor);
+        MGBA_Warnf("[MonsterHouse] No open floors for guaranteed Monster House (dungeon=%d eligible=%d kec1=%d kec2=%d trap=%d)",
+                   dungeonId, eligibleCount, kecleonFloors[0], kecleonFloors[1], superTrapFloor);
         return 0;
     }
 
@@ -2639,28 +2654,64 @@ s32 DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(u8 dungeonId, s32 seed)
         return candidates[0];
 
     rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x4D4F4E48); // "MONH"
-    rng.state ^= (u32)kecleonFloor * 0x27D4EB2D;
+    rng.state ^= (u32)kecleonFloors[0] * 0x27D4EB2D;
+    rng.state ^= (u32)kecleonFloors[1] * 0xA511E9B5;
     rng.state ^= (u32)superTrapFloor * 0x45D9F3B;
     return candidates[DungeonSeedRng_NextRange(&rng, 0, candidateCount)];
 }
 
-// Deterministically select which floor (0-indexed) should have a Kecleon shop
-// Returns a floor index between 0 and (maxFloors - 2), excluding the boss floor
-s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed)
+// Deterministically select which floors (0-indexed) should have Kecleon shops
+// Floors are drawn without replacement from 0 to (floorCount - 3), excluding the boss floor and penultimate floor
+void DungeonSeedOverrides_GetKecleonFloors(u8 dungeonId, s32 seed, s32 *floor0Out, s32 *floor1Out)
 {
     DungeonSeedRng rng;
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
-    s32 maxNonBossFloor;
+    s32 eligibleCount;
+    s32 first = 0;
+    s32 second = 0;
+
+    if (floor0Out != NULL)
+        *floor0Out = 0;
+    if (floor1Out != NULL)
+        *floor1Out = 0;
 
     // Ensure we have at least 2 floors (one for Kecleon, one for boss)
     if (floorCount <= 2)
-        return 0;
+        return;
 
     // Boss is on the final floor (floorCount - 1), so Kecleon can be on 0 to (floorCount - 3)
     // floorCount is "final floor + 1", so subtract 2 to remove the boss layer
-    maxNonBossFloor = floorCount - 2;  // Exclusive upper bound for range function
+    eligibleCount = floorCount - 2;  // Exclusive upper bound for range function
 
     // Use a dedicated salt for Kecleon shop placement
     rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x4B45434C);
-    return DungeonSeedRng_NextRange(&rng, 0, maxNonBossFloor);
+    first = DungeonSeedRng_NextRange(&rng, 0, eligibleCount);
+
+    // Draw a second, distinct floor if possible
+    if (eligibleCount > 1) {
+        s32 secondRoll = DungeonSeedRng_NextRange(&rng, 0, eligibleCount - 1);
+
+        if (secondRoll >= first)
+            secondRoll++;
+        second = secondRoll;
+    } else {
+        second = first;
+    }
+
+    if (floor0Out != NULL)
+        *floor0Out = first;
+    if (floor1Out != NULL)
+        *floor1Out = second;
+
+    MGBA_Warnf("[Kecleon] Shop floors selected: dungeon=%d seed=%d floorA=%d floorB=%d eligible=%d",
+               dungeonId, seed, first, second, eligibleCount);
+}
+
+// Legacy wrapper: returns the primary Kecleon floor (first draw)
+s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed)
+{
+    s32 floor0 = 0;
+
+    DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &floor0, NULL);
+    return floor0;
 }

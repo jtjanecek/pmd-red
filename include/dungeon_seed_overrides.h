@@ -78,6 +78,8 @@ bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut);
 void DungeonSeedOverrides_ResetItemPools(void);
 
 // Kecleon shop functions
+#define SEEDED_KECLEON_SHOP_COUNT 2
+void DungeonSeedOverrides_GetKecleonFloors(u8 dungeonId, s32 seed, s32 *floor0Out, s32 *floor1Out);
 s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed);
 // Trap functions
 s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed);

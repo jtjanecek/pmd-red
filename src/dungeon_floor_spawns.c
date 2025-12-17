@@ -185,10 +185,19 @@ static void ApplySeedOverridesToCurrentFloor(void)
 
     // Seeded shop floor: bias the chosen floor to roll a shop using natural generation
     {
-        s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(gDungeon->unk644.dungeonLocation.id, seed);
-        s32 targetFloor = gDungeon->startFloorId + kecleonFloor + 1; // dungeon floors appear 1-indexed
+        s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
+        s32 targetFloors[SEEDED_KECLEON_SHOP_COUNT] = {0}; // dungeon floors appear 1-indexed
+        s32 matchedIndex = -1;
 
-        if (gDungeon->unk644.dungeonLocation.floor == targetFloor) {
+        DungeonSeedOverrides_GetKecleonFloors(gDungeon->unk644.dungeonLocation.id, seed, &kecleonFloors[0], &kecleonFloors[1]);
+        for (i = 0; i < SEEDED_KECLEON_SHOP_COUNT; i++) {
+            targetFloors[i] = gDungeon->startFloorId + kecleonFloors[i] + 1;
+            if (gDungeon->unk644.dungeonLocation.floor == targetFloors[i]) {
+                matchedIndex = i;
+            }
+        }
+
+        if (matchedIndex >= 0) {
             u32 difficulty = GetGameDifficultySetting();
             u8 faintChance = GetSeededKecleonFaintChance(difficulty);
             u8 roll = RollSeededKecleonFaintChance(seed, gDungeon->unk644.dungeonLocation.id, faintChance);
@@ -197,13 +206,14 @@ static void ApplySeedOverridesToCurrentFloor(void)
             sSeededKecleonFaintChance = faintChance;
             sSeededKecleonFaintRoll = roll;
             sSeededKecleonSpawnShopkeeper = !(faintChance > 0 && roll < faintChance);
-            MGBA_Warnf("[Kecleon] Seeded shop floor: dungeonId=%d floor=%d seed=%d shopChance=%d difficulty=%d faintChance=%d",
+            MGBA_Warnf("[Kecleon] Seeded shop floor: dungeonId=%d floor=%d seed=%d shopChance=%d difficulty=%d faintChance=%d slot=%d",
                        gDungeon->unk644.dungeonLocation.id,
                        gDungeon->unk644.dungeonLocation.floor,
                        seed,
                        gDungeon->floorProperties.kecleonShopChance,
                        difficulty,
-                       faintChance);
+                       faintChance,
+                       matchedIndex);
             MGBA_Warnf("[Kecleon] Shopkeeper roll: faintChance=%d roll=%d spawn=%d",
                        faintChance, roll, sSeededKecleonSpawnShopkeeper);
 

@@ -46,6 +46,9 @@
 #define SEEDED_TRAP_PERCENT_SUPER 56
 #define SEEDED_FLOOR_WEATHER_CHANCE_PERCENT 20
 
+#define BOSS_SECONDARY_LOOT_LEFT ITEM_ORAN_BERRY
+#define BOSS_SECONDARY_LOOT_RIGHT ITEM_MAX_ELIXIR
+
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
 // Exactly 20 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
 static const s16 sSequentialDungeonList[] = {
@@ -133,6 +136,7 @@ static const SeedSpeciesPool* GetBossPool(s32 floorId);
 static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
 static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCountOut);
+static bool8 TrySpawnBossLoot(u16 itemId, s32 x, s32 y, const char *label);
 static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut);
 static bool8 GetTypeBossMinionMoves(s16 bossSpecies, u16 minionMovesOut[][MAX_MON_MOVES], bool8 *minionHasCustomMovesOut);
 static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species);
@@ -2026,13 +2030,41 @@ bool8 DungeonSeedOverrides_IsCustomBoss(Entity *pokemon)
     return (pokemon != NULL && pokemon == sCustomBossEntity);
 }
 
+static bool8 TrySpawnBossLoot(u16 itemId, s32 x, s32 y, const char *label)
+{
+    DungeonPos pos;
+    Tile *tile;
+    Item item;
+    s32 terrain;
+
+    if (x < 0 || y < 0 || x >= DUNGEON_MAX_SIZE_X || y >= DUNGEON_MAX_SIZE_Y) {
+        MGBA_Warnf("[BossFaint] Skipping %s loot at (%d, %d): out of bounds", label, x, y);
+        return FALSE;
+    }
+
+    tile = GetTileMut(x, y);
+    terrain = GetTerrainType(tile);
+    if (terrain == TERRAIN_TYPE_WALL || (tile->terrainFlags & TERRAIN_TYPE_STAIRS) || tile->object != NULL) {
+        MGBA_Warnf("[BossFaint] Skipping %s loot at (%d, %d): blocked (terrain=%d, stairs=%d, object=%p)",
+                   label, x, y, terrain, (tile->terrainFlags & TERRAIN_TYPE_STAIRS) != 0, tile->object);
+        return FALSE;
+    }
+
+    ItemIdToItem(&item, itemId, 0);
+    pos.x = x;
+    pos.y = y;
+    SpawnItem(&pos, &item, TRUE);
+    MGBA_Warnf("[BossFaint] Spawned %s loot (itemId=%d) at (%d, %d)", label, itemId, x, y);
+    return TRUE;
+}
+
 // Handle boss defeat - spawn stairs and drop loot
 void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
 {
     const BossFightConfig *bossFight;
-    Item item;
     Tile *tile;
-    DungeonPos dropPos;
+    s32 dropX;
+    s32 dropY;
 
     MGBA_Warnf("[BossFaint] HandleBossFaint called for entity %p (boss=%p)", pokemon, sCustomBossEntity);
 
@@ -2071,10 +2103,11 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
 
     // Drop loot if configured
     if (bossFight->dropItem != ITEM_NOTHING) {
-        ItemIdToItem(&item, bossFight->dropItem, 0);
-        dropPos.x = sStairsSpawnX;
-        dropPos.y = sStairsSpawnY + 1;  // One tile in front of stairs
-        SpawnItem(&dropPos, &item, TRUE);
+        dropX = sStairsSpawnX;
+        dropY = sStairsSpawnY + 1;  // One tile in front of stairs
+        TrySpawnBossLoot(bossFight->dropItem, dropX, dropY, "primary");
+        TrySpawnBossLoot(BOSS_SECONDARY_LOOT_LEFT, dropX - 1, dropY, "secondary-left");
+        TrySpawnBossLoot(BOSS_SECONDARY_LOOT_RIGHT, dropX + 1, dropY, "secondary-right");
     }
 
     // Update minimap and visibility

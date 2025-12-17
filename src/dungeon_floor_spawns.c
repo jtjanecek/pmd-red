@@ -129,6 +129,7 @@ static void ApplySeedOverridesToCurrentFloor(void)
     sSeededKecleonFaintChance = 0;
     sSeededKecleonFaintRoll = 0xFF;
     sSeededKecleonSpawnShopkeeper = TRUE;
+    DungeonSeedOverrides_ResetItemPools();
     if (!TryGetSeedOverrideValue(&seed))
         return;
 
@@ -396,8 +397,14 @@ u8 GetRandomFloorTrap(void)
 u8 GetRandomFloorItem(s32 spawnType)
 {
     s32 i;
-    s32 rand = DungeonRandInt(ITEM_SETS_RANDOM_CAP + 1);
+    s32 rand;
+    u8 seededItem;
     u8 category = NUM_ITEM_CATEGORIES;
+
+    if (DungeonSeedOverrides_SelectFloorItem(spawnType, &seededItem))
+        return seededItem;
+
+    rand = DungeonRandInt(ITEM_SETS_RANDOM_CAP + 1);
     for (i = 0; i < NUM_ITEM_CATEGORIES; i++) {
         if (gDungeon->itemSpawns[spawnType].categoryValues[i] != 0 && gDungeon->itemSpawns[spawnType].categoryValues[i] >= rand) {
             category = i;

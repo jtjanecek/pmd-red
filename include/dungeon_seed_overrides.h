@@ -21,6 +21,8 @@ typedef struct BossFightConfig {
     s16 bossHP;                       // Boss HP
     u16 bossMusic;                    // Music during fight
     u16 dropItem;                     // Item to drop (ITEM_NOTHING for none)
+    u16 secondaryDropLeft;            // Optional secondary drop (left of stairs)
+    u16 secondaryDropRight;           // Optional secondary drop (right of stairs)
     u8 monsterBehavior;               // Boss behavior ID
     u8 minionCount;                   // Number of minions to spawn
     u8 minionFormation;               // Seeded minion layout selection
@@ -72,6 +74,8 @@ bool8 DungeonSeedOverrides_IsCustomBoss(Entity *pokemon);
 void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon);
 void DungeonSeedOverrides_RegisterBossEntity(Entity *boss);
 void DungeonSeedOverrides_SetStairsPosition(s32 x, s32 y);
+bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut);
+void DungeonSeedOverrides_ResetItemPools(void);
 
 // Kecleon shop functions
 s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed);

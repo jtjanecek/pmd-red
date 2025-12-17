@@ -29,6 +29,8 @@
 #include "items.h"
 #include "structs/map.h"
 #include "type_selection.h"
+#include "rogue_item_tables.h"
+#include "dungeon_random.h"
 
 #define SEEDED_TILESET_COUNT 75  // Max valid tileset ID (gNaturePowerCalledMoves uses max 74)
 #define SEEDED_ITEM_DENSITY_MIN 3
@@ -45,6 +47,8 @@
 #define SEEDED_TRAP_DENSITY_SUPER 56
 #define SEEDED_TRAP_PERCENT_SUPER 56
 #define SEEDED_FLOOR_WEATHER_CHANCE_PERCENT 20
+#define SEEDED_SHOP_RARE_CHANCE_PERCENT 20
+#define SEEDED_FLOOR_RARE_CHANCE_PERCENT 5
 
 #define BOSS_SECONDARY_LOOT_LEFT ITEM_ORAN_BERRY
 #define BOSS_SECONDARY_LOOT_RIGHT ITEM_MAX_ELIXIR
@@ -121,6 +125,9 @@ static DungeonSeedRng DungeonSeedRng_Init(s32 seed, u8 dungeonId, s32 floorId, u
 static u32 DungeonSeedRng_Next(DungeonSeedRng *rng);
 static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max);
 static void ApplySeededFloorProperties(FloorProperties *floorProps, s32 seed, u8 dungeonId, s32 floorId);
+static void ResetSeededItemState(void);
+static void InitSeededItemState(s32 seed, u8 dungeonId, s32 floorId, bool8 isForcedKecleonFloor);
+static u16 SelectItemFromPool(RogueItemPoolId poolId, DungeonSeedRng *rng);
 static s32 GetDungeonNumberForFloorScaling(u8 dungeonId);
 static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId);
 static u8 SelectTileset(s32 floorId);
@@ -133,7 +140,8 @@ static void BuildUniformTrapTable(u16 *trapTable);
 static bool8 SelectWeatherForType(u8 dungeonType, DungeonSeedRng *rng, u8 *weatherOut);
 static void MaybeApplyFloorWeather(DungeonSeedFloorOverrides *result, s32 seed, u8 dungeonId, s32 floorId);
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
-static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId);
+static u16 SelectPrimaryBossLoot(DungeonSeedRng *rng);
+static u16 SelectSecondaryBossLoot(DungeonSeedRng *rng);
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies);
 static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCountOut);
 static bool8 TrySpawnBossLoot(u16 itemId, s32 x, s32 y, const char *label);
@@ -360,6 +368,15 @@ static bool8 sSeededDungeonNameValid[NUM_DUNGEONS];
 static s32 sSeededDungeonNameSeed = -2;
 static s32 sSeededDungeonNameType = -2;
 
+static bool8 sSeededItemOverridesActive = FALSE;
+static bool8 sSeededRareFloorItemPending = FALSE;
+static bool8 sSeededRareFloorItemUsed = FALSE;
+static u16 sSeededRareFloorItemId = ITEM_NOTHING;
+static bool8 sSeededKecleonShopHasRare = FALSE;
+static bool8 sSeededKecleonShopRareUsed = FALSE;
+static u16 sSeededKecleonShopRareId = ITEM_NOTHING;
+static bool8 sSeededIsForcedKecleonFloor = FALSE;
+
 static void ResetSeededDungeonNameCache(void);
 static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed);
 static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize);
@@ -369,6 +386,8 @@ static s32 GetSelectedTypeForDisplay(void);
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result)
 {
     DungeonSeedRng rng;
+    bool8 isForcedKecleonFloor = FALSE;
+    s32 kecleonFloorId = 0;
 
     if (result == NULL)
         return;
@@ -392,6 +411,14 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
                        dungeonId, floorId, result->trapDensityOverride, result->trapDensityPercent);
         }
     }
+
+    {
+        s32 kecleonFloor = DungeonSeedOverrides_GetKecleonFloor(dungeonId, seed);
+        kecleonFloorId = GetDungeonStartingFloor(dungeonId) + kecleonFloor + 1; // Floors are 1-indexed in mapparam
+        isForcedKecleonFloor = (floorId == kecleonFloorId);
+    }
+
+    InitSeededItemState(seed, dungeonId, floorId, isForcedKecleonFloor);
 
     // NEW: Procedurally generate boss fight configuration
     PopulateBossFightConfig(result, &rng, dungeonId, floorId, seed);
@@ -420,6 +447,11 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
 void DungeonSeedOverrides_ApplyFloorProperties(FloorProperties *floorProps, s32 seed, u8 dungeonId, s32 floorId)
 {
     ApplySeededFloorProperties(floorProps, seed, dungeonId, floorId);
+}
+
+void DungeonSeedOverrides_ResetItemPools(void)
+{
+    ResetSeededItemState();
 }
 
 static s32 GetDungeonNumberForFloorScaling(u8 dungeonId)
@@ -495,6 +527,47 @@ bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
     if (seedOut != NULL)
         *seedOut = seed;
     MGBA_Warnf("[SeedOverrides] Enabled=TRUE seed=%d", seed);
+    return TRUE;
+}
+
+bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut)
+{
+    const RogueItemPool *pool = NULL;
+
+    if (!sSeededItemOverridesActive || itemIdOut == NULL)
+        return FALSE;
+
+    switch (spawnType) {
+        case ITEM_SPAWN_IN_SHOP:
+            if (sSeededKecleonShopHasRare && !sSeededKecleonShopRareUsed && sSeededKecleonShopRareId != ITEM_NOTHING) {
+                *itemIdOut = (u8)sSeededKecleonShopRareId;
+                sSeededKecleonShopRareUsed = TRUE;
+                MGBA_Warnf("[ItemPools] Using rare Kecleon item id=%d (forced=%d)", *itemIdOut, sSeededIsForcedKecleonFloor);
+                return TRUE;
+            }
+            pool = &gRogueItemPools[ROGUE_ITEM_POOL_KECLEON_COMMON];
+            break;
+        case ITEM_SPAWN_IN_MONSTER_HOUSE:
+            pool = &gRogueItemPools[ROGUE_ITEM_POOL_MONSTER_HOUSE];
+            break;
+        case ITEM_SPAWN_WALL:
+        case ITEM_SPAWN_NORMAL:
+            if (sSeededRareFloorItemPending && !sSeededRareFloorItemUsed && sSeededRareFloorItemId != ITEM_NOTHING) {
+                *itemIdOut = (u8)sSeededRareFloorItemId;
+                sSeededRareFloorItemUsed = TRUE;
+                MGBA_Warnf("[ItemPools] Spawning rare floor item id=%d", *itemIdOut);
+                return TRUE;
+            }
+            pool = &gRogueItemPools[ROGUE_ITEM_POOL_NORMAL];
+            break;
+        default:
+            return FALSE;
+    }
+
+    if (pool == NULL || pool->items == NULL || pool->count == 0)
+        return FALSE;
+
+    *itemIdOut = (u8)pool->items[DungeonRandInt(pool->count)];
     return TRUE;
 }
 
@@ -653,7 +726,9 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     result->bossFight.bossSpecies = 0;
     result->bossFight.bossHP = 0;
     result->bossFight.bossMusic = 0;
-    result->bossFight.dropItem = 0;
+    result->bossFight.dropItem = ITEM_NOTHING;
+    result->bossFight.secondaryDropLeft = ITEM_NOTHING;
+    result->bossFight.secondaryDropRight = ITEM_NOTHING;
     result->bossFight.monsterBehavior = 0;
     result->bossFight.minionCount = 0;
     result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
@@ -792,6 +867,62 @@ static s32 DungeonSeedRng_NextRange(DungeonSeedRng *rng, s32 min, s32 max)
 
     span = (u32)(max - min);
     return min + (DungeonSeedRng_Next(rng) % span);
+}
+
+static void ResetSeededItemState(void)
+{
+    sSeededItemOverridesActive = FALSE;
+    sSeededRareFloorItemPending = FALSE;
+    sSeededRareFloorItemUsed = FALSE;
+    sSeededRareFloorItemId = ITEM_NOTHING;
+    sSeededKecleonShopHasRare = FALSE;
+    sSeededKecleonShopRareUsed = FALSE;
+    sSeededKecleonShopRareId = ITEM_NOTHING;
+    sSeededIsForcedKecleonFloor = FALSE;
+}
+
+static u16 SelectItemFromPool(RogueItemPoolId poolId, DungeonSeedRng *rng)
+{
+    const RogueItemPool *pool;
+
+    if (poolId < 0 || poolId >= ROGUE_ITEM_POOL_COUNT)
+        return ITEM_NOTHING;
+
+    pool = &gRogueItemPools[poolId];
+    if (pool->items == NULL || pool->count == 0)
+        return ITEM_NOTHING;
+
+    if (rng != NULL)
+        return pool->items[DungeonSeedRng_NextRange(rng, 0, pool->count)];
+    return pool->items[DungeonRandInt(pool->count)];
+}
+
+static void InitSeededItemState(s32 seed, u8 dungeonId, s32 floorId, bool8 isForcedKecleonFloor)
+{
+    DungeonSeedRng rng;
+
+    ResetSeededItemState();
+    sSeededItemOverridesActive = TRUE;
+    sSeededIsForcedKecleonFloor = isForcedKecleonFloor;
+
+    rng = DungeonSeedRng_Init(seed, dungeonId, floorId, 0x4954454D); // "ITEM"
+
+    if (gRogueItemPools[ROGUE_ITEM_POOL_RARE].count > 0 &&
+        DungeonSeedRng_NextRange(&rng, 0, 100) < SEEDED_FLOOR_RARE_CHANCE_PERCENT) {
+        sSeededRareFloorItemPending = TRUE;
+        sSeededRareFloorItemUsed = FALSE;
+        sSeededRareFloorItemId = SelectItemFromPool(ROGUE_ITEM_POOL_RARE, &rng);
+        MGBA_Warnf("[ItemPools] Rare floor item selected: id=%d", sSeededRareFloorItemId);
+    }
+
+    if (isForcedKecleonFloor &&
+        gRogueItemPools[ROGUE_ITEM_POOL_KECLEON_RARE].count > 0 &&
+        DungeonSeedRng_NextRange(&rng, 0, 100) < SEEDED_SHOP_RARE_CHANCE_PERCENT) {
+        sSeededKecleonShopHasRare = TRUE;
+        sSeededKecleonShopRareUsed = FALSE;
+        sSeededKecleonShopRareId = SelectItemFromPool(ROGUE_ITEM_POOL_KECLEON_RARE, &rng);
+        MGBA_Warnf("[ItemPools] Kecleon rare item selected: id=%d", sSeededKecleonShopRareId);
+    }
 }
 
 static u8 SelectTileset(s32 floorId)
@@ -1313,20 +1444,36 @@ static const SeedSpeciesPool* GetBossPool(s32 floorId)
     return &pool;
 }
 
-// Select random loot based on floor
-static u16 SelectRandomLoot(DungeonSeedRng *rng, s32 floorId)
+static u16 SelectPrimaryBossLoot(DungeonSeedRng *rng)
 {
-    // Simple item pool - can be expanded later
-    static const u16 sLootPool[] = {
-        0x05,  // Oran Berry
-        0x06,  // Sitrus Berry
-        0x1C,  // Reviver Seed
-        0x14,  // Apple
-        0x3C,  // Max Elixir
+    static const u16 sPrimaryFallback[] = {
+        ITEM_ORAN_BERRY,
+        ITEM_SITRUS_BERRY,
+        ITEM_REVIVER_SEED,
+        ITEM_APPLE,
+        ITEM_MAX_ELIXIR,
     };
+    u16 itemId = SelectItemFromPool(ROGUE_ITEM_POOL_PRIMARY_LOOT, rng);
 
-    (void)floorId;  // Can use floor for tier-based loot later
-    return sLootPool[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sLootPool))];
+    if (itemId != ITEM_NOTHING)
+        return itemId;
+
+    if (rng == NULL)
+        return sPrimaryFallback[DungeonRandInt(ARRAY_COUNT(sPrimaryFallback))];
+    return sPrimaryFallback[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sPrimaryFallback))];
+}
+
+static u16 SelectSecondaryBossLoot(DungeonSeedRng *rng)
+{
+    static const u16 sSecondaryFallback[] = {BOSS_SECONDARY_LOOT_LEFT, BOSS_SECONDARY_LOOT_RIGHT};
+    u16 itemId = SelectItemFromPool(ROGUE_ITEM_POOL_SECONDARY_LOOT, rng);
+
+    if (itemId != ITEM_NOTHING)
+        return itemId;
+
+    if (rng == NULL)
+        return sSecondaryFallback[DungeonRandInt(ARRAY_COUNT(sSecondaryFallback))];
+    return sSecondaryFallback[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sSecondaryFallback))];
 }
 
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies)
@@ -1590,7 +1737,9 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         result->bossFight.bossSpecies = MONSTER_BULBASAUR;
         result->bossFight.bossHP = 300 + (floorId * 25);
         result->bossFight.bossMusic = MUS_BOSS_BATTLE;
-        result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
+        result->bossFight.dropItem = SelectPrimaryBossLoot(rng);
+        result->bossFight.secondaryDropLeft = SelectSecondaryBossLoot(rng);
+        result->bossFight.secondaryDropRight = SelectSecondaryBossLoot(rng);
         result->bossFight.minionCount = 2;
         result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
         for (i = 0; i < result->bossFight.minionCount; i++) {
@@ -1637,8 +1786,10 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     // Procedurally select music
     result->bossFight.bossMusic = MUS_BOSS_BATTLE;
 
-    // Procedurally select loot drop
-    result->bossFight.dropItem = SelectRandomLoot(rng, floorId);
+    // Procedurally select loot drops
+    result->bossFight.dropItem = SelectPrimaryBossLoot(rng);
+    result->bossFight.secondaryDropLeft = SelectSecondaryBossLoot(rng);
+    result->bossFight.secondaryDropRight = SelectSecondaryBossLoot(rng);
 
     // Prefer configured minions for type-selected bosses; fall back to random pool otherwise
     if (!GetTypeBossMinions(selectedBoss, result->bossFight.minionSpecies, &result->bossFight.minionCount)) {
@@ -2102,13 +2253,15 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
     }
 
     // Drop loot if configured
-    if (bossFight->dropItem != ITEM_NOTHING) {
-        dropX = sStairsSpawnX;
-        dropY = sStairsSpawnY + 1;  // One tile in front of stairs
+    dropX = sStairsSpawnX;
+    dropY = sStairsSpawnY + 1;  // One tile in front of stairs
+
+    if (bossFight->dropItem != ITEM_NOTHING)
         TrySpawnBossLoot(bossFight->dropItem, dropX, dropY, "primary");
-        TrySpawnBossLoot(BOSS_SECONDARY_LOOT_LEFT, dropX - 1, dropY, "secondary-left");
-        TrySpawnBossLoot(BOSS_SECONDARY_LOOT_RIGHT, dropX + 1, dropY, "secondary-right");
-    }
+    if (bossFight->secondaryDropLeft != ITEM_NOTHING)
+        TrySpawnBossLoot(bossFight->secondaryDropLeft, dropX - 1, dropY, "secondary-left");
+    if (bossFight->secondaryDropRight != ITEM_NOTHING)
+        TrySpawnBossLoot(bossFight->secondaryDropRight, dropX + 1, dropY, "secondary-right");
 
     // Update minimap and visibility
     UpdateTrapsVisibility();

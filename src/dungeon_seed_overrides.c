@@ -213,17 +213,13 @@ static const s16 sRecruitFriendBowBonusPercent[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NIGHTMARE] = 1,
 };
 
-static const u8 sDifficultyLevelOffset[NUM_DIFFICULTY_SETTINGS] = {
-    [DIFFICULTY_NORMAL] = 0,
-    [DIFFICULTY_HARD] = 3,
-    [DIFFICULTY_NIGHTMARE] = 6,
-};
+static const u8 sDifficultyLevelOffset[NUM_DIFFICULTY_SETTINGS] = {0, 0, 0};
 
 // Max per-dungeon floor ramp applied across the full depth; keeps 99F dungeons tame.
 static const u8 sDifficultyFloorRampMax[NUM_DIFFICULTY_SETTINGS] = {
-    [DIFFICULTY_NORMAL] = 8,
-    [DIFFICULTY_HARD] = 10,
-    [DIFFICULTY_NIGHTMARE] = 12,
+    [DIFFICULTY_NORMAL] = 2,
+    [DIFFICULTY_HARD] = 2,
+    [DIFFICULTY_NIGHTMARE] = 2,
 };
 
 static const SeededFloorGenerationConfig sSeededFloorGenConfig = {
@@ -1394,7 +1390,7 @@ static s32 CalcSeededSpawnLevel(s32 seed, u8 dungeonId, s32 floorIndex, s32 floo
     if (floorIndex >= floorCount)
         floorIndex = floorCount - 1;
 
-    baseLevel = 3 + (dungeonNumber - 1) * 3;
+    baseLevel = 1 + (dungeonNumber - 1);
     baseLevel += sDifficultyLevelOffset[difficulty];
 
     denom = floorCount - 1;
@@ -1403,7 +1399,7 @@ static s32 CalcSeededSpawnLevel(s32 seed, u8 dungeonId, s32 floorIndex, s32 floo
     level = baseLevel + (floorIndex * sDifficultyFloorRampMax[difficulty]) / denom;
 
     rng = DungeonSeedRng_Init(seed, dungeonId, floorIndex, 0x4C564C43); // "LVLC"
-    jitter = DungeonSeedRng_NextRange(&rng, 0, 3); // 0-2
+    jitter = DungeonSeedRng_NextRange(&rng, 0, 3) - 1; // -1 to +1
     level += jitter;
 
     if (level < 1)
@@ -2921,7 +2917,6 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     u8 bossEnabled = FALSE;
     s32 i;
     char speciesName[32];
-    char itemName[40];
 
     if (overrides != NULL) {
         tileset = overrides->tileset;
@@ -2967,12 +2962,17 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     {
         DungeonSeedFloorOverrides bossOverrides;
         DungeonSeedRng bossRng = DungeonSeedRng_Init(seed, dungeonId, bossFloorId, 0xC0FFEE);
+        char primaryName[64];
+        char secondaryLeftName[64];
+        char secondaryRightName[64];
 
         ClearFloorOverrides(&bossOverrides);
         PopulateBossFightConfig(&bossOverrides, &bossRng, dungeonId, bossFloorId, seed);
         MGBA_Warnf("SEED_DUMP_HEADER,boss_loot,dungeon_id,boss_floor_id,boss_enabled,boss_species,boss_species_name,primary,primary_name,secondary_left,secondary_left_name,secondary_right,secondary_right_name");
         GetSpeciesNameForLog(speciesName, sizeof(speciesName), bossOverrides.bossFight.bossSpecies);
-        GetItemNameForLog(itemName, sizeof(itemName), bossOverrides.bossFight.dropItem);
+        GetItemNameForLog(primaryName, sizeof(primaryName), bossOverrides.bossFight.dropItem);
+        GetItemNameForLog(secondaryLeftName, sizeof(secondaryLeftName), bossOverrides.bossFight.secondaryDropLeft);
+        GetItemNameForLog(secondaryRightName, sizeof(secondaryRightName), bossOverrides.bossFight.secondaryDropRight);
         MGBA_Warnf("SEED_DUMP,boss_loot,%d,%d,%d,%d,%s,%d,%s,%d,%s,%d,%s",
                    dungeonId,
                    bossFloorId,
@@ -2980,19 +2980,20 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
                    bossOverrides.bossFight.bossSpecies,
                    speciesName,
                    bossOverrides.bossFight.dropItem,
-                   itemName,
+                   primaryName,
                    bossOverrides.bossFight.secondaryDropLeft,
-                   (GetItemNameForLog(itemName, sizeof(itemName), bossOverrides.bossFight.secondaryDropLeft), itemName),
+                   secondaryLeftName,
                    bossOverrides.bossFight.secondaryDropRight,
-                   (GetItemNameForLog(itemName, sizeof(itemName), bossOverrides.bossFight.secondaryDropRight), itemName));
+                   secondaryRightName);
     }
 
     if (sSpawnRangeCache.valid) {
-        MGBA_Warnf("SEED_DUMP_HEADER,spawn_range,index,species,species_name,level,start_index,end_index,start_floor,end_floor");
+        MGBA_Warnf("SEED_DUMP_HEADER,spawn_range,dungeon_id,index,species,species_name,level,start_idx,end_idx,start_flr,end_flr");
         for (i = 0; i < sSpawnRangeCache.rangeCount; i++) {
             const SeededSpawnRange *range = &sSpawnRangeCache.ranges[i];
             GetSpeciesNameForLog(speciesName, sizeof(speciesName), range->species);
-            MGBA_Warnf("SEED_DUMP,spawn_range,%d,%d,%s,%d,%d,%d,%d,%d",
+            MGBA_Warnf("SEED_DUMP,spawn_range,%d,%d,%d,%s,%d,%d,%d,%d,%d",
+                       dungeonId,
                        i,
                        range->species,
                        speciesName,
@@ -3005,7 +3006,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     }
 
     if (spawnTable != NULL) {
-        MGBA_Warnf("SEED_DUMP_HEADER,spawn_entry,index,species,species_name,level,weight1,weight2,range_start_index,range_end_index,range_start_floor,range_end_floor");
+        MGBA_Warnf("SEED_DUMP_HEADER,spawn_entry,dungeon_id,index,species,species_name,level,weight1,weight2,range_start_idx,range_end_idx,range_start_flr,range_end_flr");
         for (i = 0; i < spawnCount; i++) {
             SpawnPokemonData *entry = &spawnTable[i];
             s16 species = ExtractSpeciesIndex(entry);
@@ -3017,7 +3018,8 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
             s32 rangeEndFloor = (rangeEnd >= 0) ? (rangeEnd + 1) : -1;
 
             GetSpeciesNameForLog(speciesName, sizeof(speciesName), species);
-            MGBA_Warnf("SEED_DUMP,spawn_entry,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d",
+            MGBA_Warnf("SEED_DUMP,spawn_entry,%d,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d",
+                       dungeonId,
                        i,
                        species,
                        speciesName,

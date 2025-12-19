@@ -35,12 +35,13 @@ POOL_ORDER = [
 
 ITEM_POKE_ID = 105  # ITEM_POKE
 # Give money heavy weight in normal + shop pools so it shows up regularly.
-# These are extra copies of ITEM_POKE appended to each pool.
-MONEY_BONUS_NORMAL = 20
-MONEY_BONUS_SHOP = 10
+# These are extra copies of ITEM_POKE appended to each pool (duplicates are intentional for weighting).
+MONEY_BONUS_NORMAL = 56
+MONEY_BONUS_SHOP = 36
+MONEY_BONUS_MONSTER_HOUSE = 8
 EXTRA_POOL_ITEMS = {
     "normal": [ITEM_POKE_ID] * MONEY_BONUS_NORMAL,
-    "monster_house": [ITEM_POKE_ID],
+    "monster_house": [ITEM_POKE_ID] * MONEY_BONUS_MONSTER_HOUSE,
     "kecleon_common": [ITEM_POKE_ID] * MONEY_BONUS_SHOP,
 }
 
@@ -85,9 +86,7 @@ def read_csv(path: pathlib.Path) -> Dict[str, List[int]]:
 
     for pool_key, extras in EXTRA_POOL_ITEMS.items():
         for item_id in extras:
-            if item_id not in seen[pool_key]:
-                seen[pool_key].add(item_id)
-                pools[pool_key].append(item_id)
+            pools[pool_key].append(item_id)
 
     return pools
 

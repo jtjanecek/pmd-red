@@ -41,7 +41,7 @@
 #define SEEDED_MAX_FLOORS 100
 #define SEEDED_MIN_SPAWNS 6
 #define SEEDED_MAX_SPAWNS 16
-#define SEEDED_FIXED_SPAWN_COUNT 6
+#define SEEDED_FIXED_SPAWN_COUNT 15
 #define SEEDED_MAIN_TYPE_PERCENT 80
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_PREFIX_BUFFER_LEN 16
@@ -1519,6 +1519,7 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     s32 spawnQuota;
     s32 entryCount = SEEDED_FIXED_SPAWN_COUNT;
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
+    s32 engineFloorCount = GetDungeonFloorCount(dungeonId);
     s32 startFloorId = GetDungeonStartingFloor(dungeonId);
     s32 lengthMin;
     s32 lengthMax;
@@ -1529,8 +1530,12 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
 
     if (entryCount > MONSTER_SPAWNS_ARR_COUNT)
         entryCount = MONSTER_SPAWNS_ARR_COUNT;
+    if (entryCount > floorCount)
+        entryCount = floorCount;
     if (floorCount <= 0)
         floorCount = 1;
+    if (engineFloorCount > 0 && floorCount > engineFloorCount)
+        floorCount = engineFloorCount;
 
     if (mainTypeMask != 0)
         mainCandidateCount = BuildSpawnCandidates(mainTypeMask, mainCandidates, ARRAY_COUNT(mainCandidates));

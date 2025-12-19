@@ -9549,7 +9549,7 @@
                 "level": 1
             },
             {
-                "move": "MOVE_QUICK_ATTACK",
+                "move": "MOVE_FLAIL",
                 "level": 1
             }
         ],

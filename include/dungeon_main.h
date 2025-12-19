@@ -24,5 +24,6 @@ void InitializeJunctionT1Tiles(void);
 // Auto-explore functions
 bool8 IsAutoExploreActive(void);
 void SetAutoExploreActive(bool8 active);
+bool8 ShouldExitAutoExploreOnInput(void);
 
 #endif // GUARD_DUNGEON_MAIN_H

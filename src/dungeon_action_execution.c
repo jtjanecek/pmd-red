@@ -3,6 +3,7 @@
 #include "dungeon_action_execution.h"
 #include "dungeon_ai_leader.h"
 #include "dungeon_move_util.h"
+#include "dungeon_main.h"
 #include "dungeon_vram.h"
 #include "dungeon_8041AD0.h"
 #include "dungeon_action_handler.h"
@@ -69,15 +70,7 @@ bool8 ExecuteEntityDungeonAction(Entity *entity)
     
     // Check for auto-navigate exit at the start of action execution
     if (IsAutoExploreActive() && info->isTeamLeader) {
-        // Check for any button press or hold (excluding the L+R activation combo)
-        bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-        bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-        
-        // Don't exit if we're in the middle of activating auto-navigate
-        bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
-                           ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
-        
-        if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+        if (ShouldExitAutoExploreOnInput()) {
             SetAutoExploreActive(FALSE);
             LogMessageByIdWithPopupCheckUser(entity, "Autopilot OFF!");
         }

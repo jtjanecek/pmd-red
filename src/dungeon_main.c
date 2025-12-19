@@ -118,6 +118,8 @@ EWRAM_DATA DungeonPos gAutoCrawlTargetPos = {-1, -1};
 static void CalculateSimplePath(Entity *leader, DungeonPos *target);
 static void CalculateFullPath(Entity *leader, DungeonPos *target);
 static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction);
+static bool8 IsTileWalkableForAutoExplore(const DungeonPos *pos);
+static bool8 IsReachableAutoExploreTarget(Entity *leader, DungeonPos *target);
 
 // Simple debug notification when player moves to a new tile
 void CheckTileDebugNotification(Entity *leader)
@@ -266,11 +268,101 @@ static bool8 ArePlayerAndTargetInSameRoom(DungeonPos *playerPos, DungeonPos *tar
     return (playerTile->room == targetTile->room) && (playerTile->room != CORRIDOR_ROOM);
 }
 
+bool8 ShouldExitAutoExploreOnInput(void)
+{
+    // Exit autopilot only on new intent that isn't the activation combo
+    bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
+                         ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+    u16 exitMask = A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY;
+    
+    if (isActivating)
+        return FALSE;
+    
+    return (gRealInputs.pressed & exitMask) != 0;
+}
+
+static bool8 IsTileWalkableForAutoExplore(const DungeonPos *pos)
+{
+    const Tile *tile;
+    u16 terrainType;
+    
+    if (pos->x < 0 || pos->y < 0 || pos->x >= DUNGEON_MAX_SIZE_X || pos->y >= DUNGEON_MAX_SIZE_Y)
+        return FALSE;
+    
+    tile = GetTile(pos->x, pos->y);
+    terrainType = tile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+    
+    if (terrainType != TERRAIN_TYPE_NORMAL)
+        return FALSE;
+    
+    if (tile->terrainFlags & (TERRAIN_TYPE_IMPASSABLE_WALL | TERRAIN_TYPE_UNREACHABLE_FROM_STAIRS | TERRAIN_TYPE_UNBREAKABLE))
+        return FALSE;
+    
+    return TRUE;
+}
+
+static bool8 IsReachableAutoExploreTarget(Entity *leader, DungeonPos *target)
+{
+    DungeonPos firstStep;
+    DungeonPos bestNeighbor = {-1, -1};
+    s32 bestNeighborScore = 0x7FFFFFFF;
+    s32 dx, dy;
+    
+    if (leader == NULL)
+        return FALSE;
+    
+    if (!IsTileWalkableForAutoExplore(&leader->pos))
+        return FALSE;
+    
+    // Happy path: target itself is walkable and reachable
+    if (IsTileWalkableForAutoExplore(target)) {
+        firstStep = AStarPathfind(leader->pos, *target);
+        if (firstStep.x != -1 && firstStep.y != -1)
+            return TRUE;
+    }
+    
+    // Fallback: try to reach a walkable neighbor of the target (e.g., if the target
+    // is on secondary terrain like water/lava inside a maze-style room).
+    for (dx = -1; dx <= 1; dx++) {
+        for (dy = -1; dy <= 1; dy++) {
+            DungeonPos neighbor;
+            s32 dist;
+            
+            if (dx == 0 && dy == 0)
+                continue;
+            
+            neighbor.x = target->x + dx;
+            neighbor.y = target->y + dy;
+            
+            if (!IsTileWalkableForAutoExplore(&neighbor))
+                continue;
+            
+            firstStep = AStarPathfind(leader->pos, neighbor);
+            if (firstStep.x == -1 || firstStep.y == -1)
+                continue;
+            
+            // Prefer the neighbor closest to the true target to keep routing sensible.
+            dist = GetDistance(&neighbor, target);
+            if (dist < bestNeighborScore) {
+                bestNeighborScore = dist;
+                bestNeighbor = neighbor;
+            }
+        }
+    }
+    
+    if (bestNeighbor.x != -1 && bestNeighbor.y != -1) {
+        *target = bestNeighbor;
+        return TRUE;
+    }
+    
+    return FALSE;
+}
+
 
 // Find unexplored junction tiles (corridor entrances) that lead to unexplored corridors
 
 // Find a random undiscovered room and return its position
-static bool8 FindRandomUndiscoveredRoom(DungeonPos *outTarget)
+static bool8 FindRandomUndiscoveredRoom(Entity *leader, DungeonPos *outTarget)
 {
     s32 x, y;
     s32 attempts = 0;
@@ -289,7 +381,7 @@ static bool8 FindRandomUndiscoveredRoom(DungeonPos *outTarget)
             if (!(tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_REVEALED)) {
                 outTarget->x = x;
                 outTarget->y = y;
-                found = TRUE;
+                found = IsReachableAutoExploreTarget(leader, outTarget);
             }
         }
         attempts++;
@@ -310,6 +402,16 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         // LogMessageByIdWithPopupCheckUser(leader, "Going to stairs!");
         outTarget->x = gDungeon->stairsSpawn.x;
         outTarget->y = gDungeon->stairsSpawn.y;
+        
+        // Bail out early if the stairs are unreachable (mazes, water islands, etc.)
+        if (!IsReachableAutoExploreTarget(leader, outTarget)) {
+            LogMessageByIdWithPopupCheckUser(leader, "No path to stairs - stopping auto-navigate");
+            gAutoExploreHasTarget = FALSE;
+            gAutoCrawlTargetPos.x = -1;
+            gAutoCrawlTargetPos.y = -1;
+            UpdateMinimap();
+            return FALSE;
+        }
         gAutoExploreHasTarget = TRUE;
         gAutoExploreTarget = *outTarget;
         gAutoCrawlTargetPos = *outTarget; // Set target for minimap display
@@ -367,7 +469,7 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
     }
     
     // Logic 2: Pick a random room that is undiscovered, and path there
-    if (FindRandomUndiscoveredRoom(outTarget)) {
+    if (FindRandomUndiscoveredRoom(leader, outTarget)) {
         // LogMessageByIdWithPopupCheckUser(leader, "Found undiscovered room!");
         gAutoExploreHasTarget = TRUE;
         gAutoExploreTarget = *outTarget;
@@ -388,6 +490,35 @@ bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
         // Debug: Show target coordinates
         // LogMessageByIdWithPopupCheckUser(leader, "Target coords set!");
         UpdateMinimap(); // Force minimap update
+        return TRUE;
+    }
+    
+    // Logic 3: If no rooms remain undiscovered but the stairs are visible elsewhere, head there
+    if (AreStairsVisible()) {
+        outTarget->x = gDungeon->stairsSpawn.x;
+        outTarget->y = gDungeon->stairsSpawn.y;
+        
+        if (!IsReachableAutoExploreTarget(leader, outTarget)) {
+            LogMessageByIdWithPopupCheckUser(leader, "No path to stairs - stopping auto-navigate");
+            gAutoExploreHasTarget = FALSE;
+            gAutoCrawlTargetPos.x = -1;
+            gAutoCrawlTargetPos.y = -1;
+            UpdateMinimap();
+            return FALSE;
+        }
+        
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+        
+        gAutoExploreActive = TRUE;
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+        
+        CalculateSimplePath(leader, outTarget);
+        CalculateFullPath(leader, outTarget);
+        UpdateMinimap();
         return TRUE;
     }
     
@@ -567,20 +698,10 @@ s32 GetAutoExploreDirection(Entity *leader)
 
 
     // Check for auto-navigate exit at the start of pathfinding
-    {
-        // Check for any button press or hold (excluding the L+R activation combo)
-        bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-        bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-        
-        // Don't exit if we're in the middle of activating auto-navigate
-        bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
-                           ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
-        
-        if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
-            SetAutoExploreActive(FALSE);
-            LogMessageByIdWithPopupCheckUser(leader, "Autopilot OFF!");
-            return -1;
-        }
+    if (ShouldExitAutoExploreOnInput()) {
+        SetAutoExploreActive(FALSE);
+        LogMessageByIdWithPopupCheckUser(leader, "Autopilot OFF!");
+        return -1;
     }
     
     // Check if we've reached our current target (exact position OR same room for junctions)
@@ -693,9 +814,14 @@ s32 GetAutoExploreDirection(Entity *leader)
     }
     
     if (direction < 0) {
-        // Can't find a path to target - clear it and try again next time
-        LogMessageByIdWithPopupCheckUser(leader, "Path not able to be found!");
+        // Can't find a path to target - stop autopilot so the player can reposition manually
+        LogMessageByIdWithPopupCheckUser(leader, "Path not able to be found - autopilot OFF!");
         gAutoExploreHasTarget = FALSE;
+        gAutoExploreTargetPreserved = FALSE;
+        gAutoCrawlTargetPos.x = -1;
+        gAutoCrawlTargetPos.y = -1;
+        SetAutoExploreActive(FALSE);
+        UpdateMinimap();
         return -1;
     }
     
@@ -756,15 +882,7 @@ void DungeonHandlePlayerInput(void)
     
     // Check for auto-navigate exit early in the input loop
     if (IsAutoExploreActive()) {
-        // Check for any button press or hold (excluding the L+R activation combo)
-        bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-        bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-        
-        // Don't exit if we're in the middle of activating auto-navigate
-        bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
-                           ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
-        
-        if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+        if (ShouldExitAutoExploreOnInput()) {
             SetAutoExploreActive(FALSE);
             LogMessageByIdWithPopupCheckUser(GetLeader(), "Autopilot OFF!");
         }
@@ -778,15 +896,7 @@ void DungeonHandlePlayerInput(void)
         
         // Check for auto-navigate exit inside the main input loop
         if (IsAutoExploreActive()) {
-            // Check for any button press or hold (excluding the L+R activation combo)
-            bool8 anyButtonPressed = (gRealInputs.pressed & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-            bool8 anyButtonHeld = (gRealInputs.held & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY));
-            
-            // Don't exit if we're in the middle of activating auto-navigate
-            bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
-                               ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
-            
-            if ((anyButtonPressed || anyButtonHeld) && !isActivating) {
+            if (ShouldExitAutoExploreOnInput()) {
                 SetAutoExploreActive(FALSE);
                 LogMessageByIdWithPopupCheckUser(leader, "Autopilot OFF!");
             }
@@ -2361,5 +2471,3 @@ bool8 DungeonGiveNameToRecruitedMon(u8 *name)
 }
 
 // Junction T1 highlighting functions removed - using A* pathfinding instead
-
-

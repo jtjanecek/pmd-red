@@ -662,10 +662,10 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
 
             MGBA_Warnf("[Dungeon] Entering main game loop");
             do {
-                MGBA_Warnf("[Dungeon] ===== Turn %d: Calling RunFractionalTurn (param=%d) =====", turnCount, param);
+                // MGBA_Warnf("[Dungeon] ===== Turn %d: Calling RunFractionalTurn (param=%d) =====", turnCount, param);
                 RunFractionalTurn(param);
                 turnCount++;
-                MGBA_Warnf("[Dungeon] Turn %d complete, checking IsFloorOver", turnCount);
+                // MGBA_Warnf("[Dungeon] Turn %d complete, checking IsFloorOver", turnCount);
                 param = FALSE;
             } while (!IsFloorOver());
             MGBA_Warnf("[Dungeon] Main game loop exited after %d turns", turnCount);
@@ -1093,7 +1093,7 @@ void sub_8043FD0(void)
 {
     s32 level;
 #ifdef DEV
-    for (level = 2; level <= 100; level++) { // DEV: Level up to 100
+    for (level = 2; level <= 90; level++) { // DEV: Level up to 90
 #else
     for (level = 2; level <= 2; level++) { // Normal: Level up to 2
 #endif

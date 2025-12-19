@@ -560,13 +560,15 @@ void FillInventoryGaps(void)
   s32 last_filled = 0;
   s32 i;
 
-  MGBA_Warnf("[FillInventoryGaps] BEFORE:");
-  for (i = 0; i < INVENTORY_SIZE; i++) {
-    Item *item = &gTeamInventoryRef->teamItems[i];
-    if (item->flags & ITEM_FLAG_EXISTS) {
-      MGBA_Warnf("[FillInventoryGaps]   [%d] id=%d quantity=%d flags=0x%02x", i, item->id, item->quantity, item->flags);
-    }
-  }
+  (void)i; // Quiet unused variable when logging is disabled
+
+  // MGBA_Warnf("[FillInventoryGaps] BEFORE:");
+  // for (i = 0; i < INVENTORY_SIZE; i++) {
+  //   Item *item = &gTeamInventoryRef->teamItems[i];
+  //   if (item->flags & ITEM_FLAG_EXISTS) {
+  //     MGBA_Warnf("[FillInventoryGaps]   [%d] id=%d quantity=%d flags=0x%02x", i, item->id, item->quantity, item->flags);
+  //   }
+  // }
 
   do {
     while (slot_checking < INVENTORY_SIZE) {

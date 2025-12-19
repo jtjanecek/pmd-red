@@ -259,6 +259,7 @@ static const u16 sRogueKecleonCommonItems[] = {
     229,
     230,
     231,
+    105,
 };
 
 static const u16 sRogueNormalItems[] = {
@@ -436,6 +437,7 @@ static const u16 sRogueNormalItems[] = {
     230,
     231,
     232,
+    105,
 };
 
 static const u16 sRogueRareItems[] = {
@@ -490,16 +492,17 @@ static const u16 sRogueMonsterHouseItems[] = {
     175,
     189,
     196,
+    105,
 };
 
 const RogueItemPool gRogueItemPools[ROGUE_ITEM_POOL_COUNT] = {
     [ROGUE_ITEM_POOL_PRIMARY_LOOT] = { sRoguePrimaryLootItems, 13 },
     [ROGUE_ITEM_POOL_SECONDARY_LOOT] = { sRogueSecondaryLootItems, 65 },
     [ROGUE_ITEM_POOL_KECLEON_RARE] = { sRogueKecleonRareItems, 19 },
-    [ROGUE_ITEM_POOL_KECLEON_COMMON] = { sRogueKecleonCommonItems, 149 },
-    [ROGUE_ITEM_POOL_NORMAL] = { sRogueNormalItems, 174 },
+    [ROGUE_ITEM_POOL_KECLEON_COMMON] = { sRogueKecleonCommonItems, 150 },
+    [ROGUE_ITEM_POOL_NORMAL] = { sRogueNormalItems, 175 },
     [ROGUE_ITEM_POOL_RARE] = { sRogueRareItems, 14 },
-    [ROGUE_ITEM_POOL_MONSTER_HOUSE] = { sRogueMonsterHouseItems, 34 },
+    [ROGUE_ITEM_POOL_MONSTER_HOUSE] = { sRogueMonsterHouseItems, 35 },
 };
 
 const char *const gRogueItemPoolNames[ROGUE_ITEM_POOL_COUNT] = {

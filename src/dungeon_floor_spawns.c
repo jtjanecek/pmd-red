@@ -34,6 +34,10 @@ static EWRAM_DATA s16 sSeededTrapPercentOverride = -1;
 static EWRAM_DATA u8 sSeededKecleonFaintChance = 0;
 static EWRAM_DATA u8 sSeededKecleonFaintRoll = 0xFF;
 static EWRAM_DATA bool8 sSeededKecleonSpawnShopkeeper = TRUE;
+#ifdef DEV
+static EWRAM_DATA bool8 sSeedDumpLogged = FALSE;
+static EWRAM_DATA s16 sSeedDumpDungeonId = -1;
+#endif
 
 // Getter for trap percent override (percent of placeable tiles)
 s16 DungeonFloorSpawns_GetTrapPercentOverride(void)
@@ -302,6 +306,28 @@ static void ApplySeedOverridesToCurrentFloor(void)
             i++;
         }
     }
+
+#ifdef DEV
+    {
+        bool8 isNewDungeon = (gDungeon->unk644.dungeonLocation.id != sSeedDumpDungeonId);
+        bool8 isFirstFloor = (gDungeon->unk644.dungeonLocation.floor <= (gDungeon->startFloorId + 1));
+
+        if (isNewDungeon || gDungeon->unk644.dungeonLocation.floor <= gDungeon->startFloorId) {
+            sSeedDumpLogged = FALSE;
+            sSeedDumpDungeonId = gDungeon->unk644.dungeonLocation.id;
+        }
+
+        if (isFirstFloor && !sSeedDumpLogged) {
+            DungeonSeedOverrides_LogSeedDump(seed,
+                                             gDungeon->unk644.dungeonLocation.id,
+                                             gDungeon->unk644.dungeonLocation.floor,
+                                             gDungeon->startFloorId,
+                                             &overrides,
+                                             gDungeon->fileMonsterSpawns);
+            sSeedDumpLogged = TRUE;
+        }
+    }
+#endif
 }
 
 void sub_803D4AC(void)

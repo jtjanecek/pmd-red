@@ -68,6 +68,52 @@ static const s48_16 gUnknown_8106F3C = {0x0, 0x8000};
 static const s48_16 gUnknown_8106F44 = {0x0, 0xE666};
 static const s48_16 gUnknown_8106F4C = {0x0, 0x18000};
 
+static bool8 IsUnownSpecies(s16 species)
+{
+    return ((species >= MONSTER_UNOWN_A && species <= MONSTER_UNOWN_Z)
+        || species == MONSTER_UNOWN_EMARK
+        || species == MONSTER_UNOWN_QMARK);
+}
+
+static bool8 HasExpBoostSpeciesFlag(s16 species)
+{
+    switch (species) {
+        case MONSTER_SPHEAL:
+        case MONSTER_SEALEO:
+        case MONSTER_AZUMARILL:
+        case MONSTER_RAICHU:
+        case MONSTER_REMORAID:
+        case MONSTER_MAGIKARP:
+        case MONSTER_FEEBAS:
+        case MONSTER_MILOTIC:
+        case MONSTER_GYARADOS:
+        case MONSTER_MANTINE:
+        case MONSTER_HO_OH:
+            return TRUE;
+    }
+
+    return IsUnownSpecies(species);
+}
+
+static s32 ApplySpeciesExpBonus(s32 exp, s16 species)
+{
+    s32 percent = 100;
+
+    if (HasExpBoostSpeciesFlag(species)) {
+        percent = 150;
+    }
+
+    if (percent == 100) {
+        return exp;
+    }
+
+    exp = (exp * percent) / 100;
+    if (exp == 0) {
+        exp = 1;
+    }
+    return exp;
+}
+
 static bool32 ShouldUseSpecialSplit(Entity *attacker, u8 moveType, u16 moveId)
 {
     if (moveId == MOVE_REGULAR_ATTACK) {
@@ -698,11 +744,12 @@ static bool8 HandleDealingDamageInternal(Entity *attacker, Entity *target, struc
                 if (targetData->isNotTeamMember) {
                     s32 i;
 
-                    AddExpPoints(attacker, attacker, exp);
+                    AddExpPoints(attacker, attacker, ApplySpeciesExpBonus(exp, attackerData->id));
                     for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
                         Entity *teamMember = gDungeon->teamPokemon[i];
                         if (EntityIsValid(teamMember) && teamMember != attacker) {
-                            AddExpPoints(attacker, teamMember, exp);
+                            EntityInfo *teamInfo = GetEntInfo(teamMember);
+                            AddExpPoints(attacker, teamMember, ApplySpeciesExpBonus(exp, teamInfo->id));
                         }
                     }
                     r10 = TRUE;

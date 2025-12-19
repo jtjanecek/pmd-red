@@ -237,7 +237,6 @@ static const u8 sSkarmoryRecruitUnavailableText[] = _("I don't have anyone else\
 static const u8 sSkarmoryRecruitNoMoneyText[] = _("Airlift costs 50 {POKE}. You're short.");
 static const u8 sSkarmoryRecruitDeclineText[] = _("Copy.");
 static const u8 sSkarmoryRecruitRosterFullText[] = _("No room to station them. Clear some space.");
-static const u8 sSkarmoryRecruitDisabledText[] = _("Recruitment's locked out right now.");
 
 static const MenuItem sSkarmoryRecruitMenu[] = {
     {_("Recruit for 50 {POKE}"), 1},
@@ -2731,11 +2730,6 @@ static void StartSkarmoryRecruitConversation(void)
     sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_NONE;
     sSkarmoryRecruitState.species = -1;
     InitSkarmoryRecruitPortrait();
-
-    if (GetRecruitAllSetting() == RECRUIT_ALL_NONE) {
-        ShowSkarmoryRecruitMessage(sSkarmoryRecruitDisabledText);
-        return;
-    }
 
     if (!SkarmoryRecruit_IsAvailable()) {
         ShowSkarmoryRecruitMessage(sSkarmoryRecruitUnavailableText);

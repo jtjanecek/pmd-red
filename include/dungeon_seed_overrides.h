@@ -88,4 +88,10 @@ s32 DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(u8 dungeonId, s32 seed);
 // Recruit functions
 void DungeonSeedOverrides_GetRecruitOverride(DungeonRecruitOverride *result);
 
+#ifdef DEV
+void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 startFloorId,
+                                      const DungeonSeedFloorOverrides *overrides,
+                                      SpawnPokemonData *spawnTable);
+#endif
+
 #endif // GUARD_DUNGEON_SEED_OVERRIDES_H

@@ -28,6 +28,7 @@
 #include "dungeon_vram.h"
 #include "sprite.h"
 #include "mgba_log.h"
+#include "string_format.h"
 
 static void MusicBoxCreation(void);
 static u8 sub_8046D70(void);
@@ -41,6 +42,30 @@ static void sub_8046CE4(Item *item,s32 param_2);
 static const struct unkStruct_8090F58 gUnknown_80F6990 = {1, 1, 0, 0, 1};
 static const struct unkStruct_8090F58 gUnknown_80F699C = {0, 0, 0, 0, 1};
 static const struct unkStruct_8090F58 gUnknown_80F69A8 = {0, 0, 0, 0, 0};
+
+static inline void GetItemNameForLog(char *out, size_t outLen, u8 itemId)
+{
+    const char *name = (itemId < NUMBER_OF_ITEM_IDS) ? gItemParametersData[itemId].name : NULL;
+    size_t i;
+    size_t j = 0;
+
+    if (outLen == 0)
+        return;
+
+    if (name == NULL) {
+        sprintf(out, "item_%d", itemId);
+        return;
+    }
+
+    for (i = 0; name[i] != '\0' && j + 1 < outLen; i++) {
+        u8 c = (u8)name[i];
+        // Replace non-ASCII control/icon bytes with '?' for log readability.
+        if (c < 0x20 || c >= 0x7F)
+            c = '?';
+        out[j++] = (char)c;
+    }
+    out[j] = '\0';
+}
 
 void sub_8045BF8(u8 *buffer, Item *item)
 {
@@ -94,6 +119,8 @@ void CreateFloorItems(void)
     u32 flag;
     s32 x = DungeonRandInt(DUNGEON_MAX_SIZE_X);
     s32 y = DungeonRandInt(DUNGEON_MAX_SIZE_Y);
+    bool8 loggedHeader = FALSE;
+    char itemName[40];
 
     MGBA_Warnf("[CreateItems] START: x=%d y=%d", x, y);
     gDungeon->numItems = 0;
@@ -155,6 +182,21 @@ void CreateFloorItems(void)
                 }
                 MGBA_Warnf("[CreateItems] About to SpawnItem at (%d,%d)", x, y);
                 SpawnItem(&pos,&item,TRUE);
+                if (!loggedHeader) {
+                    MGBA_Warnf("SEED_DUMP_HEADER,floor_items,dungeon_id,floor_id,index,item_id,item_name,x,y,is_shop,is_sticky");
+                    loggedHeader = TRUE;
+                }
+                GetItemNameForLog(itemName, sizeof(itemName), item.id);
+                MGBA_Warnf("SEED_DUMP,floor_items,%d,%d,%d,%d,%s,%d,%d,%d,%d",
+                           gDungeon->unk644.dungeonLocation.id,
+                           gDungeon->unk644.dungeonLocation.floor,
+                           gDungeon->numItems - 1,
+                           item.id,
+                           itemName,
+                           x,
+                           y,
+                           shopFlag,
+                           (item.flags & ITEM_FLAG_STICKY) ? 1 : 0);
                 MGBA_Warnf("[CreateItems] SpawnItem complete");
             }
         }

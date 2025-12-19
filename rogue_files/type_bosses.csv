@@ -1,35 +1,35 @@
 Pokemon,Type,weather,weather_chance_nightmare,weather_chance_hard,weather_chance_normal,Minion1,Minion2,BossMove1,BossMove2,BossMove3,BossMove4,Minion1Move1,Minion1Move2,Minion1Move3,Minion1Move4,Minion2Move1,Minion2Move2,Minion2Move3,Minion2Move4
-Heracross,Bug,,,,,Beedrill,Butterfree,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Scizor,Bug,,,,,Scyther,Scyther,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Absol,Dark,,,,,Sableye,Mightyena,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Shiftry,Dark,,,,,Crawdaunt,Sharpedo,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Latias,Dragon,,,,,Dragonite,Kingdra,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Latios,Dragon,,,,,Salamence,Flygon,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Zapdos,Electric,,,,,Raichu,Manectric,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Raikou,Electric,,,,,Jolteon,Jolteon,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Machamp,Fighting,,,,,Hitmonlee,Hitmonchan,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Medicham,Fighting,,,,,Breloom,Hariyama,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Moltres,Fire,Sunny,1,0.6,0,Charizard,Typhlosion,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Entei,Fire,Sunny,1,0.6,0,Flareon,Flareon,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Ho-Oh,Flying,,,,,Swellow,Pidgeot,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Rayquaza,Flying,,,,,Aerodactyl,Altaria,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Gengar,Ghost,,,,,Banette,Shedinja,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Dusclops,Ghost,,,,,Sableye,Misdreavus,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Celebi,Grass,,,,,Tropius,Exeggutor,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Venusaur,Grass,Sunny,1,0.6,0,Meganium,Sceptile,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Groudon,Ground,,,,,Rhydon,Onix,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Claydol,Ground,,,,,Solrock,Lunatone,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Articuno,Ice,Snow,1,0.6,0,Dewgong,Cloyster,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Regice,Ice,Hail,1,0.6,0,Glalie,Walrein,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Mewtwo,Normal,,,,,Tauros,Ursaring,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Mew,Normal,,,,,Togetic,Porygon2,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Muk,Poison,,,,,Weezing,Swalot,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Crobat,Poison,,,,,Seviper,Arbok,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Lugia,Psychic,Fog,1,0.6,0,Xatu,Starmie,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Deoxys,Psychic,,,,,Deoxys,Deoxys,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Regirock,Rock,Sandstorm,1,0.6,0,Cradily,Armaldo,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Tyranitar,Rock,,,,,Kabutops,Omastar,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Registeel,Steel,,,,,Magneton,Skarmory,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Jirachi,Steel,,,,,Metagross,Steelix,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Suicune,Water,Fog,1,0.6,0,Vaporeon,Vaporeon,solarbeam,,,,solarbeam,,,,solarbeam,,,
-Kyogre,Water,,,,,Gorebyss,Huntail,solarbeam,,,,solarbeam,,,,solarbeam,,,
+Heracross,Bug,,,,,Beedrill,Butterfree,Megahorn,Brick Break,Rock Slide,Bulk Up,Twineedle,Pin Missile,Focus Energy,Agility,Silver Wind,Confusion,Sleep Powder,Whirlwind
+Scizor,Bug,,,,,Scyther,Scyther,Silver Wind,Steel Wing,Double Team,Aerial Ace,Wing Attack,Fury Cutter,Agility,Swords Dance,Wing Attack,Fury Cutter,Agility,Swords Dance
+Absol,Dark,,,,,Sableye,Mightyena,Bite,Slash,Swords Dance,Quick Attack,Shadow Ball,Knock Off,Night Shade,Confuse Ray,Bite,Crunch,Howl,Sand Attack
+Shiftry,Dark,,,,,Crawdaunt,Sharpedo,Razor Leaf,Nature Power,Extrasensory,Fake Out,Crabhammer,Crunch,Swords Dance,Protect,Crunch,Water Pulse,Screech,Agility
+Latias,Dragon,,,,,Dragonite,Kingdra,Mist Ball,DragonBreath,Calm Mind,Recover,Wing Attack,Thunder Wave,Dragon Claw,Agility,Hydro Pump,Twister,Agility,Ice Beam
+Latios,Dragon,,,,,Salamence,Flygon,Luster Purge,DragonBreath,Calm Mind,Recover,Dragon Claw,Crunch,Fly,Dragon Dance,Earthquake,DragonBreath,Sandstorm,Crunch
+Zapdos,Electric,,,,,Raichu,Manectric,Drill Peck,Thunderbolt,Thunder Wave,Agility,Thunderbolt,Quick Attack,Thunder Wave,Iron Tail,Spark,Bite,Roar,Quick Attack
+Raikou,Electric,,,,,Jolteon,Jolteon,Thunderbolt,Spark,Bite,Reflect,Thunderbolt,Double Kick,Agility,Pin Missile,Thunderbolt,Double Kick,Agility,Pin Missile
+Machamp,Fighting,,,,,Hitmonlee,Hitmonchan,Cross Chop,Vital Throw,Rock Slide,Bulk Up,Hi Jump Kick,Brick Break,Bulk Up,Focus Energy,Sky Uppercut,ThunderPunch,Ice Punch,Agility
+Medicham,Fighting,,,,,Breloom,Hariyama,Hi Jump Kick,Psychic,Detect,Ice Punch,Sky Uppercut,Mach Punch,Leech Seed,Stun Spore,Cross Chop,Belly Drum,Fake Out,Knock Off
+Moltres,Fire,Sunny,1,0.6,0,Charizard,Typhlosion,Flamethrower,Wing Attack,Agility,Fire Spin,Flamethrower,Wing Attack,Slash,Smokescreen,Flamethrower,Swift,Quick Attack,Smokescreen
+Entei,Fire,Sunny,1,0.6,0,Flareon,Flareon,Flamethrower,Stomp,Roar,Fire Spin,Flamethrower,Bite,Quick Attack,Sand Attack,Flamethrower,Bite,Quick Attack,Sand Attack
+Ho-Oh,Flying,,,,,Swellow,Pidgeot,Sacred Fire,Gust,Recover,Fire Blast,Wing Attack,Quick Attack,Aerial Ace,Focus Energy,Wing Attack,Sand-Attack,Quick Attack,FeatherDance
+Rayquaza,Flying,,,,,Aerodactyl,Altaria,Dragon Claw,Crunch,Hyper Beam,Dragon Dance,Rock Slide,Wing Attack,Agility,Bite,DragonBreath,Sing,Safeguard,Fly
+Gengar,Ghost,,,,,Banette,Shedinja,Shadow Ball,Hypnosis,Dream Eater,Thunderbolt,Shadow Ball,Will-O-Wisp,Knock Off,Screech,Shadow Ball,Fury Cutter,Swords Dance,Agility
+Dusclops,Ghost,,,,,Sableye,Misdreavus,Shadow Punch,Will-O-Wisp,Earthquake,Protect,Shadow Ball,Faint Attack,Night Shade,Confuse Ray,Shadow Ball,Psybeam,Confuse Ray,Mean Look
+Celebi,Grass,,,,,Tropius,Exeggutor,Psychic,Heal Bell,Recover,Leech Seed,Razor Leaf,Gust,Stun Spore,Synthesis,Psychic,Egg Bomb,Stun Spore,Reflect
+Venusaur,Grass,Sunny,1,0.6,0,Meganium,Sceptile,Solarbeam,Sleep Powder,Leech Seed,Earthquake,Razor Leaf,Body Slam,Light Screen,PoisonPowder,Leaf Blade,Quick Attack,Agility,Pursuit
+Groudon,Ground,,,,,Rhydon,Onix,Earthquake,AncientPower,Slash,Bulk Up,Earthquake,Rock Blast,Scary Face,Protect,Rock Slide,Rock Throw,Screech,Bind
+Claydol,Ground,,,,,Solrock,Lunatone,AncientPower,Psychic,Hyper Beam,Reflect,Rock Slide,Psychic,Light Screen,Explosion,Psychic,Rock Throw,Hypnosis,Cosmic Power
+Articuno,Ice,Snow,1,0.6,0,Dewgong,Cloyster,Ice Beam,Gust,Agility,Mind Reader,Aurora Beam,Surf,Rest,Encore,Aurora Beam,Protect,Spike Cannon,Supersonic
+Regice,Ice,Hail,1,0.6,0,Glalie,Walrein,Ice Beam,Amnesia,Icy Wind,Explosion,Ice Beam,Crunch,Headbutt,Bite,Surf,Body Slam,Ice Beam,Encore
+Mewtwo,Normal,,,,,Tauros,Ursaring,Psychic,Recover,Barrier,Swift,Strength,Take Down,Scary Face,Pursuit,Slash,Strength,Fury Swipes,Rest
+Mew,Normal,,,,,Togetic,Porygon2,Psychic,Transform,Mega Punch,Metronome,Metronome,AncientPower,Encore,Wish,Tri Attack,Recover,Psychic,Agility
+Muk,Poison,,,,,Weezing,Swalot,Sludge Bomb,Acid Armor,Minimize,Shadow Ball,Sludge Bomb,Explosion,Smokescreen,Haze,Sludge Bomb,Amnesia,Body Slam,Yawn
+Crobat,Poison,,,,,Seviper,Arbok,Sludge Bomb,Wing Attack,Confuse Ray,Bite,Poison Fang,Crunch,Glare,Screech,Acid,Glare,Bite,Wrap
+Lugia,Psychic,Fog,1,0.6,0,Xatu,Starmie,Aeroblast,Hydro Pump,Recover,Safeguard,Psychic,Confuse Ray,Future Sight,Teleport,Surf,Thunderbolt,Recover,Ice Beam
+Deoxys,Psychic,,,,,Deoxys,Deoxys,Psychic,Cosmic Power,Thunderbolt,Recover,Psychic,Pursuit,Cosmic Power,Recover,Psychic,Pursuit,Cosmic Power,Recover
+Regirock,Rock,Sandstorm,1,0.6,0,Cradily,Armaldo,Rock Slide,Superpower,Explosion,Curse,AncientPower,Giga Drain,Confuse Ray,Amnesia,AncientPower,Slash,Fury Cutter,Protect
+Tyranitar,Rock,,,,,Kabutops,Omastar,Crunch,Rock Slide,Earthquake,Dragon Dance,Slash,AncientPower,Waterfall,Sand-Attack,Surf,Spike Cannon,Protect,Bite
+Registeel,Steel,,,,,Magneton,Skarmory,Metal Claw,Superpower,Explosion,Curse,Thunderbolt,Supersonic,Lock-On,Zap Cannon,Steel Wing,Agility,Sand-Attack,Swift
+Jirachi,Steel,,,,,Metagross,Steelix,Psychic,Wish,Doom Desire,Double-Edge,Meteor Mash,Psychic,Agility,Earthquake,Iron Tail,Rock Slide,Sandstorm,Screech
+Suicune,Water,Fog,1,0.6,0,Vaporeon,Vaporeon,Surf,Aurora Beam,Calm Mind,Mirror Coat,Surf,Aurora Beam,Acid Armor,Quick Attack,Surf,Aurora Beam,Acid Armor,Quick Attack
+Kyogre,Water,,,,,Gorebyss,Huntail,Surf,Ice Beam,Calm Mind,Thunder,Surf,Psychic,Agility,Amnesia,Crunch,Water Pulse,Scary Face,Bite

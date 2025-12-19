@@ -27,10 +27,12 @@
 #include "dungeon_generation.h"
 #include "pokemon.h"
 #include "items.h"
+#include "structs/str_items.h"
 #include "structs/map.h"
 #include "type_selection.h"
 #include "rogue_item_tables.h"
 #include "dungeon_random.h"
+#include "string_format.h"
 
 #define SEEDED_TILESET_COUNT 75  // Max valid tileset ID (gNaturePowerCalledMoves uses max 74)
 #define SEEDED_ITEM_DENSITY_MIN 3
@@ -124,6 +126,7 @@ typedef struct {
     s16 species;
     s16 start; // Inclusive, 0-based floor index within the dungeon
     s16 end;   // Inclusive, 0-based floor index within the dungeon
+    u8 level;  // Cached level for this species band
 } SeededSpawnRange;
 
 typedef struct {
@@ -148,6 +151,7 @@ static void InitSeededItemState(s32 seed, u8 dungeonId, s32 floorId, bool8 isFor
 static u16 SelectItemFromPool(RogueItemPoolId poolId, DungeonSeedRng *rng);
 static s32 GetDungeonNumberForFloorScaling(u8 dungeonId);
 static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId);
+static s32 CalcSeededSpawnLevel(s32 seed, u8 dungeonId, s32 floorIndex, s32 floorCount);
 static u8 SelectTileset(s32 floorId);
 static SeededLayoutOption SelectAlternateLayout(DungeonSeedRng *rng);
 static s8 SelectRoomDensity(DungeonSeedRng *rng, const SeededLayoutOption *option);
@@ -183,6 +187,14 @@ static u32 GetCombinedSpawnMask(u8 tileset, u32 mainTypeMask);
 static s16 SelectSpeciesFromPool(DungeonSeedRng *rng, s16 *pool, s32 *poolCount, bool8 *selectedFlags);
 static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog);
 
+#ifdef DEV
+static s32 GetSpawnTableCount(const SpawnPokemonData *spawnTable);
+static const SeededSpawnRange *FindSpawnRangeForSpecies(s16 species);
+void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 startFloorId,
+                                      const DungeonSeedFloorOverrides *overrides,
+                                      SpawnPokemonData *spawnTable);
+#endif
+
 static const u8 sItemLimitsByDifficulty[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NORMAL] = INVENTORY_SIZE,
     [DIFFICULTY_HARD] = 10,
@@ -199,6 +211,19 @@ static const s16 sRecruitFriendBowBonusPercent[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NORMAL] = 5,
     [DIFFICULTY_HARD] = 3,
     [DIFFICULTY_NIGHTMARE] = 1,
+};
+
+static const u8 sDifficultyLevelOffset[NUM_DIFFICULTY_SETTINGS] = {
+    [DIFFICULTY_NORMAL] = 0,
+    [DIFFICULTY_HARD] = 3,
+    [DIFFICULTY_NIGHTMARE] = 6,
+};
+
+// Max per-dungeon floor ramp applied across the full depth; keeps 99F dungeons tame.
+static const u8 sDifficultyFloorRampMax[NUM_DIFFICULTY_SETTINGS] = {
+    [DIFFICULTY_NORMAL] = 8,
+    [DIFFICULTY_HARD] = 10,
+    [DIFFICULTY_NIGHTMARE] = 12,
 };
 
 static const SeededFloorGenerationConfig sSeededFloorGenConfig = {
@@ -1317,6 +1342,12 @@ static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8
 static void ResetSpawnRangeCache(void)
 {
     sSpawnRangeCache.valid = FALSE;
+    sSpawnRangeCache.rangeCount = 0;
+    sSpawnRangeCache.seed = -1;
+    sSpawnRangeCache.dungeonId = 0;
+    sSpawnRangeCache.tileset = 0;
+    sSpawnRangeCache.startFloorId = 0;
+    sSpawnRangeCache.floorCount = 0;
 }
 
 static bool8 SpawnRangeCacheMatches(s32 seed, u8 dungeonId, u32 combinedMask)
@@ -1341,6 +1372,48 @@ static s32 GetFloorIndexWithinDungeon(s32 floorId, s32 startFloorId, s32 floorCo
     return floorIndex;
 }
 
+// Deterministic level curve: dungeon progression + floor depth + difficulty + a tiny seeded jitter.
+static s32 CalcSeededSpawnLevel(s32 seed, u8 dungeonId, s32 floorIndex, s32 floorCount)
+{
+    s32 dungeonNumber = GetDungeonNumberForFloorScaling(dungeonId);
+    u32 difficulty = GetGameDifficultySetting();
+    s32 baseLevel;
+    s32 level;
+    s32 denom;
+    s32 jitter = 0;
+    DungeonSeedRng rng;
+
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+    if (dungeonNumber < 1)
+        dungeonNumber = 1;
+    if (floorCount < 1)
+        floorCount = 1;
+    if (floorIndex < 0)
+        floorIndex = 0;
+    if (floorIndex >= floorCount)
+        floorIndex = floorCount - 1;
+
+    baseLevel = 3 + (dungeonNumber - 1) * 3;
+    baseLevel += sDifficultyLevelOffset[difficulty];
+
+    denom = floorCount - 1;
+    if (denom < 1)
+        denom = 1;
+    level = baseLevel + (floorIndex * sDifficultyFloorRampMax[difficulty]) / denom;
+
+    rng = DungeonSeedRng_Init(seed, dungeonId, floorIndex, 0x4C564C43); // "LVLC"
+    jitter = DungeonSeedRng_NextRange(&rng, 0, 3); // 0-2
+    level += jitter;
+
+    if (level < 1)
+        level = 1;
+    if (level > 90)
+        level = 90;
+
+    return level;
+}
+
 static s32 RollSpawnLevel(DungeonSeedRng *rng, s32 dungeonId, s32 floorId)
 {
     s32 baseLevel = 3 + (dungeonId % 10) + floorId;
@@ -1359,7 +1432,7 @@ static void EnsureSpawnRangesCoverDungeon(s32 floorCount)
     u8 order[SEEDED_FIXED_SPAWN_COUNT];
     SeededSpawnRange *ranges = sSpawnRangeCache.ranges;
 
-    if (!sSpawnRangeCache.valid || sSpawnRangeCache.rangeCount == 0)
+    if (sSpawnRangeCache.rangeCount == 0)
         return;
     if (floorCount <= 0)
         return;
@@ -1421,6 +1494,18 @@ static void EnsureSpawnRangesCoverDungeon(s32 floorCount)
         last->start = last->end - length;
         if (last->start < 0)
             last->start = 0;
+    }
+
+    // Refresh cached levels against the adjusted ranges
+    if (sSpawnRangeCache.seed != -1) {
+        for (i = 0; i < sSpawnRangeCache.rangeCount; i++) {
+            SeededSpawnRange *range = &ranges[i];
+            s32 mid = range->start + (range->end - range->start) / 2;
+            range->level = (u8)CalcSeededSpawnLevel(sSpawnRangeCache.seed,
+                                                    sSpawnRangeCache.dungeonId,
+                                                    mid,
+                                                    floorCount);
+        }
     }
 }
 
@@ -1578,13 +1663,15 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
             range->species = species;
             range->start = (s16)startIndex;
             range->end = (s16)endIndex;
-            MGBA_Warnf("[SeedOverrides] Range %d: species=%d len=%d mid=%d floors=%d-%d",
+            range->level = (u8)CalcSeededSpawnLevel(seed, dungeonId, mid, floorCount);
+            MGBA_Warnf("[SeedOverrides] Range %d: species=%d len=%d mid=%d floors=%d-%d level=%d",
                        i,
                        species,
                        endIndex - startIndex + 1,
                        mid + startFloorId + 1,
                        startIndex + startFloorId + 1,
-                       endIndex + startFloorId + 1);
+                       endIndex + startFloorId + 1,
+                       range->level);
         }
     }
 
@@ -1606,7 +1693,9 @@ static s32 PopulateSpawnTableFromRanges(DungeonSeedFloorOverrides *result, Dunge
     s32 floorIndex;
     s32 i;
     s16 mainList[SEEDED_FIXED_SPAWN_COUNT];
+    u8 mainLevel[SEEDED_FIXED_SPAWN_COUNT];
     s16 otherList[SEEDED_FIXED_SPAWN_COUNT];
+    u8 otherLevel[SEEDED_FIXED_SPAWN_COUNT];
     s32 mainCount = 0;
     s32 otherCount = 0;
     s32 entryCount = SEEDED_FIXED_SPAWN_COUNT;
@@ -1629,11 +1718,15 @@ static s32 PopulateSpawnTableFromRanges(DungeonSeedFloorOverrides *result, Dunge
             continue;
 
         if (SpeciesMatchesTypeMask(species, mainTypeMask)) {
-            if (mainCount < SEEDED_FIXED_SPAWN_COUNT)
+            if (mainCount < SEEDED_FIXED_SPAWN_COUNT) {
                 mainList[mainCount++] = species;
+                mainLevel[mainCount - 1] = range->level;
+            }
         } else {
-            if (otherCount < SEEDED_FIXED_SPAWN_COUNT)
+            if (otherCount < SEEDED_FIXED_SPAWN_COUNT) {
                 otherList[otherCount++] = species;
+                otherLevel[otherCount - 1] = range->level;
+            }
         }
     }
 
@@ -1644,15 +1737,26 @@ static s32 PopulateSpawnTableFromRanges(DungeonSeedFloorOverrides *result, Dunge
     // Fill main slots first
     for (i = 0; i < targetMain && count < entryCount; i++) {
         s16 species;
+        s32 level = 0;
         if (i < mainCount)
-            species = mainList[i];
-        else if (mainCount > 0)
-            species = mainList[i % mainCount];
-        else if (otherCount > 0)
-            species = otherList[i % otherCount];
+            species = mainList[i], level = mainLevel[i];
+        else if (mainCount > 0) {
+            s32 idx = i % mainCount;
+            species = mainList[idx];
+            level = mainLevel[idx];
+        }
+        else if (otherCount > 0) {
+            s32 idx = i % otherCount;
+            species = otherList[idx];
+            level = otherLevel[idx];
+        }
         else
             break;
-        SetSpeciesLevelToExtract(&result->spawns[count], RollSpawnLevel(rng, dungeonId, floorId), species);
+        if (level <= 0 && sSpawnRangeCache.valid)
+            level = CalcSeededSpawnLevel(sSpawnRangeCache.seed, dungeonId, floorIndex, sSpawnRangeCache.floorCount);
+        if (level <= 0)
+            level = RollSpawnLevel(rng, dungeonId, floorId);
+        SetSpeciesLevelToExtract(&result->spawns[count], level, species);
         count++;
     }
 
@@ -1660,20 +1764,35 @@ static s32 PopulateSpawnTableFromRanges(DungeonSeedFloorOverrides *result, Dunge
     for (; count < entryCount; count++) {
         s16 species;
         s32 idx = count - targetMain;
-        if (idx < otherCount)
+        s32 level = 0;
+        if (idx < otherCount) {
             species = otherList[idx];
-        else if (otherCount > 0)
-            species = otherList[idx % otherCount];
-        else if (mainCount > 0)
-            species = mainList[idx % mainCount];
+            level = otherLevel[idx];
+        }
+        else if (otherCount > 0) {
+            s32 wrapped = idx % otherCount;
+            species = otherList[wrapped];
+            level = otherLevel[wrapped];
+        }
+        else if (mainCount > 0) {
+            s32 wrapped = idx % mainCount;
+            species = mainList[wrapped];
+            level = mainLevel[wrapped];
+        }
         else {
             // Last resort: first range species
-            if (sSpawnRangeCache.rangeCount > 0)
+            if (sSpawnRangeCache.rangeCount > 0) {
                 species = sSpawnRangeCache.ranges[0].species;
+                level = sSpawnRangeCache.ranges[0].level;
+            }
             else
                 species = MONSTER_BULBASAUR;
         }
-        SetSpeciesLevelToExtract(&result->spawns[count], RollSpawnLevel(rng, dungeonId, floorId), species);
+        if (level <= 0 && sSpawnRangeCache.valid)
+            level = CalcSeededSpawnLevel(sSpawnRangeCache.seed, dungeonId, floorIndex, sSpawnRangeCache.floorCount);
+        if (level <= 0)
+            level = RollSpawnLevel(rng, dungeonId, floorId);
+        SetSpeciesLevelToExtract(&result->spawns[count], level, species);
     }
 
     result->spawnCount = entryCount;
@@ -2715,3 +2834,201 @@ s32 DungeonSeedOverrides_GetKecleonFloor(u8 dungeonId, s32 seed)
     DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &floor0, NULL);
     return floor0;
 }
+
+#ifdef DEV
+static s32 GetSpawnTableCount(const SpawnPokemonData *spawnTable)
+{
+    s32 i;
+
+    if (spawnTable == NULL)
+        return 0;
+
+    for (i = 0; i < MONSTER_SPAWNS_ARR_COUNT; i++) {
+        if (ExtractSpeciesIndex((SpawnPokemonData *)&spawnTable[i]) == 0)
+            break;
+    }
+
+    return i;
+}
+
+static const SeededSpawnRange *FindSpawnRangeForSpecies(s16 species)
+{
+    s32 i;
+
+    if (!sSpawnRangeCache.valid)
+        return NULL;
+
+    for (i = 0; i < sSpawnRangeCache.rangeCount; i++) {
+        if (sSpawnRangeCache.ranges[i].species == species)
+            return &sSpawnRangeCache.ranges[i];
+    }
+
+    return NULL;
+}
+
+static void GetSpeciesNameForLog(char *out, size_t outLen, s16 species)
+{
+    const char *name = GetMonSpecies(species);
+
+    if (outLen == 0)
+        return;
+
+    if (name != NULL) {
+        sprintf(out, "%.*s", (int)(outLen - 1), name);
+    }
+    else {
+        sprintf(out, "species_%d", species);
+    }
+}
+
+static void GetItemNameForLog(char *out, size_t outLen, u16 itemId)
+{
+    const char *name = (itemId < NUMBER_OF_ITEM_IDS) ? gItemParametersData[itemId].name : NULL;
+    size_t i;
+    size_t j = 0;
+
+    if (outLen == 0)
+        return;
+
+    if (name == NULL) {
+        sprintf(out, "item_%d", itemId);
+        return;
+    }
+
+    for (i = 0; name[i] != '\0' && j + 1 < outLen; i++) {
+        u8 c = (u8)name[i];
+        // Game strings include control/icon bytes; replace non-ASCII with '?' for logs.
+        if (c < 0x20 || c >= 0x7F)
+            c = '?';
+        out[j++] = (char)c;
+    }
+    out[j] = '\0';
+}
+
+void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 startFloorId,
+                                      const DungeonSeedFloorOverrides *overrides,
+                                      SpawnPokemonData *spawnTable)
+{
+    s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
+    s32 floorIndex = GetFloorIndexWithinDungeon(floorId, startFloorId, floorCount);
+    s32 spawnCount = GetSpawnTableCount(spawnTable);
+    s32 bossFloorId = (floorCount > 0) ? (floorCount - 1) : floorId;
+    s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
+    s32 superTrapFloor = 0;
+    s32 monsterHouseFloor = 0;
+    s32 rangeCount = 0;
+    u8 tileset = 0;
+    u8 bossEnabled = FALSE;
+    s32 i;
+    char speciesName[32];
+    char itemName[40];
+
+    if (overrides != NULL) {
+        tileset = overrides->tileset;
+        bossEnabled = overrides->bossFight.enabled;
+    }
+
+    if (overrides != NULL) {
+        u8 mainType = GetMainTypeForTileset(tileset);
+        u32 mainTypeMask = 0;
+        u32 spawnTypeMask = 0;
+        u32 combinedMask = 0;
+
+        if (mainType > TYPE_NONE && mainType < NUM_TYPES)
+            mainTypeMask = (1u << mainType);
+
+        if (tileset < SEEDED_TILESET_COUNT)
+            spawnTypeMask = sTilesetTypeConfig[tileset].spawnMask & ~mainTypeMask;
+
+        combinedMask = GetCombinedSpawnMask(tileset, mainTypeMask);
+        EnsureSpawnRangeCache(seed, dungeonId, tileset, mainTypeMask, spawnTypeMask, combinedMask);
+    }
+
+    if (sSpawnRangeCache.valid)
+        rangeCount = sSpawnRangeCache.rangeCount;
+
+    // Use WARN level so the host emulator log captures these rows (INFO is often filtered out).
+    MGBA_Warnf("SEED_DUMP_HEADER,meta,seed,dungeon_id,floor_id,start_floor_id,floor_index,floor_count,tileset,spawn_count,range_count,boss_enabled");
+    MGBA_Warnf("SEED_DUMP,meta,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+               seed, dungeonId, floorId, startFloorId, floorIndex, floorCount, tileset, spawnCount, rangeCount, bossEnabled);
+
+    DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
+    superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor(dungeonId, seed);
+    monsterHouseFloor = DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor(dungeonId, seed);
+
+    MGBA_Warnf("SEED_DUMP_HEADER,special_floors,dungeon_id,kec_floor0_index,kec_floor0_num,kec_floor1_index,kec_floor1_num,super_trap_index,super_trap_num,monster_house_index,monster_house_num");
+    MGBA_Warnf("SEED_DUMP,special_floors,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+               dungeonId,
+               kecleonFloors[0], kecleonFloors[0] + 1,
+               kecleonFloors[1], kecleonFloors[1] + 1,
+               superTrapFloor, superTrapFloor + 1,
+               monsterHouseFloor, monsterHouseFloor + 1);
+
+    {
+        DungeonSeedFloorOverrides bossOverrides;
+        DungeonSeedRng bossRng = DungeonSeedRng_Init(seed, dungeonId, bossFloorId, 0xC0FFEE);
+
+        ClearFloorOverrides(&bossOverrides);
+        PopulateBossFightConfig(&bossOverrides, &bossRng, dungeonId, bossFloorId, seed);
+        MGBA_Warnf("SEED_DUMP_HEADER,boss_loot,dungeon_id,boss_floor_id,boss_enabled,boss_species,boss_species_name,primary,primary_name,secondary_left,secondary_left_name,secondary_right,secondary_right_name");
+        GetSpeciesNameForLog(speciesName, sizeof(speciesName), bossOverrides.bossFight.bossSpecies);
+        GetItemNameForLog(itemName, sizeof(itemName), bossOverrides.bossFight.dropItem);
+        MGBA_Warnf("SEED_DUMP,boss_loot,%d,%d,%d,%d,%s,%d,%s,%d,%s,%d,%s",
+                   dungeonId,
+                   bossFloorId,
+                   bossOverrides.bossFight.enabled,
+                   bossOverrides.bossFight.bossSpecies,
+                   speciesName,
+                   bossOverrides.bossFight.dropItem,
+                   itemName,
+                   bossOverrides.bossFight.secondaryDropLeft,
+                   (GetItemNameForLog(itemName, sizeof(itemName), bossOverrides.bossFight.secondaryDropLeft), itemName),
+                   bossOverrides.bossFight.secondaryDropRight,
+                   (GetItemNameForLog(itemName, sizeof(itemName), bossOverrides.bossFight.secondaryDropRight), itemName));
+    }
+
+    if (sSpawnRangeCache.valid) {
+        MGBA_Warnf("SEED_DUMP_HEADER,spawn_range,index,species,species_name,level,start_index,end_index,start_floor,end_floor");
+        for (i = 0; i < sSpawnRangeCache.rangeCount; i++) {
+            const SeededSpawnRange *range = &sSpawnRangeCache.ranges[i];
+            GetSpeciesNameForLog(speciesName, sizeof(speciesName), range->species);
+            MGBA_Warnf("SEED_DUMP,spawn_range,%d,%d,%s,%d,%d,%d,%d,%d",
+                       i,
+                       range->species,
+                       speciesName,
+                       range->level,
+                       range->start,
+                       range->end,
+                       range->start + 1,
+                       range->end + 1);
+        }
+    }
+
+    if (spawnTable != NULL) {
+        MGBA_Warnf("SEED_DUMP_HEADER,spawn_entry,index,species,species_name,level,weight1,weight2,range_start_index,range_end_index,range_start_floor,range_end_floor");
+        for (i = 0; i < spawnCount; i++) {
+            SpawnPokemonData *entry = &spawnTable[i];
+            s16 species = ExtractSpeciesIndex(entry);
+            s32 level = ExtractLevel(entry);
+            const SeededSpawnRange *range = FindSpawnRangeForSpecies(species);
+            s32 rangeStart = range ? range->start : -1;
+            s32 rangeEnd = range ? range->end : -1;
+            s32 rangeStartFloor = (rangeStart >= 0) ? (rangeStart + 1) : -1;
+            s32 rangeEndFloor = (rangeEnd >= 0) ? (rangeEnd + 1) : -1;
+
+            GetSpeciesNameForLog(speciesName, sizeof(speciesName), species);
+            MGBA_Warnf("SEED_DUMP,spawn_entry,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d",
+                       i,
+                       species,
+                       speciesName,
+                       level,
+                       entry->randNum[0],
+                       entry->randNum[1],
+                       rangeStart,
+                       rangeEnd,
+                       rangeStartFloor,
+                       rangeEndFloor);
+        }
+    }
+}
+#endif

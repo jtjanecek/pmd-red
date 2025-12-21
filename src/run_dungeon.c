@@ -1184,6 +1184,14 @@ void EnforceMaxItemsAndMoney(void)
 
 bool8 IsFloorwideFixedRoom(void)
 {
+    const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+
+    // Custom seeded boss floors should behave like fixed-room boss arenas (no orbs, etc.)
+    if (bossFight != NULL && bossFight->enabled)
+    {
+        return TRUE;
+    }
+
     if (gDungeon->fixedRoomNumber != 0 && gDungeon->fixedRoomNumber <= LAST_FLOORWIDE_FIXED_ROOM)
     {
         return TRUE;

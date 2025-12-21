@@ -40,18 +40,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_TOGETIC, MONSTER_PORYGON2},
         },
         .moves = {
-            {MOVE_PSYCHIC, MOVE_RECOVER, MOVE_BARRIER, MOVE_SWIFT},
-            {MOVE_PSYCHIC, MOVE_TRANSFORM, MOVE_MEGA_PUNCH, MOVE_METRONOME},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_STRENGTH, MOVE_TAKE_DOWN, MOVE_SCARY_FACE, MOVE_PURSUIT},
-                {MOVE_SLASH, MOVE_STRENGTH, MOVE_FURY_SWIPES, MOVE_REST},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_METRONOME, MOVE_ANCIENTPOWER, MOVE_ENCORE, MOVE_WISH},
-                {MOVE_TRI_ATTACK, MOVE_RECOVER, MOVE_PSYCHIC, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -67,18 +67,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_FLAREON, MONSTER_FLAREON},
         },
         .moves = {
-            {MOVE_FLAMETHROWER, MOVE_WING_ATTACK, MOVE_AGILITY, MOVE_FIRE_SPIN},
-            {MOVE_FLAMETHROWER, MOVE_STOMP, MOVE_ROAR, MOVE_FIRE_SPIN},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_FLAMETHROWER, MOVE_WING_ATTACK, MOVE_SLASH, MOVE_SMOKESCREEN},
-                {MOVE_FLAMETHROWER, MOVE_SWIFT, MOVE_QUICK_ATTACK, MOVE_SMOKESCREEN},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_FLAMETHROWER, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_SAND_ATTACK},
-                {MOVE_FLAMETHROWER, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_SAND_ATTACK},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -94,18 +94,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_GOREBYSS, MONSTER_HUNTAIL},
         },
         .moves = {
-            {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_CALM_MIND, MOVE_MIRROR_COAT},
-            {MOVE_SURF, MOVE_ICE_BEAM, MOVE_CALM_MIND, MOVE_THUNDER},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_ACID_ARMOR, MOVE_QUICK_ATTACK},
-                {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_ACID_ARMOR, MOVE_QUICK_ATTACK},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_SURF, MOVE_PSYCHIC, MOVE_AGILITY, MOVE_AMNESIA},
-                {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_SCARY_FACE, MOVE_BITE},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -121,18 +121,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_MEGANIUM, MONSTER_SCEPTILE},
         },
         .moves = {
-            {MOVE_PSYCHIC, MOVE_HEAL_BELL, MOVE_RECOVER, MOVE_LEECH_SEED},
-            {MOVE_SOLARBEAM, MOVE_SLEEP_POWDER, MOVE_LEECH_SEED, MOVE_EARTHQUAKE},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_RAZOR_LEAF, MOVE_GUST, MOVE_STUN_SPORE, MOVE_SYNTHESIS},
-                {MOVE_PSYCHIC, MOVE_EGG_BOMB, MOVE_STUN_SPORE, MOVE_REFLECT},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_RAZOR_LEAF, MOVE_BODY_SLAM, MOVE_LIGHT_SCREEN, MOVE_POISONPOWDER},
-                {MOVE_LEAF_BLADE, MOVE_QUICK_ATTACK, MOVE_AGILITY, MOVE_PURSUIT},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -148,18 +148,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_JOLTEON, MONSTER_JOLTEON},
         },
         .moves = {
-            {MOVE_DRILL_PECK, MOVE_THUNDERBOLT, MOVE_THUNDER_WAVE, MOVE_AGILITY},
-            {MOVE_THUNDERBOLT, MOVE_SPARK, MOVE_BITE, MOVE_REFLECT},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_THUNDERBOLT, MOVE_QUICK_ATTACK, MOVE_THUNDER_WAVE, MOVE_IRON_TAIL},
-                {MOVE_SPARK, MOVE_BITE, MOVE_ROAR, MOVE_QUICK_ATTACK},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_AGILITY, MOVE_PIN_MISSILE},
-                {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_AGILITY, MOVE_PIN_MISSILE},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -175,18 +175,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_GLALIE, MONSTER_WALREIN},
         },
         .moves = {
-            {MOVE_ICE_BEAM, MOVE_GUST, MOVE_AGILITY, MOVE_MIND_READER},
-            {MOVE_ICE_BEAM, MOVE_AMNESIA, MOVE_ICY_WIND, MOVE_EXPLOSION},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_AURORA_BEAM, MOVE_SURF, MOVE_REST, MOVE_ENCORE},
-                {MOVE_AURORA_BEAM, MOVE_PROTECT, MOVE_SPIKE_CANNON, MOVE_SUPERSONIC},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_ICE_BEAM, MOVE_CRUNCH, MOVE_HEADBUTT, MOVE_BITE},
-                {MOVE_SURF, MOVE_BODY_SLAM, MOVE_ICE_BEAM, MOVE_ENCORE},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -202,18 +202,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_BRELOOM, MONSTER_HARIYAMA},
         },
         .moves = {
-            {MOVE_CROSS_CHOP, MOVE_VITAL_THROW, MOVE_ROCK_SLIDE, MOVE_BULK_UP},
-            {MOVE_HI_JUMP_KICK, MOVE_PSYCHIC, MOVE_DETECT, MOVE_ICE_PUNCH},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_HI_JUMP_KICK, MOVE_BRICK_BREAK, MOVE_BULK_UP, MOVE_FOCUS_ENERGY},
-                {MOVE_SKY_UPPERCUT, MOVE_THUNDERPUNCH, MOVE_ICE_PUNCH, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_LEECH_SEED, MOVE_STUN_SPORE},
-                {MOVE_CROSS_CHOP, MOVE_BELLY_DRUM, MOVE_FAKE_OUT, MOVE_KNOCK_OFF},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -229,18 +229,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SEVIPER, MONSTER_ARBOK},
         },
         .moves = {
-            {MOVE_SLUDGE_BOMB, MOVE_ACID_ARMOR, MOVE_MINIMIZE, MOVE_SHADOW_BALL},
-            {MOVE_SLUDGE_BOMB, MOVE_WING_ATTACK, MOVE_CONFUSE_RAY, MOVE_BITE},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_SLUDGE_BOMB, MOVE_EXPLOSION, MOVE_SMOKESCREEN, MOVE_HAZE},
-                {MOVE_SLUDGE_BOMB, MOVE_AMNESIA, MOVE_BODY_SLAM, MOVE_YAWN},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_POISON_FANG, MOVE_CRUNCH, MOVE_GLARE, MOVE_SCREECH},
-                {MOVE_ACID, MOVE_GLARE, MOVE_BITE, MOVE_WRAP},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -256,18 +256,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SOLROCK, MONSTER_LUNATONE},
         },
         .moves = {
-            {MOVE_EARTHQUAKE, MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_BULK_UP},
-            {MOVE_ANCIENTPOWER, MOVE_PSYCHIC, MOVE_HYPER_BEAM, MOVE_REFLECT},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_EARTHQUAKE, MOVE_ROCK_BLAST, MOVE_SCARY_FACE, MOVE_PROTECT},
-                {MOVE_ROCK_SLIDE, MOVE_ROCK_THROW, MOVE_SCREECH, MOVE_BIND},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_ROCK_SLIDE, MOVE_PSYCHIC, MOVE_LIGHT_SCREEN, MOVE_EXPLOSION},
-                {MOVE_PSYCHIC, MOVE_ROCK_THROW, MOVE_HYPNOSIS, MOVE_COSMIC_POWER},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -283,18 +283,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_AERODACTYL, MONSTER_ALTARIA},
         },
         .moves = {
-            {MOVE_SACRED_FIRE, MOVE_GUST, MOVE_RECOVER, MOVE_FIRE_BLAST},
-            {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_HYPER_BEAM, MOVE_DRAGON_DANCE},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_WING_ATTACK, MOVE_QUICK_ATTACK, MOVE_AERIAL_ACE, MOVE_FOCUS_ENERGY},
-                {MOVE_WING_ATTACK, MOVE_SAND_ATTACK, MOVE_QUICK_ATTACK, MOVE_FEATHERDANCE},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_ROCK_SLIDE, MOVE_WING_ATTACK, MOVE_AGILITY, MOVE_BITE},
-                {MOVE_DRAGONBREATH, MOVE_SING, MOVE_SAFEGUARD, MOVE_FLY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -310,18 +310,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_DEOXYS_ATTACK, MONSTER_DEOXYS_DEFENSE},
         },
         .moves = {
-            {MOVE_AEROBLAST, MOVE_HYDRO_PUMP, MOVE_RECOVER, MOVE_SAFEGUARD},
-            {MOVE_PSYCHIC, MOVE_COSMIC_POWER, MOVE_THUNDERBOLT, MOVE_RECOVER},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_PSYCHIC, MOVE_CONFUSE_RAY, MOVE_FUTURE_SIGHT, MOVE_TELEPORT},
-                {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_RECOVER, MOVE_ICE_BEAM},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_RECOVER},
-                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_RECOVER},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -337,18 +337,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SCYTHER, MONSTER_SCYTHER},
         },
         .moves = {
-            {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_BULK_UP},
-            {MOVE_SILVER_WIND, MOVE_STEEL_WING, MOVE_DOUBLE_TEAM, MOVE_AERIAL_ACE},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_TWINEEDLE, MOVE_PIN_MISSILE, MOVE_FOCUS_ENERGY, MOVE_AGILITY},
-                {MOVE_SILVER_WIND, MOVE_CONFUSION, MOVE_SLEEP_POWDER, MOVE_WHIRLWIND},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_AGILITY, MOVE_SWORDS_DANCE},
-                {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_AGILITY, MOVE_SWORDS_DANCE},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -364,18 +364,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_KABUTOPS, MONSTER_OMASTAR},
         },
         .moves = {
-            {MOVE_ROCK_SLIDE, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_CURSE},
-            {MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DRAGON_DANCE},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_ANCIENTPOWER, MOVE_GIGA_DRAIN, MOVE_CONFUSE_RAY, MOVE_AMNESIA},
-                {MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_FURY_CUTTER, MOVE_PROTECT},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_SLASH, MOVE_ANCIENTPOWER, MOVE_WATERFALL, MOVE_SAND_ATTACK},
-                {MOVE_SURF, MOVE_SPIKE_CANNON, MOVE_PROTECT, MOVE_BITE},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -391,18 +391,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SABLEYE, MONSTER_MISDREAVUS},
         },
         .moves = {
-            {MOVE_SHADOW_BALL, MOVE_HYPNOSIS, MOVE_DREAM_EATER, MOVE_THUNDERBOLT},
-            {MOVE_SHADOW_PUNCH, MOVE_WILL_O_WISP, MOVE_EARTHQUAKE, MOVE_PROTECT},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_SHADOW_BALL, MOVE_WILL_O_WISP, MOVE_KNOCK_OFF, MOVE_SCREECH},
-                {MOVE_SHADOW_BALL, MOVE_FURY_CUTTER, MOVE_SWORDS_DANCE, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_SHADOW_BALL, MOVE_FAINT_ATTACK, MOVE_NIGHT_SHADE, MOVE_CONFUSE_RAY},
-                {MOVE_SHADOW_BALL, MOVE_PSYBEAM, MOVE_CONFUSE_RAY, MOVE_MEAN_LOOK},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -418,18 +418,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SALAMENCE, MONSTER_FLYGON},
         },
         .moves = {
-            {MOVE_MIST_BALL, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_RECOVER},
-            {MOVE_LUSTER_PURGE, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_RECOVER},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_WING_ATTACK, MOVE_THUNDER_WAVE, MOVE_DRAGON_CLAW, MOVE_AGILITY},
-                {MOVE_HYDRO_PUMP, MOVE_TWISTER, MOVE_AGILITY, MOVE_ICE_BEAM},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_FLY, MOVE_DRAGON_DANCE},
-                {MOVE_EARTHQUAKE, MOVE_DRAGONBREATH, MOVE_SANDSTORM, MOVE_CRUNCH},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -445,18 +445,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_CRAWDAUNT, MONSTER_SHARPEDO},
         },
         .moves = {
-            {MOVE_BITE, MOVE_SLASH, MOVE_SWORDS_DANCE, MOVE_QUICK_ATTACK},
-            {MOVE_RAZOR_LEAF, MOVE_NATURE_POWER, MOVE_EXTRASENSORY, MOVE_FAKE_OUT},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_NIGHT_SHADE, MOVE_CONFUSE_RAY},
-                {MOVE_BITE, MOVE_CRUNCH, MOVE_HOWL, MOVE_SAND_ATTACK},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_CRABHAMMER, MOVE_CRUNCH, MOVE_SWORDS_DANCE, MOVE_PROTECT},
-                {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_SCREECH, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -472,18 +472,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_METAGROSS, MONSTER_STEELIX},
         },
         .moves = {
-            {MOVE_METAL_CLAW, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_CURSE},
-            {MOVE_PSYCHIC, MOVE_WISH, MOVE_DOOM_DESIRE, MOVE_DOUBLE_EDGE},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+            {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_THUNDERBOLT, MOVE_SUPERSONIC, MOVE_LOCK_ON, MOVE_ZAP_CANNON},
-                {MOVE_STEEL_WING, MOVE_AGILITY, MOVE_SAND_ATTACK, MOVE_SWIFT},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
             {
-                {MOVE_METEOR_MASH, MOVE_PSYCHIC, MOVE_AGILITY, MOVE_EARTHQUAKE},
-                {MOVE_IRON_TAIL, MOVE_ROCK_SLIDE, MOVE_SANDSTORM, MOVE_SCREECH},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
+                {MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {

@@ -1844,7 +1844,7 @@
         "name": "MoveNameAgility",
         "basePower": 2,
         "type": "TYPE_PSYCHIC",
-        "targetingFlags": "0b0000000000110001",
+        "targetingFlags": "0b0000000001110011",
         "aiTargetingFlags": "0b0000000000110000",
         "basePP": 22,
         "aiWeight": 10,

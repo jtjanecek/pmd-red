@@ -41,7 +41,9 @@
 #define SEEDED_MAX_FLOORS 100
 #define SEEDED_MIN_SPAWNS 6
 #define SEEDED_MAX_SPAWNS 16
-#define SEEDED_FIXED_SPAWN_COUNT 15
+#define SEEDED_FIXED_SPAWN_COUNT 32   // Max unique species per seeded dungeon (bounded by MONSTER_SPAWNS_ARR_COUNT)
+#define SEEDED_SPAWN_TARGET_NUM 14    // Aim for ~1.4 species per floor (Purity Forest has ~1.39)
+#define SEEDED_SPAWN_TARGET_DEN 10
 #define SEEDED_MAIN_TYPE_PERCENT 80
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_PREFIX_BUFFER_LEN 16
@@ -1541,7 +1543,6 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     s32 combinedCandidateCount = 0;
     s32 mainQuota;
     s32 spawnQuota;
-    s32 entryCount = SEEDED_FIXED_SPAWN_COUNT;
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
     s32 engineFloorCount = GetDungeonFloorCount(dungeonId);
     s32 startFloorId = GetDungeonStartingFloor(dungeonId);
@@ -1553,10 +1554,13 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     bool8 entryIsMain[SEEDED_FIXED_SPAWN_COUNT];
     s32 i;
 
+    // Scale spawn variety with dungeon length (~1.4 species per floor) but cap to engine limits.
+    s32 entryCount = (floorCount * SEEDED_SPAWN_TARGET_NUM + (SEEDED_SPAWN_TARGET_DEN - 1)) / SEEDED_SPAWN_TARGET_DEN;
+    if (entryCount < SEEDED_MIN_SPAWNS)
+        entryCount = SEEDED_MIN_SPAWNS;
+
     if (entryCount > MONSTER_SPAWNS_ARR_COUNT)
         entryCount = MONSTER_SPAWNS_ARR_COUNT;
-    if (entryCount > floorCount)
-        entryCount = floorCount;
     if (floorCount <= 0)
         floorCount = 1;
     if (engineFloorCount > 0 && floorCount > engineFloorCount)

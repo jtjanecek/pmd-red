@@ -12,7 +12,7 @@ Affects the entire room (all Pokemon)
 | Haze | Ice | 2 | Removes stat changes from all Pokemon in room |
 | Baton Pass | Normal | 2 | Switches user with ally, transferring stat changes |
 
-### MOVE_RANGE_ROOM_FOES (16 moves)
+### MOVE_RANGE_ROOM_FOES (13 moves)
 Affects all enemies in the room
 
 | Move | Type | Power | Description |
@@ -20,10 +20,7 @@ Affects all enemies in the room
 | Sweet Scent | Normal | 2 | Lowers evasion of all enemies in room |
 | Memento | Dark | 2 | User faints, lowers Attack and Special Attack of all enemies |
 | Odor Sleuth | Normal | 2 | Makes Ghost-type enemies able to be hit by Normal/Fighting moves |
-| Spore | Grass | 2 | Puts all enemies in room to sleep |
-| Powder Snow | Ice | 4 | Damages all enemies, may freeze |
 | Growl | Normal | 2 | Lowers Attack of all enemies |
-| Heat Wave | Fire | 10 | Damages all enemies, may burn |
 | Warp | None | 2 | Warps all enemies to random locations |
 | Slow Down | None | 2 | Lowers speed of all enemies |
 | Petrify | None | 2 | Petrifies all enemies |
@@ -46,13 +43,15 @@ Affects all allies in the room (including user)
 | Refresh | Normal | 2 | Cures status conditions of all allies |
 | Speed Boost | None | 2 | Raises Speed of all allies |
 
-### MOVE_RANGE_ROOM_EXCEPT_USER (3 moves)
+### MOVE_RANGE_ROOM_EXCEPT_USER (5 moves)
 Affects all Pokemon in the room except the user
 
 | Move | Type | Power | Description |
 |------|------|-------|-------------|
 | Earthquake | Ground | 5 | Damages all Pokemon in room except user |
 | Magnitude | Ground | 2 | Damages all Pokemon in room except user with variable power |
+| Heat Wave | Fire | 10 | Damages all Pokemon in room except user, may burn |
+| Powder Snow | Ice | 4 | Damages all Pokemon in room except user, may freeze |
 | Silver Wind | Bug | 4 | Damages all Pokemon in room except user, chance to raise all user's stats |
 
 ### MOVE_RANGE_ROOM_ONLY (1 move)
@@ -81,7 +80,7 @@ Special room-targeting mechanics
 - **Silver Wind** has a chance to raise all of the user's stats
 
 ### Status Moves
-- **Spore** and **Siesta** put all enemies to sleep (100% accuracy for Spore)
+- **Siesta** puts all enemies to sleep
 - **Totter** confuses all enemies
 - **Petrify** petrifies all enemies
 - **Warp** warps all enemies to random locations
@@ -96,7 +95,7 @@ Special room-targeting mechanics
 
 Room-wide moves are particularly effective in:
 1. **Boss fights with minions** - Moves like Heat Wave, Silver Wind, or Earthquake can damage multiple enemies simultaneously
-2. **Monster Houses** - Room-wide status moves like Spore or Totter can disable entire groups of enemies
+2. **Monster Houses** - Room-wide status moves like Totter can disable entire groups of enemies
 3. **Team support** - Aromatherapy and Safeguard keep your entire team buffed or healed
 4. **Crowd control** - Warp, Petrify, and sleep moves can neutralize threats
 

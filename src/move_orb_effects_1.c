@@ -323,7 +323,7 @@ void InfatuateStatusTarget(Entity * pokemon, Entity * target, bool8 displayMessa
         SetMessageArgument_2(gFormatBuffer_Monsters[0],entityInfo,0);
         if (entityInfo->cringeClassStatus.status != STATUS_INFATUATED) {
           entityInfo->cringeClassStatus.status = STATUS_INFATUATED;
-          entityInfo->cringeClassStatus.turns = CalculateStatusTurns(target,gInfatuatedTurnRange,TRUE) + 1;
+          entityInfo->cringeClassStatus.turns = CalculateStatusTurns(target,gInfatuatedTurnRange,TRUE) + 2;
           sub_8041EF8(target);
           TryDisplayDungeonLoggableMessage3(pokemon,target,gUnknown_80FB50C);
         }
@@ -1422,4 +1422,3 @@ void LowerMovementSpeedTarget(Entity * pokemon, Entity * target, s32 levels, boo
   }
   EntityUpdateStatusSprites(target);
 }
-

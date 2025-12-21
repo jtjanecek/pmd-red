@@ -1227,6 +1227,9 @@ static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask)
         return FALSE;
     if (IsBossSpecies(species))
         return FALSE;
+    // Kecleon is reserved for shops; never treat it as a normal floor spawn
+    if (species == MONSTER_KECLEON)
+        return FALSE;
 
     for (i = 0; i < 2; i++) {
         u8 type = GetPokemonType(species, (u32)i);

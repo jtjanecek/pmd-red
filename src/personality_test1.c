@@ -66,6 +66,7 @@ enum
     PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_1,
     PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_2,
     PERSONALITY_PARTNER_NICKNAME,
+    PERSONALITY_STARTER_ITEM_SELECTION,
     PERSONALITY_TEAM_NAME_PROMPT,
     PERSONALITY_TEAM_NAME_ENTRY,
     PERSONALITY_END_INTRO,
@@ -124,6 +125,15 @@ static bool32 TryStoreCustomSeed(void);
 static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
 static void CleanupNamingScreen(void);
 static void HandleDifficultySelection(void);
+static void StartStarterItemSelection(void);
+static void HandleStarterItemSelection(void);
+static void GenerateStarterItemOptions(void);
+static void BuildStarterItemMenu(void);
+static bool8 IsValidStarterItem(u8 itemId);
+static bool8 IsStarterItemDuplicate(u8 itemId, s32 filledCount);
+static u32 MixStarterItemSeed(u32 seed, u32 salt);
+static u32 NextStarterItemRandom(u32 *state);
+static void ApplyStarterHeldItem(void);
 UNUSED static void ApplySkipStartMinimal(void);
 // Skip-cutscene override is disabled for now; no postgame force.
 static void ApplySkipPostgameBootstrap(void);
@@ -191,6 +201,10 @@ static void InitializeTestStats(void)
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
     SetSkipBasicRescuesSetting(1);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
+    MemoryFill8(sPersonalityTestTracker->starterItemOptions, ITEM_NOTHING, sizeof(sPersonalityTestTracker->starterItemOptions));
+    MemoryFill8(sPersonalityTestTracker->starterItemMenu, 0, sizeof(sPersonalityTestTracker->starterItemMenu));
+    MemoryFill8(sPersonalityTestTracker->starterItemNameBuffers, 0, sizeof(sPersonalityTestTracker->starterItemNameBuffers));
+    sPersonalityTestTracker->chosenStarterItem = ITEM_NOTHING;
     
     // DEV: Skip personality quiz and set dev defaults
     // To enable dev mode, compile with: make DEV=1
@@ -293,6 +307,9 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_PARTNER_NICKNAME:
             NicknamePartner();
+            break;
+        case PERSONALITY_STARTER_ITEM_SELECTION:
+            HandleStarterItemSelection();
             break;
         case PERSONALITY_TEAM_NAME_PROMPT:
             PromptTeamName();
@@ -689,6 +706,143 @@ static void HandleDifficultySelection(void)
     StartGenderSelection();
 }
 
+static void StartStarterItemSelection(void)
+{
+    sPersonalityTestTracker->chosenStarterItem = ITEM_NOTHING;
+    GenerateStarterItemOptions();
+    CreateMenuDialogueBoxAndPortrait(gStarterItemPrompt, 0, 0, sPersonalityTestTracker->starterItemMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_ITEM_SELECTION;
+}
+
+static void HandleStarterItemSelection(void)
+{
+    s32 selection;
+
+    if (sub_80144A4(&selection) != 0)
+        return;
+
+    if (selection < 0 || selection >= NUMBER_OF_ITEM_IDS)
+        selection = sPersonalityTestTracker->starterItemOptions[0];
+
+    sPersonalityTestTracker->chosenStarterItem = (u8)selection;
+    CreateDialogueBoxAndPortrait(gTeamNamePrompt, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_TEAM_NAME_PROMPT;
+}
+
+static void GenerateStarterItemOptions(void)
+{
+    s32 filled = 0;
+    s32 guard = 0;
+    u32 rngState = MixStarterItemSeed((u32)sPersonalityTestTracker->rngSeed, 0xC8795A4Bu);
+    static const u8 sStarterItemFallbacks[] = {
+        ITEM_ORAN_BERRY,
+        ITEM_APPLE,
+        ITEM_POWER_BAND,
+        ITEM_REVIVER_SEED,
+        ITEM_STAMINA_BAND
+    };
+
+    MemoryFill8(sPersonalityTestTracker->starterItemOptions, ITEM_NOTHING, sizeof(sPersonalityTestTracker->starterItemOptions));
+
+    while (filled < PERSONALITY_STARTER_ITEM_OPTION_COUNT && guard < 2048) {
+        u8 candidate = (u8)(NextStarterItemRandom(&rngState) % NUMBER_OF_ITEM_IDS);
+        guard++;
+
+        if (!IsValidStarterItem(candidate))
+            continue;
+        if (IsStarterItemDuplicate(candidate, filled))
+            continue;
+
+        sPersonalityTestTracker->starterItemOptions[filled] = candidate;
+        filled++;
+    }
+
+    if (filled < PERSONALITY_STARTER_ITEM_OPTION_COUNT) {
+        s32 i;
+
+        for (i = 0; i < ARRAY_COUNT(sStarterItemFallbacks) && filled < PERSONALITY_STARTER_ITEM_OPTION_COUNT; i++) {
+            u8 candidate = sStarterItemFallbacks[i];
+
+            if (IsStarterItemDuplicate(candidate, filled))
+                continue;
+
+            sPersonalityTestTracker->starterItemOptions[filled] = candidate;
+            filled++;
+        }
+    }
+
+    BuildStarterItemMenu();
+}
+
+static void BuildStarterItemMenu(void)
+{
+    s32 i;
+
+    for (i = 0; i < PERSONALITY_STARTER_ITEM_OPTION_COUNT; i++) {
+        u8 itemId = sPersonalityTestTracker->starterItemOptions[i];
+        BufferItemName(sPersonalityTestTracker->starterItemNameBuffers[i], itemId, NULL);
+        sPersonalityTestTracker->starterItemMenu[i].text = sPersonalityTestTracker->starterItemNameBuffers[i];
+        sPersonalityTestTracker->starterItemMenu[i].menuAction = itemId;
+    }
+
+    sPersonalityTestTracker->starterItemMenu[PERSONALITY_STARTER_ITEM_OPTION_COUNT].text = NULL;
+    sPersonalityTestTracker->starterItemMenu[PERSONALITY_STARTER_ITEM_OPTION_COUNT].menuAction = -1;
+}
+
+static bool8 IsValidStarterItem(u8 itemId)
+{
+    if (itemId >= NUMBER_OF_ITEM_IDS)
+        return FALSE;
+    if (!IsNotMoneyOrUsedTMItem(itemId))
+        return FALSE;
+    if (GetItemCategory(itemId) == CATEGORY_THROWN_LINE || GetItemCategory(itemId) == CATEGORY_THROWN_ARC)
+        return FALSE;
+    return TRUE;
+}
+
+static bool8 IsStarterItemDuplicate(u8 itemId, s32 filledCount)
+{
+    s32 i;
+
+    for (i = 0; i < filledCount; i++) {
+        if (sPersonalityTestTracker->starterItemOptions[i] == itemId)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+static u32 MixStarterItemSeed(u32 seed, u32 salt)
+{
+    u32 mixed = seed ^ (salt * 0x9E3779B9u) ^ 0xA36111C3u;
+    mixed ^= mixed >> 16;
+    mixed *= 0x7FEB352Du;
+    mixed ^= mixed >> 15;
+    mixed *= 0x846CA68Bu;
+    mixed ^= mixed >> 16;
+    return mixed;
+}
+
+static u32 NextStarterItemRandom(u32 *state)
+{
+    *state = *state * 1664525u + 1013904223u;
+    return *state;
+}
+
+static void ApplyStarterHeldItem(void)
+{
+    Pokemon *hero;
+
+    if (sPersonalityTestTracker == NULL)
+        return;
+
+    if (sPersonalityTestTracker->chosenStarterItem == ITEM_NOTHING)
+        return;
+
+    hero = GetPlayerPokemonStruct();
+    if (hero != NULL)
+        InitBulkItem(&hero->heldItem, sPersonalityTestTracker->chosenStarterItem);
+}
+
 // Strong override for SkipCutscenes=ON: behave as if postgame is unlocked
 // and all main-story missions are complete. Spawn in Team Base Inside,
 // seed basic items/news, and clear any pending GO flags.
@@ -709,6 +863,7 @@ static void ApplySkipPostgameBootstrap(void)
     // This mirrors what DeleteTestTracker() would do in the normal flow.
     WriteTeamBasicInfo(&sPersonalityTestTracker->unk4);
     sub_8001064();
+    ApplyStarterHeldItem();
 
     // Scenario: set main scenario & sub-scenarios to match the
     // story_flow.md "Normal Post Game Example" snapshot.
@@ -860,8 +1015,7 @@ static void NicknamePartner(void)
     }
 
     CleanupNamingScreen();
-    CreateDialogueBoxAndPortrait(gTeamNamePrompt, 0, 0, 0x301);
-    sPersonalityTestTracker->TestState = PERSONALITY_TEAM_NAME_PROMPT;
+    StartStarterItemSelection();
 }
 
 static void PromptTeamName(void)

@@ -1304,6 +1304,28 @@ static s16 SelectSpeciesFromPool(DungeonSeedRng *rng, s16 *pool, s32 *poolCount,
     return MONSTER_NONE;
 }
 
+static s16 SelectSpeciesWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount)
+{
+    s32 attempts = 0;
+
+    if (rng == NULL || pool == NULL || poolCount <= 0)
+        return MONSTER_NONE;
+
+    while (attempts < 8) {
+        s16 species = pool[DungeonSeedRng_NextRange(rng, 0, poolCount)];
+        attempts++;
+
+        if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+            continue;
+        if (IsBossSpecies(species))
+            continue;
+
+        return species;
+    }
+
+    return MONSTER_NONE;
+}
+
 static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog)
 {
     const SeedSpeciesPool *pool;
@@ -1509,10 +1531,12 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
 {
     DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, tileset, 0x5352414E); // "SRAN"
     s16 mainCandidates[MONSTER_MAX];
+    s16 mainCandidatesCopy[MONSTER_MAX];
     s16 spawnCandidates[MONSTER_MAX];
     s16 combinedCandidates[MONSTER_MAX];
     bool8 selectedFlags[MONSTER_MAX];
     s32 mainCandidateCount = 0;
+    s32 mainCandidateCopyCount = 0;
     s32 spawnCandidateCount = 0;
     s32 combinedCandidateCount = 0;
     s32 mainQuota;
@@ -1526,6 +1550,7 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     bool8 useBulbasaurOnly = FALSE;
     bool8 loggedFallback = FALSE;
     bool8 loggedInvalid = FALSE;
+    bool8 entryIsMain[SEEDED_FIXED_SPAWN_COUNT];
     s32 i;
 
     if (entryCount > MONSTER_SPAWNS_ARR_COUNT)
@@ -1545,6 +1570,11 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         combinedCandidateCount = BuildSpawnCandidates(combinedMask, combinedCandidates, ARRAY_COUNT(combinedCandidates));
     if (combinedMask != 0 && combinedCandidateCount == 0)
         useBulbasaurOnly = TRUE;
+    if (mainCandidateCount > 0) {
+        mainCandidateCopyCount = mainCandidateCount;
+        for (i = 0; i < mainCandidateCount; i++)
+            mainCandidatesCopy[i] = mainCandidates[i];
+    }
 
     for (i = 0; i < MONSTER_MAX; i++)
         selectedFlags[i] = FALSE;
@@ -1590,6 +1620,16 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
                entryCount,
                startFloorId);
 
+    // Shuffle which bands are main/off-type so mains are not front-loaded.
+    for (i = 0; i < entryCount; i++)
+        entryIsMain[i] = (i < mainQuota);
+    for (i = entryCount - 1; i > 0; i--) {
+        s32 swapIdx = DungeonSeedRng_NextRange(&rng, 0, i + 1);
+        bool8 tmp = entryIsMain[i];
+        entryIsMain[i] = entryIsMain[swapIdx];
+        entryIsMain[swapIdx] = tmp;
+    }
+
     for (i = 0; i < entryCount; i++) {
         s16 species;
         s32 length;
@@ -1599,7 +1639,8 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         s32 mid;
         s32 startIndex = 0;
         s32 endIndex;
-        bool8 fillingMain = (i < mainQuota);
+        bool8 fillingMain = entryIsMain[i];
+        bool8 pickedWithReplacement = FALSE;
         SeededSpawnRange *range;
 
         if (useBulbasaurOnly) {
@@ -1607,6 +1648,10 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
             selectedFlags[species] = TRUE;
         } else if (fillingMain) {
             species = SelectSpeciesFromPool(&rng, mainCandidates, &mainCandidateCount, selectedFlags);
+            if (species == MONSTER_NONE && mainCandidateCopyCount > 0) {
+                species = SelectSpeciesWithReplacement(&rng, mainCandidatesCopy, mainCandidateCopyCount);
+                pickedWithReplacement = TRUE;
+            }
             if (species == MONSTER_NONE)
                 species = SelectSpeciesFromPool(&rng, combinedCandidates, &combinedCandidateCount, selectedFlags);
             if (species == MONSTER_NONE)
@@ -1628,6 +1673,8 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
                 MGBA_Warnf("[SeedOverrides] Spawn invalid species, forcing Bulbasaur (entry=%d)", i);
                 loggedInvalid = TRUE;
             }
+            selectedFlags[species] = TRUE;
+        } else if (pickedWithReplacement) {
             selectedFlags[species] = TRUE;
         }
 

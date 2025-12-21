@@ -33,8 +33,9 @@ typedef struct TeamBasicInfo
 
 typedef TeamBasicInfo PersonalityRelated;
 
-// size: 0x74
 #define PERSONALITY_TEST_SEED_BUFFER_SIZE 12
+#define PERSONALITY_STARTER_ITEM_OPTION_COUNT 5
+#define PERSONALITY_STARTER_ITEM_NAME_LENGTH 80
 typedef struct PersonalityTestTracker
 {
     /* 0x0 */ s32 FrameCounter;
@@ -46,6 +47,10 @@ typedef struct PersonalityTestTracker
     /* 0x50 */ bool8 seedChosen;
     /* 0x51 */ bool8 usingCustomSeed;
     /* 0x52 */ u8 seedBuffer[PERSONALITY_TEST_SEED_BUFFER_SIZE];
+    u8 starterItemOptions[PERSONALITY_STARTER_ITEM_OPTION_COUNT];
+    MenuItem starterItemMenu[PERSONALITY_STARTER_ITEM_OPTION_COUNT + 1];
+    u8 starterItemNameBuffers[PERSONALITY_STARTER_ITEM_OPTION_COUNT][PERSONALITY_STARTER_ITEM_NAME_LENGTH];
+    u8 chosenStarterItem;
 } PersonalityTestTracker;
 
 bool8 CreateTestTracker(void);

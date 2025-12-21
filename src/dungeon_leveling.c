@@ -50,8 +50,16 @@ void AddExpPoints(Entity *pokemon, Entity *target, s32 exp)
 {
   s32 newExp;
   s32 expDiff;
+  EntityInfo *info;
 
-  EntityInfo *info = GetEntInfo(target);
+  if (exp > 0) {
+    exp = (exp * 12) / 10; // Global 20% EXP boost
+    if (exp == 0) {
+      exp = 1;
+    }
+  }
+
+  info = GetEntInfo(target);
   if (info->level != 100) {
     if (!IsExperienceLocked(info->joinedAt.id)) {
       newExp = info->exp + exp;

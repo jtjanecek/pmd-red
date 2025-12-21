@@ -182,14 +182,14 @@ static void CleanupGengarHintPortrait(void);
 static MonPortraitMsg *GetGengarHintPortrait(void);
 static s32 GetQueuedDungeonForHint(void);
 
-static const u8 sGengarHintIntroText[] = _("Heh heh heh...\nI know something about the dungeon ahead.\nGive me 1000 {POKE} for a hint.");
-static const u8 sGengarHintFreeIntroText[] = _("Heh heh... you're new here.\nI'll give you a free hint this time.\nWhich would you like?");
-static const u8 sGengarHintChoicePrompt[] = _("Heh heh. Which hint would you like?");
-static const u8 sGengarHintGreedyText[] = _("Trying again? Heh...\nSomeone's feeling a little desperate.");
-static const u8 sGengarHintNoMoneyText[] = _("Heh heh...\nNo {POKE}, no hint. \nThat's how it works, genius.");
-static const u8 sGengarHintNoDungeonText[] = _("No dungeon lined up for you yet.");
-static const u8 sGengarHintDeclineText[] = _("Heh heh... suit yourself.");
-static const u8 sGengarHintNoSeedText[] = _("Heh heh... No dungeon rumors without a seed.");
+static const u8 sGengarHintIntroText[] = _("Gengar: Heh heh heh...\nI know something about the dungeon ahead.\nGive me 1000 {POKE} for a hint.");
+static const u8 sGengarHintFreeIntroText[] = _("Gengar: Heh heh... you're new here.\nI'll give you a free hint this time.\nWhich would you like?");
+static const u8 sGengarHintChoicePrompt[] = _("Gengar: Heh heh. Which hint would you like?");
+static const u8 sGengarHintGreedyText[] = _("Gengar: Trying again? Heh...\nSomeone's feeling a little desperate.");
+static const u8 sGengarHintNoMoneyText[] = _("Gengar: Heh heh...\nNo {POKE}, no hint.\nThat's how it works, genius.");
+static const u8 sGengarHintNoDungeonText[] = _("Gengar: No dungeon lined up for you yet.");
+static const u8 sGengarHintDeclineText[] = _("Gengar: Heh heh... suit yourself.");
+static const u8 sGengarHintNoSeedText[] = _("Gengar: Heh heh... No dungeon rumors without a seed.");
 static EWRAM_DATA u8 sGengarHintShopBuffer[96] = {0};
 static EWRAM_DATA u8 sGengarHintSuperTrapBuffer[96] = {0};
 static EWRAM_DATA u8 sGengarHintMonsterHouseBuffer[96] = {0};
@@ -217,12 +217,14 @@ typedef struct SkarmoryRecruitConversationState
 {
     SkarmoryRecruitStage stage;
     s16 species;
+    s32 cost;
     MonPortraitMsg portrait;
     bool8 portraitInitialized;
 } SkarmoryRecruitConversationState;
 
 static EWRAM_DATA SkarmoryRecruitConversationState sSkarmoryRecruitState = {0};
 static EWRAM_DATA u8 sSkarmoryRecruitBuffer[128] = {0};
+static EWRAM_DATA u8 sSkarmoryRecruitCostBuffer[64] = {0};
 
 static void StartSkarmoryRecruitConversation(void);
 static bool8 UpdateSkarmoryRecruitConversation(void);
@@ -233,13 +235,13 @@ static void InitSkarmoryRecruitPortrait(void);
 static void CleanupSkarmoryRecruitPortrait(void);
 static MonPortraitMsg *GetSkarmoryRecruitPortrait(void);
 
-static const u8 sSkarmoryRecruitUnavailableText[] = _("I don't have anyone else\navailable yet.");
-static const u8 sSkarmoryRecruitNoMoneyText[] = _("Airlift costs 50 {POKE}. You're short.");
-static const u8 sSkarmoryRecruitDeclineText[] = _("Copy.");
-static const u8 sSkarmoryRecruitRosterFullText[] = _("No room to station them. Clear some space.");
+static const u8 sSkarmoryRecruitUnavailableText[] = _("Skarmory: I don't have anyone else\navailable yet.");
+static const u8 sSkarmoryRecruitNoMoneyText[] = _("Skarmory: Airlift costs 50 {POKE}.\nYou're short.");
+static const u8 sSkarmoryRecruitDeclineText[] = _("Skarmory: Copy.");
+static const u8 sSkarmoryRecruitRosterFullText[] = _("Skarmory: No room to station them.\nClear some space.");
 
-static const MenuItem sSkarmoryRecruitMenu[] = {
-    {_("Recruit for 50 {POKE}"), 1},
+static MenuItem sSkarmoryRecruitMenu[] = {
+    {NULL, 1},
     {_("Not right now"), 0},
     {NULL, -1},
 };
@@ -2428,7 +2430,18 @@ static bool8 UpdateGengarHintConversation(void)
                     return FALSE;
                 }
                 // Has money - deduct it and proceed
-                AddToTeamMoney(-GENGAR_HINT_COST);
+                {
+                    u32 difficulty = GetGameDifficultySetting();
+                    static const s32 sGengarHintSurcharge[] = {
+                        [DIFFICULTY_NORMAL] = 0,
+                        [DIFFICULTY_HARD] = 500,
+                        [DIFFICULTY_NIGHTMARE] = 1000,
+                    };
+                    s32 cost = GENGAR_HINT_COST;
+                    if (difficulty < ARRAY_COUNT(sGengarHintSurcharge))
+                        cost += sGengarHintSurcharge[difficulty];
+                    AddToTeamMoney(-cost);
+                }
                 BuildGengarHintChoiceMenu();
                 CreateMenuDialogueBoxAndPortrait(sGengarHintChoicePrompt, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
                 sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
@@ -2545,11 +2558,21 @@ static s32 GetQueuedDungeonForHint(void)
 static bool8 HasEnoughMoneyForGengarHint(void)
 {
     TeamInventory *inventory = GetMoneyItemsInfo();
+    u32 difficulty = GetGameDifficultySetting();
+    static const s32 sGengarHintSurcharge[] = {
+        [DIFFICULTY_NORMAL] = 0,
+        [DIFFICULTY_HARD] = 500,
+        [DIFFICULTY_NIGHTMARE] = 1000,
+    };
+    s32 cost = GENGAR_HINT_COST;
+
+    if (difficulty < ARRAY_COUNT(sGengarHintSurcharge))
+        cost += sGengarHintSurcharge[difficulty];
 
     if (inventory == NULL)
         return FALSE;
 
-    return (inventory->teamMoney >= GENGAR_HINT_COST);
+    return (inventory->teamMoney >= cost);
 }
 
 static const u8 *BuildKecleonShopHintText(void)
@@ -2576,7 +2599,7 @@ static const u8 *BuildKecleonShopHintText(void)
         chosenIndex = (s32)(hintRoll % SEEDED_KECLEON_SHOP_COUNT);
 
         displayFloor = GetDungeonStartingFloor(dungeonId) + kecleonFloors[chosenIndex] + 1;
-        sprintfStatic(sGengarHintShopBuffer, _("Heh heh... Shop rumor says floor %d."), displayFloor);
+        sprintfStatic(sGengarHintShopBuffer, _("Gengar: Heh heh...\nShop rumor says floor %d."), displayFloor);
         return sGengarHintShopBuffer;
     }
 }
@@ -2596,7 +2619,7 @@ static const u8 *BuildSuperTrapHintText(void)
         s32 superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor((u8)dungeonId, seed);
         s32 displayFloor = GetDungeonStartingFloor(dungeonId) + superTrapFloor + 1;
 
-        sprintfStatic(sGengarHintSuperTrapBuffer, _("Heh heh... Traps everywhere on floor %d."), displayFloor);
+        sprintfStatic(sGengarHintSuperTrapBuffer, _("Gengar: Heh heh...\nTraps everywhere on floor %d."), displayFloor);
         return sGengarHintSuperTrapBuffer;
     }
 }
@@ -2616,7 +2639,7 @@ static const u8 *BuildMonsterHouseHintText(void)
         s32 monsterHouseFloor = DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor((u8)dungeonId, seed);
         s32 displayFloor = GetDungeonStartingFloor(dungeonId) + monsterHouseFloor + 1;
 
-        sprintfStatic(sGengarHintMonsterHouseBuffer, _("Heh heh... Massive monster\nhouse on floor %d."), displayFloor);
+        sprintfStatic(sGengarHintMonsterHouseBuffer, _("Gengar: Heh heh...\nMassive monster house on floor %d."), displayFloor);
         return sGengarHintMonsterHouseBuffer;
     }
 }
@@ -2742,8 +2765,12 @@ static void StartSkarmoryRecruitConversation(void)
         return;
     }
 
+    sSkarmoryRecruitState.cost = SkarmoryRecruit_GetCostForSpecies(sSkarmoryRecruitState.species);
+    sprintfStatic(sSkarmoryRecruitCostBuffer, _("Recruit for %d {POKE}"), sSkarmoryRecruitState.cost);
+    sSkarmoryRecruitMenu[0].text = sSkarmoryRecruitCostBuffer;
+
     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[0], sSkarmoryRecruitState.species);
-    sprintfStatic(sSkarmoryRecruitBuffer, _("You want reinforcements?\n%s is available."), gFormatBuffer_Monsters[0]);
+    sprintfStatic(sSkarmoryRecruitBuffer, _("Skarmory: You want reinforcements?\n%s is available."), gFormatBuffer_Monsters[0]);
     CreateMenuDialogueBoxAndPortrait(sSkarmoryRecruitBuffer, 0, 0, sSkarmoryRecruitMenu, 0, 3, 0, GetSkarmoryRecruitPortrait(), 0x101);
     sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_PROMPT;
 }
@@ -2767,7 +2794,7 @@ static bool8 UpdateSkarmoryRecruitConversation(void)
                 }
                 if (TrySkarmoryRecruitRecruitment(sSkarmoryRecruitState.species)) {
                     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[0], sSkarmoryRecruitState.species);
-                    sprintfStatic(sSkarmoryRecruitBuffer, _("%s is en route. They'll await you at base."), gFormatBuffer_Monsters[0]);
+                    sprintfStatic(sSkarmoryRecruitBuffer, _("Skarmory: %s is en route.\nThey'll await you at base."), gFormatBuffer_Monsters[0]);
                     SkarmoryRecruit_MarkUsed();
                     ShowSkarmoryRecruitMessage(sSkarmoryRecruitBuffer);
                     return FALSE;
@@ -2799,7 +2826,7 @@ static bool8 HasEnoughMoneyForSkarmoryRecruit(void)
     if (inventory == NULL)
         return FALSE;
 
-    return (inventory->teamMoney >= SKARMORY_RECRUIT_COST);
+    return (inventory->teamMoney >= sSkarmoryRecruitState.cost);
 }
 
 static bool8 TrySkarmoryRecruitRecruitment(s16 species)
@@ -2816,7 +2843,7 @@ static bool8 TrySkarmoryRecruitRecruitment(s16 species)
         return FALSE;
 
     SkarmoryRecruit_SetRecruitLevel(recruitPtr);
-    AddToTeamMoney(-SKARMORY_RECRUIT_COST);
+    AddToTeamMoney(-sSkarmoryRecruitState.cost);
     IncrementAdventureNumJoined();
     return TRUE;
 }

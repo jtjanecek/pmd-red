@@ -3,6 +3,7 @@
 
 #include "constants/dungeon.h"
 #include "constants/monster.h"
+#include "constants/item.h"
 #include "dungeon_seed_overrides.h"
 #include "exclusive_pokemon.h"
 #include "memory.h"
@@ -266,6 +267,36 @@ static void ApplyLevelGains(Pokemon *mon, u8 targetLevel)
     mon->level = targetLevel;
     GetLvlUpEntry(&levelData, mon->speciesNum, targetLevel);
     mon->currExp = levelData.expRequired;
+}
+
+s32 SkarmoryRecruit_GetCostForSpecies(s16 species)
+{
+    s32 baseCost = 25;
+    s32 rarity = GetRecruitRate(species);
+    s32 level = SkarmoryRecruit_GetRecommendedLevel();
+    s32 cost;
+    u32 difficulty = GetGameDifficultySetting();
+    static const s32 sDifficultySurcharge[] = {
+        [DIFFICULTY_NORMAL] = 0,
+        [DIFFICULTY_HARD] = 500,
+        [DIFFICULTY_NIGHTMARE] = 1000,
+    };
+
+    if (rarity < 0)
+        rarity = -rarity;
+    if (rarity > 200)
+        rarity = 200;
+
+    cost = baseCost + rarity * 2 + level * 3;
+    if (difficulty < ARRAY_COUNT(sDifficultySurcharge))
+        cost += sDifficultySurcharge[difficulty];
+
+    if (cost < 50)
+        cost = 50;
+    if (cost > MAX_TEAM_MONEY)
+        cost = MAX_TEAM_MONEY;
+
+    return cost;
 }
 
 const void *const gSkarmoryRecruitLinkAnchor[] = {

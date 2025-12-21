@@ -307,7 +307,7 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .species = {MONSTER_LUGIA, MONSTER_DEOXYS_NORMAL},
         .minions = {
             {MONSTER_XATU, MONSTER_STARMIE},
-            {MONSTER_DEOXYS_NORMAL, MONSTER_DEOXYS_NORMAL},
+            {MONSTER_DEOXYS_ATTACK, MONSTER_DEOXYS_DEFENSE},
         },
         .moves = {
             {MOVE_AEROBLAST, MOVE_HYDRO_PUMP, MOVE_RECOVER, MOVE_SAFEGUARD},

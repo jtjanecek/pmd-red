@@ -4,8 +4,6 @@
 #include "global.h"
 #include "pokemon.h"
 
-#define SKARMORY_RECRUIT_COST 50
-
 typedef struct SkarmoryRecruitSaveData
 {
     s16 lastDungeonId;
@@ -24,6 +22,7 @@ s16 SkarmoryRecruit_GetOfferedSpecies(void);
 void SkarmoryRecruit_MarkUsed(void);
 u8 SkarmoryRecruit_GetRecommendedLevel(void);
 void SkarmoryRecruit_SetRecruitLevel(Pokemon *pokemon);
+s32 SkarmoryRecruit_GetCostForSpecies(s16 species);
 extern const void *const gSkarmoryRecruitLinkAnchor[];
 
 #endif // GUARD_SKARMORY_RECRUIT_H

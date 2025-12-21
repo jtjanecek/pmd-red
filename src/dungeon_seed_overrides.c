@@ -1202,6 +1202,9 @@ static bool8 IsBossSpecies(s16 species)
     if (species <= MONSTER_NONE || species >= MONSTER_MAX)
         return FALSE;
 
+    // Normalize cutscene/forms so boss variants like Rayquaza Cutscene are filtered too.
+    species = GetBaseSpecies(species);
+
     for (i = 0; i < NUM_TYPES; i++) {
         const TypeBossPool *pool = &gTypeBossTable[i];
         s32 poolCount = pool->count;

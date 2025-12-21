@@ -2969,6 +2969,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     u8 bossEnabled = FALSE;
     s32 i;
     char speciesName[32];
+    TypeSelectionSaveData typeSelectionData;
 
     if (overrides != NULL) {
         tileset = overrides->tileset;
@@ -2998,6 +2999,22 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     MGBA_Warnf("SEED_DUMP_HEADER,meta,seed,dungeon_id,floor_id,start_floor_id,floor_index,floor_count,tileset,spawn_count,range_count,boss_enabled");
     MGBA_Warnf("SEED_DUMP,meta,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
                seed, dungeonId, floorId, startFloorId, floorIndex, floorCount, tileset, spawnCount, rangeCount, bossEnabled);
+
+    TypeSelection_WriteSaveData(&typeSelectionData);
+    MGBA_Warnf("SEED_DUMP_HEADER,save_overrides,seed,diff,skip,recruit,tc,ta,tsc,tsa,bc,ba,done,await");
+    MGBA_Warnf("SEED_DUMP,save_overrides,%d,%u,%u,%u,%d,%d,%d,%d,%d,%d,%d,%u",
+               sub_8011C34(),
+               GetGameDifficultySetting(),
+               GetSkipBasicRescuesSetting(),
+               GetRecruitAllSetting(),
+               typeSelectionData.committedTypeValid ? typeSelectionData.committedType : -1,
+               typeSelectionData.activeTypeValid ? typeSelectionData.activeType : -1,
+               typeSelectionData.committedTilesetValid ? typeSelectionData.committedTileset : -1,
+               typeSelectionData.activeTilesetValid ? typeSelectionData.activeTileset : -1,
+               typeSelectionData.committedBossValid ? typeSelectionData.committedBoss : -1,
+               typeSelectionData.activeBossValid ? typeSelectionData.activeBoss : -1,
+               typeSelectionData.completedDungeons,
+               typeSelectionData.awaitingChoice);
 
     DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
     superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor(dungeonId, seed);

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "global.h"
 #include "mgba_log.h"
 
@@ -34,7 +35,7 @@ void MGBA_Log(const char *msg)
 
 void MGBA_Printf(const char *fmt, ...)
 {
-    char sBuf[256];
+    char sBuf[512];
     va_list args;
     va_start(args, fmt);
     vsprintf(sBuf, fmt, args);
@@ -44,7 +45,7 @@ void MGBA_Printf(const char *fmt, ...)
 
 void MGBA_LogLevel(int level, const char *fmt, ...)
 {
-    char sBuf[256];
+    char sBuf[512];
     va_list args;
     // Ensure native logging is enabled
     MGBA_Init();
@@ -59,7 +60,7 @@ void MGBA_LogLevel(int level, const char *fmt, ...)
 
 void MGBA_Warnf(const char *fmt, ...)
 {
-    char sBuf[256];
+    char sBuf[512];
     va_list args;
     MGBA_Init();
     va_start(args, fmt);
@@ -71,7 +72,7 @@ void MGBA_Warnf(const char *fmt, ...)
 
 void MGBA_Errorf(const char *fmt, ...)
 {
-    char sBuf[256];
+    char sBuf[512];
     va_list args;
     MGBA_Init();
     va_start(args, fmt);
@@ -83,7 +84,7 @@ void MGBA_Errorf(const char *fmt, ...)
 
 void MGBA_Infof(const char *fmt, ...)
 {
-    char sBuf[256];
+    char sBuf[512];
     va_list args;
     MGBA_Init();
     va_start(args, fmt);

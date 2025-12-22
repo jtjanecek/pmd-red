@@ -3,6 +3,7 @@
 #include "constants/dungeon.h"
 #include "constants/dungeon_action.h"
 #include "constants/iq_skill.h"
+#include "constants/monster.h"
 #include "constants/status.h"
 #include "constants/tactic.h"
 #include "dungeon_astar.h"
@@ -277,6 +278,9 @@ bool8 ShouldExitAutoExploreOnInput(void)
     
     if (isActivating)
         return FALSE;
+
+    if (gRealInputs.held & (A_BUTTON | B_BUTTON))
+        return TRUE;
     
     return (gRealInputs.pressed & exitMask) != 0;
 }
@@ -762,6 +766,8 @@ s32 GetAutoExploreDirection(Entity *leader)
                 
                 // Only attack if it's an actual enemy (not an ally/partner)
                 if (targetInfo->isNotTeamMember) {
+                    if (targetInfo->id == MONSTER_KECLEON)
+                        continue;
                     // Check if we can attack in this direction
                     if (CanAttackInDirection(leader, dir) && !CannotAttack(leader, FALSE)) {
                         attackDirection = dir;
@@ -1843,6 +1849,8 @@ void CheckLeaderTile(void)
         break;
         case ENTITY_ITEM: {
             Item *item = GetItemInfo(tileObject);
+            if (IsAutoExploreActive())
+                break;
             if (!(item->flags & ITEM_FLAG_IN_SHOP)) {
                 TryLeaderItemPickUp(&leader->pos, 1);
             }

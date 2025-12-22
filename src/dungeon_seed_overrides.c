@@ -46,6 +46,7 @@
 #define SEEDED_SPAWN_TARGET_DEN 10
 #define SEEDED_MAIN_TYPE_PERCENT 80
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
+#define SEEDED_DUNGEON_NAME_VERSION 2
 #define SEEDED_PREFIX_BUFFER_LEN 16
 #define SEEDED_TRAP_DENSITY_DEFAULT 15
 #define SEEDED_TRAP_DENSITY_SUPER 56
@@ -416,6 +417,7 @@ static u8 sSeededDungeonName2[NUM_DUNGEONS][SEEDED_DUNGEON_NAME_MAX_LEN];
 static bool8 sSeededDungeonNameValid[NUM_DUNGEONS];
 static s32 sSeededDungeonNameSeed = -2;
 static s32 sSeededDungeonNameType = -2;
+static s32 sSeededDungeonNameVersion = 0;
 
 static bool8 sSeededItemOverridesActive = FALSE;
 static bool8 sSeededRareFloorItemPending = FALSE;
@@ -747,6 +749,11 @@ const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)
         return NULL;
     if (!DungeonSeedOverrides_IsEnabled(&seed))
         return NULL;
+
+    if (sSeededDungeonNameVersion != SEEDED_DUNGEON_NAME_VERSION) {
+        sSeededDungeonNameVersion = SEEDED_DUNGEON_NAME_VERSION;
+        ResetSeededDungeonNameCache();
+    }
 
 #ifdef DEV
     displayType = GetSelectedTypeForDisplay();
@@ -2537,12 +2544,12 @@ static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
 
 #ifdef DEV
     if (bannerTypeLabel != NULL) {
-        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d-%d %s",
+        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d of %d %s",
                       progressionNumber, SEQUENTIAL_DUNGEON_COUNT, bannerTypeLabel);
     } else
 #endif
     {
-        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d-%d",
+        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d of %d",
                       progressionNumber, SEQUENTIAL_DUNGEON_COUNT);
     }
 

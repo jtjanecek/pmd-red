@@ -5,7 +5,7 @@
 
 const TypeHintDefinition gTypeHintTable[] = {
     {
-        .message = _("A path marked by gentle restlessness, settling into a quiet, disciplined resolve."),
+        .message = _("A path marked by gentle restlessness, settling into a disciplined resolve."),
         .type1 = TYPE_BUG,
         .type2 = TYPE_FIGHTING,
     },
@@ -20,7 +20,7 @@ const TypeHintDefinition gTypeHintTable[] = {
         .type2 = TYPE_GHOST,
     },
     {
-        .message = _("A path rooted in faint stirring earth, steady and grounded beneath each step."),
+        .message = _("A path rooted in stirring earth, steady and grounded beneath each step."),
         .type1 = TYPE_BUG,
         .type2 = TYPE_GROUND,
     },

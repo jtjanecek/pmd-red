@@ -1260,6 +1260,9 @@ static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask)
     // Kecleon is reserved for shops; never treat it as a normal floor spawn
     if (species == MONSTER_KECLEON)
         return FALSE;
+    // Decoy/statue are placeholder actors and should never be wild spawns
+    if (species == MONSTER_DECOY || species == MONSTER_STATUE)
+        return FALSE;
 
     for (i = 0; i < 2; i++) {
         u8 type = GetPokemonType(species, (u32)i);

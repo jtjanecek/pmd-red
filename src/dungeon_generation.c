@@ -7590,6 +7590,36 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
     }
 
+    // STEP 3c: Apply minion HP as half of the boss HP
+    if (config->bossHP > 0 && config->minionCount > 0) {
+        s32 minionPositions[4][2];
+        s32 minionHP = config->bossHP / 2;
+
+        if (minionHP < 1)
+            minionHP = 1;
+
+        GetBossMinionPositions(config, centerX, bossY, minionPositions, ARRAY_COUNT(minionPositions));
+        for (i = 0; i < config->minionCount && i < ARRAY_COUNT(minionPositions); i++) {
+            Entity *minionEntity;
+            EntityInfo *minionInfo;
+
+            tile = GetTileMut(minionPositions[i][0], minionPositions[i][1]);
+            if (tile == NULL)
+                continue;
+            minionEntity = tile->monster;
+            if (minionEntity == NULL)
+                continue;
+            minionInfo = GetEntInfo(minionEntity);
+            if (minionInfo == NULL)
+                continue;
+            if (minionInfo->id == MONSTER_SHEDINJA)
+                continue;
+
+            minionInfo->maxHPStat = minionHP;
+            minionInfo->HP = minionHP;
+        }
+    }
+
     // STEP 3: Set boss music globally so it plays immediately
     if (config->bossMusic != 0) {
         gDungeon->unk644.bossSongIndex = config->bossMusic;

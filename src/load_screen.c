@@ -9,6 +9,7 @@
 #include "adventure_info.h"
 #include "def_filearchives.h"
 #include "dungeon_info.h"
+#include "dungeon_seed_overrides.h"
 #include "event_flag.h"
 #include "file_system.h"
 #include "ground_main.h"
@@ -49,8 +50,39 @@ extern unkStruct_203B484 *gUnknown_203B484;
 u8 IsQuickSave(void);
 void DrawLoadScreenText(void);
 void sub_80397B4(void);
+static bool8 FormatSeededDungeonLocationForLoadScreen(u8 *buffer, const DungeonLocation *location);
 
 extern void sub_80920D8(u8 *);
+
+static bool8 FormatSeededDungeonLocationForLoadScreen(u8 *buffer, const DungeonLocation *location)
+{
+    s32 seed;
+    s32 dungeonNumber;
+    s32 dungeonCount;
+
+    if (buffer == NULL || location == NULL)
+        return FALSE;
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return FALSE;
+
+    dungeonNumber = DungeonSeedOverrides_GetDungeonNumberForDisplay(location->id);
+    dungeonCount = DungeonSeedOverrides_GetSequentialDungeonCount();
+
+    if (dungeonNumber < 1)
+        dungeonNumber = 1;
+    if (dungeonCount < 1)
+        dungeonCount = 1;
+
+    if (IsStairDirectionUp(location->id)) {
+        sprintfStatic(buffer, _("{color YELLOW_D}D %d of %d{reset}　{color CYAN}%d{reset}F"),
+                      dungeonNumber, dungeonCount, location->floor);
+    } else {
+        sprintfStatic(buffer, _("{color YELLOW_D}D %d of %d{reset}　B{color CYAN}%d{reset}F"),
+                      dungeonNumber, dungeonCount, location->floor);
+    }
+
+    return TRUE;
+}
 
 const WindowTemplate gUnknown_80E75F8 = {
    0,
@@ -346,8 +378,10 @@ void DrawLoadScreenText(void)
 
   // Draw Location Info
   if ((CountMailType(WONDER_MAIL_TYPE_SOS) != 0) || (CountMailType(WONDER_MAIL_TYPE_OKD) != 0)) {
-    if (iVar2 == 0xf1207)
-        PrintDungeonLocationtoBuffer(gLoadScreen->formattedLocation,GetDungeonLocationInfo());
+    if (iVar2 == 0xf1207) {
+        if (!FormatSeededDungeonLocationForLoadScreen(gLoadScreen->formattedLocation, GetDungeonLocationInfo()))
+            PrintDungeonLocationtoBuffer(gLoadScreen->formattedLocation, GetDungeonLocationInfo());
+    }
     else
         sprintfStatic(gLoadScreen->formattedLocation,gQuicksaveDataDeletedText); // Quicksave data deleted
   }
@@ -368,8 +402,10 @@ void DrawLoadScreenText(void)
             }
             break;
         case 2:
-            if (iVar2 == 0xf1207)
-                PrintDungeonLocationtoBuffer(gLoadScreen->formattedLocation,GetDungeonLocationInfo());
+            if (iVar2 == 0xf1207) {
+                if (!FormatSeededDungeonLocationForLoadScreen(gLoadScreen->formattedLocation, GetDungeonLocationInfo()))
+                    PrintDungeonLocationtoBuffer(gLoadScreen->formattedLocation, GetDungeonLocationInfo());
+            }
             else
                 sprintfStatic(gLoadScreen->formattedLocation,gQuicksaveDataDeletedText); // Quicksave data deleted
             break;

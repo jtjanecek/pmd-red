@@ -168,7 +168,7 @@ static s32 RollSpawnLevel(DungeonSeedRng *rng, s32 dungeonId, s32 floorId);
 static s32 GetFloorIndexWithinDungeon(s32 floorId, s32 startFloorId, s32 floorCount);
 static void EnsureSpawnRangesCoverDungeon(s32 floorCount);
 static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSeedRng *rng, s32 dungeonId, s32 floorId, s32 seed);
-static void BuildUniformTrapTable(u16 *trapTable);
+static void BuildUniformTrapTableNoPitfall(u16 *trapTable);
 static bool8 SelectWeatherForType(u8 dungeonType, DungeonSeedRng *rng, u8 *weatherOut);
 static void MaybeApplyFloorWeather(DungeonSeedFloorOverrides *result, s32 seed, u8 dungeonId, s32 floorId);
 static const SeedSpeciesPool* GetBossPool(s32 floorId);
@@ -429,9 +429,10 @@ static SeededSpawnRangeCache sSpawnRangeCache = {0};
 
 static void ResetSeededDungeonNameCache(void);
 static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed);
-static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize);
-static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize);
-static s32 GetSelectedTypeForDisplay(void);
+UNUSED static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize);
+UNUSED static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize);
+UNUSED static s32 GetSelectedTypeForDisplay(void);
+static s16 GetSeededBossHP(u8 dungeonId);
 
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result)
 {
@@ -450,7 +451,7 @@ void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorI
     // Use a seeded trap density and a uniform trap table; specific floors can override density below
     result->trapDensityOverride = SEEDED_TRAP_DENSITY_DEFAULT;
     result->hasTrapTable = TRUE;
-    BuildUniformTrapTable(result->trapSpawnChances);
+    BuildUniformTrapTableNoPitfall(result->trapSpawnChances);
     {
         s32 superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor(dungeonId, seed);
         s32 superTrapFloorId = GetDungeonStartingFloor(dungeonId) + superTrapFloor + 1; // Floors are 1-indexed in mapparam
@@ -555,6 +556,16 @@ u32 DungeonSeedOverrides_GetDungeonRngSeed(s32 seed, u8 dungeonId, s32 floorId)
     u32 rngSeed = DungeonSeedRng_Next(&rng) | 1;
     MGBA_Warnf("[SeedOverrides] RngSeed: seed=%d dungeon=%d floor=%d rngSeed=%u", seed, dungeonId, floorId, rngSeed);
     return rngSeed;
+}
+
+s32 DungeonSeedOverrides_GetDungeonNumberForDisplay(u8 dungeonId)
+{
+    return GetDungeonNumberForFloorScaling(dungeonId);
+}
+
+s32 DungeonSeedOverrides_GetSequentialDungeonCount(void)
+{
+    return SEQUENTIAL_DUNGEON_COUNT;
 }
 
 bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
@@ -737,7 +748,11 @@ const u8 *DungeonSeedOverrides_GetDungeonName(u8 dungeonId, bool8 secondLine)
     if (!DungeonSeedOverrides_IsEnabled(&seed))
         return NULL;
 
+#ifdef DEV
     displayType = GetSelectedTypeForDisplay();
+#else
+    displayType = TYPE_NONE;
+#endif
     if (displayType != sSeededDungeonNameType) {
         sSeededDungeonNameType = displayType;
         ResetSeededDungeonNameCache();
@@ -804,18 +819,23 @@ static void ClearFloorOverrides(DungeonSeedFloorOverrides *result)
     result->bossFight.useCustomMoves = FALSE;
 }
 
-static void BuildUniformTrapTable(u16 *trapTable)
+static void BuildUniformTrapTableNoPitfall(u16 *trapTable)
 {
     s32 i;
     u32 accum = 0;
-    u32 base = 10000 / NUM_TRAPS;
-    u32 remainder = 10000 % NUM_TRAPS;
+    u32 activeTraps = NUM_TRAPS - 1;
+    u32 base = 10000 / activeTraps;
+    u32 remainder = 10000 % activeTraps;
 
     if (trapTable == NULL)
         return;
 
     for (i = 0; i < NUM_TRAPS; i++) {
         u32 increment = base;
+        if (i == TRAP_PITFALL_TRAP) {
+            trapTable[i] = (u16)accum;
+            continue;
+        }
         if (remainder > 0) {
             increment++;
             remainder--;
@@ -2224,7 +2244,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     if (sub_8011C34() == -1) {
         result->bossFight.enabled = TRUE;
         result->bossFight.bossSpecies = MONSTER_BULBASAUR;
-        result->bossFight.bossHP = 300 + (floorId * 25);
+        result->bossFight.bossHP = GetSeededBossHP(dungeonId);
         result->bossFight.bossMusic = MUS_BOSS_BATTLE;
         result->bossFight.dropItem = SelectPrimaryBossLoot(rng);
         result->bossFight.secondaryDropLeft = SelectSecondaryBossLoot(rng);
@@ -2269,8 +2289,8 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     result->bossFight.bossSpecies = selectedBoss;
     result->bossFight.useCustomMoves = GetTypeBossMoves(selectedBoss, result->bossFight.bossMoves);
 
-    // Procedurally set HP scaling with floor
-    result->bossFight.bossHP = 300 + (floorId * 25);
+    // Procedurally set HP based on dungeon progression and difficulty.
+    result->bossFight.bossHP = GetSeededBossHP(dungeonId);
 
     // Procedurally select music
     result->bossFight.bossMusic = MUS_BOSS_BATTLE;
@@ -2297,6 +2317,10 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     {
         u8 dungeonType = TYPE_NONE;
         const char *roomName = "unknown";
+        bool8 isDeoxysBoss = (result->bossFight.bossSpecies == MONSTER_DEOXYS_NORMAL
+            || result->bossFight.bossSpecies == MONSTER_DEOXYS_ATTACK
+            || result->bossFight.bossSpecies == MONSTER_DEOXYS_DEFENSE
+            || result->bossFight.bossSpecies == MONSTER_DEOXYS_SPEED);
 
         // Get the current dungeon's type
         if (TypeSelection_HasActiveType())
@@ -2369,11 +2393,20 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
             roomName = "MtFaraway";
         }
         else if (dungeonType == TYPE_PSYCHIC) {
-            // Psychic dungeon -> Use Lugia's boss room (Silver Trench)
-            result->bossFight.roomTileset = 73;        // Silver Trench boss tileset
-            result->bossFight.useFixedRoomLayout = TRUE;
-            result->bossFight.fixedRoomNumber = 21;    // Lugia arena (Room 21)
-            roomName = "SilverTrench";
+            if (isDeoxysBoss) {
+                // Deoxys boss -> Use custom procedural arena (not Lugia's fixed room)
+                result->bossFight.roomTileset = 0;         // Special value: keep normal tileset
+                result->bossFight.useFixedRoomLayout = FALSE;
+                result->bossFight.fixedRoomNumber = 0;     // Not used
+                roomName = "CustomArena-Deoxys";
+            }
+            else {
+                // Psychic dungeon -> Use Lugia's boss room (Silver Trench)
+                result->bossFight.roomTileset = 73;        // Silver Trench boss tileset
+                result->bossFight.useFixedRoomLayout = TRUE;
+                result->bossFight.fixedRoomNumber = 21;    // Lugia arena (Room 21)
+                roomName = "SilverTrench";
+            }
         }
         else if (dungeonType == TYPE_WATER) {
             // Water dungeon -> Use Kyogre's boss room (Stormy Sea)
@@ -2429,6 +2462,34 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
                result->bossFight.weather, result->bossFight.applyWeather);
 }
 
+static s16 GetSeededBossHP(u8 dungeonId)
+{
+    s32 dungeonNumber = GetDungeonNumberForFloorScaling(dungeonId);
+    s32 difficulty = GetGameDifficultySetting();
+    s32 difficultyBonus = 0;
+
+    if (dungeonNumber < 1)
+        dungeonNumber = 1;
+
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            difficultyBonus = 50;
+            break;
+        case DIFFICULTY_NIGHTMARE:
+            difficultyBonus = 100;
+            break;
+        case DIFFICULTY_NORMAL:
+        default:
+            difficultyBonus = 0;
+            break;
+    }
+
+    return (s16)(100 * dungeonNumber + difficultyBonus);
+}
+
 static void ResetSeededDungeonNameCache(void)
 {
     s32 i;
@@ -2442,62 +2503,53 @@ static void ResetSeededDungeonNameCache(void)
 
 static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
 {
-    DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0xB16B00B);
-    const char *prefix;
-    const char *suffix;
-    char prefixBuffer[SEEDED_PREFIX_BUFFER_LEN];
-    s32 dungeonIndex = -1;
-    s32 i;
+    s32 progressionNumber = GetDungeonNumberForFloorScaling(dungeonId);
     const char *typeLabel = NULL;
+#ifdef DEV
     char typeBuffer[20];
+    const char *bannerTypeLabel = NULL;
+    char bannerTypeBuffer[20];
+#endif
 
-    prefix = SelectPrefixForDungeon(dungeonId, &rng, prefixBuffer, ARRAY_COUNT(prefixBuffer));
-    suffix = sSeededSuffixTable[DungeonSeedRng_NextRange(&rng, 0, ARRAY_COUNT(sSeededSuffixTable))];
-
+#ifdef DEV
     if (sSeededDungeonNameType > TYPE_NONE && sSeededDungeonNameType < NUM_TYPES) {
         sprintfStatic(typeBuffer, "[%s]", gUnformattedTypeStrings[sSeededDungeonNameType]);
         typeLabel = typeBuffer;
+        sprintfStatic(bannerTypeBuffer, "%s", gUnformattedTypeStrings[sSeededDungeonNameType]);
+        bannerTypeLabel = bannerTypeBuffer;
     }
+#else
+    (void)typeLabel;
+#endif
 
-    // Find this dungeon's index in the sequential list by checking each rescue dungeon
-    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
-        u8 listDungeonId = RescueDungeonToDungeonId(sSequentialDungeonList[i]);
-        if (listDungeonId == dungeonId) {
-            dungeonIndex = i;
-            break;
-        }
-    }
+    (void)seed;
 
-    // If dungeon is in the sequential list, prepend "Dungeon X/YY" format
-    // where X is the progression number (# completed + 1), not the dungeon's array index
-    if (dungeonIndex != -1) {
-        s32 progressionNumber = 1;  // Start at 1 for the first dungeon
+    if (progressionNumber < 1)
+        progressionNumber = 1;
 
-        // Count how many dungeons have been conquered before this one
-        for (i = 0; i < dungeonIndex; i++) {
-            if (RescueScenarioConquered(sSequentialDungeonList[i])) {
-                progressionNumber++;
-            }
-        }
-
-        if (typeLabel != NULL) {
-            sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d) %s",
-                          progressionNumber, SEQUENTIAL_DUNGEON_COUNT, typeLabel);
-        } else {
-            sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d)",
-                          progressionNumber, SEQUENTIAL_DUNGEON_COUNT);
-        }
-        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
+    if (typeLabel != NULL) {
+        sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d) %s",
+                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT, typeLabel);
     } else {
-        // Not in sequential list, use normal format
-        sprintfStatic((char *)sSeededDungeonName1[dungeonId], "%s %s", prefix, suffix);
-        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "%s %s", prefix, suffix);
+        sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d)",
+                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT);
+    }
+
+#ifdef DEV
+    if (bannerTypeLabel != NULL) {
+        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d-%d %s",
+                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT, bannerTypeLabel);
+    } else
+#endif
+    {
+        sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d-%d",
+                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT);
     }
 
     sSeededDungeonNameValid[dungeonId] = TRUE;
 }
 
-static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize)
+UNUSED static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, char *scratch, s32 scratchSize)
 {
     if (scratch != NULL && scratchSize > 1 && CopyFirstTokenFromBaseName(dungeonId, scratch, scratchSize))
         return scratch;
@@ -2505,7 +2557,7 @@ static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *rng, cha
     return sSeededPrefixTable[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sSeededPrefixTable))];
 }
 
-static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize)
+UNUSED static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize)
 {
     const u8 *baseName;
     s32 i;
@@ -2529,7 +2581,7 @@ static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSi
     return (i != 0);
 }
 
-static s32 GetSelectedTypeForDisplay(void)
+UNUSED static s32 GetSelectedTypeForDisplay(void)
 {
     s32 type = -1;
 

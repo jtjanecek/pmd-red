@@ -599,6 +599,37 @@ bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
     return TRUE;
 }
 
+static bool8 SelectShoppableItemFromPool(const RogueItemPool *pool, u8 *itemIdOut)
+{
+    s32 i;
+    s32 shoppableCount = 0;
+    s32 pick;
+
+    if (pool == NULL || pool->items == NULL || pool->count == 0 || itemIdOut == NULL)
+        return FALSE;
+
+    for (i = 0; i < pool->count; i++) {
+        if (IsShoppableItem(pool->items[i]))
+            shoppableCount++;
+    }
+
+    if (shoppableCount == 0)
+        return FALSE;
+
+    pick = DungeonRandInt(shoppableCount);
+    for (i = 0; i < pool->count; i++) {
+        if (!IsShoppableItem(pool->items[i]))
+            continue;
+        if (pick == 0) {
+            *itemIdOut = (u8)pool->items[i];
+            return TRUE;
+        }
+        pick--;
+    }
+
+    return FALSE;
+}
+
 bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut)
 {
     const RogueItemPool *pool = NULL;
@@ -609,10 +640,14 @@ bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut)
     switch (spawnType) {
         case ITEM_SPAWN_IN_SHOP:
             if (sSeededKecleonShopHasRare && !sSeededKecleonShopRareUsed && sSeededKecleonShopRareId != ITEM_NOTHING) {
-                *itemIdOut = (u8)sSeededKecleonShopRareId;
+                if (IsShoppableItem(sSeededKecleonShopRareId)) {
+                    *itemIdOut = (u8)sSeededKecleonShopRareId;
+                    sSeededKecleonShopRareUsed = TRUE;
+                    MGBA_Warnf("[ItemPools] Using rare Kecleon item id=%d (forced=%d)", *itemIdOut, sSeededIsForcedKecleonFloor);
+                    return TRUE;
+                }
                 sSeededKecleonShopRareUsed = TRUE;
-                MGBA_Warnf("[ItemPools] Using rare Kecleon item id=%d (forced=%d)", *itemIdOut, sSeededIsForcedKecleonFloor);
-                return TRUE;
+                MGBA_Warnf("[ItemPools] Skipped non-shoppable Kecleon rare item id=%d", sSeededKecleonShopRareId);
             }
             pool = &gRogueItemPools[ROGUE_ITEM_POOL_KECLEON_COMMON];
             break;
@@ -635,6 +670,9 @@ bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut)
 
     if (pool == NULL || pool->items == NULL || pool->count == 0)
         return FALSE;
+
+    if (spawnType == ITEM_SPAWN_IN_SHOP)
+        return SelectShoppableItemFromPool(pool, itemIdOut);
 
     *itemIdOut = (u8)pool->items[DungeonRandInt(pool->count)];
     return TRUE;

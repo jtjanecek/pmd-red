@@ -219,7 +219,7 @@ static void InitializeTestStats(void)
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
+    //sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
     //sPersonalityTestTracker->unk4.PartnerID = MONSTER_BULBASAUR;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
@@ -328,7 +328,7 @@ u32 HandleTestTrackerState(void)
                 sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
 #ifdef DEV
                 // In DEV builds, always use this seed
-                //sPersonalityTestTracker->rngSeed = 100;
+                //sPersonalityTestTracker->rngSeed = 80430828;
 #endif
                 sPersonalityTestTracker->seedChosen = TRUE;
             }

@@ -23,6 +23,7 @@ Entity* SpawnWildMon(struct MonSpawnInfo *monSpawnInfo, bool8 a1);
 bool8 SpawnTeamMember(s16 _species, s32 x, s32 y, DungeonMon *monPtr, Entity **a4, bool32 _a5, u32 _a6);
 void UpdateEntitySpecies(Entity *entity, s32 _species);
 void ResetMonEntityData(EntityInfo *entInfo, bool8 setStatsToOne);
+void sub_806AED8(Moves *moves, s16 *maxHPStat, u8 *atk, u8 *def, s16 _species, s32 level);
 void sub_806C1D8(void);
 void sub_806C264(s32 teamIndex, EntityInfo *entInfo);
 void sub_806C330(s32 _x, s32 _y, s16 _species, u32 _a3);

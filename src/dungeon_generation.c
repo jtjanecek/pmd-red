@@ -7,9 +7,11 @@
 #include "dungeon_message.h"
 #include "dungeon_random.h"
 #include "dungeon_util.h"
+#include "dungeon_range.h"
 #include "items.h"
 #include "pokemon.h"
 #include "constants/direction.h"
+#include "constants/difficulty.h"
 #include "constants/fixed_rooms.h"
 #include "constants/item.h"
 #include "constants/monster.h"
@@ -483,6 +485,8 @@ void GenerateFloor(void)
                    gDungeon->kecleonShopPos.minX, gDungeon->kecleonShopPos.minY,
                    gDungeon->kecleonShopPos.maxX, gDungeon->kecleonShopPos.maxY);
         gDungeon->unk3A0A = 1;
+        // Always load the shopkeeper sprite on shop floors, even if the NPC is skipped.
+        LoadPokemonSprite(MONSTER_KECLEON, TRUE);
 
         // Queue a natural shopkeeper spawn on the shop floor so the game flags it as a shopkeeper
         if (sKecleonShopMiddlePos.x >= 0 && sKecleonShopMiddlePos.y >= 0) {
@@ -495,8 +499,6 @@ void GenerateFloor(void)
             centerTile->spawnOrVisibilityFlags.spawn &= ~(SPAWN_FLAG_ITEM);
             if (spawnShopkeeper) {
                 sub_806C330(sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y, MONSTER_KECLEON, 0);
-                // Proactively load the shopkeeper sprite so VRAM init doesn't read a NULL handle
-                LoadPokemonSprite(MONSTER_KECLEON, TRUE);
                 MGBA_Warnf("[ShopGen] Queued shopkeeper spawn at (%d,%d) faintChance=%d",
                            sKecleonShopMiddlePos.x, sKecleonShopMiddlePos.y, faintChance);
             }
@@ -7509,6 +7511,30 @@ void SpawnBossFightEntities(BossFightConfig *config)
     // and will spawn the boss from the array!
 }
 
+static s32 GetBossLevelOffset(void)
+{
+    u32 difficulty = GetGameDifficultySetting();
+
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            return 3;
+        case DIFFICULTY_NIGHTMARE:
+            return 5;
+        case DIFFICULTY_NORMAL:
+        default:
+            return 0;
+    }
+}
+
+static s32 ClampBossLevel(s32 level)
+{
+    if (level < 1)
+        return 1;
+    if (level > 100)
+        return 100;
+    return level;
+}
+
 // STEP 3: Apply HP/music overrides to spawned boss
 // Called from run_dungeon.c AFTER sub_806C3C0() spawns the boss
 void ApplyBossFightOverrides(BossFightConfig *config)
@@ -7517,9 +7543,20 @@ void ApplyBossFightOverrides(BossFightConfig *config)
     Tile *tile;
     s32 centerX, bossY;
     s32 i;
+    s32 leaderLevel = 1;
+    s32 bossLevel = 1;
+    s32 minionLevel = 1;
+    Entity *leader;
 
     if (config == NULL || !config->enabled)
         return;
+
+    leader = GetLeader();
+    if (EntityIsValid(leader)) {
+        leaderLevel = GetEntInfo(leader)->level;
+    }
+    bossLevel = ClampBossLevel(leaderLevel + GetBossLevelOffset());
+    minionLevel = ClampBossLevel(leaderLevel);
 
     // Calculate where we spawned the boss - must match SpawnBossFightEntities
     if (config->useFixedRoomLayout) {
@@ -7542,6 +7579,41 @@ void ApplyBossFightOverrides(BossFightConfig *config)
 
     // STEP 5: Register boss so we can track its defeat
     DungeonSeedOverrides_RegisterBossEntity(bossEntity);
+
+    // Set boss level before applying custom move overrides.
+    {
+        EntityInfo *bossInfo = GetEntInfo(bossEntity);
+
+        if (bossInfo != NULL) {
+            bossInfo->level = bossLevel;
+            sub_806AED8(&bossInfo->moves, &bossInfo->maxHPStat, bossInfo->atk, bossInfo->def, bossInfo->id, bossInfo->level);
+            bossInfo->HP = bossInfo->maxHPStat;
+        }
+    }
+
+    // Set minion levels before applying custom move overrides.
+    {
+        s32 minionPositions[2][2];
+        Entity *minionEntity;
+        EntityInfo *minionInfo;
+
+        GetBossMinionPositions(config, centerX, bossY, minionPositions, ARRAY_COUNT(minionPositions));
+        for (i = 0; i < config->minionCount && i < ARRAY_COUNT(minionPositions); i++) {
+            tile = GetTileMut(minionPositions[i][0], minionPositions[i][1]);
+            if (tile == NULL)
+                continue;
+            minionEntity = tile->monster;
+            if (minionEntity == NULL)
+                continue;
+            minionInfo = GetEntInfo(minionEntity);
+            if (minionInfo == NULL)
+                continue;
+
+            minionInfo->level = minionLevel;
+            sub_806AED8(&minionInfo->moves, &minionInfo->maxHPStat, minionInfo->atk, minionInfo->def, minionInfo->id, minionInfo->level);
+            minionInfo->HP = minionInfo->maxHPStat;
+        }
+    }
 
     // STEP 3a: Override boss moves if configured
     if (config->useCustomMoves) {

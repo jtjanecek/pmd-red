@@ -111,7 +111,7 @@ void sub_806AD3C(void)
     }
 }
 
-static void sub_806AED8(Moves *moves, s16 *maxHPStat, u8 *atk, u8 *def, s16 _species, s32 level)
+void sub_806AED8(Moves *moves, s16 *maxHPStat, u8 *atk, u8 *def, s16 _species, s32 level)
 {
     s32 i;
     s32 moveCategory;

@@ -39,6 +39,13 @@ enum RecruitAllSetting
     NUM_RECRUIT_ALL_SETTINGS
 };
 
+enum MaxDungeonCountSetting
+{
+    MAX_DUNGEONS_10 = 10,
+    MAX_DUNGEONS_15 = 15,
+    MAX_DUNGEONS_20 = 20
+};
+
 // size: 0x57D4
 struct UnkStruct_sub_8011DAC
 {
@@ -52,6 +59,8 @@ struct UnkStruct_sub_8011DAC
     u32 difficulty;
     u8 skipBasicRescues;
     u8 recruitAll;
+    u8 maxDungeons;
+    u8 padding427;
     u32 savedRecruitedPokemon;
     u32 unk428;
     u8 fill42C[0x4];
@@ -108,6 +117,8 @@ u8 GetSkipBasicRescuesSetting(void);
 void SetSkipBasicRescuesSetting(u8 in);
 u8 GetRecruitAllSetting(void);
 void SetRecruitAllSetting(u8 in);
+u8 GetMaxDungeonsSetting(void);
+void SetMaxDungeonsSetting(u8 in);
 void sub_8011CA8(u32 *out, s32 size);
 u32 ReadSaveFromPak(u32 *a);
 u32 WriteSavetoPak(s32 *param_1, u32 param_2);

@@ -16,7 +16,7 @@ typedef struct PersonalityQuestion
     /* 0x8 */ const PersonalityEffects *effects;
 } PersonalityQuestion;
 
-// size: 0x45
+// size: 0x46
 typedef struct TeamBasicInfo
 {
     /* 0x0 */ u32 unk0;
@@ -29,6 +29,7 @@ typedef struct TeamBasicInfo
     /* 0x40 */ u8 difficulty;
     /* 0x41 */ u8 skipBasicRescues;
     /* 0x42 */ u8 recruitAll;
+    /* 0x43 */ u8 maxDungeons;
 } TeamBasicInfo;
 
 typedef TeamBasicInfo PersonalityRelated;

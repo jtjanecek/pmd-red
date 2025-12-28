@@ -317,11 +317,11 @@ void sub_803E748(void)
         if(index1 > 0xB)
             if(gDungeonBrightness <= 0x1E)
                 gDungeonBrightness++;
-        MGBA_Warnf("[VRAM] Loop %d: calling sub_803E874", index1);
+        // MGBA_Warnf("[VRAM] Loop %d: calling sub_803E874", index1);
         sub_803E874(1, index2);
-        MGBA_Warnf("[VRAM] Loop %d: calling DungeonRunFrameActions", index1);
+        // MGBA_Warnf("[VRAM] Loop %d: calling DungeonRunFrameActions", index1);
         DungeonRunFrameActions(5);
-        MGBA_Warnf("[VRAM] Loop %d: complete", index1);
+        // MGBA_Warnf("[VRAM] Loop %d: complete", index1);
     }
     gUnknown_203B40D = 0;
     gDungeonBrightness = 0x1F;

@@ -87,6 +87,16 @@ static const s16 sSequentialDungeonList[] = {
 
 #define SEQUENTIAL_DUNGEON_COUNT ARRAY_COUNT(sSequentialDungeonList)
 
+static s32 GetSequentialDungeonCountForRun(void)
+{
+    s32 count = (s32)GetMaxDungeonsSetting();
+
+    if (count <= 0 || count > SEQUENTIAL_DUNGEON_COUNT)
+        count = SEQUENTIAL_DUNGEON_COUNT;
+
+    return count;
+}
+
 typedef struct DungeonSeedRng {
     u32 state;
 } DungeonSeedRng;
@@ -516,11 +526,12 @@ void DungeonSeedOverrides_ResetItemPools(void)
 static s32 GetDungeonNumberForFloorScaling(u8 dungeonId)
 {
     s32 i;
+    s32 count = GetSequentialDungeonCountForRun();
 
     if (dungeonId >= NUM_DUNGEONS)
         return 1;
 
-    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+    for (i = 0; i < count; i++) {
         u8 listDungeonId = RescueDungeonToDungeonId(sSequentialDungeonList[i]);
         if (listDungeonId == dungeonId)
             return i + 1; // 1-indexed progression number
@@ -567,7 +578,7 @@ s32 DungeonSeedOverrides_GetDungeonNumberForDisplay(u8 dungeonId)
 
 s32 DungeonSeedOverrides_GetSequentialDungeonCount(void)
 {
-    return SEQUENTIAL_DUNGEON_COUNT;
+    return GetSequentialDungeonCountForRun();
 }
 
 bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
@@ -2552,6 +2563,7 @@ static void ResetSeededDungeonNameCache(void)
 static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
 {
     s32 progressionNumber = GetDungeonNumberForFloorScaling(dungeonId);
+    s32 dungeonCount = GetSequentialDungeonCountForRun();
     const char *typeLabel = NULL;
 #ifdef DEV
     char typeBuffer[20];
@@ -2575,23 +2587,26 @@ static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed)
     if (progressionNumber < 1)
         progressionNumber = 1;
 
+    if (dungeonCount < 1)
+        dungeonCount = 1;
+
     if (typeLabel != NULL) {
         sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d) %s",
-                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT, typeLabel);
+                      progressionNumber, dungeonCount, typeLabel);
     } else {
         sprintfStatic((char *)sSeededDungeonName1[dungeonId], "D (%d/%d)",
-                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT);
+                      progressionNumber, dungeonCount);
     }
 
 #ifdef DEV
     if (bannerTypeLabel != NULL) {
         sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d of %d %s",
-                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT, bannerTypeLabel);
+                      progressionNumber, dungeonCount, bannerTypeLabel);
     } else
 #endif
     {
         sprintfStatic((char *)sSeededDungeonName2[dungeonId], "D %d of %d",
-                      progressionNumber, SEQUENTIAL_DUNGEON_COUNT);
+                      progressionNumber, dungeonCount);
     }
 
     sSeededDungeonNameValid[dungeonId] = TRUE;
@@ -2660,7 +2675,9 @@ UNUSED static s32 GetSelectedTypeForDisplay(void)
 static bool8 IsInSequentialList(s16 rescueDungeonId, s32 *indexOut)
 {
     s32 i;
-    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+    s32 count = GetSequentialDungeonCountForRun();
+
+    for (i = 0; i < count; i++) {
         if (sSequentialDungeonList[i] == rescueDungeonId) {
             if (indexOut != NULL)
                 *indexOut = i;
@@ -2688,12 +2705,14 @@ s16 DungeonSeedOverrides_GetCurrentDungeon(void)
 {
     s32 seed;
     s32 i;
+    s32 count;
 
     if (!DungeonSeedOverrides_IsEnabled(&seed))
         return -1;
 
     // Find the first unconquered dungeon in the sequential list
-    for (i = 0; i < SEQUENTIAL_DUNGEON_COUNT; i++) {
+    count = GetSequentialDungeonCountForRun();
+    for (i = 0; i < count; i++) {
         if (!RescueScenarioConquered(sSequentialDungeonList[i])) {
             return sSequentialDungeonList[i];
         }

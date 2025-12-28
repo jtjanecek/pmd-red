@@ -36,6 +36,8 @@ struct unk_struct
     u32 difficulty;
     u8 skipBasicRescues;
     u8 recruitAll;
+    u8 maxDungeons;
+    u8 padding27;
     TypeSelectionSaveData typeSelection;
     GengarHintSaveData gengarHints;
     u32 padding[474];
@@ -46,6 +48,7 @@ EWRAM_DATA s32 gUnknown_202DE28 = {0};
 EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_NORMAL};
 EWRAM_DATA u8 gSkipBasicRescuesSetting = {0};
 EWRAM_DATA u8 gRecruitAllSetting = {0};
+EWRAM_DATA u8 gMaxDungeonsSetting = {MAX_DUNGEONS_20};
 
 EWRAM_INIT u32 gUnknown_203B17C = {0};
 EWRAM_INIT const char *gUnknown_203B180 = {"POKE_DUNGEON__05"};
@@ -122,6 +125,29 @@ void SetRecruitAllSetting(u8 value)
     if (value >= NUM_RECRUIT_ALL_SETTINGS)
         value = RECRUIT_ALL_NORMAL;
     gRecruitAllSetting = value;
+}
+
+static u8 SanitizeMaxDungeonsSetting(u8 value)
+{
+    switch (value) {
+        case MAX_DUNGEONS_10:
+        case MAX_DUNGEONS_15:
+        case MAX_DUNGEONS_20:
+            return value;
+        default:
+            return MAX_DUNGEONS_20;
+    }
+}
+
+u8 GetMaxDungeonsSetting(void)
+{
+    gMaxDungeonsSetting = SanitizeMaxDungeonsSetting(gMaxDungeonsSetting);
+    return gMaxDungeonsSetting;
+}
+
+void SetMaxDungeonsSetting(u8 value)
+{
+    gMaxDungeonsSetting = SanitizeMaxDungeonsSetting(value);
 }
 
 
@@ -263,6 +289,7 @@ u32 ReadSaveFromPak(u32 *a)
         SetGameDifficultySetting(playerSave->difficulty);
         SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
         SetRecruitAllSetting(playerSave->recruitAll);
+        SetMaxDungeonsSetting(playerSave->maxDungeons);
         TypeSelection_ReadSaveData(&playerSave->typeSelection);
         GengarHint_ReadSaveData(&playerSave->gengarHints);
         SkarmoryRecruit_ReadSaveData(&playerSave->skarmoryRecruit);
@@ -275,6 +302,7 @@ u32 ReadSaveFromPak(u32 *a)
         SetGameDifficultySetting(playerSave->difficulty);
         SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
         SetRecruitAllSetting(playerSave->recruitAll);
+        SetMaxDungeonsSetting(playerSave->maxDungeons);
         TypeSelection_ReadSaveData(&playerSave->typeSelection);
         GengarHint_ReadSaveData(&playerSave->gengarHints);
         SkarmoryRecruit_ReadSaveData(&playerSave->skarmoryRecruit);
@@ -366,6 +394,7 @@ u32 sub_8011FA8(void)
             SetGameDifficultySetting(r5->difficulty);
             SetSkipBasicRescuesSetting(r5->skipBasicRescues);
             SetRecruitAllSetting(r5->recruitAll);
+            SetMaxDungeonsSetting(r5->maxDungeons);
             TypeSelection_ReadSaveData(&r5->typeSelection);
             GengarHint_ReadSaveData(&r5->gengarHints);
         }
@@ -409,6 +438,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->difficulty = GetGameDifficultySetting();
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
+    playerSave->maxDungeons = GetMaxDungeonsSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
     GengarHint_WriteSaveData(&playerSave->gengarHints);
     SkarmoryRecruit_WriteSaveData(&playerSave->skarmoryRecruit);
@@ -420,6 +450,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->RngState = gUnknown_203B184->RngState;
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
+    playerSave->maxDungeons = GetMaxDungeonsSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
     GengarHint_WriteSaveData(&playerSave->gengarHints);
     SkarmoryRecruit_WriteSaveData(&playerSave->skarmoryRecruit);
@@ -482,6 +513,7 @@ u32 sub_80121E0(u32 r0)
     r4->difficulty = GetGameDifficultySetting();
     r4->skipBasicRescues = GetSkipBasicRescuesSetting();
     r4->recruitAll = GetRecruitAllSetting();
+    r4->maxDungeons = GetMaxDungeonsSetting();
     TypeSelection_WriteSaveData(&r4->typeSelection);
     GengarHint_WriteSaveData(&r4->gengarHints);
 

@@ -53,6 +53,7 @@ enum
     PERSONALITY_SKIP_BASIC_RESCUES_SELECTION,
     PERSONALITY_RECRUIT_ALL_SELECTION,
     PERSONALITY_DIFFICULTY_SELECTION,
+    PERSONALITY_DUNGEON_COUNT_SELECTION,
     PERSONALITY_PLAYER_GENDER,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
     PERSONALITY_PLAYER_STARTER_SELECTION,
@@ -101,6 +102,8 @@ static void StartRecruitAllSelection(void);
 static void HandleRecruitAllSelection(void);
 static bool8 ShouldEnableAutoRecruitAllDebug(void);
 static void StartDifficultySelection(void);
+static void StartDungeonCountSelection(void);
+static void HandleDungeonCountSelection(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
 static void HandleTeamNameEntry(void);
@@ -198,8 +201,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Always skip basic rescues
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_ALL; // Default to All Recruitable
+    sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_10;
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
     SetSkipBasicRescuesSetting(1);
+    SetMaxDungeonsSetting(MAX_DUNGEONS_10);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
     MemoryFill8(sPersonalityTestTracker->starterItemOptions, ITEM_NOTHING, sizeof(sPersonalityTestTracker->starterItemOptions));
     MemoryFill8(sPersonalityTestTracker->starterItemMenu, 0, sizeof(sPersonalityTestTracker->starterItemMenu));
@@ -219,7 +224,7 @@ static void InitializeTestStats(void)
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    //sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_BULBASAUR;
     //sPersonalityTestTracker->unk4.PartnerID = MONSTER_BULBASAUR;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
@@ -227,9 +232,11 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;
+    sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_10;
     SetRecruitAllSetting(RECRUIT_ALL_NONE);
     SetSkipBasicRescuesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_NIGHTMARE);
+    SetMaxDungeonsSetting(MAX_DUNGEONS_10);
     
     // Level up team to 100 in dev mode
     sub_8043FD0();
@@ -268,6 +275,9 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_DIFFICULTY_SELECTION:
             HandleDifficultySelection();
+            break;
+        case PERSONALITY_DUNGEON_COUNT_SELECTION:
+            HandleDungeonCountSelection();
             break;
         case PERSONALITY_PLAYER_GENDER:
             SetPlayerGender();
@@ -334,6 +344,7 @@ u32 HandleTestTrackerState(void)
             }
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
+            SetMaxDungeonsSetting(sPersonalityTestTracker->unk4.maxDungeons);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
             // Commit the chosen starter/partner/team-name into global state
             WriteTeamBasicInfo(&sPersonalityTestTracker->unk4);
@@ -491,6 +502,12 @@ static void StartDifficultySelection(void)
 {
     CreateMenuDialogueBoxAndPortrait(gDifficultyPrompt, 0, 0, gDifficultyMenu, 0, 3, 0, 0, 0x101);
     sPersonalityTestTracker->TestState = PERSONALITY_DIFFICULTY_SELECTION;
+}
+
+static void StartDungeonCountSelection(void)
+{
+    CreateMenuDialogueBoxAndPortrait(gDungeonCountPrompt, 0, 0, gDungeonCountMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_DUNGEON_COUNT_SELECTION;
 }
 
 static void AdvanceToStarterSelection(void)
@@ -703,6 +720,21 @@ static void HandleDifficultySelection(void)
 
     sPersonalityTestTracker->unk4.difficulty = selection;
     SetGameDifficultySetting(selection);
+    StartDungeonCountSelection();
+}
+
+static void HandleDungeonCountSelection(void)
+{
+    s32 selection;
+
+    if (sub_80144A4(&selection) != 0)
+        return;
+
+    if (selection < 0)
+        selection = MAX_DUNGEONS_20;
+
+    SetMaxDungeonsSetting((u8)selection);
+    sPersonalityTestTracker->unk4.maxDungeons = GetMaxDungeonsSetting();
     StartGenderSelection();
 }
 

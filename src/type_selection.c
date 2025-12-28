@@ -10,7 +10,6 @@
 #include "strings.h"
 
 #define TYPE_SELECTION_MAX_TYPE_PICKS 2
-#define TYPE_SELECTION_MAX_DUNGEONS 20
 #define TYPE_SELECTION_MAX_HINTS ((NUM_TYPES * (NUM_TYPES - 1)) / 2)
 
 typedef struct TypeSelectionState
@@ -20,6 +19,16 @@ typedef struct TypeSelectionState
 } TypeSelectionState;
 
 static EWRAM_DATA TypeSelectionState sTypeSelectionState = {0};
+
+static u8 GetMaxDungeonsForRun(void)
+{
+    u8 maxDungeons = GetMaxDungeonsSetting();
+
+    if (maxDungeons == 0)
+        maxDungeons = MAX_DUNGEONS_20;
+
+    return maxDungeons;
+}
 
 static void ResetPendingHints(void);
 static bool8 IsTypeWithinBounds(u8 type);
@@ -103,7 +112,7 @@ bool8 TypeSelection_ShouldPromptPlayer(void)
         return FALSE;
     if (sTypeSelectionState.data.committedTypeValid)
         return FALSE;
-    if (sTypeSelectionState.data.completedDungeons >= TYPE_SELECTION_MAX_DUNGEONS)
+    if (sTypeSelectionState.data.completedDungeons >= GetMaxDungeonsForRun())
         return FALSE;
     return TRUE;
 }

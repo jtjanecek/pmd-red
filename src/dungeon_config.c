@@ -458,14 +458,14 @@ const s16 gWarpScarfActivationChances[WARP_SCARF_ACTIVATION_CHANCES_COUNT] = {0,
 // Min iq -> dmg value -1 is table's end
 const struct ReturnDmgData gReturnDmgData[] =
 {
-    {10000, 25},  // All IQ values return flat 25 damage
-    {-1, 25},     // Fallback to 25
+    {10000, 30},  // All IQ values return flat 30 damage
+    {-1, 30},     // Fallback to 30
 };
 
 const struct ReturnDmgData gFrustrationDmgData[] =
 {
-    {10000, 25},  // All IQ values return flat 25 damage
-    {-1, 25},     // Fallback to 25
+    {10000, 30},  // All IQ values return flat 30 damage
+    {-1, 30},     // Fallback to 30
 };
 
 // Array indices correspond to the current dungeon tileset.

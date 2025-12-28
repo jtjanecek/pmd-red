@@ -32,6 +32,16 @@ static const MenuItem gDifficultyMenu[] = {
     { _("Nightmare"), DIFFICULTY_NIGHTMARE },
     { NULL, -1 },
 };
+ALIGNED(4) static const u8 gDungeonCountPrompt[] = _(
+    "{CENTER_ALIGN}How many dungeons?\n"
+    "{CENTER_ALIGN}Choose the length of this run."
+);
+static const MenuItem gDungeonCountMenu[] = {
+    { _("10"), MAX_DUNGEONS_10 },
+    { _("15"), MAX_DUNGEONS_15 },
+    { _("20"), MAX_DUNGEONS_20 },
+    { NULL, -1 },
+};
 ALIGNED(4) static const u8 gStarterPrompt[] = _("{CENTER_ALIGN}Select your character.");
 ALIGNED(4) static const u8 gStarterNickPrompt[] = STARTER_NICK_PROMPT;
 

@@ -90,6 +90,7 @@ static EWRAM_INIT TeamBasicInfo sTeamBasicInfo_203B040 = {
     .difficulty = DIFFICULTY_NORMAL,
     .skipBasicRescues = 0,
     .recruitAll = 0,
+    .maxDungeons = MAX_DUNGEONS_20,
 };
 static EWRAM_DATA u8 sCreditsHeaderBuffer[128] = {0};
 

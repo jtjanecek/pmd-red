@@ -254,7 +254,7 @@
     },
     {
         "name": "ItemNameJoyRibbon",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -331,7 +331,7 @@
     },
     {
         "name": "ItemNameTightBelt",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1000,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -391,7 +391,7 @@
     },
     {
         "name": "ItemNameTrapScarf",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -446,7 +446,7 @@
     },
     {
         "name": "ItemNameSpecialBand",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -457,7 +457,7 @@
     },
     {
         "name": "ItemNameZincBand",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -468,7 +468,7 @@
     },
     {
         "name": "ItemNameDetectBand",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -490,7 +490,7 @@
     },
     {
         "name": "ItemNameDodgeScarf",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 2500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -599,7 +599,7 @@
     },
     {
         "name": "ItemNameFriendBow",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -610,8 +610,8 @@
     },
     {
         "name": "ItemNameBeautyScarf",
-        "buyPrice": 9000,
-        "sellPrice": 5000,
+        "buyPrice": 4000,
+        "sellPrice": 4000,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
         "description": "ItemDescriptionBeautyScarf",
@@ -621,7 +621,7 @@
     },
     {
         "name": "ItemNameSunRibbon",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -632,7 +632,7 @@
     },
     {
         "name": "ItemNameLunarRibbon",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -643,7 +643,7 @@
     },
     {
         "name": "ItemNameRingD",
-        "buyPrice": 5100,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -654,7 +654,7 @@
     },
     {
         "name": "ItemNameRingE",
-        "buyPrice": 5200,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -665,7 +665,7 @@
     },
     {
         "name": "ItemNameRingF",
-        "buyPrice": 5300,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_HELD_ITEMS",
         "spriteID": 4,
@@ -1056,7 +1056,7 @@
     },
     {
         "name": "ItemNameProtein",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 5,
         "category": "CATEGORY_BERRIES_SEEDS_VITAMINS",
         "spriteID": 12,
@@ -1072,7 +1072,7 @@
     },
     {
         "name": "ItemNameCalcium",
-        "buyPrice": 6000,
+        "buyPrice": 4000,
         "sellPrice": 5,
         "category": "CATEGORY_BERRIES_SEEDS_VITAMINS",
         "spriteID": 12,
@@ -1088,7 +1088,7 @@
     },
     {
         "name": "ItemNameIron",
-        "buyPrice": 7000,
+        "buyPrice": 4000,
         "sellPrice": 5,
         "category": "CATEGORY_BERRIES_SEEDS_VITAMINS",
         "spriteID": 12,
@@ -1104,7 +1104,7 @@
     },
     {
         "name": "ItemNameZinc",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 5,
         "category": "CATEGORY_BERRIES_SEEDS_VITAMINS",
         "spriteID": 12,
@@ -1371,8 +1371,8 @@
     },
     {
         "name": "ItemNameBanana",
-        "buyPrice": 9000,
-        "sellPrice": 5000,
+        "buyPrice": 50,
+        "sellPrice": 50,
         "category": "CATEGORY_FOOD_GUMMIES",
         "spriteID": 19,
         "description": "ItemDescriptionBanana",
@@ -1618,7 +1618,7 @@
     },
     {
         "name": "ItemNameFocusPunch",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1630,7 +1630,7 @@
     },
     {
         "name": "ItemNameDragonClaw",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1642,7 +1642,7 @@
     },
     {
         "name": "ItemNameWaterPulse",
-        "buyPrice": 7500,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1654,7 +1654,7 @@
     },
     {
         "name": "ItemNameCalmMind",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1678,7 +1678,7 @@
     },
     {
         "name": "ItemNameToxic",
-        "buyPrice": 6000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1702,7 +1702,7 @@
     },
     {
         "name": "ItemNameBulkUp",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1714,7 +1714,7 @@
     },
     {
         "name": "ItemNameBulletSeed",
-        "buyPrice": 6000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1762,7 +1762,7 @@
     },
     {
         "name": "ItemNameIceBeam",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1774,7 +1774,7 @@
     },
     {
         "name": "ItemNameBlizzard",
-        "buyPrice": 9000,
+        "buyPrice": 4000,
         "sellPrice": 3000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1786,7 +1786,7 @@
     },
     {
         "name": "ItemNameHyperBeam",
-        "buyPrice": 9000,
+        "buyPrice": 4000,
         "sellPrice": 3000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1810,7 +1810,7 @@
     },
     {
         "name": "ItemNameProtect",
-        "buyPrice": 6000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1834,7 +1834,7 @@
     },
     {
         "name": "ItemNameGigaDrain",
-        "buyPrice": 7000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1846,7 +1846,7 @@
     },
     {
         "name": "ItemNameSafeguard",
-        "buyPrice": 6000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1870,7 +1870,7 @@
     },
     {
         "name": "ItemNameSolarBeam",
-        "buyPrice": 7000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1882,7 +1882,7 @@
     },
     {
         "name": "ItemNameIronTail",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1894,7 +1894,7 @@
     },
     {
         "name": "ItemNameThunderbolt",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1906,7 +1906,7 @@
     },
     {
         "name": "ItemNameThunder",
-        "buyPrice": 9000,
+        "buyPrice": 4000,
         "sellPrice": 3000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1918,7 +1918,7 @@
     },
     {
         "name": "ItemNameEarthquake",
-        "buyPrice": 6500,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1954,7 +1954,7 @@
     },
     {
         "name": "ItemNamePsychic",
-        "buyPrice": 5000,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -1966,7 +1966,7 @@
     },
     {
         "name": "ItemNameShadowBall",
-        "buyPrice": 6500,
+        "buyPrice": 4000,
         "sellPrice": 1000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2014,7 +2014,7 @@
     },
     {
         "name": "ItemNameShockWave",
-        "buyPrice": 7500,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2026,7 +2026,7 @@
     },
     {
         "name": "ItemNameFlamethrower",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2038,7 +2038,7 @@
     },
     {
         "name": "ItemNameSludgeBomb",
-        "buyPrice": 7500,
+        "buyPrice": 4000,
         "sellPrice": 1500,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2062,7 +2062,7 @@
     },
     {
         "name": "ItemNameFireBlast",
-        "buyPrice": 9000,
+        "buyPrice": 4000,
         "sellPrice": 3000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2086,7 +2086,7 @@
     },
     {
         "name": "ItemNameAerialAce",
-        "buyPrice": 7500,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2170,7 +2170,7 @@
     },
     {
         "name": "ItemNameSteelWIng",
-        "buyPrice": 7000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2182,7 +2182,7 @@
     },
     {
         "name": "ItemNameSkillSwap",
-        "buyPrice": 7000,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2206,7 +2206,7 @@
     },
     {
         "name": "ItemNameOverheat",
-        "buyPrice": 6500,
+        "buyPrice": 4000,
         "sellPrice": 2000,
         "category": "CATEGORY_TMS_HMS",
         "spriteID": 8,
@@ -2963,7 +2963,7 @@
     },
     {
         "name": "ItemNameGMachine6",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 500,
         "category": "CATEGORY_LINK_BOX",
         "spriteID": 10,
@@ -2974,7 +2974,7 @@
     },
     {
         "name": "ItemNameGMachine7",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 500,
         "category": "CATEGORY_LINK_BOX",
         "spriteID": 10,
@@ -2985,7 +2985,7 @@
     },
     {
         "name": "ItemNameGMachine8",
-        "buyPrice": 8000,
+        "buyPrice": 4000,
         "sellPrice": 500,
         "category": "CATEGORY_LINK_BOX",
         "spriteID": 10,

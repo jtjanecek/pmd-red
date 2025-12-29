@@ -31,6 +31,7 @@
 #include "main_menu1.h"
 #include "main_menu2.h"
 #include "dungeon_info.h"
+#include "dungeon_seed_overrides.h"
 #include "memory.h"
 #include "code_800D090.h"
 #include "moves.h"
@@ -92,7 +93,7 @@ static EWRAM_INIT TeamBasicInfo sTeamBasicInfo_203B040 = {
     .recruitAll = 0,
     .maxDungeons = MAX_DUNGEONS_20,
 };
-static EWRAM_DATA u8 sCreditsHeaderBuffer[128] = {0};
+static EWRAM_DATA u8 sCreditsHeaderBuffer[192] = {0};
 
 static void LoadTitleScreen(void);
 static void EnsureTypeSelectionLink(void);
@@ -1257,8 +1258,11 @@ static void BuildCreditsHeader(void)
     u8 partnerName[20];
     Pokemon *hero = GetPlayerPokemonStruct();
     Pokemon *partner = sub_808D378();
-    s32 seed = sub_8011C34();
+    s32 seed = -1;
+    u8 maxDungeons = GetMaxDungeonsSetting();
     const char *difficulty = "Normal";
+
+    DungeonSeedOverrides_IsEnabled(&seed);
 
     ReadTeamBasicInfo(&info);
     if (hero != NULL)
@@ -1284,12 +1288,13 @@ static void BuildCreditsHeader(void)
     }
 
     sprintfStatic((char *)sCreditsHeaderBuffer,
-                  "ROGUE RESCUE TEAM v%s\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s",
+                  "ROGUE RESCUE TEAM v%s\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s\nDungeon count: %d",
                   ROGUE_VERSION_STRING,
                   seed,
                   difficulty,
                   heroName,
-                  partnerName);
+                  partnerName,
+                  maxDungeons);
     Credits1_SetCustomHeader(sCreditsHeaderBuffer);
 }
 

@@ -11,7 +11,7 @@
 
 EWRAM_INIT static Credits1Work *sCredits1Work = {NULL};
 static EWRAM_DATA CreditsData sCustomHeader = {0};
-static EWRAM_DATA u8 sCustomHeaderText[128] = {0};
+static EWRAM_DATA u8 sCustomHeaderText[192] = {0};
 static EWRAM_DATA bool8 sCustomHeaderActive = FALSE;
 static EWRAM_DATA const CreditsData *sCreditsTableOverride[27] = {0};
 #define CREDITS_TABLE_COUNT 27
@@ -128,7 +128,7 @@ bool8 DrawCredits(s32 creditsCategoryIndex, s32 param_2)
     u8 *destText1;
     u8 *destText2;
     u8 curChar;
-    u8 buffer[128];
+    u8 buffer[192];
 
     sCredits1Work = MemoryAlloc(sizeof(Credits1Work), 8);
     sCredits1Work->unk60 = 0;

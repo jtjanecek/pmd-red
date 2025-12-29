@@ -163,6 +163,7 @@ static void ResetSeededItemState(void);
 static void InitSeededItemState(s32 seed, u8 dungeonId, s32 floorId, bool8 isForcedKecleonFloor);
 static u16 SelectItemFromPool(RogueItemPoolId poolId, DungeonSeedRng *rng);
 static s32 GetDungeonNumberForFloorScaling(u8 dungeonId);
+static s32 CalcSeededFloorCount(s32 seed, u8 dungeonId, s32 *desiredFloorsOut, s32 *multiplierOut);
 static u8 SelectMinionFormation(s32 seed, u8 dungeonId, s32 floorId);
 static s32 CalcSeededSpawnLevel(s32 seed, u8 dungeonId, s32 floorIndex, s32 floorCount);
 static u8 SelectTileset(s32 floorId);
@@ -541,7 +542,7 @@ static s32 GetDungeonNumberForFloorScaling(u8 dungeonId)
     return 1;
 }
 
-s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
+static s32 CalcSeededFloorCount(s32 seed, u8 dungeonId, s32 *desiredFloorsOut, s32 *multiplierOut)
 {
     s32 dungeonNumber = GetDungeonNumberForFloorScaling(dungeonId);
     DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, dungeonNumber, 0x464C4354); // "FLCT"
@@ -558,8 +559,22 @@ s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
     if (floorCount > SEEDED_MAX_FLOORS)
         floorCount = SEEDED_MAX_FLOORS;
 
+    if (desiredFloorsOut != NULL)
+        *desiredFloorsOut = desiredFloors;
+    if (multiplierOut != NULL)
+        *multiplierOut = multiplier;
+
+    return floorCount;
+}
+
+s32 DungeonSeedOverrides_GetFloorCount(s32 seed, u8 dungeonId)
+{
+    s32 multiplier = 0;
+    s32 desiredFloors = 0;
+    s32 floorCount = CalcSeededFloorCount(seed, dungeonId, &desiredFloors, &multiplier);
+
     MGBA_Warnf("[FloorCount] seed=%d dungeon=%d number=%d mult=%d floors=%d (engineCount=%d)",
-               seed, dungeonId, dungeonNumber, multiplier, desiredFloors, floorCount);
+               seed, dungeonId, GetDungeonNumberForFloorScaling(dungeonId), multiplier, desiredFloors, floorCount);
     return floorCount;
 }
 

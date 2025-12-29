@@ -20,10 +20,13 @@
 #include "ground_sprite_monster.h"
 #include "ground_object.h"
 #include "ground_map.h"
+#include "mgba_log.h"
 #include "textbox.h"
 #include "code_809D148.h"
 #include "ground_script_file.h"
 #include "data_script.h"
+#include "ground_map_conversion_table.h"
+#include "ground_place.h"
 
 struct GroundLivesMeta_Sub1
 {
@@ -97,7 +100,6 @@ struct GroundLives
 
 IWRAM_INIT struct GroundLives *gGroundLives = NULL;
 
-#define TEAM_BASE_GROUND_SCRIPT_ID 9
 #define TEAM_BASE_SKARMORY_KIND 69
 
 extern const ScriptCommand s_gs9_skarmory_base_dlg0[];
@@ -163,15 +165,24 @@ static bool8 HasTeamBaseSkarmory(void)
     return FALSE;
 }
 
+static bool8 IsTeamBaseExteriorMap(s32 mapId)
+{
+    if (mapId < 0 || mapId >= MAP_COUNT) {
+        return FALSE;
+    }
+    return gGroundMapConversionTable[mapId].groundPlaceId == GROUND_PLACE_TEAM_BASE;
+}
+
 static void MaybeAddTeamBaseSkarmory(s32 scriptId, s32 group, s32 sector)
 {
-    if (scriptId != TEAM_BASE_GROUND_SCRIPT_ID) {
+    if (!IsTeamBaseExteriorMap(scriptId)) {
         return;
     }
     if (HasTeamBaseSkarmory()) {
         return;
     }
 
+    MGBA_Printf(0, "[TeamBase] Adding Skarmory NPC (map=%d)", scriptId);
     GroundLives_Add(-1, &sTeamBaseSkarmory, group, sector);
 }
 static bool8 CallbackLivesSpriteRelated_80AB1E4(void *livesPtr_);

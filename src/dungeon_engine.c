@@ -51,6 +51,8 @@ void RunFractionalTurn(bool8 param_1)
     if (IsFloorOver()) return;
     cVar2 = RunLeaderTurn(param_1);
     if (IsFloorOver()) return;
+    ApplyAutoLeaderSwapReturn();
+    if (IsFloorOver()) return;
     if (cVar2) {
         UpdateWindTurns();
         if (IsFloorOver()) return;
@@ -74,10 +76,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
     if (entity == NULL)
         return FALSE;
 
-    ApplyPendingAutoLeaderSwap();
-    entity = GetLeader();
-    if (entity == NULL)
-        return FALSE;
+    ResetAutoLeaderSwapChain();
 
     TryActivateArtificialWeatherAbilities();
     movSpeed = CalcSpeedStage(entity);
@@ -127,6 +126,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
         ExecuteEntityDungeonAction(entity);
         if (EntityIsValid(entity) && gDungeon->unkBC == 0) {
             QueueAutoLeaderSwapAfterAction(entity, leaderAction);
+            ApplyPendingAutoLeaderSwap();
         }
         
         // Check for auto-navigate exit after action execution
@@ -234,6 +234,11 @@ static void sub_8044574(void)
         Entity *teamMon = gDungeon->teamPokemon[i];
         if (EntityIsValid(teamMon)) {
             EntityInfo *teamMonInfo = GetEntInfo(teamMon);
+            if (AutoLeaderSwapHasActedIndex(i)) {
+                teamMonInfo->aiAllySkip = FALSE;
+                teamMonInfo->recalculateFollow = FALSE;
+                continue;
+            }
             if (!teamMonInfo->isTeamLeader) {
                 s32 spdStage;
 
@@ -288,6 +293,8 @@ static void sub_8044574(void)
             Entity *teamMon = gDungeon->teamPokemon[i];
             if (EntityIsValid(teamMon)) {
                 EntityInfo *teamMonInfo = GetEntInfo(teamMon);
+                if (AutoLeaderSwapHasActedIndex(i))
+                    continue;
                 if (teamMonInfo->aiAllySkip) {
                     if (teamMonInfo->isTeamLeader) {
                         teamMonInfo->recalculateFollow = FALSE;

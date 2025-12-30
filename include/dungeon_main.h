@@ -28,7 +28,10 @@ bool8 ShouldExitAutoExploreOnInput(void);
 // Auto leader swap
 bool8 IsAutoLeaderSwapActive(void);
 void SetAutoLeaderSwapActive(bool8 active);
+void ResetAutoLeaderSwapChain(void);
 void QueueAutoLeaderSwapAfterAction(Entity *leader, u16 action);
 void ApplyPendingAutoLeaderSwap(void);
+void ApplyAutoLeaderSwapReturn(void);
+bool8 AutoLeaderSwapHasActedIndex(s32 index);
 
 #endif // GUARD_DUNGEON_MAIN_H

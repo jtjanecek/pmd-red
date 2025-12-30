@@ -107,6 +107,9 @@ EWRAM_DATA bool8 gAutoExploreTargetPreserved = FALSE;
 static EWRAM_DATA bool8 sAutoLeaderSwapActive = FALSE;
 static EWRAM_DATA s8 sAutoLeaderSwapPendingIndex = -1;
 static EWRAM_DATA bool8 sSuppressLeaderSwapMessage = FALSE;
+static EWRAM_DATA u8 sAutoLeaderSwapActedMask = 0;
+static EWRAM_DATA s8 sAutoLeaderSwapChainLeaderIndex = -1;
+static EWRAM_DATA s8 sAutoLeaderSwapReturnIndex = -1;
 
 // Debug position tracking
 EWRAM_DATA s32 gLastDebugX = -1;
@@ -249,24 +252,54 @@ void SetAutoLeaderSwapActive(bool8 active)
 {
     sAutoLeaderSwapActive = active;
     sAutoLeaderSwapPendingIndex = -1;
+    sAutoLeaderSwapActedMask = 0;
+    sAutoLeaderSwapChainLeaderIndex = -1;
+    sAutoLeaderSwapReturnIndex = -1;
+}
+
+void ResetAutoLeaderSwapChain(void)
+{
+    sAutoLeaderSwapPendingIndex = -1;
+    sAutoLeaderSwapActedMask = 0;
+    sAutoLeaderSwapChainLeaderIndex = -1;
+    sAutoLeaderSwapReturnIndex = -1;
+    sSuppressLeaderSwapMessage = FALSE;
 }
 
 void QueueAutoLeaderSwapAfterAction(Entity *leader, u16 action)
 {
     s8 nextIndex;
+    s32 leaderIndex;
 
     if (!sAutoLeaderSwapActive)
         return;
     if (action == ACTION_NOTHING || action == 0x3B)
         return;
-    if (!CanAutoLeaderSwapNow())
-        return;
     if (!EntityIsValid(leader))
         return;
 
-    nextIndex = FindNextAutoLeaderSwapIndex(leader);
-    if (nextIndex < 0)
+    leaderIndex = GetTeamMemberEntityIndex(leader);
+    if (leaderIndex < 0)
         return;
+
+    sAutoLeaderSwapActedMask |= (u8)(1 << leaderIndex);
+    if (sAutoLeaderSwapChainLeaderIndex < 0)
+        sAutoLeaderSwapChainLeaderIndex = (s8)leaderIndex;
+
+    if (!CanAutoLeaderSwapNow()) {
+        if (leaderIndex != sAutoLeaderSwapChainLeaderIndex)
+            sAutoLeaderSwapReturnIndex = sAutoLeaderSwapChainLeaderIndex;
+        sAutoLeaderSwapPendingIndex = -1;
+        return;
+    }
+
+    nextIndex = FindNextAutoLeaderSwapIndex(leader);
+    if (nextIndex < 0) {
+        if (leaderIndex != sAutoLeaderSwapChainLeaderIndex)
+            sAutoLeaderSwapReturnIndex = sAutoLeaderSwapChainLeaderIndex;
+        sAutoLeaderSwapPendingIndex = -1;
+        return;
+    }
 
     sAutoLeaderSwapPendingIndex = nextIndex;
 }
@@ -283,10 +316,40 @@ void ApplyPendingAutoLeaderSwap(void)
         sAutoLeaderSwapPendingIndex = -1;
         return;
     }
+    if (gDungeon->unkBC != 0)
+        return;
 
     target = gDungeon->teamPokemon[sAutoLeaderSwapPendingIndex];
     sAutoLeaderSwapPendingIndex = -1;
-    if (!IsAutoLeaderSwapCandidate(target))
+    if (!IsAutoLeaderSwapCandidate(target)) {
+        s32 leaderIndex = GetTeamMemberEntityIndex(GetLeader());
+        if (leaderIndex >= 0 && leaderIndex != sAutoLeaderSwapChainLeaderIndex)
+            sAutoLeaderSwapReturnIndex = sAutoLeaderSwapChainLeaderIndex;
+        return;
+    }
+
+    gDungeon->unkBC = target;
+    sSuppressLeaderSwapMessage = TRUE;
+}
+
+void ApplyAutoLeaderSwapReturn(void)
+{
+    Entity *target;
+
+    if (!sAutoLeaderSwapActive)
+        return;
+    if (sAutoLeaderSwapReturnIndex < 0)
+        return;
+    if (gDungeon->unkBC != 0)
+        return;
+    if (GetTeamMemberEntityIndex(GetLeader()) == sAutoLeaderSwapReturnIndex) {
+        sAutoLeaderSwapReturnIndex = -1;
+        return;
+    }
+
+    target = gDungeon->teamPokemon[sAutoLeaderSwapReturnIndex];
+    sAutoLeaderSwapReturnIndex = -1;
+    if (!EntityIsValid(target))
         return;
 
     gDungeon->unkBC = target;
@@ -294,6 +357,14 @@ void ApplyPendingAutoLeaderSwap(void)
     sub_805F02C();
     sSuppressLeaderSwapMessage = FALSE;
     gDungeon->unkBC = 0;
+}
+
+bool8 AutoLeaderSwapHasActedIndex(s32 index)
+{
+    if (index < 0 || index >= MAX_TEAM_MEMBERS)
+        return FALSE;
+
+    return (sAutoLeaderSwapActedMask & (1 << index)) != 0;
 }
 
 static bool8 IsAutoLeaderSwapCandidate(Entity *entity)
@@ -334,6 +405,8 @@ static s8 FindNextAutoLeaderSwapIndex(Entity *leader)
 
     for (offset = 1; offset <= MAX_TEAM_MEMBERS; offset++) {
         s32 index = (leaderIndex + offset) % MAX_TEAM_MEMBERS;
+        if (AutoLeaderSwapHasActedIndex(index))
+            continue;
         if (IsAutoLeaderSwapCandidate(gDungeon->teamPokemon[index])) {
             return (s8)index;
         }
@@ -2059,23 +2132,26 @@ void sub_805F02C(void)
     Entity *leader = GetLeader();
     EntityInfo *r8 = GetEntInfo(r7);
     EntityInfo *leaderInfo = GetEntInfo(leader);
+    bool8 suppressMessage = sSuppressLeaderSwapMessage;
+
+    sSuppressLeaderSwapMessage = FALSE;
 
     if (!GetEnableLeaderSwapSetting()) {
-        if (!sSuppressLeaderSwapMessage)
+        if (!suppressMessage)
             DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);
         return;
     }
 
     if (r8->isTeamLeader) {
-        if (!sSuppressLeaderSwapMessage)
+        if (!suppressMessage)
             DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);
     }
     else if (PlayerHasItemWithFlag(ITEM_FLAG_IN_SHOP) || sub_807EF48()) {
-        if (!sSuppressLeaderSwapMessage)
+        if (!suppressMessage)
             DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C08);
     }
     else if (gDungeon->unk644.stoleFromKecleon) {
-        if (!sSuppressLeaderSwapMessage)
+        if (!suppressMessage)
             DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C2C);
     }
     else {
@@ -2110,7 +2186,7 @@ void sub_805F02C(void)
         sub_8041AD0(leader);
         sub_8041AE0(GetLeader());
         SubstitutePlaceholderStringTags(gFormatBuffer_Monsters[0], r7, 0);
-        if (!sSuppressLeaderSwapMessage)
+        if (!suppressMessage)
             LogMessageByIdWithPopupCheckUser(r7, gUnknown_80F9BB0);
         sub_807EC28(FALSE);
         r8->unk64 = 0;

@@ -7,7 +7,7 @@ rm -f -- *.sav
 echo "Log created on: $(date)" > execution.log
 echo "" >> execution.log
 
-sleep 1
+sleep 3
 
 echo
 

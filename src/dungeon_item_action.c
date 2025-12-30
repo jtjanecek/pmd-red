@@ -21,6 +21,7 @@
 #include "moves.h"
 #include "number_util.h"
 #include "pokemon.h"
+#include "save.h"
 #include "structs/dungeon_entity.h"
 #include "structs/str_dungeon.h"
 #include "structs/str_position.h"
@@ -752,11 +753,10 @@ bool8 sub_8048A68(Entity *param_1,Item *item)
   }
   else
   {
-    if (gDungeon->unk644.unk18 == 0) {
-        DisplayDungeonMessage(0,gUnknown_80F9BD8,1);
+    if (!GetEnableLeaderSwapSetting()) {
+        DisplayDungeonMessage(0, gUnknown_80F9BD8, 1);
         return FALSE;
     }
-    else
     {
       for(index = 0; index < MAX_TEAM_MEMBERS; index++)
       {

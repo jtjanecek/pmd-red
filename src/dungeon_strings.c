@@ -1026,7 +1026,8 @@ const u8 *const gUnknown_80FEFD0 = _("A horrid stench billowed out!\n{POKEMON_0}
 const u8 *const gUnknown_80FEFF4 = _("Transform can't be used here!");
 const u8 *const gUnknown_80FF01C = _("{POKEMON_0}'s Synchronize took effect!");
 const struct TutorialFlagMsg gUnknown_80FF020 = {
-    0x00, _("Head for the destination while attacking\nfoes with {A_BUTTON}.\nTry not to let a partner faint!")
+    0x00, _("Press {R_BUTTON}+{A_BUTTON} to enable\n"
+            "autopilot. Hold {B_BUTTON} to cancel.")
 };
 
 const struct TutorialFlagMsg gUnknown_80FF080 = {

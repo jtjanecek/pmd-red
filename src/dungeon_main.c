@@ -73,6 +73,7 @@
 #include "dungeon_8041AD0.h"
 #include "status_checks.h"
 #include "adventure_info.h"
+#include "save.h"
 
 static EWRAM_DATA bool8 sInDiagonalMode = 0;
 static EWRAM_DATA bool8 sInRotateMode = 0;
@@ -272,14 +273,14 @@ static bool8 ArePlayerAndTargetInSameRoom(DungeonPos *playerPos, DungeonPos *tar
 bool8 ShouldExitAutoExploreOnInput(void)
 {
     // Exit autopilot only on new intent that isn't the activation combo
-    bool8 isActivating = ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) ||
-                         ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON));
+    bool8 isActivating = ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & A_BUTTON)) ||
+                         ((gRealInputs.held & A_BUTTON) && (gRealInputs.pressed & R_BUTTON));
     u16 exitMask = A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY;
     
     if (isActivating)
         return FALSE;
 
-    if (gRealInputs.held & (A_BUTTON | B_BUTTON))
+    if (gRealInputs.held & B_BUTTON)
         return TRUE;
     
     return (gRealInputs.pressed & exitMask) != 0;
@@ -970,6 +971,33 @@ void DungeonHandlePlayerInput(void)
             bPress = FALSE;
             rPress = FALSE;
 
+            // Auto-explore mode: R+A to toggle ON auto-navigate
+            // Support both: Hold R + Press A, or Hold A + Press R
+            if ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & A_BUTTON)) {
+                //LogMessageByIdWithPopupCheckUser(leader, "Hold R + Press A!");
+                if (!IsAutoExploreActive()) {
+                    SetAutoExploreActive(TRUE);
+                    LogMessageByIdWithPopupCheckUser(leader, "Autopilot ON!");
+                } else {
+                    LogMessageByIdWithPopupCheckUser(leader, "Already active!");
+                }
+                UnpressButtons();
+                ResetRepeatTimers();
+                ResetUnusedInputStruct();
+            }
+            else if ((gRealInputs.held & A_BUTTON) && (gRealInputs.pressed & R_BUTTON)) {
+                //LogMessageByIdWithPopupCheckUser(leader, "Hold A + Press R!");
+                if (!IsAutoExploreActive()) {
+                    SetAutoExploreActive(TRUE);
+                    LogMessageByIdWithPopupCheckUser(leader, "Autopilot ON!");
+                } else {
+                    LogMessageByIdWithPopupCheckUser(leader, "Already active!");
+                }
+                UnpressButtons();
+                ResetRepeatTimers();
+                ResetUnusedInputStruct();
+            }
+
             if (gRealInputs.pressed & A_BUTTON) {
                 if (gRealInputs.held & B_BUTTON) {
                     if (FixedPointToInt(leaderInfo->belly) != 0) {
@@ -1095,27 +1123,6 @@ void DungeonHandlePlayerInput(void)
                 }
             }
 
-            // Auto-explore mode: L+R to toggle ON auto-navigate
-            // Support both: Hold L + Press R, or Hold R + Press L
-            if ((gRealInputs.held & L_BUTTON) && (gRealInputs.pressed & R_BUTTON)) {
-                //LogMessageByIdWithPopupCheckUser(leader, "Hold L + Press R!");
-                if (!IsAutoExploreActive()) {
-                    SetAutoExploreActive(TRUE);
-                    LogMessageByIdWithPopupCheckUser(leader, "Autopilot ON!");
-                } else {
-                    LogMessageByIdWithPopupCheckUser(leader, "Already active!");
-                }
-            }
-            else if ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & L_BUTTON)) {
-                //LogMessageByIdWithPopupCheckUser(leader, "Hold R + Press L!");
-                if (!IsAutoExploreActive()) {
-                    SetAutoExploreActive(TRUE);
-                    LogMessageByIdWithPopupCheckUser(leader, "Autopilot ON!");
-                } else {
-                    LogMessageByIdWithPopupCheckUser(leader, "Already active!");
-                }
-            }
-            
             // B button to cancel auto-navigate (only when auto-navigate is active)
             if ((gRealInputs.pressed & B_BUTTON) && IsAutoExploreActive()) {
                 SetAutoExploreActive(FALSE);
@@ -1912,6 +1919,11 @@ void sub_805F02C(void)
     Entity *leader = GetLeader();
     EntityInfo *r8 = GetEntInfo(r7);
     EntityInfo *leaderInfo = GetEntInfo(leader);
+
+    if (!GetEnableLeaderSwapSetting()) {
+        DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);
+        return;
+    }
 
     if (r8->isTeamLeader) {
         DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);

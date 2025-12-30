@@ -37,7 +37,7 @@ struct unk_struct
     u8 skipBasicRescues;
     u8 recruitAll;
     u8 maxDungeons;
-    u8 padding27;
+    u8 enableLeaderSwap;
     TypeSelectionSaveData typeSelection;
     GengarHintSaveData gengarHints;
     u32 padding[474];
@@ -49,6 +49,7 @@ EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_NORMAL};
 EWRAM_DATA u8 gSkipBasicRescuesSetting = {0};
 EWRAM_DATA u8 gRecruitAllSetting = {0};
 EWRAM_DATA u8 gMaxDungeonsSetting = {MAX_DUNGEONS_20};
+EWRAM_DATA u8 gEnableLeaderSwapSetting = {1};
 
 EWRAM_INIT u32 gUnknown_203B17C = {0};
 EWRAM_INIT const char *gUnknown_203B180 = {"POKE_DUNGEON__05"};
@@ -148,6 +149,20 @@ u8 GetMaxDungeonsSetting(void)
 void SetMaxDungeonsSetting(u8 value)
 {
     gMaxDungeonsSetting = SanitizeMaxDungeonsSetting(value);
+}
+
+u8 GetEnableLeaderSwapSetting(void)
+{
+    if (gEnableLeaderSwapSetting > 1)
+        gEnableLeaderSwapSetting = 1;
+    return gEnableLeaderSwapSetting;
+}
+
+void SetEnableLeaderSwapSetting(u8 value)
+{
+    if (value > 1)
+        value = 1;
+    gEnableLeaderSwapSetting = value;
 }
 
 
@@ -290,6 +305,7 @@ u32 ReadSaveFromPak(u32 *a)
         SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
         SetRecruitAllSetting(playerSave->recruitAll);
         SetMaxDungeonsSetting(playerSave->maxDungeons);
+        SetEnableLeaderSwapSetting(playerSave->enableLeaderSwap);
         TypeSelection_ReadSaveData(&playerSave->typeSelection);
         GengarHint_ReadSaveData(&playerSave->gengarHints);
         SkarmoryRecruit_ReadSaveData(&playerSave->skarmoryRecruit);
@@ -303,6 +319,7 @@ u32 ReadSaveFromPak(u32 *a)
         SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
         SetRecruitAllSetting(playerSave->recruitAll);
         SetMaxDungeonsSetting(playerSave->maxDungeons);
+        SetEnableLeaderSwapSetting(playerSave->enableLeaderSwap);
         TypeSelection_ReadSaveData(&playerSave->typeSelection);
         GengarHint_ReadSaveData(&playerSave->gengarHints);
         SkarmoryRecruit_ReadSaveData(&playerSave->skarmoryRecruit);
@@ -395,6 +412,7 @@ u32 sub_8011FA8(void)
             SetSkipBasicRescuesSetting(r5->skipBasicRescues);
             SetRecruitAllSetting(r5->recruitAll);
             SetMaxDungeonsSetting(r5->maxDungeons);
+            SetEnableLeaderSwapSetting(r5->enableLeaderSwap);
             TypeSelection_ReadSaveData(&r5->typeSelection);
             GengarHint_ReadSaveData(&r5->gengarHints);
         }
@@ -439,6 +457,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
     playerSave->maxDungeons = GetMaxDungeonsSetting();
+    playerSave->enableLeaderSwap = GetEnableLeaderSwapSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
     GengarHint_WriteSaveData(&playerSave->gengarHints);
     SkarmoryRecruit_WriteSaveData(&playerSave->skarmoryRecruit);
@@ -451,6 +470,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
     playerSave->maxDungeons = GetMaxDungeonsSetting();
+    playerSave->enableLeaderSwap = GetEnableLeaderSwapSetting();
     TypeSelection_WriteSaveData(&playerSave->typeSelection);
     GengarHint_WriteSaveData(&playerSave->gengarHints);
     SkarmoryRecruit_WriteSaveData(&playerSave->skarmoryRecruit);
@@ -514,6 +534,7 @@ u32 sub_80121E0(u32 r0)
     r4->skipBasicRescues = GetSkipBasicRescuesSetting();
     r4->recruitAll = GetRecruitAllSetting();
     r4->maxDungeons = GetMaxDungeonsSetting();
+    r4->enableLeaderSwap = GetEnableLeaderSwapSetting();
     TypeSelection_WriteSaveData(&r4->typeSelection);
     GengarHint_WriteSaveData(&r4->gengarHints);
 

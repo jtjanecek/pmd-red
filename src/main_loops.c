@@ -92,6 +92,7 @@ static EWRAM_INIT TeamBasicInfo sTeamBasicInfo_203B040 = {
     .skipBasicRescues = 0,
     .recruitAll = 0,
     .maxDungeons = MAX_DUNGEONS_20,
+    .enableLeaderSwap = 1,
 };
 static EWRAM_DATA u8 sCreditsHeaderBuffer[192] = {0};
 

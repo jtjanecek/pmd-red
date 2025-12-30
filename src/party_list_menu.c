@@ -22,6 +22,7 @@
 #include "party_list_menu.h"
 #include "pokemon.h"
 #include "pokemon_3.h"
+#include "save.h"
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
@@ -396,10 +397,13 @@ static void PartyListMenu_CreateMenu1(void)
         }
         loopMax += 1;
 
-        if(sub_80023E4(8) && !pokeStruct->isTeamLeader)
+        if(!pokeStruct->isTeamLeader)
         {
             sUnknown_203B2B8->unk16C[loopMax].text = sPartyMenuMakeLeader;
             sUnknown_203B2B8->unk16C[loopMax].menuAction = PARTY_LIST_MENU_MAKE_LEADER;
+            if (!GetEnableLeaderSwapSetting()) {
+                sUnknown_203B2B8->unk20C[loopMax] = 1;
+            }
             loopMax += 1;
         }
     }

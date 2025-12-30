@@ -19,6 +19,7 @@
 #include "moves.h"
 #include "pokemon.h"
 #include "pokemon_3.h"
+#include "save.h"
 #include "sprite.h"
 #include "string_format.h"
 #include "text_1.h"
@@ -250,10 +251,13 @@ void CreateFriendActionMenu(void)
           sUnknown_203B2BC->unk16C[loopMax] = 1;
       }
       loopMax += 1;
-      if(sub_80023E4(8) && !pokeStruct->isTeamLeader)
+      if(!pokeStruct->isTeamLeader)
       {
           sUnknown_203B2BC->menuItems[loopMax].text = sMakeLeader;
           sUnknown_203B2BC->menuItems[loopMax].menuAction = FRIEND_AREA_ACTION_MENU_ACTION_MAKE_LEADER;
+          if (!GetEnableLeaderSwapSetting()) {
+              sUnknown_203B2BC->unk16C[loopMax] = 1;
+          }
           loopMax += 1;
       }
   }
@@ -797,4 +801,3 @@ void sub_8027EB8(void)
             break;
     }
 }
-

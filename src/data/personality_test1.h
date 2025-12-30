@@ -21,6 +21,14 @@ static const MenuItem gRecruitAllMenu[] = {
     { _("No Recruitable"), 1 },
     { NULL, -1 },
 };
+ALIGNED(4) static const u8 gLeaderSwapPrompt[] = _(
+    "{CENTER_ALIGN}Do you want to allow leader swapping?"
+);
+static const MenuItem gLeaderSwapMenu[] = {
+    { _("Yes"), 1 },
+    { _("No"), 0 },
+    { NULL, -1 },
+};
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
     "{CENTER_ALIGN}Normal: Similar difficulty to the base game.\n"
     "{CENTER_ALIGN}Hard: Stronger enemies.\n"

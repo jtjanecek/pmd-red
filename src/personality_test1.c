@@ -52,6 +52,7 @@ enum
     PERSONALITY_SEED_CUSTOM_INPUT,
     PERSONALITY_SKIP_BASIC_RESCUES_SELECTION,
     PERSONALITY_RECRUIT_ALL_SELECTION,
+    PERSONALITY_LEADER_SWAP_SELECTION,
     PERSONALITY_DIFFICULTY_SELECTION,
     PERSONALITY_DUNGEON_COUNT_SELECTION,
     PERSONALITY_PLAYER_GENDER,
@@ -101,6 +102,8 @@ static void InitializeTestStats(void);
 static void StartRecruitAllSelection(void);
 static void HandleRecruitAllSelection(void);
 static bool8 ShouldEnableAutoRecruitAllDebug(void);
+static void StartLeaderSwapSelection(void);
+static void HandleLeaderSwapSelection(void);
 static void StartDifficultySelection(void);
 static void StartDungeonCountSelection(void);
 static void HandleDungeonCountSelection(void);
@@ -202,9 +205,11 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Always skip basic rescues
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_ALL; // Default to All Recruitable
     sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_10;
+    sPersonalityTestTracker->unk4.enableLeaderSwap = 1;
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
     SetSkipBasicRescuesSetting(1);
     SetMaxDungeonsSetting(MAX_DUNGEONS_10);
+    SetEnableLeaderSwapSetting(1);
     MemoryFill8(sPersonalityTestTracker->seedBuffer, 0, PERSONALITY_TEST_SEED_BUFFER_SIZE);
     MemoryFill8(sPersonalityTestTracker->starterItemOptions, ITEM_NOTHING, sizeof(sPersonalityTestTracker->starterItemOptions));
     MemoryFill8(sPersonalityTestTracker->starterItemMenu, 0, sizeof(sPersonalityTestTracker->starterItemMenu));
@@ -233,10 +238,12 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;
     sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_15;
+    sPersonalityTestTracker->unk4.enableLeaderSwap = 1;
     SetRecruitAllSetting(RECRUIT_ALL_NONE);
     SetSkipBasicRescuesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_NIGHTMARE);
     SetMaxDungeonsSetting(MAX_DUNGEONS_15);
+    SetEnableLeaderSwapSetting(1);
     
     // Level up team to 100 in dev mode
     sub_8043FD0();
@@ -272,6 +279,9 @@ u32 HandleTestTrackerState(void)
         //     break;
         case PERSONALITY_RECRUIT_ALL_SELECTION:
             HandleRecruitAllSelection();
+            break;
+        case PERSONALITY_LEADER_SWAP_SELECTION:
+            HandleLeaderSwapSelection();
             break;
         case PERSONALITY_DIFFICULTY_SELECTION:
             HandleDifficultySelection();
@@ -345,6 +355,7 @@ u32 HandleTestTrackerState(void)
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
             SetMaxDungeonsSetting(sPersonalityTestTracker->unk4.maxDungeons);
+            SetEnableLeaderSwapSetting(sPersonalityTestTracker->unk4.enableLeaderSwap);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
             // Commit the chosen starter/partner/team-name into global state
             WriteTeamBasicInfo(&sPersonalityTestTracker->unk4);
@@ -494,6 +505,12 @@ static bool8 ShouldEnableAutoRecruitAllDebug(void)
     // to set the AutoRecruitAll preset without exposing it on the menu.
     u16 held = gRealInputs.held;
     return (held & (L_BUTTON | R_BUTTON | SELECT_BUTTON)) == (L_BUTTON | R_BUTTON | SELECT_BUTTON);
+}
+
+static void StartLeaderSwapSelection(void)
+{
+    CreateMenuDialogueBoxAndPortrait(gLeaderSwapPrompt, 0, 0, gLeaderSwapMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_LEADER_SWAP_SELECTION;
 }
 
 // PlaySolo selection removed; always proceed to partner selection.
@@ -705,6 +722,21 @@ static void HandleRecruitAllSelection(void)
 
     sPersonalityTestTracker->unk4.recruitAll = (u8)recruitAllValue;
     SetRecruitAllSetting((u8)recruitAllValue);
+    StartLeaderSwapSelection();
+}
+
+static void HandleLeaderSwapSelection(void)
+{
+    s32 selection;
+
+    if (sub_80144A4(&selection) != 0)
+        return;
+
+    if (selection < 0 || selection > 1)
+        selection = 1;
+
+    sPersonalityTestTracker->unk4.enableLeaderSwap = (u8)selection;
+    SetEnableLeaderSwapSetting((u8)selection);
     StartDifficultySelection();
 }
 

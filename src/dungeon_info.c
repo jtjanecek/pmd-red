@@ -2496,10 +2496,10 @@ bool8 IsRecruitingEnabled(u8 dungeon)
 
 bool8 CanLeaderSwitch(u8 dungeon)
 {
-    // Allow leader switching in Level 1 dungeons
-    if (IsLevelResetDungeon(dungeon))
-        return TRUE;
-    return gDungeons[dungeon].leaderCanSwitch;
+    (void)dungeon;
+    if (!GetEnableLeaderSwapSetting())
+        return FALSE;
+    return TRUE;
 }
 
 s16 GetRandomMovementChance(u8 dungeon)

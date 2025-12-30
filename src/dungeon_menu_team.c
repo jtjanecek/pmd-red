@@ -368,7 +368,7 @@ static void AddTeamSubMenuOptions(struct UnkFieldTeamMenuStruct *a0)
     if (!monInfo->isTeamLeader) {
         AddActionToDungeonSubMenu(ACTION_CHANGE_TACTICS, 0);
     }
-    if (!monInfo->isTeamLeader && gDungeon->unk644.unk18 && CanLeaderSwitch(gDungeon->unk644.dungeonLocation.id)) {
+    if (!monInfo->isTeamLeader) {
         bool32 r5;
 
         AddActionToDungeonSubMenu(0x3B, 0);
@@ -384,6 +384,9 @@ static void AddTeamSubMenuOptions(struct UnkFieldTeamMenuStruct *a0)
         }
 
         if (CheckVariousStatuses2(teamMon, FALSE)) {
+            r5 = FALSE;
+        }
+        if (!CanLeaderSwitch(gDungeon->unk644.dungeonLocation.id)) {
             r5 = FALSE;
         }
         if (!r5) {

@@ -1026,12 +1026,14 @@ const u8 *const gUnknown_80FEFD0 = _("A horrid stench billowed out!\n{POKEMON_0}
 const u8 *const gUnknown_80FEFF4 = _("Transform can't be used here!");
 const u8 *const gUnknown_80FF01C = _("{POKEMON_0}'s Synchronize took effect!");
 const struct TutorialFlagMsg gUnknown_80FF020 = {
-    0x00, _("Press {R_BUTTON}+{A_BUTTON} to enable\n"
-            "autopilot. Hold {B_BUTTON} to cancel.")
+    0x00, _("Press {R_BUTTON}+{A_BUTTON} to enable autopilot.\n"
+            "Hold {B_BUTTON} to cancel.")
 };
 
 const struct TutorialFlagMsg gUnknown_80FF080 = {
-    0x01, _("Foes won't move until you do.\nOpen the menu with {B_BUTTON} and\nthink before you act!")
+    0x01, _("Press {R_BUTTON}+{B_BUTTON} to turn on\n"
+            "auto-leader swap. Only available if\n"
+            "leader swap enabled. {R_BUTTON}+{B_BUTTON} to disable.")
 };
 
 const struct TutorialFlagMsg gUnknown_80FF0D8 = {

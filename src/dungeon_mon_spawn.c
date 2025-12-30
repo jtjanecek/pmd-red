@@ -42,6 +42,12 @@
 #include "dungeon_8041AD0.h"
 #include "dungeon_cutscene.h"
 #include "dungeon_action_execution.h"
+#include "shiny.h"
+
+static bool8 RollShinySpawn(void)
+{
+    return DungeonRandInt(100) < SHINY_SPAWN_CHANCE_PERCENT;
+}
 
 static s32 CalcSpeciesHPAtLevel(s32 species, s32 level);
 static s32 CalcSpeciesAtkAtLevel(s32 species, s32 level, s32 categoryIndex);
@@ -517,6 +523,9 @@ Entity* SpawnWildMon(struct MonSpawnInfo *monSpawnInfo, bool8 a1)
     sub_806AED8(&entityInfo->moves, &entityInfo->maxHPStat, entityInfo->atk, entityInfo->def, entityInfo->id, entityInfo->level);
     entityInfo->HP = entityInfo->maxHPStat;
     entityInfo->moveRandomly = monSpawnInfo->unk4;
+    if (RollShinySpawn()) {
+        entityInfo->visualFlags |= VISUAL_FLAG_SHINY;
+    }
     if (!monSpawnInfo->unk2 && !a1 && !monSpawnInfo->unk10) {
         s32 rand = DungeonRandInt(100);
         if (GetChanceAsleep(monSpawnInfo->species) > rand) {
@@ -618,6 +627,9 @@ bool8 SpawnTeamMember(s16 _species, s32 x, s32 y, DungeonMon *monPtr, Entity **a
     entityInfo->heldItem = monPtr->itemSlot;
     entityInfo->unkF3 = 0;
     entityInfo->unk64 = 0;
+    if (monPtr->flags & POKEMON_FLAG_SHINY) {
+        entityInfo->visualFlags |= VISUAL_FLAG_SHINY;
+    }
 
     // Pickup Check
     if (gDungeon->unk644.dungeonLocation.id != DUNGEON_TINY_WOODS
@@ -647,6 +659,7 @@ void UpdateEntitySpecies(Entity *entity, s32 _species)
     s16 speciesMatch;
     struct MonSpawnInfo monSpawnInfo;
     EntityInfo *entInfo = GetEntInfo(entity);
+    bool8 wasShiny = (entInfo->visualFlags & VISUAL_FLAG_SHINY) != 0;
 
     DeletePokemonDungeonSprite(entInfo->dungeonSpriteId);
     // s16 memes...
@@ -684,6 +697,9 @@ void UpdateEntitySpecies(Entity *entity, s32 _species)
     }
 
     InitEntityFromSpawnInfo((entInfo->isNotTeamMember == FALSE), entity, &monSpawnInfo, NULL);
+    if (wasShiny) {
+        entInfo->visualFlags |= VISUAL_FLAG_SHINY;
+    }
     sub_806AED8(&entInfo->moves, &entInfo->maxHPStat, entInfo->atk, entInfo->def, entInfo->id, entInfo->level);
     entInfo->HP = entInfo->maxHPStat;
     entInfo->shopkeeper = 0;

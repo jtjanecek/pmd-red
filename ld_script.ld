@@ -72,6 +72,7 @@ SECTIONS {
         src/other_random.o(.text);
         src/util.o(.text);
         src/bg_palette_buffer.o(.text);
+        src/shiny_palette_table.o(.text);
         src/input.o(.text);
         src/code_8004AA0.o(.text);
         src/sprite.o(.text);
@@ -602,6 +603,7 @@ SECTIONS {
         src/data/type_tileset_table.o(.rodata);
         src/data/type_hint_table.o(.rodata);
         src/data/type_weather_table.o(.rodata);
+        src/data/shiny_palette_table.o(.rodata);
         src/data/rogue_item_tables.o(.rodata);
         src/personality_test1.o(.rodata);
         src/personality_test2.o(.rodata);

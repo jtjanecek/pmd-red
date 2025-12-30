@@ -1030,6 +1030,7 @@ void sub_8069D4C(struct unkStruct_8069D4C *r0, Entity *target)
     r0->belly = info->belly;
     r0->maxBelly = info->maxBelly;
     r0->hiddenPower = info->hiddenPower;
+    r0->isShiny = (info->visualFlags & VISUAL_FLAG_SHINY) != 0;
 }
 
 void TargetTileInFront(Entity *pokemon)

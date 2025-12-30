@@ -24,6 +24,7 @@
 #include "text_1.h"
 #include "text_2.h"
 #include "text_3.h"
+#include "shiny_palette_table.h"
 
 static inline bool8 ResetFlags(axdata *ptr)
 {
@@ -107,7 +108,16 @@ static void AnimateSprites(void)
     var_30.unkA = 0x800;
     bgPos = gFriendAreasMapPtr->bgPos;
     RunAxAnimationFrame(&gFriendAreasMapPtr->monAxSprite);
-    DoAxFrame_800558C(&gFriendAreasMapPtr->monAxSprite, gFriendAreasMapPtr->monSpritePos.x - bgPos.x, gFriendAreasMapPtr->monSpritePos.y - bgPos.y, 3, gFriendAreasMapPtr->unk4DD0, &var_30);
+    {
+        Pokemon *player = GetPlayerPokemonStruct();
+        u8 palette = gFriendAreasMapPtr->unk4DD0;
+
+        if (player != NULL && (player->flags & POKEMON_FLAG_SHINY)) {
+            palette = GetMonsterShinyPalette(player->speciesNum);
+        }
+        DoAxFrame_800558C(&gFriendAreasMapPtr->monAxSprite, gFriendAreasMapPtr->monSpritePos.x - bgPos.x,
+                          gFriendAreasMapPtr->monSpritePos.y - bgPos.y, 3, palette, &var_30);
+    }
 
     for (i = 0; i < NUM_FRIEND_AREA_LOCATIONS; i++) {
         struct MapLocation *mapLocation = &gFriendAreasMapPtr->mapLocations[i];

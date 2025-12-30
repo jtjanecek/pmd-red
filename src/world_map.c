@@ -25,6 +25,7 @@
 #include "text_1.h"
 #include "text_2.h"
 #include "text_3.h"
+#include "shiny_palette_table.h"
 #include "world_map.h"
 
 static EWRAM_INIT struct WorldMap *sWorldMapPtr = NULL;
@@ -460,7 +461,14 @@ static void AnimateSprites(bool8 a0)
     pos = sWorldMapPtr->bgPos;
     RunAxAnimationFrame(&sWorldMapPtr->monAxSprite);
     if (a0) {
-        DoAxFrame_800558C(&sWorldMapPtr->monAxSprite, sWorldMapPtr->monSpritePos.x - pos.x, sWorldMapPtr->monSpritePos.y - pos.y, 3, sWorldMapPtr->unk52D4, &var_2C);
+        Pokemon *player = GetPlayerPokemonStruct();
+        u8 palette = sWorldMapPtr->unk52D4;
+
+        if (player != NULL && (player->flags & POKEMON_FLAG_SHINY)) {
+            palette = GetMonsterShinyPalette(player->speciesNum);
+        }
+        DoAxFrame_800558C(&sWorldMapPtr->monAxSprite, sWorldMapPtr->monSpritePos.x - pos.x,
+                          sWorldMapPtr->monSpritePos.y - pos.y, 3, palette, &var_2C);
     }
 
     for (i = 0; i < 64; i++) {

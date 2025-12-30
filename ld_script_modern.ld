@@ -55,6 +55,7 @@ SECTIONS {
     ALIGN(4)
     {
         src/*.o(.rodata*);
+        src/data/*.o(.rodata*);
         data/*.o(.rodata*);
 		. = ALIGN(4);
     } > ROM =0

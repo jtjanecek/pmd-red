@@ -848,6 +848,17 @@ static s32 GroundLives_Add(s32 id_, const GroundLivesData *ptr, s32 group_, s32 
             break;
     }
 
+    {
+        Pokemon *monPtr = sub_80A8D54(livesPtr->unk2);
+
+        if (monPtr != NULL && (monPtr->flags & POKEMON_FLAG_SHINY)) {
+            livesPtr->flags |= GROUND_LIVE_FLAG_SHINY;
+        }
+        else {
+            livesPtr->flags &= ~GROUND_LIVE_FLAG_SHINY;
+        }
+    }
+
     livesPtr->unkC.x = typeDataPtr->unk8 << 11;
     livesPtr->unkC.y = typeDataPtr->unk9 << 11;
     livesPtr->unk14.x = livesPtr->unkC.x / 2;

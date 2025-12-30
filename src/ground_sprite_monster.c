@@ -6,6 +6,8 @@
 #include "ground_sprite.h"
 #include "sprite.h"
 #include "pokemon.h"
+#include "ground_lives.h"
+#include "shiny_palette_table.h"
 
 extern s32 sub_800E700(s32);
 
@@ -29,6 +31,9 @@ void sub_80A7428(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 monsterId_, s32
     else {
         bool32 kecleonShop = (a1 == 71);
         spStruct.unk2 = GetPokemonOverworldPalette(monsterId, kecleonShop);
+    }
+    if (a3 & GROUND_LIVE_FLAG_SHINY) {
+        spStruct.unk2 = GetMonsterShinyPalette(monsterId);
     }
     spStruct.axmain = (axmain *) file->data;
     sub_80A67CC(ptr, &spStruct, a3);
@@ -92,4 +97,3 @@ void sub_80A7524(struct UnkGroundSpriteStruct *ptr, s32 monsterId_, PixelPos *pi
         sub_80A7310(ptr, pixelPosArg, NULL, a3);
     }
 }
-

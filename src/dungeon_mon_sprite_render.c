@@ -30,6 +30,7 @@
 #include "text_util.h"
 #include "sprite.h"
 #include "random.h"
+#include "shiny_palette_table.h"
 
 static const u8 gUnknown_8106EC8[][13] = {
     {0, 1, 7, 7, 7, 5, 6, 7, 7, 7, 7, 7, 7},
@@ -277,6 +278,11 @@ void UpdateMonsterSprite(Entity *entity)
         }
         else {
             overworldPal = GetPokemonOverworldPalette(entInfo->apparentID, FALSE);
+        }
+        if (entInfo->visualFlags & VISUAL_FLAG_SHINY) {
+            s16 shinySpecies = decoySprite ? MONSTER_DECOY : entInfo->apparentID;
+
+            overworldPal = GetMonsterShinyPalette(shinySpecies);
         }
 
         if (entity->unk22 == 0) {

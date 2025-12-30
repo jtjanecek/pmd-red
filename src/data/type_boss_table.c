@@ -40,18 +40,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_TOGETIC, MONSTER_PORYGON2},
         },
         .moves = {
-            {MOVE_PSYCHIC, MOVE_RECOVER, MOVE_BARRIER, MOVE_SWIFT},
-            {MOVE_PSYCHIC, MOVE_TRANSFORM, MOVE_MEGA_PUNCH, MOVE_METRONOME},
+            {MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_BARRIER, MOVE_SWIFT},
+            {MOVE_PSYCHIC, MOVE_REFLECT, MOVE_MEGA_PUNCH, MOVE_METRONOME},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
                 {MOVE_STRENGTH, MOVE_TAKE_DOWN, MOVE_SCARY_FACE, MOVE_PURSUIT},
-                {MOVE_SLASH, MOVE_STRENGTH, MOVE_FURY_SWIPES, MOVE_REST},
+                {MOVE_SLASH, MOVE_STRENGTH, MOVE_FURY_SWIPES, MOVE_EARTHQUAKE},
             },
             {
-                {MOVE_METRONOME, MOVE_ANCIENTPOWER, MOVE_ENCORE, MOVE_WISH},
-                {MOVE_TRI_ATTACK, MOVE_RECOVER, MOVE_PSYCHIC, MOVE_AGILITY},
+                {MOVE_METRONOME, MOVE_ANCIENTPOWER, MOVE_ENCORE, MOVE_SAFEGUARD},
+                {MOVE_TRI_ATTACK, MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_AGILITY},
             },
         },
         .minionHasCustomMoves = {
@@ -121,13 +121,13 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_MEGANIUM, MONSTER_SCEPTILE},
         },
         .moves = {
-            {MOVE_PSYCHIC, MOVE_HEAL_BELL, MOVE_RECOVER, MOVE_LEECH_SEED},
-            {MOVE_SOLARBEAM, MOVE_SLEEP_POWDER, MOVE_LEECH_SEED, MOVE_EARTHQUAKE},
+            {MOVE_PSYCHIC, MOVE_FUTURE_SIGHT, MOVE_ANCIENTPOWER, MOVE_SOLARBEAM},
+            {MOVE_SOLARBEAM, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB, MOVE_EARTHQUAKE},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_RAZOR_LEAF, MOVE_GUST, MOVE_STUN_SPORE, MOVE_SYNTHESIS},
+                {MOVE_RAZOR_LEAF, MOVE_GUST, MOVE_STUN_SPORE, MOVE_AERIAL_ACE},
                 {MOVE_PSYCHIC, MOVE_EGG_BOMB, MOVE_STUN_SPORE, MOVE_REFLECT},
             },
             {
@@ -181,7 +181,7 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_AURORA_BEAM, MOVE_SURF, MOVE_REST, MOVE_ENCORE},
+                {MOVE_AURORA_BEAM, MOVE_SURF, MOVE_ICE_BEAM, MOVE_ENCORE},
                 {MOVE_AURORA_BEAM, MOVE_PROTECT, MOVE_SPIKE_CANNON, MOVE_SUPERSONIC},
             },
             {
@@ -212,7 +212,7 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
                 {MOVE_SKY_UPPERCUT, MOVE_THUNDERPUNCH, MOVE_ICE_PUNCH, MOVE_AGILITY},
             },
             {
-                {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_LEECH_SEED, MOVE_STUN_SPORE},
+                {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_MEGA_PUNCH, MOVE_STUN_SPORE},
                 {MOVE_CROSS_CHOP, MOVE_BELLY_DRUM, MOVE_FAKE_OUT, MOVE_KNOCK_OFF},
             },
         },
@@ -283,7 +283,7 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_AERODACTYL, MONSTER_ALTARIA},
         },
         .moves = {
-            {MOVE_SACRED_FIRE, MOVE_GUST, MOVE_RECOVER, MOVE_FIRE_BLAST},
+            {MOVE_SACRED_FIRE, MOVE_GUST, MOVE_FLY, MOVE_FIRE_BLAST},
             {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_HYPER_BEAM, MOVE_DRAGON_DANCE},
         },
         .hasCustomMoves = {TRUE, TRUE},
@@ -310,18 +310,18 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_DEOXYS_ATTACK, MONSTER_DEOXYS_DEFENSE},
         },
         .moves = {
-            {MOVE_AEROBLAST, MOVE_HYDRO_PUMP, MOVE_RECOVER, MOVE_SAFEGUARD},
-            {MOVE_PSYCHIC, MOVE_COSMIC_POWER, MOVE_THUNDERBOLT, MOVE_RECOVER},
+            {MOVE_AEROBLAST, MOVE_HYDRO_PUMP, MOVE_PSYCHIC, MOVE_SAFEGUARD},
+            {MOVE_PSYCHIC, MOVE_COSMIC_POWER, MOVE_THUNDERBOLT, MOVE_ICE_BEAM},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
                 {MOVE_PSYCHIC, MOVE_CONFUSE_RAY, MOVE_FUTURE_SIGHT, MOVE_TELEPORT},
-                {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_RECOVER, MOVE_ICE_BEAM},
+                {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_ICE_BEAM},
             },
             {
-                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_RECOVER},
-                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_RECOVER},
+                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_SUPERPOWER},
+                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_PROTECT},
             },
         },
         .minionHasCustomMoves = {
@@ -370,7 +370,7 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
             {
-                {MOVE_ANCIENTPOWER, MOVE_GIGA_DRAIN, MOVE_CONFUSE_RAY, MOVE_AMNESIA},
+                {MOVE_ANCIENTPOWER, MOVE_RAZOR_LEAF, MOVE_CONFUSE_RAY, MOVE_AMNESIA},
                 {MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_FURY_CUTTER, MOVE_PROTECT},
             },
             {
@@ -418,8 +418,8 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SALAMENCE, MONSTER_FLYGON},
         },
         .moves = {
-            {MOVE_MIST_BALL, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_RECOVER},
-            {MOVE_LUSTER_PURGE, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_RECOVER},
+            {MOVE_MIST_BALL, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_ICE_BEAM},
+            {MOVE_LUSTER_PURGE, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_THUNDERBOLT},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {
@@ -473,7 +473,7 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         },
         .moves = {
             {MOVE_METAL_CLAW, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_CURSE},
-            {MOVE_PSYCHIC, MOVE_WISH, MOVE_DOOM_DESIRE, MOVE_DOUBLE_EDGE},
+            {MOVE_PSYCHIC, MOVE_SWIFT, MOVE_DOOM_DESIRE, MOVE_DOUBLE_EDGE},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {

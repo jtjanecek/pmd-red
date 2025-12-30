@@ -64,9 +64,9 @@ static u8 GetSeededKecleonFaintChance(u32 difficulty)
 {
     switch (difficulty) {
         case DIFFICULTY_HARD:
-            return 40;
+            return 20;
         case DIFFICULTY_NIGHTMARE:
-            return 70;
+            return 30;
         case DIFFICULTY_NORMAL:
         default:
             return 10;

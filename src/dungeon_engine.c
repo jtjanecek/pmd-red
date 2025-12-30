@@ -74,6 +74,11 @@ static bool8 RunLeaderTurn(bool8 param_1)
     if (entity == NULL)
         return FALSE;
 
+    ApplyPendingAutoLeaderSwap();
+    entity = GetLeader();
+    if (entity == NULL)
+        return FALSE;
+
     TryActivateArtificialWeatherAbilities();
     movSpeed = CalcSpeedStage(entity);
     if (gSpeedTurns[movSpeed][gDungeon->unk644.fractionalTurn] == 0)
@@ -82,6 +87,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
         return FALSE;
 
     while (1) {
+        u16 leaderAction;
         entity = GetLeader();
         if (entity == NULL)
             return FALSE;
@@ -117,7 +123,11 @@ static bool8 RunLeaderTurn(bool8 param_1)
         gDungeon->noActionInProgress = FALSE;
         if (IsFloorOver())
             break;
+        leaderAction = GetEntInfo(entity)->action.action;
         ExecuteEntityDungeonAction(entity);
+        if (EntityIsValid(entity) && gDungeon->unkBC == 0) {
+            QueueAutoLeaderSwapAfterAction(entity, leaderAction);
+        }
         
         // Check for auto-navigate exit after action execution
         if (IsAutoExploreActive()) {

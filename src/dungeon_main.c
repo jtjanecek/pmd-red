@@ -89,6 +89,9 @@ static bool8 sub_805E874(void);
 static bool8 sub_805EC2C(Entity *a0, s32 x, s32 y);
 static bool8 sub_805EC4C(Entity *a0, u8 a1);
 static bool8 sub_805EF60(Entity *a0, EntityInfo *a1);
+static bool8 IsAutoLeaderSwapCandidate(Entity *entity);
+static s8 FindNextAutoLeaderSwapIndex(Entity *leader);
+static bool8 CanAutoLeaderSwapNow(void);
 static void ShowMainMenu(bool8 fromBPress, bool8 a1);
 static void PrintOnMainMenu(bool8 printAll);
 static bool8 AreStairsInCurrentRoom(DungeonPos *playerPos);
@@ -100,6 +103,10 @@ EWRAM_DATA DungeonPos gAutoExploreTarget = {0, 0};
 EWRAM_DATA bool8 gAutoExploreHasTarget = FALSE;
 EWRAM_DATA DungeonPos gAutoExploreLastTarget = {0, 0};
 EWRAM_DATA bool8 gAutoExploreTargetPreserved = FALSE;
+// Auto leader swap state
+static EWRAM_DATA bool8 sAutoLeaderSwapActive = FALSE;
+static EWRAM_DATA s8 sAutoLeaderSwapPendingIndex = -1;
+static EWRAM_DATA bool8 sSuppressLeaderSwapMessage = FALSE;
 
 // Debug position tracking
 EWRAM_DATA s32 gLastDebugX = -1;
@@ -231,6 +238,120 @@ void SetAutoExploreActive(bool8 active)
 bool8 IsAutoExploreActive(void)
 {
     return gAutoExploreActive;
+}
+
+bool8 IsAutoLeaderSwapActive(void)
+{
+    return sAutoLeaderSwapActive;
+}
+
+void SetAutoLeaderSwapActive(bool8 active)
+{
+    sAutoLeaderSwapActive = active;
+    sAutoLeaderSwapPendingIndex = -1;
+}
+
+void QueueAutoLeaderSwapAfterAction(Entity *leader, u16 action)
+{
+    s8 nextIndex;
+
+    if (!sAutoLeaderSwapActive)
+        return;
+    if (action == ACTION_NOTHING || action == 0x3B)
+        return;
+    if (!CanAutoLeaderSwapNow())
+        return;
+    if (!EntityIsValid(leader))
+        return;
+
+    nextIndex = FindNextAutoLeaderSwapIndex(leader);
+    if (nextIndex < 0)
+        return;
+
+    sAutoLeaderSwapPendingIndex = nextIndex;
+}
+
+void ApplyPendingAutoLeaderSwap(void)
+{
+    Entity *target;
+
+    if (!sAutoLeaderSwapActive)
+        return;
+    if (sAutoLeaderSwapPendingIndex < 0)
+        return;
+    if (!CanAutoLeaderSwapNow()) {
+        sAutoLeaderSwapPendingIndex = -1;
+        return;
+    }
+
+    target = gDungeon->teamPokemon[sAutoLeaderSwapPendingIndex];
+    sAutoLeaderSwapPendingIndex = -1;
+    if (!IsAutoLeaderSwapCandidate(target))
+        return;
+
+    gDungeon->unkBC = target;
+    sSuppressLeaderSwapMessage = TRUE;
+    sub_805F02C();
+    sSuppressLeaderSwapMessage = FALSE;
+    gDungeon->unkBC = 0;
+}
+
+static bool8 IsAutoLeaderSwapCandidate(Entity *entity)
+{
+    EntityInfo *info;
+    DungeonMon *mon;
+
+    if (!EntityIsValid(entity))
+        return FALSE;
+
+    info = GetEntInfo(entity);
+    if (info->monsterBehavior == BEHAVIOR_RESCUE_TARGET)
+        return FALSE;
+    if (IsExperienceLocked(info->joinedAt.id))
+        return FALSE;
+    if (info->isTeamLeader)
+        return FALSE;
+    if (CheckVariousStatuses2(entity, FALSE))
+        return FALSE;
+    if (info->teamIndex >= MAX_TEAM_MEMBERS)
+        return FALSE;
+
+    mon = &gRecruitedPokemonRef->dungeonTeam[info->teamIndex];
+    if (sub_806A538(mon->recruitedPokemonId))
+        return FALSE;
+
+    return TRUE;
+}
+
+static s8 FindNextAutoLeaderSwapIndex(Entity *leader)
+{
+    s32 leaderIndex;
+    s32 offset;
+
+    leaderIndex = GetTeamMemberEntityIndex(leader);
+    if (leaderIndex < 0)
+        return -1;
+
+    for (offset = 1; offset <= MAX_TEAM_MEMBERS; offset++) {
+        s32 index = (leaderIndex + offset) % MAX_TEAM_MEMBERS;
+        if (IsAutoLeaderSwapCandidate(gDungeon->teamPokemon[index])) {
+            return (s8)index;
+        }
+    }
+
+    return -1;
+}
+
+static bool8 CanAutoLeaderSwapNow(void)
+{
+    if (!GetEnableLeaderSwapSetting())
+        return FALSE;
+    if (PlayerHasItemWithFlag(ITEM_FLAG_IN_SHOP) || sub_807EF48())
+        return FALSE;
+    if (gDungeon->unk644.stoleFromKecleon)
+        return FALSE;
+
+    return TRUE;
 }
 
 bool8 AreStairsVisible(void)
@@ -992,6 +1113,25 @@ void DungeonHandlePlayerInput(void)
                     LogMessageByIdWithPopupCheckUser(leader, "Autopilot ON!");
                 } else {
                     LogMessageByIdWithPopupCheckUser(leader, "Already active!");
+                }
+                UnpressButtons();
+                ResetRepeatTimers();
+                ResetUnusedInputStruct();
+            }
+
+            if (((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & B_BUTTON))
+                || ((gRealInputs.held & B_BUTTON) && (gRealInputs.pressed & R_BUTTON))) {
+                if (IsAutoLeaderSwapActive()) {
+                    SetAutoLeaderSwapActive(FALSE);
+                    LogMessageByIdWithPopupCheckUser(leader, "Auto leader swap OFF!");
+                }
+                else if (GetEnableLeaderSwapSetting()) {
+                    SetAutoLeaderSwapActive(TRUE);
+                    if (IsAutoExploreActive()) {
+                        SetAutoExploreActive(FALSE);
+                        LogMessageByIdWithPopupCheckUser(leader, "Autopilot OFF!");
+                    }
+                    LogMessageByIdWithPopupCheckUser(leader, "Auto leader swap ON!");
                 }
                 UnpressButtons();
                 ResetRepeatTimers();
@@ -1921,18 +2061,22 @@ void sub_805F02C(void)
     EntityInfo *leaderInfo = GetEntInfo(leader);
 
     if (!GetEnableLeaderSwapSetting()) {
-        DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);
+        if (!sSuppressLeaderSwapMessage)
+            DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);
         return;
     }
 
     if (r8->isTeamLeader) {
-        DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);
+        if (!sSuppressLeaderSwapMessage)
+            DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9BD8);
     }
     else if (PlayerHasItemWithFlag(ITEM_FLAG_IN_SHOP) || sub_807EF48()) {
-        DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C08);
+        if (!sSuppressLeaderSwapMessage)
+            DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C08);
     }
     else if (gDungeon->unk644.stoleFromKecleon) {
-        DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C2C);
+        if (!sSuppressLeaderSwapMessage)
+            DisplayDungeonLoggableMessageTrue(r7, gUnknown_80F9C2C);
     }
     else {
         gDungeon->unk644.emptyBellyAlert = 0;
@@ -1966,7 +2110,8 @@ void sub_805F02C(void)
         sub_8041AD0(leader);
         sub_8041AE0(GetLeader());
         SubstitutePlaceholderStringTags(gFormatBuffer_Monsters[0], r7, 0);
-        LogMessageByIdWithPopupCheckUser(r7, gUnknown_80F9BB0);
+        if (!sSuppressLeaderSwapMessage)
+            LogMessageByIdWithPopupCheckUser(r7, gUnknown_80F9BB0);
         sub_807EC28(FALSE);
         r8->unk64 = 0;
         leaderInfo->unk64 = 0;

@@ -25,5 +25,10 @@ void InitializeJunctionT1Tiles(void);
 bool8 IsAutoExploreActive(void);
 void SetAutoExploreActive(bool8 active);
 bool8 ShouldExitAutoExploreOnInput(void);
+// Auto leader swap
+bool8 IsAutoLeaderSwapActive(void);
+void SetAutoLeaderSwapActive(bool8 active);
+void QueueAutoLeaderSwapAfterAction(Entity *leader, u16 action);
+void ApplyPendingAutoLeaderSwap(void);
 
 #endif // GUARD_DUNGEON_MAIN_H

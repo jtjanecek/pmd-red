@@ -83,10 +83,6 @@ void GroundEvent_Select(s32 scriptID, s32 group, s32 sector)
     scriptID_s32 = (s16)scriptID;
     group_s32 = (s16)group;
     sector_s32 = (s8)sector;
-    if (ShouldSkipSquareEvent(scriptID_s32)) {
-        Log(0,"GroundEvent Select %3d  %3d  %3d (skipped)", scriptID_s32, group_s32, sector_s32);
-        return;
-    }
     scriptPtr = GetGroundScript(scriptID_s32, &sGroundEvent_DebugLoc);
     Log('\0',"GroundEvent Select %3d  %3d  %3d", scriptID_s32, group_s32, sector_s32);
 

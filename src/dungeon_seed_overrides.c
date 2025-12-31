@@ -21,6 +21,7 @@
 #include "dungeon_map_access.h"
 #include "dungeon_floor_spawns.h"
 #include "dungeon_info.h"
+#include "dungeon_util.h"
 #include "run_dungeon.h"
 #include "main_loops.h"
 #include "mgba_log.h"
@@ -2780,13 +2781,48 @@ bool8 DungeonSeedOverrides_ShouldTriggerCredits(void)
 
 // Boss fight handling - global state
 static Entity *sCustomBossEntity = NULL;
+static Entity *sCustomBossMinions[4] = {NULL};
+static u8 sCustomBossMinionCount = 0;
+static bool8 sCustomBossDefeated = FALSE;
+static bool8 sCustomBossRewardsSpawned = FALSE;
 static s32 sStairsSpawnX = 0;
 static s32 sStairsSpawnY = 0;
+
+void DungeonSeedOverrides_ResetBossFightState(void)
+{
+    s32 i;
+
+    sCustomBossEntity = NULL;
+    sCustomBossMinionCount = 0;
+    sCustomBossDefeated = FALSE;
+    sCustomBossRewardsSpawned = FALSE;
+
+    for (i = 0; i < ARRAY_COUNT(sCustomBossMinions); i++)
+        sCustomBossMinions[i] = NULL;
+}
 
 // Register the boss entity for tracking
 void DungeonSeedOverrides_RegisterBossEntity(Entity *boss)
 {
     sCustomBossEntity = boss;
+}
+
+void DungeonSeedOverrides_RegisterBossMinion(Entity *minion)
+{
+    s32 i;
+
+    if (!EntityIsValid(minion))
+        return;
+
+    for (i = 0; i < sCustomBossMinionCount; i++) {
+        if (sCustomBossMinions[i] == minion)
+            return;
+    }
+
+    if (sCustomBossMinionCount >= ARRAY_COUNT(sCustomBossMinions))
+        return;
+
+    sCustomBossMinions[sCustomBossMinionCount++] = minion;
 }
 
 // Set the position where stairs should spawn after boss defeat
@@ -2802,6 +2838,21 @@ void DungeonSeedOverrides_SetStairsPosition(s32 x, s32 y)
 bool8 DungeonSeedOverrides_IsCustomBoss(Entity *pokemon)
 {
     return (pokemon != NULL && pokemon == sCustomBossEntity);
+}
+
+bool8 DungeonSeedOverrides_IsCustomBossMinion(Entity *pokemon)
+{
+    s32 i;
+
+    if (pokemon == NULL)
+        return FALSE;
+
+    for (i = 0; i < sCustomBossMinionCount; i++) {
+        if (sCustomBossMinions[i] == pokemon)
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
 static bool8 TrySpawnBossLoot(u16 itemId, s32 x, s32 y, const char *label)
@@ -2832,29 +2883,41 @@ static bool8 TrySpawnBossLoot(u16 itemId, s32 x, s32 y, const char *label)
     return TRUE;
 }
 
-// Handle boss defeat - spawn stairs and drop loot
-void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
+static bool8 AreBossMinionsDefeated(void)
+{
+    s32 i;
+
+    for (i = 0; i < sCustomBossMinionCount; i++) {
+        Entity *minion = sCustomBossMinions[i];
+
+        if (minion != NULL && EntityIsValid(minion)) {
+            EntityInfo *info = GetEntInfo(minion);
+
+            if (info != NULL && info->isNotTeamMember)
+                return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+static void TrySpawnBossRewards(void)
 {
     const BossFightConfig *bossFight;
     Tile *tile;
     s32 dropX;
     s32 dropY;
 
-    MGBA_Warnf("[BossFaint] HandleBossFaint called for entity %p (boss=%p)", pokemon, sCustomBossEntity);
-
-    if (pokemon != sCustomBossEntity) {
-        MGBA_Warnf("[BossFaint] Entity mismatch - not our custom boss, returning");
+    if (sCustomBossRewardsSpawned || !sCustomBossDefeated || !AreBossMinionsDefeated())
         return;
-    }
-
-    MGBA_Warnf("[BossFaint] Boss defeated! Spawning stairs at (%d, %d)", sStairsSpawnX, sStairsSpawnY);
-    DungeonSeedOverrides_RegisterBossEntity(NULL);
 
     bossFight = DungeonFloorSpawns_GetBossFightConfig();
     if (bossFight == NULL) {
         MGBA_Warnf("[BossFaint] ERROR: bossFight is NULL!");
         return;
     }
+
+    sCustomBossRewardsSpawned = TRUE;
 
     // Spawn stairs at marked position
     tile = GetTileMut(sStairsSpawnX, sStairsSpawnY);
@@ -2889,6 +2952,44 @@ void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
     // Update minimap and visibility
     UpdateTrapsVisibility();
     UpdateMinimap();
+}
+
+// Handle boss defeat - spawn stairs and drop loot
+void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon)
+{
+    MGBA_Warnf("[BossFaint] HandleBossFaint called for entity %p (boss=%p)", pokemon, sCustomBossEntity);
+
+    if (pokemon != sCustomBossEntity) {
+        MGBA_Warnf("[BossFaint] Entity mismatch - not our custom boss, returning");
+        return;
+    }
+
+    sCustomBossDefeated = TRUE;
+    MGBA_Warnf("[BossFaint] Boss defeated! Checking minions before spawning stairs");
+    DungeonSeedOverrides_RegisterBossEntity(NULL);
+
+    if (!AreBossMinionsDefeated())
+        MGBA_Warnf("[BossFaint] Boss defeated but minions remain - delaying stairs");
+
+    TrySpawnBossRewards();
+}
+
+void DungeonSeedOverrides_HandleBossMinionFaint(Entity *pokemon)
+{
+    s32 i;
+
+    if (!DungeonSeedOverrides_IsCustomBossMinion(pokemon))
+        return;
+
+    for (i = 0; i < sCustomBossMinionCount; i++) {
+        if (sCustomBossMinions[i] == pokemon) {
+            sCustomBossMinions[i] = NULL;
+            break;
+        }
+    }
+
+    MGBA_Warnf("[BossFaint] Boss minion defeated; checking stairs spawn");
+    TrySpawnBossRewards();
 }
 
 s32 DungeonSeedOverrides_GetSuperTrapFloor(u8 dungeonId, s32 seed)

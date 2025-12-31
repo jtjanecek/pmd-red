@@ -429,8 +429,8 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             {
                 const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
 
-                // Reset any lingering boss pointer from previous floors
-                DungeonSeedOverrides_RegisterBossEntity(NULL);
+                // Reset any lingering boss fight state from previous floors
+                DungeonSeedOverrides_ResetBossFightState();
 
                 // Check if this floor has a boss fight
                 if (bossFight != NULL && bossFight->enabled) {

@@ -12,7 +12,20 @@ To set up the repository, see [INSTALL.md](INSTALL.md).
 
 For contacts and other pret projects, see [pret.github.io](https://pret.github.io/).
 
-# Changes
+# Changelog
+## beta-v0.0.3 (in progress)
+* Update bossrooms to require minions to be killed for stair spawn
+
+## beta-v0.0.2
+* Basic shinies added (5%, fixed palette)
+* Increase max elixir spawns
+* Remove healing moves from bosses
+* Lower chance of missing kecleon
+* Unable to enter friend area fixed
+* Changed autopilot hotkey to R+A
+* Add auto-leader swap to R+B
+
+## beta-v0.0.1
 * Difficulty settings -> Normal, Hard, Nightmare (this affects many things)
 * All Friend areas are auto-unlocked
 * Players select a single item from 5 randomized items to start the journey
@@ -49,3 +62,4 @@ For contacts and other pret projects, see [pret.github.io](https://pret.github.i
 * Increased EXP gain by ~20% to decrease exp grinds
 * Players select a single item to start from a randomly generated list
 * Set all item sell/buy prices in shops to be 4000 if they had prices over 4000. For example fire blast is now 4000 instead of 9000. Banana price set to 50
+

@@ -7605,6 +7605,7 @@ void ApplyBossFightOverrides(BossFightConfig *config)
             minionEntity = tile->monster;
             if (minionEntity == NULL)
                 continue;
+            DungeonSeedOverrides_RegisterBossMinion(minionEntity);
             minionInfo = GetEntInfo(minionEntity);
             if (minionInfo == NULL)
                 continue;

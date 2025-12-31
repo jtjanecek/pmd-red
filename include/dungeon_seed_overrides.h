@@ -72,9 +72,13 @@ s32 DungeonSeedOverrides_GetItemLimit(void);
 s32 DungeonSeedOverrides_ApplyItemLimit(void);
 
 // Boss fight functions
-bool8 DungeonSeedOverrides_IsCustomBoss(Entity *pokemon);
-void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon);
+void DungeonSeedOverrides_ResetBossFightState(void);
 void DungeonSeedOverrides_RegisterBossEntity(Entity *boss);
+void DungeonSeedOverrides_RegisterBossMinion(Entity *minion);
+bool8 DungeonSeedOverrides_IsCustomBoss(Entity *pokemon);
+bool8 DungeonSeedOverrides_IsCustomBossMinion(Entity *pokemon);
+void DungeonSeedOverrides_HandleBossFaint(Entity *pokemon);
+void DungeonSeedOverrides_HandleBossMinionFaint(Entity *pokemon);
 void DungeonSeedOverrides_SetStairsPosition(s32 x, s32 y);
 bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut);
 void DungeonSeedOverrides_ResetItemPools(void);

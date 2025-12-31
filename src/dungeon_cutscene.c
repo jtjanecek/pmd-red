@@ -562,6 +562,8 @@ void sub_8084E00(Entity *entity, u8 param_2, bool8 param_3)
     return;
   }
 
+  DungeonSeedOverrides_HandleBossMinionFaint(entity);
+
   if (param_2 != 0) {
     switch(gDungeon->unk3A0D) {
         case 0:

@@ -22,6 +22,7 @@ EWRAM_DATA static unkStruct_20266B0 sUnknown_20266B0[UNK_20266B0_ARR_COUNT] = {0
 EWRAM_DATA static void *sCharMemCursor = { NULL }; // R=2026E30
 
 EWRAM_INIT static unkStruct_20266B0 *sUnknown_203B074 = {0};
+EWRAM_INIT static const u8 *sSpriteIndexRemap = NULL;
 
 static void AxResInitUnoriented(axdata *, EfoFileData *, u32, u32, u32, bool8);
 static void RegisterSpriteParts_80052BC(const ax_sprite *spritesPtr);
@@ -136,6 +137,16 @@ void ResetSprites(bool8 a0)
 
     sSpriteList.unk800 = 0;
     sSpriteList.unk804 = 0;
+}
+
+const u8 *GetSpriteIndexRemap(void)
+{
+    return sSpriteIndexRemap;
+}
+
+void SetSpriteIndexRemap(const u8 *indexRemap)
+{
+    sSpriteIndexRemap = indexRemap;
 }
 
 // arm9.bin::020024CC
@@ -434,6 +445,7 @@ static void RegisterSpriteParts_80052BC(const ax_sprite *spritesPtr)
         sUnknown_203B074->byteCount = spritesPtr->byteCount;
         sUnknown_203B074->src = spritesPtr->gfx;
         sUnknown_203B074->dest = sCharMemCursor;
+        sUnknown_203B074->indexRemap = sSpriteIndexRemap;
         sCharMemCursor += spritesPtr->byteCount;
         sUnknown_203B074++;
         spritesPtr++;
@@ -446,10 +458,28 @@ void sub_8005304(void)
     unkStruct_20266B0 *s;
 
     for (s = &sUnknown_20266B0[0]; s < sUnknown_203B074; s++) {
-        if (s->src != NULL)
-            CpuCopy(s->dest, s->src, s->byteCount);
-        else
+        if (s->src != NULL) {
+            if (s->indexRemap == NULL) {
+                CpuCopy(s->dest, s->src, s->byteCount);
+            }
+            else {
+                const u8 *src = s->src;
+                u8 *dest = s->dest;
+                const u8 *remap = s->indexRemap;
+                s32 i;
+
+                for (i = 0; i < s->byteCount; i++) {
+                    u8 value = src[i];
+                    u8 high = value >> 4;
+                    u8 low = value & 0xF;
+
+                    dest[i] = (remap[high] << 4) | remap[low];
+                }
+            }
+        }
+        else {
             CpuClear(s->dest, s->byteCount);
+        }
     }
 }
 

@@ -111,12 +111,19 @@ static void AnimateSprites(void)
     {
         Pokemon *player = GetPlayerPokemonStruct();
         u8 palette = gFriendAreasMapPtr->unk4DD0;
+        const u8 *indexRemap = NULL;
+        const u8 *prevRemap = NULL;
 
         if (player != NULL && (player->flags & POKEMON_FLAG_SHINY)) {
             palette = GetMonsterShinyPalette(player->speciesNum);
+            indexRemap = GetMonsterShinyIndexRemap(player->speciesNum);
         }
+        prevRemap = GetSpriteIndexRemap();
+
+        SetSpriteIndexRemap(indexRemap);
         DoAxFrame_800558C(&gFriendAreasMapPtr->monAxSprite, gFriendAreasMapPtr->monSpritePos.x - bgPos.x,
                           gFriendAreasMapPtr->monSpritePos.y - bgPos.y, 3, palette, &var_30);
+        SetSpriteIndexRemap(prevRemap);
     }
 
     for (i = 0; i < NUM_FRIEND_AREA_LOCATIONS; i++) {

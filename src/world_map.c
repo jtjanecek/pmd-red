@@ -463,12 +463,19 @@ static void AnimateSprites(bool8 a0)
     if (a0) {
         Pokemon *player = GetPlayerPokemonStruct();
         u8 palette = sWorldMapPtr->unk52D4;
+        const u8 *indexRemap = NULL;
+        const u8 *prevRemap = NULL;
 
         if (player != NULL && (player->flags & POKEMON_FLAG_SHINY)) {
             palette = GetMonsterShinyPalette(player->speciesNum);
+            indexRemap = GetMonsterShinyIndexRemap(player->speciesNum);
         }
+        prevRemap = GetSpriteIndexRemap();
+
+        SetSpriteIndexRemap(indexRemap);
         DoAxFrame_800558C(&sWorldMapPtr->monAxSprite, sWorldMapPtr->monSpritePos.x - pos.x,
                           sWorldMapPtr->monSpritePos.y - pos.y, 3, palette, &var_2C);
+        SetSpriteIndexRemap(prevRemap);
     }
 
     for (i = 0; i < 64; i++) {

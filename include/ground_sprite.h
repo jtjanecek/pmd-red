@@ -23,6 +23,7 @@ struct UnkGroundSpriteStruct
     u16 flags_0x50;
     s16 unk52;
     OpenedFile *unk54;
+    const u8 *indexRemap;
     s16 unk58;
     u8 unk5A;
     s32 unk5C;

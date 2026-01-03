@@ -268,6 +268,7 @@ void UpdateMonsterSprite(Entity *entity)
 
     if (entInfo->unkFF != 2) {
         s32 overworldPal;
+        const u8 *indexRemap = NULL;
 
         if (entInfo->frozenClassStatus.status == STATUS_PETRIFIED || entInfo->burnClassStatus.status == STATUS_PARALYSIS || entInfo->frozenClassStatus.status == STATUS_SHADOW_HOLD) {
             x += gDungeonFramesCounter & 2;
@@ -283,13 +284,22 @@ void UpdateMonsterSprite(Entity *entity)
             s16 shinySpecies = decoySprite ? MONSTER_DECOY : entInfo->apparentID;
 
             overworldPal = GetMonsterShinyPalette(shinySpecies);
+            indexRemap = GetMonsterShinyIndexRemap(shinySpecies);
         }
 
         if (entity->unk22 == 0) {
+            const u8 *prevRemap = GetSpriteIndexRemap();
+
+            SetSpriteIndexRemap(indexRemap);
             DoAxFrame_800558C(&entity->axObj.axdata, x, y, y2, overworldPal, &spriteMasks);
+            SetSpriteIndexRemap(prevRemap);
         }
         else if (entity->unk22 == 1 && (gDungeonFramesCounter & 1)) {
+            const u8 *prevRemap = GetSpriteIndexRemap();
+
+            SetSpriteIndexRemap(indexRemap);
             DoAxFrame_800558C(&entity->axObj.axdata, x, y, y2, overworldPal, &spriteMasks);
+            SetSpriteIndexRemap(prevRemap);
         }
     }
 

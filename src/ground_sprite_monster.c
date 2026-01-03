@@ -37,6 +37,12 @@ void sub_80A7428(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 monsterId_, s32
     }
     spStruct.axmain = (axmain *) file->data;
     sub_80A67CC(ptr, &spStruct, a3);
+    if (a3 & GROUND_LIVE_FLAG_SHINY) {
+        ptr->indexRemap = GetMonsterShinyIndexRemap(monsterId);
+    }
+    else {
+        ptr->indexRemap = NULL;
+    }
     ptr->unk54 = file;
     if (ptr->unk52 >= 0) {
         sub_80A6EFC(ptr, 0x300, 0);

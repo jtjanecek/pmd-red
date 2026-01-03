@@ -186,7 +186,7 @@ ROGUE_ITEM_TABLE_SRC := src/data/rogue_item_tables.c
 ROGUE_ITEM_TABLE_GENERATOR := scripts/build_rogue_item_tables.py
 SHINY_PALETTE_CSV := rogue_files/shiny_palette.csv
 SHINY_PALETTE_TABLE_SRC := src/data/shiny_palette_table.c
-SHINY_PALETTE_TABLE_GENERATOR := rogue_files/gen_shiny_palette_table.py
+SHINY_PALETTE_TABLE_GENERATOR := rogue_files/shiny_processing/00_gen_shiny_palette_table.py
 
 $(TYPE_HINT_TABLE_SRC): $(TYPE_CHOICES_CSV) $(TYPE_HINT_GENERATOR)
 	$(PYTHON) $(TYPE_HINT_GENERATOR) $(TYPE_CHOICES_CSV) $(TYPE_HINT_TABLE_SRC)
@@ -201,7 +201,7 @@ $(ROGUE_ITEM_TABLE_SRC): $(ROGUE_ITEMS_CSV) $(ROGUE_ITEM_TABLE_GENERATOR)
 	$(PYTHON) $(ROGUE_ITEM_TABLE_GENERATOR) $(ROGUE_ITEMS_CSV) $(ROGUE_ITEM_TABLE_SRC)
 
 $(SHINY_PALETTE_TABLE_SRC): $(SHINY_PALETTE_CSV) $(SHINY_PALETTE_TABLE_GENERATOR)
-	$(PYTHON) $(SHINY_PALETTE_TABLE_GENERATOR) --input $(SHINY_PALETTE_CSV) --output $(SHINY_PALETTE_TABLE_SRC)
+	$(PYTHON) $(SHINY_PALETTE_TABLE_GENERATOR) --mode table --input $(SHINY_PALETTE_CSV) --output $(SHINY_PALETTE_TABLE_SRC)
 
 # Special configurations required for lib files
 ifeq ($(MODERN),0)

@@ -8,7 +8,8 @@ Goal: every monster has a 1% chance to spawn with an alternate palette, and that
 
 ## Data + Flags
 - **Shiny flag:** add `POKEMON_FLAG_SHINY` (unused bit, e.g. `1 << 2`) in `include/pokemon.h` and treat it as persistent state for both `Pokemon` and `DungeonMon` (`include/structs/str_pokemon.h` already shares the flags field).
-- **Palette mapping:** `rogue_files/shiny_palette.csv` lists `id,name,shiny_palette_id` for every monster. `rogue_files/gen_shiny_palette_table.py` generates `src/data/shiny_palette_table.c` with `gMonsterShinyPalette[MONSTER_MAX]` and `GetMonsterShinyPalette()`.
+- **Palette mapping:** `rogue_files/shiny_palette.csv` lists `id,name,shiny_palette_id` for every monster. `rogue_files/shiny_processing/00_gen_shiny_palette_table.py` generates `src/data/shiny_palette_table.c` with `gMonsterShinyPalette[MONSTER_MAX]` and `GetMonsterShinyPalette()`.
+- **Index remap:** `rogue_files/shiny_palette.csv` also includes `index0_remap` ... `index15_remap` for optional 4bpp index remapping. Empty/`null` keeps the original index. Remaps are applied simultaneously at runtime for shiny sprites via `GetMonsterShinyIndexRemap()`.
 - **Palette assets:** add a second palette bank (e.g., `graphics/ax/pal_shiny/*.pmdpal` + `gAxMonsPaletteShiny` in `src/monster_sbin_palet.c`) and a new entry in `src/monster_files_table.c` (e.g., `"palet_shiny"`). This mirrors the existing 13 base palettes.
 
 ## Spawn + Persistence
@@ -38,7 +39,5 @@ Goal: every monster has a 1% chance to spawn with an alternate palette, and that
 - Verify: dungeon wild spawns, recruit flow, evolution in `src/luminous_cave.c`, friend area ground NPCs, and team member visuals in dungeon.
 
 ## Palette Preview Helper
-- `python3 rogue_files/shiny_palette_preview.py` generates per-palette PNGs for each monster using `sprite_1.png` (or the first available sprite) and palette rows `graphics/ax/pal/0.pmdpal`..`12.pmdpal`.
-- Output lands in `build/shiny_palette_previews/<monster>/palette_XX.png` for visual inspection when picking shiny palettes.
-- `python3 rogue_files/shiny_idle_frames.py` renders the idle pose for each direction (anim id 7, frame 0 by default) using AX pose data, then writes `build/shiny_idle_frames/<monster>/palette_XX/idle_<direction>.png`. Use `--mon`, `--palette-rows`, or `--palette-count` to narrow the output.
-- `python3 rogue_files/shiny_idle_grid.py` composes one grid per monster where each row is a direction and each column is a palette index, writing to `build/shiny_idle_grids/<monster>.png`. It reads from `build/shiny_idle_frames` by default.
+- `python3 rogue_files/shiny_processing/00_gen_shiny_palette_table.py` runs the full pipeline: generate the shiny palette table, render idle frames, and build palette grids. Use `--mode table|frames|grid` plus the `--frames-*`/`--grid-*` flags to run only a subset.
+- `python3 rogue_files/shiny_processing/02_shiny_palette_webapp.py` launches the local palette picker webapp for experimenting with overrides.

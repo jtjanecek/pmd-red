@@ -3,6 +3,7 @@ import argparse
 import binascii
 import json
 import os
+import re
 import struct
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -20,6 +21,31 @@ DIRECTION_NAMES = [
     "west",
     "southwest",
 ]
+
+
+def normalize_monster_name(name):
+    if name.startswith("MonsterName"):
+        name = name[len("MonsterName"):]
+    name = re.sub(r"[^A-Za-z0-9]", "", name)
+    return name.lower()
+
+
+def load_vanilla_palettes(path):
+    if not os.path.isfile(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    result = {}
+    for entry in data:
+        name = entry.get("name", "")
+        palette = entry.get("overworldPalette")
+        if palette is None:
+            continue
+        result[normalize_monster_name(name)] = int(palette)
+    return result
 
 
 def read_png_chunks(data):
@@ -216,10 +242,11 @@ def apply_overrides(pixels, overrides):
 
 
 class AppState:
-    def __init__(self, frames_dir):
+    def __init__(self, frames_dir, monster_data_path):
         self.frames_dir = frames_dir
         self.grid_dir = os.path.join(os.path.dirname(frames_dir), "shiny_idle_grids")
         self.cache = {}
+        self.vanilla_palettes = load_vanilla_palettes(monster_data_path)
 
     def list_monsters(self):
         if not os.path.isdir(self.frames_dir):
@@ -258,6 +285,23 @@ class AppState:
         self.cache[key] = payload
         return payload
 
+    def list_palettes(self, mon):
+        mon_dir = os.path.join(self.frames_dir, mon)
+        if not os.path.isdir(mon_dir):
+            return []
+        palettes = []
+        for name in os.listdir(mon_dir):
+            if not name.startswith("palette_"):
+                continue
+            suffix = name.split("_", 1)[1]
+            try:
+                palette_idx = int(suffix, 10)
+            except ValueError:
+                continue
+            if os.path.isdir(os.path.join(mon_dir, name)):
+                palettes.append(palette_idx)
+        return sorted(set(palettes))
+
     def render_grid(self, mon, palette_idx, overrides):
         images, base_palette = self.load_frames(mon, palette_idx)
         max_w = max(img[0] for img in images.values())
@@ -294,6 +338,41 @@ class AppState:
             raise FileNotFoundError(f"Missing grid image for {mon}.")
         with open(path, "rb") as f:
             return f.read()
+
+    def get_palette(self, mon, palette_idx):
+        _, base_palette = self.load_frames(mon, palette_idx)
+        return base_palette
+
+    def get_palette_usage(self, mon, palette_idx):
+        used = set()
+        palette_dir = os.path.join(
+            self.frames_dir, mon, f"palette_{palette_idx:02d}"
+        )
+        if os.path.isdir(palette_dir):
+            for name in os.listdir(palette_dir):
+                if not name.lower().endswith(".png"):
+                    continue
+                path = os.path.join(palette_dir, name)
+                try:
+                    _, _, pixels, _ = decode_png_indexed(path)
+                except Exception:
+                    continue
+                for row in pixels:
+                    for idx in row:
+                        used.add(idx)
+
+        if not used:
+            images, _ = self.load_frames(mon, palette_idx)
+            for _, _, pixels in images.values():
+                for row in pixels:
+                    for idx in row:
+                        used.add(idx)
+        return sorted(used)
+
+    def get_vanilla_palette(self, mon):
+        if not self.vanilla_palettes:
+            return None
+        return self.vanilla_palettes.get(normalize_monster_name(mon))
 
 
 INDEX_HTML = """<!doctype html>
@@ -335,6 +414,90 @@ INDEX_HTML = """<!doctype html>
       justify-content: center;
       align-items: center;
     }
+    .grid-output {
+      align-items: flex-start;
+    }
+    .grid-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .grid-labels {
+      display: grid;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      user-select: none;
+    }
+    .grid-labels span {
+      text-align: center;
+    }
+    .palette-preview {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .palette-current {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .palette-current-label {
+      min-width: 150px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      user-select: none;
+    }
+    .palette-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .palette-all {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 12px;
+      align-items: center;
+    }
+    .palette-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .palette-index {
+      min-width: 72px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      user-select: none;
+    }
+    .palette-vanilla {
+      color: #b00020;
+    }
+    .palette-labels,
+    .palette-swatches {
+      display: grid;
+      gap: 2px;
+    }
+    .palette-labels span {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #444;
+      user-select: none;
+    }
+    .palette-swatch {
+      width: 22px;
+      height: 22px;
+      border: 1px solid #bdbdbd;
+      box-sizing: border-box;
+    }
     #preview {
       image-rendering: pixelated;
     }
@@ -349,6 +512,14 @@ INDEX_HTML = """<!doctype html>
       align-items: center;
       gap: 4px;
     }
+    .override-label {
+      font-weight: 600;
+      color: #444;
+      user-select: none;
+    }
+    .override-used {
+      color: #b00020;
+    }
     .status {
       min-height: 20px;
       color: #555;
@@ -356,20 +527,10 @@ INDEX_HTML = """<!doctype html>
   </style>
 </head>
 <body>
-  <div class="panel" style="margin-top:12px;">
-    <strong>Color Overrides</strong>
-  </div>
-  <div id="overrides"></div>
-  <div class="status" id="status"></div>
-
   <div class="panel">
     <div>
       <label for="pokemon">Pokemon</label>
       <select id="pokemon"></select>
-    </div>
-    <div>
-      <label for="palette">Palette</label>
-      <select id="palette"></select>
     </div>
     <div>
       <label for="scale">Scale</label>
@@ -386,10 +547,37 @@ INDEX_HTML = """<!doctype html>
   </div>
 
   <div class="panel" style="margin-top:16px;">
-    <strong>Existing Grid Output</strong>
+    <div>
+      <label for="palette">Palette</label>
+      <select id="palette"></select>
+    </div>
   </div>
-  <div class="preview-wrap">
-    <img id="grid" alt="Grid Output" style="image-rendering: pixelated;" />
+
+  <div class="panel" style="margin-top:12px;">
+    <strong>Body Part Color Overrides</strong>
+  </div>
+  <div id="overrides"></div>
+  <div class="status" id="status"></div>
+
+  <div class="palette-preview">
+    <div class="palette-current">
+      <div id="selected-palette-label" class="palette-current-label"></div>
+      <div class="palette-stack">
+        <div id="palette-labels" class="palette-labels"></div>
+        <div id="palette-swatches" class="palette-swatches"></div>
+      </div>
+    </div>
+  </div>
+  <div id="palette-all" class="palette-all"></div>
+
+  <div class="panel" style="margin-top:16px;">
+    <strong>Default Palette Output</strong>
+  </div>
+  <div class="preview-wrap grid-output">
+    <div class="grid-stack">
+      <div id="grid-labels" class="grid-labels"></div>
+      <img id="grid" alt="Grid Output" style="image-rendering: pixelated;" />
+    </div>
   </div>
 
   <script>
@@ -401,8 +589,17 @@ INDEX_HTML = """<!doctype html>
     const preview = document.getElementById("preview");
     const statusEl = document.getElementById("status");
     const gridImg = document.getElementById("grid");
+    const gridLabels = document.getElementById("grid-labels");
+    const selectedPaletteLabel = document.getElementById("selected-palette-label");
+    const paletteLabels = document.getElementById("palette-labels");
+    const paletteSwatches = document.getElementById("palette-swatches");
+    const paletteAll = document.getElementById("palette-all");
     let debounceTimer = null;
     let currentUrl = null;
+    let lastPaletteMon = null;
+    let lastPaletteIdx = null;
+    let lastAllPalettesMon = null;
+    let vanillaPalette = null;
 
     function setStatus(text) {
       statusEl.textContent = text || "";
@@ -414,6 +611,8 @@ INDEX_HTML = """<!doctype html>
         const cell = document.createElement("div");
         cell.className = "override-cell";
         const label = document.createElement("div");
+        label.className = "override-label";
+        label.dataset.index = i.toString();
         label.textContent = i.toString();
         const input = document.createElement("input");
         input.type = "number";
@@ -426,6 +625,161 @@ INDEX_HTML = """<!doctype html>
         cell.appendChild(input);
         overridesWrap.appendChild(cell);
       }
+    }
+
+    function buildGridLabels() {
+      gridLabels.innerHTML = "";
+      const count = paletteSelect.options.length || 16;
+      gridLabels.style.gridTemplateColumns = `repeat(${count}, minmax(0, 1fr))`;
+      for (let i = 0; i < count; i++) {
+        const label = document.createElement("span");
+        label.textContent = i.toString().padStart(2, "0");
+        gridLabels.appendChild(label);
+      }
+      updateGridLabelsVanilla();
+    }
+
+    function updateSelectedPaletteLabel(palette) {
+      selectedPaletteLabel.textContent =
+        `Selected Palette ${palette.toString().padStart(2, "0")}`;
+    }
+
+    function updateGridLabelsVanilla() {
+      const labels = gridLabels.querySelectorAll("span");
+      labels.forEach((label, idx) => {
+        label.classList.toggle("palette-vanilla", vanillaPalette === idx);
+      });
+    }
+
+    function syncGridLabelsWidth() {
+      const scale = Number(gridScaleSelect.value);
+      if (!gridImg.naturalWidth) {
+        return;
+      }
+      gridLabels.style.width = (gridImg.naturalWidth * scale) + "px";
+    }
+
+    function updateOverrideUsage(used) {
+      const usedSet = new Set(used || []);
+      overridesWrap.querySelectorAll(".override-label").forEach((label) => {
+        const idx = Number(label.dataset.index);
+        label.classList.toggle("override-used", usedSet.has(idx));
+      });
+    }
+
+    function resetOverrides() {
+      overridesWrap.querySelectorAll("input").forEach((input) => {
+        input.value = "";
+      });
+    }
+
+    async function updatePalettePreview(mon, palette) {
+      updateSelectedPaletteLabel(palette);
+      const url = `/api/palette?mon=${encodeURIComponent(mon)}&palette=${palette}&v=${Date.now()}`;
+      let colors = [];
+      let used = [];
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return;
+        }
+        const payload = await response.json();
+        if (Array.isArray(payload)) {
+          colors = payload;
+        } else if (payload && Array.isArray(payload.colors)) {
+          colors = payload.colors;
+          used = Array.isArray(payload.used) ? payload.used : [];
+        }
+      } catch (err) {
+        return;
+      }
+
+      paletteLabels.innerHTML = "";
+      paletteSwatches.innerHTML = "";
+      const count = colors.length || 0;
+      if (count === 0) {
+        return;
+      }
+      const columns = `repeat(${count}, 22px)`;
+      paletteLabels.style.gridTemplateColumns = columns;
+      paletteSwatches.style.gridTemplateColumns = columns;
+      for (let i = 0; i < count; i++) {
+        const label = document.createElement("span");
+        label.textContent = i.toString().padStart(2, "0");
+        paletteLabels.appendChild(label);
+
+        const swatch = document.createElement("div");
+        swatch.className = "palette-swatch";
+        swatch.style.backgroundColor = colors[i];
+        paletteSwatches.appendChild(swatch);
+      }
+      updateOverrideUsage(used);
+    }
+
+    async function updateAllPalettes(mon) {
+      const url = `/api/palettes?mon=${encodeURIComponent(mon)}&v=${Date.now()}`;
+      let palettes = [];
+      let payload = null;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return;
+        }
+        payload = await response.json();
+      } catch (err) {
+        return;
+      }
+
+      palettes = Array.isArray(payload) ? payload : (payload.palettes || []);
+      if (payload && !Array.isArray(payload) && payload.vanilla !== undefined) {
+        vanillaPalette = payload.vanilla === null ? null : Number(payload.vanilla);
+      } else {
+        vanillaPalette = null;
+      }
+
+      paletteAll.innerHTML = "";
+      palettes.forEach((entry) => {
+        const row = document.createElement("div");
+        row.className = "palette-row";
+
+        const label = document.createElement("div");
+        label.className = "palette-index";
+        const paletteId = Number(entry.palette);
+        label.textContent = `Palette ${paletteId.toString().padStart(2, "0")}`;
+        if (vanillaPalette === paletteId) {
+          label.classList.add("palette-vanilla");
+        }
+        row.appendChild(label);
+
+        const swatches = document.createElement("div");
+        swatches.className = "palette-swatches";
+        const count = entry.colors.length || 0;
+        swatches.style.gridTemplateColumns = `repeat(${count}, 22px)`;
+        entry.colors.forEach((color) => {
+          const swatch = document.createElement("div");
+          swatch.className = "palette-swatch";
+          swatch.style.backgroundColor = color;
+          swatches.appendChild(swatch);
+        });
+        row.appendChild(swatches);
+        paletteAll.appendChild(row);
+      });
+      updateGridLabelsVanilla();
+    }
+
+    async function handlePokemonChange() {
+      const mon = pokemonSelect.value;
+      resetOverrides();
+      vanillaPalette = null;
+      updateGridLabelsVanilla();
+      await updateAllPalettes(mon);
+      if (vanillaPalette !== null && vanillaPalette !== undefined) {
+        paletteSelect.value = vanillaPalette.toString();
+      }
+      lastAllPalettesMon = mon;
+      lastPaletteMon = null;
+      lastPaletteIdx = null;
+      scheduleRender();
     }
 
     function getOverrides() {
@@ -457,6 +811,15 @@ INDEX_HTML = """<!doctype html>
       const mon = pokemonSelect.value;
       const palette = Number(paletteSelect.value);
       const overrides = getOverrides();
+      if (mon !== lastPaletteMon || palette !== lastPaletteIdx) {
+        updatePalettePreview(mon, palette);
+        lastPaletteMon = mon;
+        lastPaletteIdx = palette;
+      }
+      if (mon !== lastAllPalettesMon) {
+        updateAllPalettes(mon);
+        lastAllPalettesMon = mon;
+      }
       const payload = { mon, palette, overrides };
       setStatus("Rendering...");
       const response = await fetch("/api/render", {
@@ -487,6 +850,7 @@ INDEX_HTML = """<!doctype html>
         const scale = Number(gridScaleSelect.value);
         gridImg.style.width = (gridImg.naturalWidth * scale) + "px";
         gridImg.style.height = (gridImg.naturalHeight * scale) + "px";
+        syncGridLabelsWidth();
       };
       gridImg.src = gridUrl;
     }
@@ -499,6 +863,7 @@ INDEX_HTML = """<!doctype html>
         opt.textContent = i.toString();
         paletteSelect.appendChild(opt);
       }
+      buildGridLabels();
       for (let i = 1; i <= 10; i++) {
         const opt = document.createElement("option");
         opt.value = i.toString();
@@ -525,14 +890,14 @@ INDEX_HTML = """<!doctype html>
         opt.textContent = mon;
         pokemonSelect.appendChild(opt);
       });
-      pokemonSelect.addEventListener("change", scheduleRender);
+      pokemonSelect.addEventListener("change", handlePokemonChange);
       paletteSelect.addEventListener("change", scheduleRender);
       scaleSelect.addEventListener("change", scheduleRender);
       gridScaleSelect.addEventListener("change", scheduleRender);
       if (mons.length > 0) {
         pokemonSelect.value = mons[0];
       }
-      scheduleRender();
+      handlePokemonChange();
     }
 
     init().catch((err) => {
@@ -560,6 +925,41 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/monsters":
             mons = self.server.app_state.list_monsters()
             data = json.dumps(mons).encode("utf-8")
+            self._send(200, "application/json", data)
+            return
+        if parsed.path == "/api/palette":
+            params = parse_qs(parsed.query)
+            mon = params.get("mon", [""])[0]
+            try:
+                palette = int(params.get("palette", ["0"])[0])
+            except ValueError:
+                self._send(400, "text/plain; charset=utf-8", b"Invalid palette.")
+                return
+            palette = max(0, min(15, palette))
+            try:
+                palette_data = self.server.app_state.get_palette(mon, palette)
+                used = self.server.app_state.get_palette_usage(mon, palette)
+            except Exception as exc:
+                self._send(404, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
+                return
+            colors = [f"#{r:02x}{g:02x}{b:02x}" for r, g, b in palette_data]
+            data = json.dumps({"colors": colors, "used": used}).encode("utf-8")
+            self._send(200, "application/json", data)
+            return
+        if parsed.path == "/api/palettes":
+            params = parse_qs(parsed.query)
+            mon = params.get("mon", [""])[0]
+            entries = []
+            vanilla = self.server.app_state.get_vanilla_palette(mon)
+            for palette_idx in self.server.app_state.list_palettes(mon):
+                try:
+                    palette_data = self.server.app_state.get_palette(mon, palette_idx)
+                except Exception:
+                    continue
+                colors = [f"#{r:02x}{g:02x}{b:02x}" for r, g, b in palette_data]
+                entries.append({"palette": palette_idx, "colors": colors})
+            payload = {"vanilla": vanilla, "palettes": entries}
+            data = json.dumps(payload).encode("utf-8")
             self._send(200, "application/json", data)
             return
         if parsed.path == "/api/render":
@@ -656,11 +1056,16 @@ def main():
     parser = argparse.ArgumentParser(description="Shiny palette preview webapp")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind.")
     parser.add_argument("--port", default=8000, type=int, help="Port to bind.")
+    parser.add_argument(
+        "--monster-data",
+        default="data/monster/monster_data.json",
+        help="Path to monster_data.json for vanilla palette lookup.",
+    )
     args = parser.parse_args()
 
     frames_dir = "gen/shiny_idle_frames"
     server = ThreadingHTTPServer((args.host, args.port), Handler)
-    server.app_state = AppState(frames_dir)
+    server.app_state = AppState(frames_dir, args.monster_data)
     print(f"Serving on http://{args.host}:{args.port}")
     print("Press Ctrl+C to stop.")
     try:

@@ -22,6 +22,25 @@ DIRECTION_NAMES = [
     "southwest",
 ]
 
+INDEX_DEBUG_PALETTE = [
+    (0, 0, 0),
+    (231, 76, 60),
+    (46, 204, 113),
+    (52, 152, 219),
+    (241, 196, 15),
+    (155, 89, 182),
+    (26, 188, 156),
+    (230, 126, 34),
+    (236, 240, 241),
+    (149, 165, 166),
+    (243, 156, 18),
+    (52, 73, 94),
+    (192, 57, 43),
+    (39, 174, 96),
+    (41, 128, 185),
+    (142, 68, 173),
+]
+
 
 def normalize_monster_name(name):
     if name.startswith("MonsterName"):
@@ -369,6 +388,36 @@ class AppState:
                         used.add(idx)
         return sorted(used)
 
+    def render_index_map(self, mon, palette_idx):
+        palette_dir = os.path.join(
+            self.frames_dir, mon, f"palette_{palette_idx:02d}"
+        )
+        if not os.path.isdir(palette_dir):
+            raise FileNotFoundError(f"Missing palette dir for {mon}.")
+
+        preferred = os.path.join(palette_dir, f"idle_{DIRECTION_NAMES[0]}.png")
+        path = preferred
+        if not os.path.isfile(path):
+            path = None
+            for name in sorted(os.listdir(palette_dir)):
+                if name.lower().endswith(".png"):
+                    path = os.path.join(palette_dir, name)
+                    break
+        if path is None or not os.path.isfile(path):
+            raise FileNotFoundError(f"Missing sprites for {mon} palette {palette_idx}.")
+
+        width, height, pixels, _ = decode_png_indexed(path)
+        rgba = bytearray(width * height * 4)
+        for y in range(height):
+            row = pixels[y]
+            for x in range(width):
+                idx = row[x]
+                r, g, b = INDEX_DEBUG_PALETTE[idx % len(INDEX_DEBUG_PALETTE)]
+                a = 0 if idx == 0 else 255
+                pos = (y * width + x) * 4
+                rgba[pos:pos + 4] = bytes((r, g, b, a))
+        return write_png_rgba_bytes(width, height, rgba)
+
     def get_vanilla_palette(self, mon):
         if not self.vanilla_palettes:
             return None
@@ -434,22 +483,79 @@ INDEX_HTML = """<!doctype html>
       text-align: center;
     }
     .palette-preview {
-      display: flex;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: center;
       margin-top: 12px;
     }
-    .palette-current {
+    .palette-left,
+    .palette-right {
       display: flex;
       align-items: center;
+      width: 100%;
+    }
+    .palette-left {
       gap: 10px;
+      justify-content: flex-start;
+    }
+    .palette-right {
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
     .palette-current-label {
-      min-width: 150px;
-      text-align: right;
       font-size: 12px;
       font-weight: 600;
       color: #444;
       user-select: none;
+      white-space: nowrap;
+    }
+    .index-map-wrap {
+      padding: 4px;
+      border: 1px solid #d9d9d9;
+      background: #f4f4f4;
+    }
+    #index-map {
+      image-rendering: pixelated;
+      display: block;
+    }
+    .index-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-left: 6px;
+    }
+    .index-legend-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #444;
+      user-select: none;
+    }
+    .index-legend-swatch {
+      width: 18px;
+      height: 18px;
+      border: 1px solid #bdbdbd;
+      box-sizing: border-box;
+    }
+    .index-legend-swatch.transparent {
+      background-image:
+        linear-gradient(45deg, #d9d9d9 25%, transparent 25%),
+        linear-gradient(-45deg, #d9d9d9 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #d9d9d9 75%),
+        linear-gradient(-45deg, transparent 75%, #d9d9d9 75%);
+      background-size: 8px 8px;
+      background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+    }
+    .palette-selected-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
     }
     .palette-stack {
       display: inline-flex;
@@ -560,15 +666,23 @@ INDEX_HTML = """<!doctype html>
   <div class="status" id="status"></div>
 
   <div class="palette-preview">
-    <div class="palette-current">
-      <div id="selected-palette-label" class="palette-current-label"></div>
-      <div class="palette-stack">
-        <div id="palette-labels" class="palette-labels"></div>
-        <div id="palette-swatches" class="palette-swatches"></div>
+    <div class="palette-left">
+      <div class="index-map-wrap">
+        <img id="index-map" alt="Index Map" />
       </div>
+      <div id="index-legend" class="index-legend"></div>
+    </div>
+    <div class="palette-right">
+      <div class="palette-selected-row">
+        <div id="selected-palette-label" class="palette-current-label"></div>
+        <div class="palette-stack">
+          <div id="palette-labels" class="palette-labels"></div>
+          <div id="palette-swatches" class="palette-swatches"></div>
+        </div>
+      </div>
+      <div id="palette-all" class="palette-all"></div>
     </div>
   </div>
-  <div id="palette-all" class="palette-all"></div>
 
   <div class="panel" style="margin-top:16px;">
     <strong>Default Palette Output</strong>
@@ -591,6 +705,8 @@ INDEX_HTML = """<!doctype html>
     const gridImg = document.getElementById("grid");
     const gridLabels = document.getElementById("grid-labels");
     const selectedPaletteLabel = document.getElementById("selected-palette-label");
+    const indexMap = document.getElementById("index-map");
+    const indexLegend = document.getElementById("index-legend");
     const paletteLabels = document.getElementById("palette-labels");
     const paletteSwatches = document.getElementById("palette-swatches");
     const paletteAll = document.getElementById("palette-all");
@@ -600,6 +716,24 @@ INDEX_HTML = """<!doctype html>
     let lastPaletteIdx = null;
     let lastAllPalettesMon = null;
     let vanillaPalette = null;
+    const INDEX_DEBUG_COLORS = [
+      "#000000",
+      "#e74c3c",
+      "#2ecc71",
+      "#3498db",
+      "#f1c40f",
+      "#9b59b6",
+      "#1abc9c",
+      "#e67e22",
+      "#ecf0f1",
+      "#95a5a6",
+      "#f39c12",
+      "#34495e",
+      "#c0392b",
+      "#27ae60",
+      "#2980b9",
+      "#8e44ad",
+    ];
 
     function setStatus(text) {
       statusEl.textContent = text || "";
@@ -667,6 +801,27 @@ INDEX_HTML = """<!doctype html>
       });
     }
 
+    function updateIndexLegend(indices) {
+      indexLegend.innerHTML = "";
+      (indices || []).forEach((idx) => {
+        const row = document.createElement("div");
+        row.className = "index-legend-row";
+        const label = document.createElement("div");
+        label.textContent = `Body Part Number: ${idx.toString().padStart(2, "0")}`;
+        const swatch = document.createElement("div");
+        swatch.className = "index-legend-swatch";
+        if (idx === 0) {
+          swatch.classList.add("transparent");
+        } else {
+          swatch.style.backgroundColor =
+            INDEX_DEBUG_COLORS[idx % INDEX_DEBUG_COLORS.length];
+        }
+        row.appendChild(label);
+        row.appendChild(swatch);
+        indexLegend.appendChild(row);
+      });
+    }
+
     function resetOverrides() {
       overridesWrap.querySelectorAll("input").forEach((input) => {
         input.value = "";
@@ -700,6 +855,7 @@ INDEX_HTML = """<!doctype html>
       if (count === 0) {
         return;
       }
+      updateIndexLegend(used);
       const columns = `repeat(${count}, 22px)`;
       paletteLabels.style.gridTemplateColumns = columns;
       paletteSwatches.style.gridTemplateColumns = columns;
@@ -844,6 +1000,15 @@ INDEX_HTML = """<!doctype html>
         setStatus("");
       };
       preview.src = currentUrl;
+
+      const indexUrl =
+        `/api/index_map?mon=${encodeURIComponent(mon)}&palette=${palette}&v=${Date.now()}`;
+      indexMap.onload = () => {
+        const scale = Number(scaleSelect.value) * 2;
+        indexMap.style.width = (indexMap.naturalWidth * scale) + "px";
+        indexMap.style.height = (indexMap.naturalHeight * scale) + "px";
+      };
+      indexMap.src = indexUrl;
 
       const gridUrl = `/api/grid?mon=${encodeURIComponent(mon)}&v=${Date.now()}`;
       gridImg.onload = () => {
@@ -997,6 +1162,22 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._send(200, "image/png", png)
             return
+        if parsed.path == "/api/index_map":
+            params = parse_qs(parsed.query)
+            mon = params.get("mon", [""])[0]
+            try:
+                palette = int(params.get("palette", ["0"])[0])
+            except ValueError:
+                self._send(400, "text/plain; charset=utf-8", b"Invalid palette.")
+                return
+            palette = max(0, min(15, palette))
+            try:
+                png = self.server.app_state.render_index_map(mon, palette)
+            except Exception as exc:
+                self._send(404, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
+                return
+            self._send(200, "image/png", png)
+            return
         if parsed.path == "/api/grid":
             params = parse_qs(parsed.query)
             mon = params.get("mon", [""])[0]
@@ -1054,11 +1235,11 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     parser = argparse.ArgumentParser(description="Shiny palette preview webapp")
-    parser.add_argument("--host", default="127.0.0.1", help="Host to bind.")
+    parser.add_argument("--host", default="0.0.0.0", help="Host to bind.")
     parser.add_argument("--port", default=8000, type=int, help="Port to bind.")
     parser.add_argument(
         "--monster-data",
-        default="data/monster/monster_data.json",
+        default="gen/monster_data.json",
         help="Path to monster_data.json for vanilla palette lookup.",
     )
     args = parser.parse_args()

@@ -464,16 +464,19 @@ void sub_8005304(void)
             }
             else {
                 const u8 *src = s->src;
-                u8 *dest = s->dest;
+                u16 *dest = (u16 *)s->dest;
                 const u8 *remap = s->indexRemap;
                 s32 i;
+                s32 wordCount = s->byteCount >> 1;
 
-                for (i = 0; i < s->byteCount; i++) {
-                    u8 value = src[i];
-                    u8 high = value >> 4;
-                    u8 low = value & 0xF;
+                // OBJ VRAM requires 16-bit writes; remap two bytes at a time.
+                for (i = 0; i < wordCount; i++) {
+                    u8 value0 = *src++;
+                    u8 value1 = *src++;
+                    u8 out0 = (remap[value0 >> 4] << 4) | remap[value0 & 0xF];
+                    u8 out1 = (remap[value1 >> 4] << 4) | remap[value1 & 0xF];
 
-                    dest[i] = (remap[high] << 4) | remap[low];
+                    *dest++ = out0 | (out1 << 8);
                 }
             }
         }

@@ -4,6 +4,7 @@ import binascii
 import csv
 import os
 import re
+import shutil
 import struct
 import sys
 import zlib
@@ -27,6 +28,20 @@ DIRECTION_NAMES = [
     "west",
     "southwest",
 ]
+
+
+def ensure_gen_monster_data(dest_path, source_path):
+    norm_dest = os.path.normpath(dest_path)
+    parts = norm_dest.split(os.sep)
+    if not parts or parts[0] != "gen":
+        return
+    if not os.path.isfile(source_path):
+        return
+    os.makedirs(os.path.dirname(norm_dest), exist_ok=True)
+    try:
+        shutil.copy2(source_path, norm_dest)
+    except OSError as exc:
+        print(f"warn: failed to copy {source_path} to {norm_dest}: {exc}")
 
 FONT_DIGITS = {
     "0": [
@@ -1373,12 +1388,13 @@ def main():
     )
     parser.add_argument(
         "--grid-monster-data",
-        default="data/monster/monster_data.json",
+        default="gen/monster_data.json",
         help="Path to monster_data.json for vanilla palette lookup.",
     )
     args = parser.parse_args()
 
     try:
+        ensure_gen_monster_data(args.grid_monster_data, "data/monster/monster_data.json")
         if args.mode in ("all", "table"):
             run_table(args)
         if args.mode in ("all", "frames"):

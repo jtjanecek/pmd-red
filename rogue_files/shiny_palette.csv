@@ -62,7 +62,7 @@ id,name,shiny_palette_id,index0_remap,index1_remap,index2_remap,index3_remap,ind
 60,MonsterNamePoliwag,0,,,,,,,,,,,,,,,,
 61,MonsterNamePoliwhirl,0,,,,,,,,,,,,,,,,
 62,MonsterNamePoliwrath,0,,,,,,,,,,,,,,,,
-63,MonsterNameAbra,4,,3,,1,,,,,,,,,,,,
+63,MonsterNameAbra,0,,,,,,,,,,,,,,,,
 64,MonsterNameKadabra,0,,,,,,,,,,,,,,,,
 65,MonsterNameAlakazam,0,,,,,,,,,,,,,,,,
 66,MonsterNameMachop,0,,,,,,,,,,,,,,,,

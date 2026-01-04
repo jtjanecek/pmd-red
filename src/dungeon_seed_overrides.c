@@ -199,7 +199,13 @@ static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask);
 static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity);
 static u8 GetMainTypeForTileset(u8 tileset);
 static u32 GetCombinedSpawnMask(u8 tileset, u32 mainTypeMask);
-static s16 SelectSpeciesFromPool(DungeonSeedRng *rng, s16 *pool, s32 *poolCount, bool8 *selectedFlags);
+static s32 GetBaseStatTotal(s16 species);
+static u16 GetSeededStatTieBreak(s32 seed, u8 dungeonId, u8 tileset, s16 species);
+static void SortSpawnCandidatesByBaseStats(s16 *pool, s32 count, s32 seed, u8 dungeonId, u8 tileset);
+static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32 poolCount, bool8 *selectedFlags,
+                                       s32 entryIndex, s32 entryCount);
+static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount,
+                                                      s32 entryIndex, s32 entryCount);
 static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog);
 
 #ifdef DEV
@@ -1384,16 +1390,105 @@ static u32 GetCombinedSpawnMask(u8 tileset, u32 mainTypeMask)
     return mask;
 }
 
-static s16 SelectSpeciesFromPool(DungeonSeedRng *rng, s16 *pool, s32 *poolCount, bool8 *selectedFlags)
+static s32 GetBaseStatTotal(s16 species)
 {
-    if (rng == NULL || pool == NULL || poolCount == NULL || selectedFlags == NULL)
+    if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+        return 0;
+
+    return GetBaseHP(species)
+        + GetBaseOffensiveStat(species, OFFENSE_NRM)
+        + GetBaseOffensiveStat(species, OFFENSE_SP)
+        + GetBaseDefensiveStat(species, 0)
+        + GetBaseDefensiveStat(species, 1);
+}
+
+static u16 GetSeededStatTieBreak(s32 seed, u8 dungeonId, u8 tileset, s16 species)
+{
+    DungeonSeedRng rng = DungeonSeedRng_Init(seed, dungeonId, species, 0x53544154 ^ ((u32)tileset << 16)); // "STAT"
+
+    return (u16)DungeonSeedRng_Next(&rng);
+}
+
+static void SortSpawnCandidatesByBaseStats(s16 *pool, s32 count, s32 seed, u8 dungeonId, u8 tileset)
+{
+    s32 i;
+
+    if (pool == NULL || count <= 1)
+        return;
+
+    for (i = 1; i < count; i++) {
+        s16 key = pool[i];
+        s32 keyTotal = GetBaseStatTotal(key);
+        u16 keyTie = GetSeededStatTieBreak(seed, dungeonId, tileset, key);
+        s32 j = i - 1;
+
+        while (j >= 0) {
+            s16 current = pool[j];
+            s32 currentTotal = GetBaseStatTotal(current);
+            u16 currentTie;
+
+            if (currentTotal < keyTotal)
+                break;
+            if (currentTotal == keyTotal) {
+                currentTie = GetSeededStatTieBreak(seed, dungeonId, tileset, current);
+                if (currentTie <= keyTie)
+                    break;
+            }
+
+            pool[j + 1] = pool[j];
+            j--;
+        }
+        pool[j + 1] = key;
+    }
+}
+
+static s32 GetRankTargetIndex(s32 entryIndex, s32 entryCount, s32 poolCount)
+{
+    if (poolCount <= 0)
+        return 0;
+    if (entryCount <= 1)
+        return poolCount / 2;
+    if (poolCount <= 1)
+        return 0;
+    if (entryIndex < 0)
+        entryIndex = 0;
+    if (entryIndex > entryCount - 1)
+        entryIndex = entryCount - 1;
+
+    return (entryIndex * (poolCount - 1)) / (entryCount - 1);
+}
+
+static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32 poolCount, bool8 *selectedFlags,
+                                       s32 entryIndex, s32 entryCount)
+{
+    s32 target;
+    s32 window;
+    s32 start;
+    s32 end;
+    s32 attempts;
+    s32 i;
+
+    if (rng == NULL || pool == NULL || selectedFlags == NULL || poolCount <= 0)
         return MONSTER_NONE;
 
-    while (*poolCount > 0) {
-        s32 idx = DungeonSeedRng_NextRange(rng, 0, *poolCount);
+    target = GetRankTargetIndex(entryIndex, entryCount, poolCount);
+    window = poolCount / entryCount;
+    if (window < 1)
+        window = 1;
+    if (window > poolCount - 1)
+        window = poolCount - 1;
+
+    start = target - window;
+    end = target + window;
+    if (start < 0)
+        start = 0;
+    if (end >= poolCount)
+        end = poolCount - 1;
+
+    attempts = (end - start + 1) + 2;
+    for (i = 0; i < attempts; i++) {
+        s32 idx = DungeonSeedRng_NextRange(rng, start, end + 1);
         s16 species = pool[idx];
-        pool[idx] = pool[*poolCount - 1];
-        (*poolCount)--;
 
         if (species <= MONSTER_NONE || species >= MONSTER_MAX)
             continue;
@@ -1404,19 +1499,87 @@ static s16 SelectSpeciesFromPool(DungeonSeedRng *rng, s16 *pool, s32 *poolCount,
         return species;
     }
 
+    {
+        s32 left = target;
+        s32 right = target + 1;
+        bool8 rightFirst = DungeonSeedRng_NextRange(rng, 0, 2);
+
+        while (left >= 0 || right < poolCount) {
+            s32 idx;
+            s16 species;
+
+            if (rightFirst) {
+                if (right < poolCount) {
+                    idx = right++;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !selectedFlags[species]) {
+                        selectedFlags[species] = TRUE;
+                        return species;
+                    }
+                }
+                if (left >= 0) {
+                    idx = left--;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !selectedFlags[species]) {
+                        selectedFlags[species] = TRUE;
+                        return species;
+                    }
+                }
+            } else {
+                if (left >= 0) {
+                    idx = left--;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !selectedFlags[species]) {
+                        selectedFlags[species] = TRUE;
+                        return species;
+                    }
+                }
+                if (right < poolCount) {
+                    idx = right++;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !selectedFlags[species]) {
+                        selectedFlags[species] = TRUE;
+                        return species;
+                    }
+                }
+            }
+        }
+    }
+
     return MONSTER_NONE;
 }
 
-static s16 SelectSpeciesWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount)
+static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount,
+                                                      s32 entryIndex, s32 entryCount)
 {
-    s32 attempts = 0;
+    s32 target;
+    s32 window;
+    s32 start;
+    s32 end;
+    s32 attempts;
+    s32 i;
 
     if (rng == NULL || pool == NULL || poolCount <= 0)
         return MONSTER_NONE;
 
-    while (attempts < 8) {
-        s16 species = pool[DungeonSeedRng_NextRange(rng, 0, poolCount)];
-        attempts++;
+    target = GetRankTargetIndex(entryIndex, entryCount, poolCount);
+    window = poolCount / entryCount;
+    if (window < 1)
+        window = 1;
+    if (window > poolCount - 1)
+        window = poolCount - 1;
+
+    start = target - window;
+    end = target + window;
+    if (start < 0)
+        start = 0;
+    if (end >= poolCount)
+        end = poolCount - 1;
+
+    attempts = (end - start + 1) + 4;
+    for (i = 0; i < attempts; i++) {
+        s32 idx = DungeonSeedRng_NextRange(rng, start, end + 1);
+        s16 species = pool[idx];
 
         if (species <= MONSTER_NONE || species >= MONSTER_MAX)
             continue;
@@ -1424,6 +1587,45 @@ static s16 SelectSpeciesWithReplacement(DungeonSeedRng *rng, const s16 *pool, s3
             continue;
 
         return species;
+    }
+
+    {
+        s32 left = target;
+        s32 right = target + 1;
+        bool8 rightFirst = DungeonSeedRng_NextRange(rng, 0, 2);
+
+        while (left >= 0 || right < poolCount) {
+            s32 idx;
+            s16 species;
+
+            if (rightFirst) {
+                if (right < poolCount) {
+                    idx = right++;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !IsBossSpecies(species))
+                        return species;
+                }
+                if (left >= 0) {
+                    idx = left--;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !IsBossSpecies(species))
+                        return species;
+                }
+            } else {
+                if (left >= 0) {
+                    idx = left--;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !IsBossSpecies(species))
+                        return species;
+                }
+                if (right < poolCount) {
+                    idx = right++;
+                    species = pool[idx];
+                    if (species > MONSTER_NONE && species < MONSTER_MAX && !IsBossSpecies(species))
+                        return species;
+                }
+            }
+        }
     }
 
     return MONSTER_NONE;
@@ -1675,6 +1877,12 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         combinedCandidateCount = BuildSpawnCandidates(combinedMask, combinedCandidates, ARRAY_COUNT(combinedCandidates));
     if (combinedMask != 0 && combinedCandidateCount == 0)
         useBulbasaurOnly = TRUE;
+    if (mainCandidateCount > 0)
+        SortSpawnCandidatesByBaseStats(mainCandidates, mainCandidateCount, seed, dungeonId, tileset);
+    if (spawnCandidateCount > 0)
+        SortSpawnCandidatesByBaseStats(spawnCandidates, spawnCandidateCount, seed, dungeonId, tileset);
+    if (combinedCandidateCount > 0)
+        SortSpawnCandidatesByBaseStats(combinedCandidates, combinedCandidateCount, seed, dungeonId, tileset);
     if (mainCandidateCount > 0) {
         mainCandidateCopyCount = mainCandidateCount;
         for (i = 0; i < mainCandidateCount; i++)
@@ -1752,21 +1960,21 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
             species = MONSTER_BULBASAUR;
             selectedFlags[species] = TRUE;
         } else if (fillingMain) {
-            species = SelectSpeciesFromPool(&rng, mainCandidates, &mainCandidateCount, selectedFlags);
+            species = SelectSpeciesFromRankedPool(&rng, mainCandidates, mainCandidateCount, selectedFlags, i, entryCount);
             if (species == MONSTER_NONE && mainCandidateCopyCount > 0) {
-                species = SelectSpeciesWithReplacement(&rng, mainCandidatesCopy, mainCandidateCopyCount);
-                pickedWithReplacement = TRUE;
+                species = SelectSpeciesFromRankedPoolWithReplacement(&rng, mainCandidatesCopy, mainCandidateCopyCount, i, entryCount);
+                pickedWithReplacement = (species != MONSTER_NONE);
             }
             if (species == MONSTER_NONE)
-                species = SelectSpeciesFromPool(&rng, combinedCandidates, &combinedCandidateCount, selectedFlags);
+                species = SelectSpeciesFromRankedPool(&rng, combinedCandidates, combinedCandidateCount, selectedFlags, i, entryCount);
             if (species == MONSTER_NONE)
-                species = SelectSpeciesFromPool(&rng, spawnCandidates, &spawnCandidateCount, selectedFlags);
+                species = SelectSpeciesFromRankedPool(&rng, spawnCandidates, spawnCandidateCount, selectedFlags, i, entryCount);
         } else {
-            species = SelectSpeciesFromPool(&rng, spawnCandidates, &spawnCandidateCount, selectedFlags);
+            species = SelectSpeciesFromRankedPool(&rng, spawnCandidates, spawnCandidateCount, selectedFlags, i, entryCount);
             if (species == MONSTER_NONE)
-                species = SelectSpeciesFromPool(&rng, combinedCandidates, &combinedCandidateCount, selectedFlags);
+                species = SelectSpeciesFromRankedPool(&rng, combinedCandidates, combinedCandidateCount, selectedFlags, i, entryCount);
             if (species == MONSTER_NONE)
-                species = SelectSpeciesFromPool(&rng, mainCandidates, &mainCandidateCount, selectedFlags);
+                species = SelectSpeciesFromRankedPool(&rng, mainCandidates, mainCandidateCount, selectedFlags, i, entryCount);
         }
 
         if (species == MONSTER_NONE)

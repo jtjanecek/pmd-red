@@ -28,7 +28,7 @@ void SetDefaultIQSkills(IqSkillFlags *iq, bool8 enableSelfCurer);
 bool8 IsIQSkillSet(IqSkillFlags *iq, u32 IQSkillBit);
 void sub_808ED00(void);
 s32 SaveRecruitedPokemon(u8 *a1, s32 a2);
-s32 RestoreRecruitedPokemon(u8 *a1, s32 a2);
+s32 RestoreRecruitedPokemon(u8 *a1, s32 a2, u32 savedBitCount);
 void WritePoke1Bits(DataSerializer *, Pokemon *pokemon);
 void ReadPoke1Bits(DataSerializer *, Pokemon *);
 s32 SavePoke2s(u8* buffer, s32 size);

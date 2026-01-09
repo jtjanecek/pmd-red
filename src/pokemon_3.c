@@ -677,6 +677,22 @@ void sub_808ED00(void)
 }
 
 // arm9.bin::0205CC54
+// Bit sizes must match the WritePoke1Bits layout used in save data.
+#define RECRUITED_POKE_BITS 323
+#define RECRUITED_TEAM_BITS (4 * (RECRUITED_POKE_BITS + 1) + (6 * 16) + 16)
+
+static s32 GetSavedRecruitCount(u32 bitCount)
+{
+    if (bitCount < RECRUITED_TEAM_BITS)
+        return -1;
+
+    bitCount -= RECRUITED_TEAM_BITS;
+    if ((bitCount % RECRUITED_POKE_BITS) != 0)
+        return -1;
+
+    return bitCount / RECRUITED_POKE_BITS;
+}
+
 s32 SaveRecruitedPokemon(u8 *a1, s32 a2)
 {
     s16 sixMons[6];
@@ -737,17 +753,28 @@ s32 SaveRecruitedPokemon(u8 *a1, s32 a2)
 }
 
 // arm9.bin::0205CAE4
-s32 RestoreRecruitedPokemon(u8 *a1, s32 a2)
+s32 RestoreRecruitedPokemon(u8 *a1, s32 a2, u32 savedBitCount)
 {
     DataSerializer backup;
     u8 data_u8;
     s16 data_s16;
+    s32 savedMonCount;
     s32 i;
+
+    savedMonCount = NUM_MONSTERS;
+    if (savedBitCount != 0) {
+        s32 parsedCount = GetSavedRecruitCount(savedBitCount);
+        if (parsedCount > 0 && parsedCount <= NUM_MONSTERS)
+            savedMonCount = parsedCount;
+    }
 
     InitBitReader(&backup, a1, a2);
 
-    for (i = 0; i < NUM_MONSTERS; i++) {
+    for (i = 0; i < savedMonCount; i++) {
         ReadPoke1Bits(&backup, &gRecruitedPokemonRef->pokemon[i]);
+    }
+    for (; i < NUM_MONSTERS; i++) {
+        memset(&gRecruitedPokemonRef->pokemon[i], 0, sizeof(Pokemon));
     }
 
     // Team members

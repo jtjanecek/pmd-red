@@ -14,11 +14,11 @@ typedef struct unkStruct_203B484
     /* 0x4 */ Pokemon unk4;
 } unkStruct_203B484;
 
-// size: 0x84
+// size: trimmed with WONDER_MAIL_HISTORY_COUNT
 typedef struct unkStruct_203B48C
 {
     /* 0x0 */ s32 unk0;
-    /* 0x4 */ s32 unk4[0x20];
+    /* 0x4 */ s32 unk4[WONDER_MAIL_HISTORY_COUNT];
 } unkStruct_203B48C;
 
 extern unkStruct_203B480 *gUnknown_203B480;

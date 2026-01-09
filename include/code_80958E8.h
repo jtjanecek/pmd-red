@@ -27,9 +27,9 @@ typedef struct unkStruct_203B490
     /* 0x0 */ WonderMail mailboxSlots[NUM_MAILBOX_SLOTS];
     /* 0x50 */ WonderMail pelipperBoardJobs[MAX_ACCEPTED_JOBS];
     /* 0xF0 */ WonderMail jobSlots[MAX_ACCEPTED_JOBS];
-    u8 unk190[40];
-    u8 unk1B8[120];
-    subStruct_203B490 unk230[16];
+    u8 unk190[MAILBOX_UNK190_LEN];
+    u8 unk1B8[MAILBOX_UNK1B8_LEN];
+    subStruct_203B490 unk230[MAILBOX_SEED_HISTORY_COUNT];
     /* 0x2F0 */ bool8 PKMNNewsReceived[NUM_POKEMON_NEWS];
     bool8 unk328;
 } unkStruct_203B490;

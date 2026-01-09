@@ -73,7 +73,7 @@ void InitializeMailJobsNews(void)
     gUnknown_203B490->unk328 = FALSE;
     MemoryClear8(gUnknown_203B490->unk190, sizeof(gUnknown_203B490->unk190));
     MemoryClear8(gUnknown_203B490->unk1B8, sizeof(gUnknown_203B490->unk1B8));
-    for(index = 0; index < 16; index++)
+    for(index = 0; index < MAILBOX_SEED_HISTORY_COUNT; index++)
     {
         gUnknown_203B490->unk230[index].dungeonSeed.location.id = 99;
         gUnknown_203B490->unk230[index].dungeonSeed.location.floor = 1;
@@ -723,6 +723,9 @@ void sub_8096488(void)
 
 bool8 sub_80964B4(void)
 {
+    if (NUM_POKEMON_NEWS <= 0x35) {
+        return TRUE;
+    }
     if ((!gUnknown_203B490->PKMNNewsReceived[0x35]) && (sub_8096E80(0x35) == 0)) {
         return FALSE;
     }
@@ -733,6 +736,9 @@ bool8 sub_80964B4(void)
 
 bool8 sub_80964E4(void)
 {
+    if (NUM_POKEMON_NEWS <= 0x36) {
+        return TRUE;
+    }
     if ((!gUnknown_203B490->PKMNNewsReceived[0x36]) && (sub_8096E80(0x36) == 0)) {
         return FALSE;
     }
@@ -1239,11 +1245,15 @@ u8 *sub_8096DE8(void)
 
 void ReceivePKMNNews(u8 index)
 {
+    if (index >= NUM_POKEMON_NEWS)
+        return;
     gUnknown_203B490->PKMNNewsReceived[index] = TRUE;
 }
 
 bool8 CheckPKMNNewsSlot(u8 index)
 {
+    if (index >= NUM_POKEMON_NEWS)
+        return TRUE;
     return gUnknown_203B490->PKMNNewsReceived[index];
 }
 
@@ -1256,12 +1266,12 @@ u8 sub_8096E2C(void)
         if(gUnknown_203B490->mailboxSlots[index].mailType == 1)
         {
              if(floor <= gUnknown_203B490->mailboxSlots[index].dungeonSeed.location.floor)
-                 if( gUnknown_203B490->mailboxSlots[index].dungeonSeed.location.floor < 0x32)
+                 if(gUnknown_203B490->mailboxSlots[index].dungeonSeed.location.floor < NUM_POKEMON_NEWS)
                     floor =  gUnknown_203B490->mailboxSlots[index].dungeonSeed.location.floor + 1;
         }
     }
 
-    for(index = floor; index < 0x32; index++)
+    for(index = floor; index < NUM_POKEMON_NEWS; index++)
     {
         if(!gUnknown_203B490->PKMNNewsReceived[index]) return index;
     }
@@ -1312,7 +1322,7 @@ void sub_8096EEC(WonderMail *mail)
 {
     s32 index;
 
-    for (index = 16 - 1; index > 0; index--) {
+    for (index = MAILBOX_SEED_HISTORY_COUNT - 1; index > 0; index--) {
          gUnknown_203B490->unk230[index] =  gUnknown_203B490->unk230[index - 1];
     }
 
@@ -1328,7 +1338,7 @@ bool8 sub_8096F50(WonderMail *mail)
 
     checksum = CalculateMailChecksum(mail);
 
-    for (index = 0; index < 16; index++) {
+    for (index = 0; index < MAILBOX_SEED_HISTORY_COUNT; index++) {
         temp  = &gUnknown_203B490->unk230[index];
         if (temp->dungeonSeed.location.id == mail->dungeonSeed.location.id)
             if (temp->dungeonSeed.location.floor == mail->dungeonSeed.location.floor)
@@ -1359,7 +1369,7 @@ u32 RestoreMailInfo(u8 *r0, u32 size)
     {
         ReadWonderMailBits(&backup, &gUnknown_203B490->jobSlots[index]);
     }
-    for(index = 0; index < 56; index++)
+    for(index = 0; index < NUM_POKEMON_NEWS; index++)
     {
         ReadBits(&backup, &temp, 1);
         if(temp & 1)
@@ -1373,9 +1383,9 @@ u32 RestoreMailInfo(u8 *r0, u32 size)
     else
         gUnknown_203B490->unk328 = FALSE;
 
-    ReadBits(&backup, gUnknown_203B490->unk190, 40 * 8);
-    ReadBits(&backup, gUnknown_203B490->unk1B8, 120 * 8);
-    for (index = 0; index < 16; index++)
+    ReadBits(&backup, gUnknown_203B490->unk190, MAILBOX_UNK190_LEN * 8);
+    ReadBits(&backup, gUnknown_203B490->unk1B8, MAILBOX_UNK1B8_LEN * 8);
+    for (index = 0; index < MAILBOX_SEED_HISTORY_COUNT; index++)
     {
         ReadBits(&backup, &gUnknown_203B490->unk230[index].checksum, 32);
         ReadBits(&backup, &gUnknown_203B490->unk230[index].dungeonSeed.seed, 24);
@@ -1404,7 +1414,7 @@ u32 SaveMailInfo(u8 *r0, u32 size)
     {
         WriteWonderMailBits(&backup, &gUnknown_203B490->jobSlots[index]);
     }
-    for(index = 0; index < 0x38; index++)
+    for(index = 0; index < NUM_POKEMON_NEWS; index++)
     {
         if(gUnknown_203B490->PKMNNewsReceived[index])
             temp = -1;
@@ -1417,9 +1427,9 @@ u32 SaveMailInfo(u8 *r0, u32 size)
     else
         temp = 0;
     WriteBits(&backup, &temp, 1);
-    WriteBits(&backup, gUnknown_203B490->unk190, 0x140);
-    WriteBits(&backup, gUnknown_203B490->unk1B8, 0x3C0);
-    for(index = 0; index < 0x10; index++)
+    WriteBits(&backup, gUnknown_203B490->unk190, MAILBOX_UNK190_LEN * 8);
+    WriteBits(&backup, gUnknown_203B490->unk1B8, MAILBOX_UNK1B8_LEN * 8);
+    for(index = 0; index < MAILBOX_SEED_HISTORY_COUNT; index++)
     {
         WriteBits(&backup, &gUnknown_203B490->unk230[index].checksum, 0x20);
         WriteBits(&backup, &gUnknown_203B490->unk230[index].dungeonSeed.seed, 0x18);

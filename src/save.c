@@ -338,7 +338,7 @@ u32 ReadSaveFromPak(u32 *a)
     }
     if (!saveStatus)
     {
-        r1 = RestoreRecruitedPokemon(r4, 0x4650);
+        r1 = RestoreRecruitedPokemon(r4, 0x4650, playerSave->savedRecruitedPokemon);
         if (r1 != playerSave->savedRecruitedPokemon) {
             saveStatus = 3;
         }

@@ -78,9 +78,13 @@ enum WonderMailMissionTypes
 #define MAIL_STATUS_SUSPENDED 0
 
 
-#define NUM_POKEMON_NEWS 56 // 50 normal + 6 special issues
+#define NUM_POKEMON_NEWS 1 // Post office removed; keep a minimal slot
 #define PASSWORD_BUFFER_SIZE 54
 #define MAX_ITEM_REWARDS 3
+
+#define WONDER_MAIL_SLOT_COUNT 4
+#define WONDER_MAIL_HISTORY_COUNT 4
+#define WONDER_MAIL_MISC_WORD_COUNT 1
 
 
 #endif //GUARD_CONSTANTS_WONDER_MAIL_H

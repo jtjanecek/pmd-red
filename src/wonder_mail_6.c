@@ -317,7 +317,7 @@ static void HandleWonderMail6DeleteMailMenu(u32 state)
                 DeleteMailAtIndex(gUnknown_203B328->mailIndex);
                 break;
             case DELETE_ALL_MAIL_STATE:
-                for(index = 0; index < 0x20; index++)
+                for(index = 0; index < WONDER_MAIL_SLOT_COUNT; index++)
                 {
                     unused = &gUnknown_203B480[index];
                     gUnknown_203B480[index].mailType = 0;
@@ -352,4 +352,3 @@ static void sub_8031498(void)
             break;
     }
 }
-

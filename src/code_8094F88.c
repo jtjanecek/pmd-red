@@ -17,9 +17,9 @@ EWRAM_INIT unkStruct_203B484 *gUnknown_203B484 = {NULL};
 EWRAM_INIT u32 *gUnknown_203B488 = {NULL};
 EWRAM_INIT unkStruct_203B48C *gUnknown_203B48C = {NULL};
 
-EWRAM_DATA unkStruct_203B480 gUnknown_2038C88[0x20] = {0};
+EWRAM_DATA unkStruct_203B480 gUnknown_2038C88[WONDER_MAIL_SLOT_COUNT] = {0};
 EWRAM_DATA unkStruct_203B484 gUnknown_2039288 = {0};
-EWRAM_DATA u32 gUnknown_20392E8[0x36] = {0};
+EWRAM_DATA u32 gUnknown_20392E8[WONDER_MAIL_MISC_WORD_COUNT] = {0};
 EWRAM_DATA unkStruct_203B48C gUnknown_20393C0 = {0};
 
 void sub_80950BC(void)
@@ -56,9 +56,9 @@ void sub_8095118(void)
   s32 index;
   UNUSED unkStruct_203B480 *unused;
 
-  MemoryFill8(gUnknown_203B480, 0, 0x20 * sizeof(unkStruct_203B480));
+  MemoryFill8(gUnknown_203B480, 0, WONDER_MAIL_SLOT_COUNT * sizeof(unkStruct_203B480));
   MemoryFill8(gUnknown_203B484, 0, sizeof(unkStruct_203B484));
-  for(index = 0; index < 0x20; index++){
+  for(index = 0; index < WONDER_MAIL_SLOT_COUNT; index++){
 
     // NOTE: we use a temp variable here to force the match
     unused = &gUnknown_203B480[index];
@@ -69,7 +69,7 @@ void sub_8095118(void)
     gUnknown_203B480[index].unk2D = 0;
   }
   gUnknown_203B48C->unk0 = 0;
-  for(index = 0; index < 0x20; index++){
+  for(index = 0; index < WONDER_MAIL_HISTORY_COUNT; index++){
     gUnknown_203B48C->unk4[index] = -1;
   }
 }
@@ -86,7 +86,7 @@ s32 FindOpenMailSlot(void)
 {
   s32 index;
 
-  for(index = 2; index < 0x20; index++){
+  for(index = 2; index < WONDER_MAIL_SLOT_COUNT; index++){
     if(gUnknown_203B480[index].mailType == WONDER_MAIL_TYPE_NONE)
         return index;
   }
@@ -149,7 +149,7 @@ void sub_8095274(u32 param_1)
   gUnknown_203B48C->unk4[gUnknown_203B48C->unk0] = param_1;
   iVar2 = gUnknown_203B48C->unk0;
   iVar3 = 0;
-  if (iVar2 < 0x1f) {
+  if (iVar2 < (WONDER_MAIL_HISTORY_COUNT - 1)) {
     iVar3 = iVar2 + 1;
   }
   gUnknown_203B48C->unk0 = iVar3;
@@ -159,7 +159,7 @@ bool8 sub_8095298(s32 param_1)
 {
   s32 index;
 
-  for(index = 0; index < 0x20; index++)
+  for(index = 0; index < WONDER_MAIL_HISTORY_COUNT; index++)
   {
     if(gUnknown_203B48C->unk4[index] == param_1) return TRUE;
   }
@@ -171,7 +171,7 @@ void sub_80952C4(void)
   s32 index;
 
   gUnknown_203B48C->unk0 = 0;
-  for(index = 0; index < 0x20; index++)
+  for(index = 0; index < WONDER_MAIL_HISTORY_COUNT; index++)
   {
     gUnknown_203B48C->unk4[index] = -1;
   }
@@ -182,7 +182,7 @@ bool8 HasMail(u8 mailType, u32 param_2)
   unkStruct_203B480 *ptr;
   s32 index;
 
-  for(index = 0, ptr = &gUnknown_203B480[0]; index < 0x20; ptr++, index++)
+  for(index = 0, ptr = &gUnknown_203B480[0]; index < WONDER_MAIL_SLOT_COUNT; ptr++, index++)
   {
     if ((ptr->mailType == mailType) && (ptr->unk10.unk10 == param_2)) return TRUE;
   }
@@ -195,7 +195,7 @@ s32 CountMailType(u8 mailType)
   s32 total = 0;
   s32 index;
 
-  for(index = 0, ptr = &gUnknown_203B480[0]; index < 0x20; ptr++, index++)
+  for(index = 0, ptr = &gUnknown_203B480[0]; index < WONDER_MAIL_SLOT_COUNT; ptr++, index++)
   {
     if (ptr->mailType == mailType) total++;
   }
@@ -208,7 +208,7 @@ u32 CountAllMail(void)
   u32 total = 0;
   s32 index;
 
-  for(index = 0, ptr = &gUnknown_203B480[0]; index < 0x20; ptr++, index++)
+  for(index = 0, ptr = &gUnknown_203B480[0]; index < WONDER_MAIL_SLOT_COUNT; ptr++, index++)
   {
     if (ptr->mailType != 0) total++;
   }
@@ -221,7 +221,7 @@ s32 sub_8095374(void)
   s32 retvar = -1;
   s32 index;
 
-  for(index = 0, ptr = &gUnknown_203B480[0]; index < 0x20; ptr++, index++)
+  for(index = 0, ptr = &gUnknown_203B480[0]; index < WONDER_MAIL_SLOT_COUNT; ptr++, index++)
   {
     if (ptr->mailType == 1) retvar = index;
   }
@@ -234,7 +234,7 @@ s32 GetMailIndex(u8 mailType, u32 param_2)
   unkStruct_203B480 *ptr;
   s32 index;
 
-  for(index = 0, ptr = &gUnknown_203B480[0]; index < 0x20; ptr++, index++)
+  for(index = 0, ptr = &gUnknown_203B480[0]; index < WONDER_MAIL_SLOT_COUNT; ptr++, index++)
   {
     if ((ptr->mailType == mailType) && (ptr->unk10.unk10 == param_2)) return index;
   }
@@ -247,7 +247,7 @@ s32 GetFirstIndexofMailType(u8 mailType)
   unkStruct_203B480 *ptr;
   s32 index;
 
-  for(index = 0, ptr = &gUnknown_203B480[0]; index < 0x20; ptr++, index++)
+  for(index = 0, ptr = &gUnknown_203B480[0]; index < WONDER_MAIL_SLOT_COUNT; ptr++, index++)
   {
     if (ptr->mailType == mailType) return index;
   }
@@ -259,7 +259,7 @@ s32 sub_8095400(u32 param_1)
   u32 *ptr;
   s32 index;
 
-  for(index = 0, ptr = &gUnknown_203B480[0].unk10.unk10; index < 0x20; ptr += 0xC, index++)
+  for(index = 0, ptr = &gUnknown_203B480[0].unk10.unk10; index < WONDER_MAIL_SLOT_COUNT; ptr += 0xC, index++)
   {
     if (*ptr == param_1) return index;
   }
@@ -327,7 +327,7 @@ u32 sub_80954CC(u8 *buffer, u32 size)
 
     InitBitReader(&backup, buffer, size);
 
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < WONDER_MAIL_SLOT_COUNT; i++) {
         sub_8095774(&backup, &gUnknown_203B480[i]);
     }
 
@@ -357,7 +357,7 @@ u32 sub_80954CC(u8 *buffer, u32 size)
     ReadBits(&backup, mon->name, 10 * 8);
 
     ReadBits(&backup, &gUnknown_203B48C->unk0, 32);
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < WONDER_MAIL_HISTORY_COUNT; i++) {
         ReadBits(&backup, &gUnknown_203B48C->unk4[i], 32);
     }
 
@@ -373,7 +373,7 @@ u32 sub_8095624(u8 *buffer, u32 b)
 
     InitBitWriter(&backup, buffer, b);
 
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < WONDER_MAIL_SLOT_COUNT; i++) {
         sub_8095824(&backup, &gUnknown_203B480[i]);
     }
 
@@ -403,7 +403,7 @@ u32 sub_8095624(u8 *buffer, u32 b)
 
     WriteBits(&backup, &gUnknown_203B48C->unk0, 32);
 
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < WONDER_MAIL_HISTORY_COUNT; i++) {
         WriteBits(&backup, &gUnknown_203B48C->unk4[i], 32);
     }
 

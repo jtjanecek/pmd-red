@@ -9,7 +9,6 @@
 #include "dungeon_message_log.h"
 #include "dungeon_music.h"
 #include "dungeon_strings.h"
-#include "exclusive_pokemon.h"
 #include "input.h"
 #include "menu_input.h"
 #include "pokemon.h"
@@ -315,17 +314,7 @@ static void SetRecruitableMons(struct MonRecruitList *tabsData)
                 continue;
 
             if (i == TAB_POTENTIAL_RECRUITS) {
-                u32 recruitRate, unrecruitableRate;
                 if (!IsMonsterRecruitable(speciesId))
-                    continue;
-                if (!IsExclusivePokemonUnlocked(speciesId))
-                    continue;
-                // Weird casting needed to match...
-                recruitRate = (u16) GetRecruitRate(speciesId);
-                unrecruitableRate = (u16) -999;
-                if (recruitRate == unrecruitableRate)
-                    continue;
-                if (speciesId == MONSTER_MEW && !sub_80860A8(122))
                     continue;
             }
             else {

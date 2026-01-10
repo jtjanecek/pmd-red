@@ -2488,6 +2488,13 @@ s8 GetRescuesAllowed(u8 dungeon)
 
 bool8 IsRecruitingEnabled(u8 dungeon)
 {
+    u8 recruitSetting = GetRecruitAllSetting();
+
+    if (recruitSetting == RECRUIT_ALL_NONE)
+        return FALSE;
+    if (recruitSetting != RECRUIT_ALL_NORMAL)
+        return TRUE;
+
     // Enable recruiting in Level 1 dungeons
     if (IsLevelResetDungeon(dungeon))
         return TRUE;

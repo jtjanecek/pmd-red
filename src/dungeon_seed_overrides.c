@@ -663,6 +663,32 @@ static bool8 SelectShoppableItemFromPool(const RogueItemPool *pool, u8 *itemIdOu
     return FALSE;
 }
 
+static void EnsureMissingKecleonShopRareItem(void)
+{
+    u8 itemId = ITEM_NOTHING;
+
+    if (!sSeededIsForcedKecleonFloor)
+        return;
+    if (DungeonFloorSpawns_ShouldSpawnKecleonShopkeeper())
+        return;
+    if (gRogueItemPools[ROGUE_ITEM_POOL_KECLEON_RARE].count == 0)
+        return;
+    if (sSeededKecleonShopHasRare && sSeededKecleonShopRareId != ITEM_NOTHING &&
+        IsShoppableItem(sSeededKecleonShopRareId)) {
+        return;
+    }
+
+    if (!SelectShoppableItemFromPool(&gRogueItemPools[ROGUE_ITEM_POOL_KECLEON_RARE], &itemId)) {
+        MGBA_Warnf("[ItemPools] Missing Kecleon shop has no shoppable rare items");
+        return;
+    }
+
+    sSeededKecleonShopHasRare = TRUE;
+    sSeededKecleonShopRareUsed = FALSE;
+    sSeededKecleonShopRareId = itemId;
+    MGBA_Warnf("[ItemPools] Missing Kecleon shop forced rare item id=%d", sSeededKecleonShopRareId);
+}
+
 bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut)
 {
     const RogueItemPool *pool = NULL;
@@ -672,6 +698,7 @@ bool8 DungeonSeedOverrides_SelectFloorItem(s32 spawnType, u8 *itemIdOut)
 
     switch (spawnType) {
         case ITEM_SPAWN_IN_SHOP:
+            EnsureMissingKecleonShopRareItem();
             if (sSeededKecleonShopHasRare && !sSeededKecleonShopRareUsed && sSeededKecleonShopRareId != ITEM_NOTHING) {
                 if (IsShoppableItem(sSeededKecleonShopRareId)) {
                     *itemIdOut = (u8)sSeededKecleonShopRareId;

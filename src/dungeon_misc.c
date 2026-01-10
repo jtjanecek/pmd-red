@@ -304,10 +304,20 @@ void sub_8068BDC(bool8 a0)
     Pokemon mon1Structs[MAX_TEAM_MEMBERS];
     u16 arr2[18];
     FriendAreaCapacity areaCapacity;
+    s32 leaderId;
     s32 i, j, id;
 
     for (i = 0; i < NUM_FRIEND_AREAS; i++) {
         spArr[i] = FALSE;
+    }
+
+    leaderId = -1;
+    for (id = 0; id < MAX_TEAM_MEMBERS; id++) {
+        DungeonMon *monPtr = &gRecruitedPokemonRef->dungeonTeam[id];
+        if (DungeonMonExists(monPtr) && monPtr->isTeamLeader && sub_806A58C(monPtr->recruitedPokemonId)) {
+            leaderId = monPtr->recruitedPokemonId;
+            break;
+        }
     }
 
     for (id = 0; id < MAX_TEAM_MEMBERS; id++) {
@@ -331,6 +341,23 @@ void sub_8068BDC(bool8 a0)
             if (sub_806A58C(monPtr->recruitedPokemonId)) {
                 // Always persist stats/level back to recruited list (no special Level 1 handling)
                 DungeonMonToRecruitedPokemon(monPtr->recruitedPokemonId, monPtr);
+                if (a0 && leaderId >= 0) {
+                    Pokemon *recruit = &gRecruitedPokemonRef->pokemon[monPtr->recruitedPokemonId];
+                    if (monPtr->recruitedPokemonId == leaderId) {
+                        recruit->isTeamLeader = TRUE;
+                        SetPokemonFlag2(recruit);
+                        recruit->dungeonLocation.id = DUNGEON_JOIN_LOCATION_LEADER;
+                        recruit->dungeonLocation.floor = 0;
+                    }
+                    else {
+                        recruit->isTeamLeader = FALSE;
+                        recruit->flags &= ~(POKEMON_FLAG_ON_TEAM);
+                        if (recruit->dungeonLocation.id == DUNGEON_JOIN_LOCATION_LEADER ||
+                            recruit->dungeonLocation.id == DUNGEON_JOIN_LOCATION_PARTNER) {
+                            recruit->dungeonLocation = gDungeon->unk644.dungeonLocation;
+                        }
+                    }
+                }
             }
             else {
                 if (a0) {

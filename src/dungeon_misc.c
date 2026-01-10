@@ -531,28 +531,7 @@ void HandleFaint(Entity *entity, s32 dungeonExitReason_, Entity *param_3)
         sub_803E708(0x3c,0x49);
         DisplayMessageLog();
         if (gDungeon->unk6 == 0) {
-            if (gDungeon->unk644.stoleFromKecleon == 0
-                && dungeonExitReason != DUNGEON_EXIT_DELETED_FOR_EVENT
-                && dungeonExitReason != DUNGEON_EXIT_FAILED_TO_PROTECT_CLIENT
-                && dungeonExitReason != DUNGEON_EXIT_BLOWN_OUT_UNSEEN_FORCE
-                && gDungeon->unk3A0D == 0
-                && gDungeon->unk644.unk37 >= 0
-                && gDungeon->unk644.unk34 != TRUE)
-            {
-                if (gDungeon->unk644.unk37 > 0) {
-                    if (DisplayDungeonYesNoMessage(NULL,gUnknown_80FE268,1) == 1) {
-                        DisplayDungeonMessage(NULL,gUnknown_80FE28C,1);
-                        gDungeon->unk4 = 1;
-                        gDungeon->unk6 = 1;
-                        gDungeon->unk644.unk10 = 1;
-                        gDungeon->unk644.unk37 -= 1;
-                        return;
-                    }
-                }
-                else {
-                    DisplayDungeonMessage(NULL,gUnknown_80FE2D0,1);
-                }
-            }
+            // Distress calls are disabled: always proceed to exit handling.
         }
         else {
             gDungeon->unk4 = 1;

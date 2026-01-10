@@ -238,7 +238,7 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;
     sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_15;
-    sPersonalityTestTracker->unk4.enableLeaderSwap = 1;
+    sPersonalityTestTracker->unk4.enableLeaderSwap = 0;
     SetRecruitAllSetting(RECRUIT_ALL_NONE);
     SetSkipBasicRescuesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_NIGHTMARE);

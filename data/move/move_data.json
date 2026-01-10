@@ -541,7 +541,7 @@
         "targetingFlags": "0b0000000000000000",
         "aiTargetingFlags": "0b0000000000000000",
         "basePP": 16,
-        "aiWeight": 20,
+        "aiWeight": 10,
         "accuracy1": 125,
         "accuracy2": 90,
         "aiConditionRandomChance": 75,

@@ -18,8 +18,7 @@ typedef struct SkarmoryRecruitState {
 static EWRAM_DATA SkarmoryRecruitState sSkarmoryRecruitState = {0};
 
 static void EnsureInitialized(void);
-static u32 MixSeeds(u32 dungeonSeed, s32 personalitySeed);
-static bool8 IsLegendarySpecies(s16 species);
+static u32 MixSeeds(u32 dungeonNumber, s32 personalitySeed);
 static bool8 IsEligibleSpecies(s16 species);
 static u8 GetMaxRecruitedLevel(void);
 static void ApplyLevelGains(Pokemon *mon, u8 targetLevel);
@@ -90,13 +89,21 @@ s16 SkarmoryRecruit_GetOfferedSpecies(void)
     s16 candidates[NUM_RECRUITABLE_MONSTERS];
     s32 candidateCount = 0;
     u32 mixedSeed;
+    s32 dungeonNumber = 1;
     s32 i;
 
     EnsureInitialized();
     if (!SkarmoryRecruit_IsAvailable())
         return -1;
 
-    mixedSeed = MixSeeds(sSkarmoryRecruitState.data.dungeonSeed, sSkarmoryRecruitState.data.personalitySeed);
+    if (sSkarmoryRecruitState.data.lastDungeonId >= 0
+        && sSkarmoryRecruitState.data.lastDungeonId < NUM_DUNGEONS) {
+        dungeonNumber = DungeonSeedOverrides_GetDungeonNumberForDisplay(
+            (u8)sSkarmoryRecruitState.data.lastDungeonId);
+    }
+
+    // Pick deterministically from the run seed + dungeon number so offers are stable per run.
+    mixedSeed = MixSeeds((u32)dungeonNumber, sSkarmoryRecruitState.data.personalitySeed);
 
     for (i = 1; i <= NUM_RECRUITABLE_MONSTERS; i++) {
         if (IsEligibleSpecies((s16)i)) {
@@ -122,11 +129,11 @@ static void EnsureInitialized(void)
         SkarmoryRecruit_Init();
 }
 
-// Mix the dungeon-specific seed with the personality quiz seed so Skarmory's
-// offer changes with both.
-static u32 MixSeeds(u32 dungeonSeed, s32 personalitySeed)
+// Mix the dungeon number with the personality quiz seed so Skarmory's
+// offer is stable per run and per dungeon.
+static u32 MixSeeds(u32 dungeonNumber, s32 personalitySeed)
 {
-    u32 mixed = dungeonSeed ^ ((u32)personalitySeed * 0x9E3779B9);
+    u32 mixed = dungeonNumber ^ ((u32)personalitySeed * 0x9E3779B9);
 
     mixed ^= mixed >> 16;
     mixed *= 0x85EBCA6B;
@@ -137,46 +144,13 @@ static u32 MixSeeds(u32 dungeonSeed, s32 personalitySeed)
     return mixed;
 }
 
-static bool8 IsLegendarySpecies(s16 species)
-{
-    switch (species) {
-        case MONSTER_ARTICUNO:
-        case MONSTER_ZAPDOS:
-        case MONSTER_MOLTRES:
-        case MONSTER_GROUDON:
-        case MONSTER_RAYQUAZA:
-        case MONSTER_RAYQUAZA_CUTSCENE:
-        case MONSTER_KYOGRE:
-        case MONSTER_LUGIA:
-        case MONSTER_MEWTWO:
-        case MONSTER_JIRACHI:
-        case MONSTER_MEW:
-        case MONSTER_LATIAS:
-        case MONSTER_LATIOS:
-        case MONSTER_ENTEI:
-        case MONSTER_RAIKOU:
-        case MONSTER_SUICUNE:
-        case MONSTER_HO_OH:
-        case MONSTER_REGIROCK:
-        case MONSTER_REGICE:
-        case MONSTER_REGISTEEL:
-        case MONSTER_CELEBI:
-            return TRUE;
-    }
-    return FALSE;
-}
-
 static bool8 IsEligibleSpecies(s16 species)
 {
     if (species <= 0 || species > NUM_RECRUITABLE_MONSTERS)
         return FALSE;
     if (IS_CASTFORM_FORM_MONSTER(species) || IS_DEOXYS_FORM_MONSTER(species))
         return FALSE;
-    if (species == MONSTER_UNOWN_EMARK || species == MONSTER_UNOWN_QMARK)
-        return FALSE;
     if (species == MONSTER_DECOY || species == MONSTER_STATUE)
-        return FALSE;
-    if (IsLegendarySpecies(species))
         return FALSE;
     if (!IsExclusivePokemonUnlocked(species))
         return FALSE;

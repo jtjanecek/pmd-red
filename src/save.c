@@ -615,6 +615,7 @@ void InitializePlayerData(void)
     // Stock key HMs in storage for quick testing in dev builds.
     gTeamInventoryRef->teamStorage[ITEM_HM_SURF] = 1;
     gTeamInventoryRef->teamStorage[ITEM_HM_CUT] = 1;
+    gTeamInventoryRef->teamSavings = 99999;
 #endif
     InitializeRescueTeamInfo();
     sub_80972F4();

@@ -155,6 +155,7 @@ typedef enum GengarHintType
     GENGAR_HINT_TYPE_KECLEON = 1,
     GENGAR_HINT_TYPE_SUPER_TRAP = 2,
     GENGAR_HINT_TYPE_MONSTER_HOUSE = 3,
+    GENGAR_HINT_TYPE_BOSS_FLOOR = 4,
 } GengarHintType;
 
 typedef struct GengarHintConversationState
@@ -176,6 +177,7 @@ static bool8 HasEnoughMoneyForGengarHint(void);
 static const u8 *BuildKecleonShopHintText(void);
 static const u8 *BuildSuperTrapHintText(void);
 static const u8 *BuildMonsterHouseHintText(void);
+static const u8 *BuildBossFloorHintText(void);
 static void BuildGengarHintChoiceMenu(void);
 static void InitGengarHintPortrait(void);
 static void CleanupGengarHintPortrait(void);
@@ -193,6 +195,7 @@ static const u8 sGengarHintNoSeedText[] = _("{color YELLOW}Gengar{reset}: Heh he
 static EWRAM_DATA u8 sGengarHintShopBuffer[96] = {0};
 static EWRAM_DATA u8 sGengarHintSuperTrapBuffer[96] = {0};
 static EWRAM_DATA u8 sGengarHintMonsterHouseBuffer[96] = {0};
+static EWRAM_DATA u8 sGengarHintBossFloorBuffer[96] = {0};
 static EWRAM_DATA u8 sDungeonEntryReqBuffer[200] = {0};
 
 
@@ -2382,6 +2385,7 @@ static void StartGengarHintConversation(void)
     sGengarHintState.dungeonId = (s16)GetCurrentDungeonForHint();
     sGengarHintState.stage = GENGAR_HINT_STAGE_NONE;
     InitGengarHintPortrait();
+    MGBA_Warnf("[GengarHint] Start: dungeonId=%d", sGengarHintState.dungeonId);
 
     if (sGengarHintState.dungeonId < 0) {
         ShowGengarHintMessage(sGengarHintNoDungeonText);
@@ -2461,6 +2465,9 @@ static bool8 UpdateGengarHintConversation(void)
                 case GENGAR_HINT_TYPE_MONSTER_HOUSE:
                     hintText = BuildMonsterHouseHintText();
                     break;
+                case GENGAR_HINT_TYPE_BOSS_FLOOR:
+                    hintText = BuildBossFloorHintText();
+                    break;
                 case GENGAR_HINT_TYPE_KECLEON:
                 default:
                     hintText = BuildKecleonShopHintText();
@@ -2520,34 +2527,40 @@ static s32 GetQueuedDungeonForHint(void)
     s16 scriptDungeonIndex = (s16)GetScriptVarValue(NULL, DUNGEON_ENTER_INDEX);
     s32 dungeonId = -1;
 
-    // When overrides are active, prefer the sequential run's current dungeon.
-    if (DungeonSeedOverrides_IsEnabled(NULL)) {
-        s16 currentDungeon = DungeonSeedOverrides_GetCurrentDungeon();
-        if (currentDungeon >= 0)
-            dungeonId = currentDungeon;
+    MGBA_Warnf("[GengarHint] Vars: select=%d enter=%d index=%d last=%d",
+               scriptDungeonSelect, scriptDungeonId, scriptDungeonIndex, gUnknown_20398C4);
+
+    if (dungeonId == -1) {
+        // Script dungeons that use the index var (0x50/0x51/0x52).
+        if (scriptDungeonId == 0x50 || scriptDungeonId == 0x51 || scriptDungeonId == 0x52) {
+            if (scriptDungeonIndex != -1)
+                dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonIndex);
+        }
+        else if (scriptDungeonId != -1) {
+            // DUNGEON_ENTER defaults to 0; ignore it unless explicitly set.
+            if (scriptDungeonId != 0)
+                dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonId);
+        }
     }
 
-    if (dungeonId == -1 && scriptDungeonSelect != -1) {
+    // DUNGEON_SELECT is often set by story/rescue jobs; ignore it when overrides are active.
+    if (dungeonId == -1 && !DungeonSeedOverrides_IsEnabled(NULL) && scriptDungeonSelect != -1) {
         dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonSelect);
     }
 
-    // Some script dungeons use the index var (0x51 = job list)
-    if (dungeonId == -1) {
-        if (scriptDungeonId == 0x51 && scriptDungeonIndex != -1) {
-            dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonIndex);
-        }
-        else if (scriptDungeonId != -1) {
-            dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonId);
-        }
-        else if (scriptDungeonIndex != -1) {
-            dungeonId = ScriptDungeonIdToDungeonId(scriptDungeonIndex);
-        }
+    // Fall back to the sequential run's current dungeon if no script value is set.
+    if (dungeonId == -1 && DungeonSeedOverrides_IsEnabled(NULL)) {
+        s16 currentRescueDungeon = DungeonSeedOverrides_GetCurrentDungeon();
+        if (currentRescueDungeon >= 0)
+            dungeonId = RescueDungeonToDungeonId(currentRescueDungeon);
     }
 
-    // Fallback: use last queued script dungeon id from ground_main
-    if (dungeonId == -1 && gUnknown_20398C4 != -1) {
+    // Fallback: use last queued script dungeon id from ground_main, but ignore the default 0.
+    if (dungeonId == -1 && gUnknown_20398C4 > 0) {
         dungeonId = ScriptDungeonIdToDungeonId(gUnknown_20398C4);
     }
+
+    MGBA_Warnf("[GengarHint] Resolved dungeonId=%d", dungeonId);
 
     if (dungeonId == DUNGEON_INVALID)
         dungeonId = -1;
@@ -2644,27 +2657,55 @@ static const u8 *BuildMonsterHouseHintText(void)
     }
 }
 
+static const u8 *BuildBossFloorHintText(void)
+{
+    s32 seed;
+    s32 dungeonId = sGengarHintState.dungeonId;
+
+    if (dungeonId < 0 || dungeonId >= NUM_DUNGEONS)
+        return sGengarHintNoDungeonText;
+
+    if (!DungeonSeedOverrides_IsEnabled(&seed))
+        return sGengarHintNoSeedText;
+
+    {
+        s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, (u8)dungeonId);
+        s32 bossFloorIndex = (floorCount > 1) ? (floorCount - 2) : 0;
+        s32 displayFloor = GetDungeonStartingFloor(dungeonId) + bossFloorIndex + 1;
+
+        MGBA_Warnf("[GengarHint] BossFloor: dungeonId=%d seed=%d floorCount=%d bossIndex=%d displayFloor=%d",
+                   dungeonId, seed, floorCount, bossFloorIndex, displayFloor);
+        sprintfStatic(sGengarHintBossFloorBuffer, _("{color YELLOW}Gengar{reset}: Heh heh...\nBoss waits on floor %d."), displayFloor);
+        return sGengarHintBossFloorBuffer;
+    }
+}
+
 static void BuildGengarHintChoiceMenu(void)
 {
     static const u8 *const sHintLabels[] = {
         _("Kecleon shop rumors"),
         _("SuperTrap floor rumor"),
         _("Monster House rumor"),
+        _("Boss floor rumor"),
     };
-    u8 pool[3] = {GENGAR_HINT_TYPE_KECLEON, GENGAR_HINT_TYPE_SUPER_TRAP, GENGAR_HINT_TYPE_MONSTER_HOUSE};
-    u8 remaining = 3;
+    u8 pool[4] = {GENGAR_HINT_TYPE_KECLEON, GENGAR_HINT_TYPE_SUPER_TRAP, GENGAR_HINT_TYPE_MONSTER_HOUSE, GENGAR_HINT_TYPE_BOSS_FLOOR};
+    u8 remaining = 4;
     u32 state = 0xA511E9B5;
     s32 seed;
     s32 dungeonId = sGengarHintState.dungeonId;
     s32 kecleonFloors[SEEDED_KECLEON_SHOP_COUNT] = {0};
     s32 superTrapFloor = 0;
     s32 monsterHouseFloor = 0;
+    s32 bossFloor = 0;
+    s32 floorCount = 0;
     s32 i;
 
     if (dungeonId < 0 || dungeonId >= NUM_DUNGEONS) {
         sGengarHintState.hintOptions[0] = GENGAR_HINT_TYPE_KECLEON;
         sGengarHintState.hintOptions[1] = GENGAR_HINT_TYPE_SUPER_TRAP;
     } else if (DungeonSeedOverrides_IsEnabled(&seed)) {
+        floorCount = DungeonSeedOverrides_GetFloorCount(seed, (u8)dungeonId);
+        bossFloor = (floorCount > 1) ? (floorCount - 2) : 0;
         DungeonSeedOverrides_GetKecleonFloors((u8)dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
         superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor((u8)dungeonId, seed);
         monsterHouseFloor = DungeonSeedOverrides_GetGuaranteedMonsterHouseFloor((u8)dungeonId, seed);
@@ -2673,6 +2714,7 @@ static void BuildGengarHintChoiceMenu(void)
         state ^= ((u32)kecleonFloors[1] << 12);
         state ^= ((u32)superTrapFloor << 16);
         state ^= ((u32)monsterHouseFloor << 24);
+        state ^= ((u32)bossFloor * 0x45D9F3B);
     } else {
         state ^= (u32)dungeonId * 0x27D4EB2D;
     }
@@ -2699,6 +2741,9 @@ static void BuildGengarHintChoiceMenu(void)
                 break;
             case GENGAR_HINT_TYPE_MONSTER_HOUSE:
                 labelIndex = 2;
+                break;
+            case GENGAR_HINT_TYPE_BOSS_FLOOR:
+                labelIndex = 3;
                 break;
             case GENGAR_HINT_TYPE_KECLEON:
             default:

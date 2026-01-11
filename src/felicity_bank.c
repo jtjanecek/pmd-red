@@ -60,7 +60,7 @@ bool8 CreateFelicityBank(s32 mode)
     sFelicityBankWork->mode = mode;
 #ifdef DEV
     // DEV override: keep the bank stocked for quick testing
-    gTeamInventoryRef->teamSavings = 5000;
+    gTeamInventoryRef->teamSavings = 99999;
 #endif
     CopyYellowMonsterNametoBuffer(gSpeakerNameBuffer, MONSTER_PERSIAN);
     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[7], MONSTER_PERSIAN);

@@ -14,14 +14,13 @@ static const WindowTemplate sUnknown_80E59E0 = {
     0,
     3,
     2, 2,
-    10, 3,
-    3, 0,
+    10, 2,
+    2, 0,
     NULL
 };
 
 static const MenuItem sUnknown_80E59F8[] = {
     {_("New Game"), MENU_NEW_GAME},
-    {_("Adventure Log"), MENU_ADVENTURE_LOG},
     {NULL, 0xFFDD},
 };
 
@@ -43,8 +42,8 @@ static const WindowTemplate sUnknown_80E5A60 = {
     0,
     3,
     2, 2,
-    10, 8,
-    8, 0,
+    10, 3,
+    3, 0,
     NULL
 };
 
@@ -52,27 +51,20 @@ static const WindowTemplate sUnknown_80E5A78 = {
     0,
     3,
     2, 2,
-    11, 9,
-    9, 0,
+    11, 3,
+    3, 0,
     NULL
 };
 
 static const MenuItem sUnknown_80E5A90[] = {
     {_("Continue"), MENU_CONTINUE},
     {_("Delete Save Data"), MENU_DELETE_SAVE_PROMPT},
-    {_("Adventure Log"), MENU_ADVENTURE_LOG},
-    {_("Friend Rescue"), MENU_FRIEND_RESCUE},
-    {_("Trade Items"), MENU_TRADE_ITEMS},
     {NULL, 0xFFDD},
 };
 
 static const MenuItem sUnknown_80E5AFC[] = {
     {_("Continue"), MENU_CONTINUE},
     {_("Delete Save Data"), MENU_DELETE_SAVE_PROMPT},
-    {_("Adventure Log"), MENU_ADVENTURE_LOG},
-    {_("Friend Rescue"), MENU_FRIEND_RESCUE},
-    {_("Trade Items"), MENU_TRADE_ITEMS},
-    {_("Wonder Mail"), MENU_WONDER_MAIL},
     {NULL, 0xFFDD},
 };
 
@@ -80,27 +72,20 @@ static const WindowTemplate sUnknown_80E5B34 = {
     0,
     3,
     2, 2,
-    10, 8,
-    8, 0,
+    10, 3,
+    3, 0,
     NULL
 };
 
 static const MenuItem sUnknown_80E5B4C[] = {
     {_("Awaiting Rescue"), MENU_AWAITING_RESCUE},
     {_("Delete Save Data"), MENU_DELETE_SAVE_PROMPT},
-    {_("Adventure Log"), MENU_ADVENTURE_LOG},
-    {_("Friend Rescue"), MENU_FRIEND_RESCUE},
-    {_("Trade Items"), MENU_TRADE_ITEMS},
     {NULL, 0xFFDD},
 };
 
 static const MenuItem sUnknown_80E5B8C[] = {
     {_("Awaiting Rescue"), MENU_AWAITING_RESCUE},
     {_("Delete Save Data"), MENU_DELETE_SAVE_PROMPT},
-    {_("Adventure Log"), MENU_ADVENTURE_LOG},
-    {_("Friend Rescue"), MENU_FRIEND_RESCUE},
-    {_("Trade Items"), MENU_TRADE_ITEMS},
-    {_("Wonder Mail"), MENU_WONDER_MAIL},
     {NULL, 0xFFDD},
 };
 
@@ -108,27 +93,20 @@ static const WindowTemplate sUnknown_80E5BC4 = {
     0,
     3,
     2, 2,
-    10, 8,
-    8, 0,
+    10, 3,
+    3, 0,
     NULL
 };
 
 static const MenuItem sUnknown_80E5BDC[] = {
     {_("Revive Team"), MENU_CONTINUE},
     {_("Delete Save Data"), MENU_DELETE_SAVE_PROMPT},
-    {_("Adventure Log"), MENU_ADVENTURE_LOG},
-    {_("Friend Rescue"), MENU_FRIEND_RESCUE},
-    {_("Trade Items"), MENU_TRADE_ITEMS},
     {NULL, 0xFFDD},
 };
 
 static const MenuItem sUnknown_80E5C18[] = {
     {_("Revive Team"), MENU_CONTINUE},
     {_("Delete Save Data"), MENU_DELETE_SAVE_PROMPT},
-    {_("Adventure Log"), MENU_ADVENTURE_LOG},
-    {_("Friend Rescue"), MENU_FRIEND_RESCUE},
-    {_("Trade Items"), MENU_TRADE_ITEMS},
-    {_("Wonder Mail"), MENU_WONDER_MAIL},
     {NULL, 0xFFDD},
 };
 

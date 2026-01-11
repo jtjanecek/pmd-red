@@ -21,6 +21,7 @@ SECTIONS {
         data/sound_data.o(.bss);
         src/dungeon_astar.o(.bss);
         src/dungeon_seed_overrides.o(.bss);
+        src/dungeon_seed_stat_overrides.o(.bss);
         src/type_selection.o(.bss);
         src/type_selection_ui.o(.bss);
         KEEP(*(ewram_data))
@@ -297,6 +298,7 @@ SECTIONS {
         src/dungeon_music.o(.text);
         src/dungeon_random.o(.text);
         src/dungeon_seed_overrides.o(.text);
+        src/dungeon_seed_stat_overrides.o(.text);
         src/dungeon_cleared_window.o(.text);
         src/dungeon_jobs.o(.text);
         src/dungeon_cutscene.o(.text);
@@ -701,6 +703,7 @@ SECTIONS {
         src/dungeon_music.o(.rodata);
         src/dungeon_random.o(.rodata);
         src/dungeon_seed_overrides.o(.rodata);
+        src/dungeon_seed_stat_overrides.o(.rodata);
         src/dungeon_cleared_window.o(.rodata);
         src/dungeon_jobs.o(.rodata);
         src/dungeon_cutscene.o(.rodata);
@@ -951,6 +954,7 @@ SECTIONS {
 		INCLUDE "sym_ewram_init.ld"
 		src/dungeon_astar.o(.data);
 		src/dungeon_seed_overrides.o(.data);
+		src/dungeon_seed_stat_overrides.o(.data);
 		src/textbox.o(.data);
 		src/move_deleter.o(.data);
 		*libc.a:impure.o(.data);

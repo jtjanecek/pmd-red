@@ -27,6 +27,7 @@
 #include "run_dungeon.h"
 #include "dungeon_floor_spawns.h"
 #include "dungeon_seed_overrides.h"
+#include "dungeon_seed_stat_overrides.h"
 #include "dungeon_cutscene.h"
 #include "moves.h"
 #include "dungeon_misc.h"
@@ -7511,21 +7512,6 @@ void SpawnBossFightEntities(BossFightConfig *config)
     // and will spawn the boss from the array!
 }
 
-static s32 GetBossLevelOffset(void)
-{
-    u32 difficulty = GetGameDifficultySetting();
-
-    switch (difficulty) {
-        case DIFFICULTY_HARD:
-            return 3;
-        case DIFFICULTY_NIGHTMARE:
-            return 5;
-        case DIFFICULTY_NORMAL:
-        default:
-            return 0;
-    }
-}
-
 static s32 ClampBossLevel(s32 level)
 {
     if (level < 1)
@@ -7543,20 +7529,31 @@ void ApplyBossFightOverrides(BossFightConfig *config)
     Tile *tile;
     s32 centerX, bossY;
     s32 i;
-    s32 leaderLevel = 1;
     s32 bossLevel = 1;
     s32 minionLevel = 1;
-    Entity *leader;
+    s32 dungeonNumber = 1;
+    u8 bossTiers[TYPE_SELECTION_STAT_COUNT];
+    u8 minionTiers[TYPE_SELECTION_MINIONS_PER_BOSS][TYPE_SELECTION_STAT_COUNT];
+    u8 fallbackTiers[TYPE_SELECTION_STAT_COUNT];
+    SeedStatProfile bossStats;
+    SeedStatProfile minionStats;
 
     if (config == NULL || !config->enabled)
         return;
 
-    leader = GetLeader();
-    if (EntityIsValid(leader)) {
-        leaderLevel = GetEntInfo(leader)->level;
+    bossLevel = ClampBossLevel(DungeonSeedStats_GetHighestTeamLevel());
+    minionLevel = bossLevel;
+    if (gDungeon != NULL) {
+        dungeonNumber = DungeonSeedOverrides_GetDungeonNumberForDisplay(gDungeon->unk644.dungeonLocation.id);
+        if (dungeonNumber < 1)
+            dungeonNumber = 1;
     }
-    bossLevel = ClampBossLevel(leaderLevel + GetBossLevelOffset());
-    minionLevel = ClampBossLevel(leaderLevel);
+    DungeonSeedStats_InitDefaultTiers(fallbackTiers);
+    DungeonSeedStats_InitDefaultTiers(bossTiers);
+    for (i = 0; i < TYPE_SELECTION_MINIONS_PER_BOSS; i++)
+        DungeonSeedStats_InitDefaultTiers(minionTiers[i]);
+    DungeonSeedStats_GetTypeBossStatTiers(config->bossSpecies, bossTiers, minionTiers);
+    DungeonSeedStats_BuildBossProfile(dungeonNumber, bossTiers, &bossStats);
 
     // Calculate where we spawned the boss - must match SpawnBossFightEntities
     if (config->useFixedRoomLayout) {
@@ -7663,8 +7660,44 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         SetupBossFightHP(bossEntity, config->bossHP, config->bossMusic);
     }
 
-    // STEP 3c: Apply minion HP as half of the boss HP
-    if (config->bossHP > 0 && config->minionCount > 0) {
+#ifdef DEV
+    MGBA_Warnf("SEED_DUMP_HEADER,boss_stat_override,dungeon_id,floor_id,role,slot,species,species_name,level,hp,atk,spatk,def,spdef");
+#endif
+
+    {
+        EntityInfo *bossInfo = GetEntInfo(bossEntity);
+        if (bossInfo != NULL) {
+            bossInfo->atk[0] = bossStats.atk;
+            bossInfo->atk[1] = bossStats.spAtk;
+            bossInfo->def[0] = bossStats.def;
+            bossInfo->def[1] = bossStats.spDef;
+#ifdef DEV
+            {
+                char speciesName[32];
+                const char *name = GetMonSpecies(bossInfo->id);
+
+                if (name != NULL)
+                    sprintf(speciesName, "%.*s", (int)(sizeof(speciesName) - 1), name);
+                else
+                    sprintf(speciesName, "species_%d", bossInfo->id);
+
+                MGBA_Warnf("SEED_DUMP,boss_stat_override,%d,%d,boss,0,%d,%s,%d,%d,%d,%d,%d,%d,%d",
+                           gDungeon->unk644.dungeonLocation.id,
+                           gDungeon->unk644.dungeonLocation.floor,
+                           bossInfo->id,
+                           speciesName,
+                           bossInfo->level,
+                           bossInfo->maxHPStat,
+                           bossInfo->atk[0],
+                           bossInfo->atk[1],
+                           bossInfo->def[0],
+                           bossInfo->def[1]);
+            }
+#endif
+        }
+    }
+
+    if (config->minionCount > 0) {
         s32 minionPositions[4][2];
         s32 minionHP = config->bossHP / 2;
 
@@ -7675,7 +7708,12 @@ void ApplyBossFightOverrides(BossFightConfig *config)
         for (i = 0; i < config->minionCount && i < ARRAY_COUNT(minionPositions); i++) {
             Entity *minionEntity;
             EntityInfo *minionInfo;
+            const u8 *tiers = fallbackTiers;
 
+            if (i < TYPE_SELECTION_MINIONS_PER_BOSS)
+                tiers = minionTiers[i];
+
+            DungeonSeedStats_BuildMinionProfile(dungeonNumber, tiers, &minionStats);
             tile = GetTileMut(minionPositions[i][0], minionPositions[i][1]);
             if (tile == NULL)
                 continue;
@@ -7690,6 +7728,34 @@ void ApplyBossFightOverrides(BossFightConfig *config)
 
             minionInfo->maxHPStat = minionHP;
             minionInfo->HP = minionHP;
+            minionInfo->atk[0] = minionStats.atk;
+            minionInfo->atk[1] = minionStats.spAtk;
+            minionInfo->def[0] = minionStats.def;
+            minionInfo->def[1] = minionStats.spDef;
+#ifdef DEV
+            {
+                char speciesName[32];
+                const char *name = GetMonSpecies(minionInfo->id);
+
+                if (name != NULL)
+                    sprintf(speciesName, "%.*s", (int)(sizeof(speciesName) - 1), name);
+                else
+                    sprintf(speciesName, "species_%d", minionInfo->id);
+
+                MGBA_Warnf("SEED_DUMP,boss_stat_override,%d,%d,minion,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d",
+                           gDungeon->unk644.dungeonLocation.id,
+                           gDungeon->unk644.dungeonLocation.floor,
+                           i,
+                           minionInfo->id,
+                           speciesName,
+                           minionInfo->level,
+                           minionInfo->maxHPStat,
+                           minionInfo->atk[0],
+                           minionInfo->atk[1],
+                           minionInfo->def[0],
+                           minionInfo->def[1]);
+            }
+#endif
         }
     }
 

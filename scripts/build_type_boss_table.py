@@ -16,6 +16,7 @@ from typing import Dict, List
 MAX_BOSSES_PER_TYPE = 2
 MINIONS_PER_BOSS = 2
 MAX_MOVES_PER_BOSS = 4
+STAT_COUNT = 5
 CHANCE_SCALE = 1000
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 MONSTER_HEADER_PATH = PROJECT_ROOT / "include" / "constants" / "monster.h"
@@ -82,6 +83,8 @@ class BossRow:
     boss_has_custom_moves: bool
     minion_moves: List[List[str]]
     minion_has_custom_moves: List[bool]
+    boss_stat_tiers: List[str]
+    minion_stat_tiers: List[List[str]]
 
 
 def load_monster_constants(path: pathlib.Path) -> List[str]:
@@ -121,6 +124,12 @@ VALID_MOVES = set(load_move_constants(MOVE_HEADER_PATH))
 MOVE_OVERRIDES: Dict[str, str] = {
     "NONE": "MOVE_NOTHING",
     "NOTHING": "MOVE_NOTHING",
+}
+
+STAT_TIER_MAP: Dict[str, str] = {
+    "LOW": "STAT_TIER_LOW",
+    "MEDIUM": "STAT_TIER_MEDIUM",
+    "HIGH": "STAT_TIER_HIGH",
 }
 
 
@@ -184,6 +193,15 @@ def parse_move(raw: str, field_name: str, default_move: str = "MOVE_NOTHING") ->
     return mapped
 
 
+def parse_stat_tier(raw: str, field_name: str) -> str:
+    key = normalize_key(raw)
+    if not key:
+        raise SystemExit(f"Missing stat tier for column '{field_name}'")
+    if key not in STAT_TIER_MAP:
+        raise SystemExit(f"Unknown stat tier '{raw}' in column '{field_name}'")
+    return STAT_TIER_MAP[key]
+
+
 def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
     pools: Dict[str, List[BossRow]] = {name: [] for name in TYPE_NAMES}
 
@@ -207,6 +225,27 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                 parse_move(row.get("BossMove2", ""), "BossMove2"),
                 parse_move(row.get("BossMove3", ""), "BossMove3"),
                 parse_move(row.get("BossMove4", ""), "BossMove4"),
+            ]
+            boss_stat_tiers = [
+                "STAT_TIER_MEDIUM",
+                parse_stat_tier(row.get("BossAtk", ""), "BossAtk"),
+                parse_stat_tier(row.get("BossSpAtk", ""), "BossSpAtk"),
+                parse_stat_tier(row.get("BossDef", ""), "BossDef"),
+                parse_stat_tier(row.get("BossSpDef", ""), "BossSpDef"),
+            ]
+            minion1_stat_tiers = [
+                "STAT_TIER_MEDIUM",
+                parse_stat_tier(row.get("Minion1Atk", ""), "Minion1Atk"),
+                parse_stat_tier(row.get("Minion1SpAtk", ""), "Minion1SpAtk"),
+                parse_stat_tier(row.get("Minion1Def", ""), "Minion1Def"),
+                parse_stat_tier(row.get("Minion1SpDef", ""), "Minion1SpDef"),
+            ]
+            minion2_stat_tiers = [
+                "STAT_TIER_MEDIUM",
+                parse_stat_tier(row.get("Minion2Atk", ""), "Minion2Atk"),
+                parse_stat_tier(row.get("Minion2SpAtk", ""), "Minion2SpAtk"),
+                parse_stat_tier(row.get("Minion2Def", ""), "Minion2Def"),
+                parse_stat_tier(row.get("Minion2SpDef", ""), "Minion2SpDef"),
             ]
             minion1_moves = [
                 parse_move(row.get("Minion1Move1", ""), "Minion1Move1"),
@@ -245,6 +284,8 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                         any(move != "MOVE_NOTHING" for move in minion1_moves),
                         any(move != "MOVE_NOTHING" for move in minion2_moves),
                     ],
+                    boss_stat_tiers=boss_stat_tiers,
+                    minion_stat_tiers=[minion1_stat_tiers, minion2_stat_tiers],
                 )
             )
 
@@ -334,6 +375,32 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
                     flags.append(False)
                 flag_str = ", ".join("TRUE" if flag else "FALSE" for flag in flags)
                 handle.write(f"            {{{flag_str}}},\n")
+            handle.write("        },\n")
+            handle.write("        .bossStatTiers = {\n")
+            for idx in range(MAX_BOSSES_PER_TYPE):
+                if idx < len(rows):
+                    tiers = list(rows[idx].boss_stat_tiers)
+                else:
+                    tiers = []
+                while len(tiers) < STAT_COUNT:
+                    tiers.append("STAT_TIER_MEDIUM")
+                handle.write(f"            {{{', '.join(tiers)}}},\n")
+            handle.write("        },\n")
+            handle.write("        .minionStatTiers = {\n")
+            for idx in range(MAX_BOSSES_PER_TYPE):
+                if idx < len(rows):
+                    minion_tiers = list(rows[idx].minion_stat_tiers)
+                else:
+                    minion_tiers = []
+                while len(minion_tiers) < MINIONS_PER_BOSS:
+                    minion_tiers.append(["STAT_TIER_MEDIUM"] * STAT_COUNT)
+                handle.write("            {\n")
+                for minion_idx in range(MINIONS_PER_BOSS):
+                    tiers = list(minion_tiers[minion_idx])
+                    while len(tiers) < STAT_COUNT:
+                        tiers.append("STAT_TIER_MEDIUM")
+                    handle.write(f"                {{{', '.join(tiers)}}},\n")
+                handle.write("            },\n")
             handle.write("        },\n")
             handle.write(f"        .count = {count},\n")
             handle.write("    },\n")

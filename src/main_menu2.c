@@ -226,18 +226,11 @@ static void SetMainMenuItems(void)
                 if (sub_803D0D8()) {
                     // Revive Team
                     // Delete Save Data
-                    // Adventure Log
-                    // Friend Rescue
-                    // Trade Items
-                    // Wonder Mail
                     SetMenuItems(sUnknown_203B34C->unk4, &sUnknown_203B34C->unk144, 0, &sUnknown_80E5A78, sUnknown_80E5C18, TRUE, sUnknown_203B350, TRUE);
                 }
                 else {
                     // Revive Team
                     // Delete Save Data
-                    // Adventure Log
-                    // Friend Rescue
-                    // Trade Items
                     SetMenuItems(sUnknown_203B34C->unk4, &sUnknown_203B34C->unk144, 0, &sUnknown_80E5BC4, sUnknown_80E5BDC, TRUE, sUnknown_203B350, TRUE);
                 }
             }
@@ -245,18 +238,11 @@ static void SetMainMenuItems(void)
                 if (sub_803D0D8()) {
                     // Continue
                     // Delete Save Data
-                    // Adventure Log
-                    // Friend Rescue
-                    // Trade Items
-                    // Wonder Mail
                     SetMenuItems(sUnknown_203B34C->unk4, &sUnknown_203B34C->unk144, 0, &sUnknown_80E5A78, sUnknown_80E5AFC, TRUE, sUnknown_203B350, TRUE);
                 }
                 else {
                     // Continue
                     // Delete Save Data
-                    // Adventure Log
-                    // Friend Rescue
-                    // Trade Items
                     SetMenuItems(sUnknown_203B34C->unk4, &sUnknown_203B34C->unk144, 0, &sUnknown_80E5A60, sUnknown_80E5A90, TRUE, sUnknown_203B350, TRUE);
                 }
             }
@@ -265,25 +251,17 @@ static void SetMainMenuItems(void)
             if (sub_803D0D8()) {
                     // Awaiting Rescue
                     // Delete Save Data
-                    // Adventure Log
-                    // Friend Rescue
-                    // Trade Items
-                    // Wonder Mail
                 SetMenuItems(sUnknown_203B34C->unk4, &sUnknown_203B34C->unk144, 0, &sUnknown_80E5A78, sUnknown_80E5B8C, TRUE, sUnknown_203B350, TRUE);
             }
             else {
                     // Awaiting Rescue
                     // Delete Save Data
-                    // Adventure Log
-                    // Friend Rescue
-                    // Trade Items
                 SetMenuItems(sUnknown_203B34C->unk4, &sUnknown_203B34C->unk144, 0, &sUnknown_80E5B34, sUnknown_80E5B4C, TRUE, sUnknown_203B350, TRUE);
             }
         }
     }
     else {
         // New Game
-        // Adventure Log
         SetMenuItems(sUnknown_203B34C->unk4, &sUnknown_203B34C->unk144, 0, &sUnknown_80E59E0, sUnknown_80E59F8, TRUE, sUnknown_203B350, TRUE);
     }
 }

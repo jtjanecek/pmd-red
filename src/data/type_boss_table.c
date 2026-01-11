@@ -31,6 +31,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {FALSE, FALSE},
             {FALSE, FALSE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+        },
         .count = 0,
     },
     [TYPE_NORMAL] = {
@@ -57,6 +71,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+            },
         },
         .count = 2,
     },
@@ -85,6 +113,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH},
+            },
+        },
         .count = 2,
     },
     [TYPE_WATER] = {
@@ -111,6 +153,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW},
+            },
         },
         .count = 2,
     },
@@ -139,6 +195,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM},
+            },
+        },
         .count = 2,
     },
     [TYPE_ELECTRIC] = {
@@ -165,6 +235,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+            },
         },
         .count = 2,
     },
@@ -193,6 +277,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_HIGH},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+        },
         .count = 2,
     },
     [TYPE_FIGHTING] = {
@@ -219,6 +317,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_LOW},
+            },
         },
         .count = 2,
     },
@@ -247,6 +359,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+        },
         .count = 2,
     },
     [TYPE_GROUND] = {
@@ -273,6 +399,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM},
+            },
         },
         .count = 2,
     },
@@ -301,6 +441,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},
+            },
+        },
         .count = 2,
     },
     [TYPE_PSYCHIC] = {
@@ -327,6 +481,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},
+            },
         },
         .count = 2,
     },
@@ -355,6 +523,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+        },
         .count = 2,
     },
     [TYPE_ROCK] = {
@@ -381,6 +563,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+            },
         },
         .count = 2,
     },
@@ -409,6 +605,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM},
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_LOW},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+            },
+        },
         .count = 2,
     },
     [TYPE_DRAGON] = {
@@ -435,6 +645,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+            },
         },
         .count = 2,
     },
@@ -463,6 +687,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {TRUE, TRUE},
             {TRUE, TRUE},
         },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW},
+            {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW},
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW},
+            },
+        },
         .count = 2,
     },
     [TYPE_STEEL] = {
@@ -489,6 +727,20 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         .minionHasCustomMoves = {
             {TRUE, TRUE},
             {TRUE, TRUE},
+        },
+        .bossStatTiers = {
+            {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},
+            {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
+        },
+        .minionStatTiers = {
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+            },
+            {
+                {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
+                {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW},
+            },
         },
         .count = 2,
     },

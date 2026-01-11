@@ -1,35 +1,35 @@
-Pokemon,Type,weather,weather_chance_nightmare,weather_chance_hard,weather_chance_normal,Minion1,Minion2,BossMove1,BossMove2,BossMove3,BossMove4,Minion1Move1,Minion1Move2,Minion1Move3,Minion1Move4,Minion2Move1,Minion2Move2,Minion2Move3,Minion2Move4
-Heracross,Bug,,,,,Beedrill,Butterfree,Megahorn,Brick Break,Rock Slide,Bulk Up,Twineedle,Pin Missile,Focus Energy,Agility,Silver Wind,Confusion,Sleep Powder,Whirlwind
-Scizor,Bug,,,,,Scyther,Scyther,Silver Wind,Steel Wing,Double Team,Aerial Ace,Wing Attack,Fury Cutter,Agility,Swords Dance,Wing Attack,Fury Cutter,Agility,Swords Dance
-Absol,Dark,,,,,Sableye,Mightyena,Bite,Slash,Swords Dance,Quick Attack,Shadow Ball,Knock Off,Night Shade,Confuse Ray,Bite,Crunch,Howl,Sand Attack
-Shiftry,Dark,,,,,Crawdaunt,Sharpedo,Razor Leaf,Nature Power,Extrasensory,Fake Out,Crabhammer,Crunch,Swords Dance,Protect,Crunch,Water Pulse,Screech,Agility
-Latias,Dragon,,,,,Dragonite,Kingdra,Mist Ball,DragonBreath,Calm Mind,Ice Beam,Wing Attack,Thunder Wave,Dragon Claw,Agility,Hydro Pump,Twister,Agility,Ice Beam
-Latios,Dragon,,,,,Salamence,Flygon,Luster Purge,DragonBreath,Calm Mind,Thunderbolt,Dragon Claw,Crunch,Fly,Dragon Dance,Earthquake,DragonBreath,Sandstorm,Crunch
-Zapdos,Electric,,,,,Raichu,Manectric,Drill Peck,Thunderbolt,Thunder Wave,Agility,Thunderbolt,Quick Attack,Thunder Wave,Iron Tail,Spark,Bite,Roar,Quick Attack
-Raikou,Electric,,,,,Jolteon,Jolteon,Thunderbolt,Spark,Bite,Reflect,Thunderbolt,Double Kick,Agility,Pin Missile,Thunderbolt,Double Kick,Agility,Pin Missile
-Machamp,Fighting,,,,,Hitmonlee,Hitmonchan,Cross Chop,Vital Throw,Rock Slide,Bulk Up,Hi Jump Kick,Brick Break,Bulk Up,Focus Energy,Sky Uppercut,ThunderPunch,Ice Punch,Agility
-Medicham,Fighting,,,,,Breloom,Hariyama,Hi Jump Kick,Psychic,Detect,Ice Punch,Sky Uppercut,Mach Punch,Mega Punch,Stun Spore,Cross Chop,Belly Drum,Fake Out,Knock Off
-Moltres,Fire,Sunny,1,0.6,0,Charizard,Typhlosion,Flamethrower,Wing Attack,Agility,Fire Spin,Flamethrower,Wing Attack,Slash,Smokescreen,Flamethrower,Swift,Quick Attack,Smokescreen
-Entei,Fire,Sunny,1,0.6,0,Flareon,Flareon,Flamethrower,Stomp,Roar,Fire Spin,Flamethrower,Bite,Quick Attack,Sand Attack,Flamethrower,Bite,Quick Attack,Sand Attack
-Ho-Oh,Flying,,,,,Swellow,Pidgeot,Sacred Fire,Gust,Fly,Fire Blast,Wing Attack,Quick Attack,Aerial Ace,Focus Energy,Wing Attack,Sand-Attack,Quick Attack,FeatherDance
-Rayquaza,Flying,,,,,Aerodactyl,Altaria,Dragon Claw,Crunch,Hyper Beam,Dragon Dance,Rock Slide,Wing Attack,Agility,Bite,DragonBreath,Sing,Safeguard,Fly
-Gengar,Ghost,,,,,Banette,Shedinja,Shadow Ball,Hypnosis,Dream Eater,Thunderbolt,Shadow Ball,Will-O-Wisp,Knock Off,Screech,Shadow Ball,Fury Cutter,Swords Dance,Agility
-Dusclops,Ghost,,,,,Sableye,Misdreavus,Shadow Punch,Will-O-Wisp,Earthquake,Protect,Shadow Ball,Faint Attack,Night Shade,Confuse Ray,Shadow Ball,Psybeam,Confuse Ray,Mean Look
-Celebi,Grass,,,,,Tropius,Exeggutor,Psychic,Future Sight,AncientPower,Solarbeam,Razor Leaf,Gust,Stun Spore,Aerial Ace,Psychic,Egg Bomb,Stun Spore,Reflect
-Venusaur,Grass,Sunny,1,0.6,0,Meganium,Sceptile,Solarbeam,Sleep Powder,Sludge Bomb,Earthquake,Razor Leaf,Body Slam,Light Screen,PoisonPowder,Leaf Blade,Quick Attack,Agility,Pursuit
-Groudon,Ground,,,,,Rhydon,Onix,Earthquake,AncientPower,Slash,Bulk Up,Earthquake,Rock Blast,Scary Face,Protect,Rock Slide,Rock Throw,Screech,Bind
-Claydol,Ground,,,,,Solrock,Lunatone,AncientPower,Psychic,Hyper Beam,Reflect,Rock Slide,Psychic,Light Screen,Explosion,Psychic,Rock Throw,Hypnosis,Cosmic Power
-Articuno,Ice,Snow,1,0.6,0,Dewgong,Cloyster,Ice Beam,Gust,Agility,Mind Reader,Aurora Beam,Surf,Ice Beam,Encore,Aurora Beam,Protect,Spike Cannon,Supersonic
-Regice,Ice,Hail,1,0.6,0,Glalie,Walrein,Ice Beam,Amnesia,Icy Wind,Explosion,Ice Beam,Crunch,Headbutt,Bite,Surf,Body Slam,Ice Beam,Encore
-Mewtwo,Normal,,,,,Tauros,Ursaring,Psychic,Thunderbolt,Barrier,Swift,Strength,Take Down,Scary Face,Pursuit,Slash,Strength,Fury Swipes,Earthquake
-Mew,Normal,,,,,Togetic,Porygon2,Psychic,Reflect,Mega Punch,Metronome,Metronome,AncientPower,Encore,Safeguard,Tri Attack,Ice Beam,Psychic,Agility
-Muk,Poison,,,,,Weezing,Swalot,Sludge Bomb,Acid Armor,Minimize,Shadow Ball,Sludge Bomb,Explosion,Smokescreen,Haze,Sludge Bomb,Amnesia,Body Slam,Yawn
-Crobat,Poison,,,,,Seviper,Arbok,Sludge Bomb,Wing Attack,Confuse Ray,Bite,Poison Fang,Crunch,Glare,Screech,Acid,Glare,Bite,Wrap
-Lugia,Psychic,Fog,1,0.6,0,Xatu,Starmie,Aeroblast,Hydro Pump,Psychic,Safeguard,Psychic,Confuse Ray,Future Sight,Teleport,Surf,Thunderbolt,Psychic,Ice Beam
-Deoxys,Psychic,,,,,Deoxys Attack,Deoxys Defense,Psychic,Cosmic Power,Thunderbolt,Ice Beam,Psychic,Pursuit,Cosmic Power,Superpower,Psychic,Pursuit,Cosmic Power,Protect
-Regirock,Rock,Sandstorm,1,0.6,0,Cradily,Armaldo,Rock Slide,Superpower,Explosion,Curse,AncientPower,Razor Leaf,Confuse Ray,Amnesia,AncientPower,Slash,Fury Cutter,Protect
-Tyranitar,Rock,,,,,Kabutops,Omastar,Crunch,Rock Slide,Earthquake,Dragon Dance,Slash,AncientPower,Waterfall,Sand-Attack,Surf,Spike Cannon,Protect,Bite
-Registeel,Steel,,,,,Magneton,Skarmory,Metal Claw,Superpower,Explosion,Curse,Thunderbolt,Supersonic,Lock-On,Zap Cannon,Steel Wing,Agility,Sand-Attack,Swift
-Jirachi,Steel,,,,,Metagross,Steelix,Psychic,Swift,Doom Desire,Double-Edge,Meteor Mash,Psychic,Agility,Earthquake,Iron Tail,Rock Slide,Sandstorm,Screech
-Suicune,Water,Fog,1,0.6,0,Vaporeon,Vaporeon,Surf,Aurora Beam,Calm Mind,Mirror Coat,Surf,Aurora Beam,Acid Armor,Quick Attack,Surf,Aurora Beam,Acid Armor,Quick Attack
-Kyogre,Water,,,,,Gorebyss,Huntail,Surf,Ice Beam,Calm Mind,Thunder,Surf,Psychic,Agility,Amnesia,Crunch,Water Pulse,Scary Face,Bite
+Pokemon,Type,weather,weather_chance_nightmare,weather_chance_hard,weather_chance_normal,BossMove1,BossMove2,BossMove3,BossMove4,BossAtk,BossSpAtk,BossDef,BossSpDef,Minion1,Minion1Atk,Minion1SpAtk,Minion1Def,Minion1SpDef,Minion1Move1,Minion1Move2,Minion1Move3,Minion1Move4,Minion2,Minion2Atk,Minion2SpAtk,Minion2Def,Minion2SpDef,Minion2Move1,Minion2Move2,Minion2Move3,Minion2Move4
+Heracross,Bug,,,,,Megahorn,Brick Break,Rock Slide,Bulk Up,high,low,medium,high,Beedrill,high,low,low,high,Twineedle,Pin Missile,Focus Energy,Agility,Butterfree,low,high,low,high,Silver Wind,Confusion,Sleep Powder,Whirlwind
+Scizor,Bug,,,,,Silver Wind,Steel Wing,Double Team,Aerial Ace,high,low,high,medium,Scyther,high,low,medium,medium,Wing Attack,Fury Cutter,Agility,Swords Dance,Scyther,high,low,medium,medium,Wing Attack,Fury Cutter,Agility,Swords Dance
+Absol,Dark,,,,,Bite,Slash,Swords Dance,Quick Attack,high,medium,low,low,Sableye,medium,low,medium,low,Shadow Ball,Knock Off,Night Shade,Confuse Ray,Mightyena,high,low,medium,low,Bite,Crunch,Howl,Sand Attack
+Shiftry,Dark,,,,,Razor Leaf,Nature Power,Extrasensory,Fake Out,high,medium,low,low,Crawdaunt,high,high,medium,low,Crabhammer,Crunch,Swords Dance,Protect,Sharpedo,high,medium,low,low,Crunch,Water Pulse,Screech,Agility
+Latias,Dragon,,,,,Mist Ball,DragonBreath,Calm Mind,Ice Beam,low,high,medium,high,Dragonite,high,high,medium,medium,Wing Attack,Thunder Wave,Dragon Claw,Agility,Kingdra,medium,medium,medium,medium,Hydro Pump,Twister,Agility,Ice Beam
+Latios,Dragon,,,,,Luster Purge,DragonBreath,Calm Mind,Thunderbolt,medium,high,low,high,Salamence,high,high,medium,medium,Dragon Claw,Crunch,Fly,Dragon Dance,Flygon,high,medium,medium,medium,Earthquake,DragonBreath,Sandstorm,Crunch
+Zapdos,Electric,,,,,Drill Peck,Thunderbolt,Thunder Wave,Agility,medium,high,medium,medium,Raichu,high,high,low,medium,Thunderbolt,Quick Attack,Thunder Wave,Iron Tail,Manectric,medium,high,low,low,Spark,Bite,Roar,Quick Attack
+Raikou,Electric,,,,,Thunderbolt,Spark,Bite,Reflect,medium,high,low,high,Jolteon,low,high,low,high,Thunderbolt,Double Kick,Agility,Pin Missile,Jolteon,low,high,low,high,Thunderbolt,Double Kick,Agility,Pin Missile
+Machamp,Fighting,,,,,Cross Chop,Vital Throw,Rock Slide,Bulk Up,high,low,medium,medium,Hitmonlee,high,low,low,high,Hi Jump Kick,Brick Break,Bulk Up,Focus Energy,Hitmonchan,high,low,medium,high,Sky Uppercut,ThunderPunch,Ice Punch,Agility
+Medicham,Fighting,,,,,Hi Jump Kick,Psychic,Detect,Ice Punch,low,low,medium,medium,Breloom,high,low,medium,low,Sky Uppercut,Mach Punch,Mega Punch,Stun Spore,Hariyama,high,low,low,low,Cross Chop,Belly Drum,Fake Out,Knock Off
+Moltres,Fire,Sunny,1,0.6,0,Flamethrower,Wing Attack,Agility,Fire Spin,high,high,medium,medium,Charizard,medium,high,medium,medium,Flamethrower,Wing Attack,Slash,Smokescreen,Typhlosion,medium,high,medium,medium,Flamethrower,Swift,Quick Attack,Smokescreen
+Entei,Fire,Sunny,1,0.6,0,Flamethrower,Stomp,Roar,Fire Spin,high,medium,medium,low,Flareon,high,medium,low,high,Flamethrower,Bite,Quick Attack,Sand Attack,Flareon,high,medium,low,high,Flamethrower,Bite,Quick Attack,Sand Attack
+Ho-Oh,Flying,,,,,Sacred Fire,Gust,Fly,Fire Blast,high,high,medium,high,Swellow,high,low,low,low,Wing Attack,Quick Attack,Aerial Ace,Focus Energy,Pidgeot,medium,low,medium,low,Wing Attack,Sand-Attack,Quick Attack,FeatherDance
+Rayquaza,Flying,,,,,Dragon Claw,Crunch,Hyper Beam,Dragon Dance,high,high,medium,medium,Aerodactyl,high,low,low,medium,Rock Slide,Wing Attack,Agility,Bite,Altaria,low,low,high,high,DragonBreath,Sing,Safeguard,Fly
+Gengar,Ghost,,,,,Shadow Ball,Hypnosis,Dream Eater,Thunderbolt,low,high,low,medium,Banette,high,medium,low,low,Shadow Ball,Will-O-Wisp,Knock Off,Screech,Shedinja,high,low,low,low,Shadow Ball,Fury Cutter,Swords Dance,Agility
+Dusclops,Ghost,,,,,Shadow Punch,Will-O-Wisp,Earthquake,Protect,low,low,high,high,Sableye,medium,low,medium,low,Shadow Ball,Faint Attack,Night Shade,Confuse Ray,Misdreavus,low,high,low,high,Shadow Ball,Psybeam,Confuse Ray,Mean Look
+Celebi,Grass,,,,,Psychic,Future Sight,AncientPower,Solarbeam,medium,medium,medium,medium,Tropius,low,low,medium,medium,Razor Leaf,Gust,Stun Spore,Aerial Ace,Exeggutor,medium,high,medium,low,Psychic,Egg Bomb,Stun Spore,Reflect
+Venusaur,Grass,Sunny,1,0.6,0,Solarbeam,Sleep Powder,Sludge Bomb,Earthquake,medium,high,medium,high,Meganium,medium,medium,high,high,Razor Leaf,Body Slam,Light Screen,PoisonPowder,Sceptile,medium,high,low,medium,Leaf Blade,Quick Attack,Agility,Pursuit
+Groudon,Ground,,,,,Earthquake,AncientPower,Slash,Bulk Up,high,medium,high,medium,Rhydon,high,low,high,low,Earthquake,Rock Blast,Scary Face,Protect,Onix,low,low,high,low,Rock Slide,Rock Throw,Screech,Bind
+Claydol,Ground,,,,,AncientPower,Psychic,Hyper Beam,Reflect,low,low,high,high,Solrock,high,low,medium,low,Rock Slide,Psychic,Light Screen,Explosion,Lunatone,low,high,low,medium,Psychic,Rock Throw,Hypnosis,Cosmic Power
+Articuno,Ice,Snow,1,0.6,0,Ice Beam,Gust,Agility,Mind Reader,medium,medium,high,high,Dewgong,low,low,medium,high,Aurora Beam,Surf,Ice Beam,Encore,Cloyster,high,medium,high,low,Aurora Beam,Protect,Spike Cannon,Supersonic
+Regice,Ice,Hail,1,0.6,0,Ice Beam,Amnesia,Icy Wind,Explosion,low,high,high,high,Glalie,medium,medium,medium,medium,Ice Beam,Crunch,Headbutt,Bite,Walrein,medium,medium,medium,medium,Surf,Body Slam,Ice Beam,Encore
+Mewtwo,Normal,,,,,Psychic,Thunderbolt,Barrier,Swift,medium,high,medium,medium,Tauros,high,low,high,medium,Strength,Take Down,Scary Face,Pursuit,Ursaring,high,medium,medium,medium,Slash,Strength,Fury Swipes,Earthquake
+Mew,Normal,,,,,Psychic,Reflect,Mega Punch,Metronome,medium,medium,medium,medium,Togetic,low,medium,high,high,Metronome,AncientPower,Encore,Safeguard,Porygon2,medium,high,medium,high,Tri Attack,Ice Beam,Psychic,Agility
+Muk,Poison,,,,,Sludge Bomb,Acid Armor,Minimize,Shadow Ball,high,low,medium,high,Weezing,high,medium,high,low,Sludge Bomb,Explosion,Smokescreen,Haze,Swalot,medium,medium,medium,medium,Sludge Bomb,Amnesia,Body Slam,Yawn
+Crobat,Poison,,,,,Sludge Bomb,Wing Attack,Confuse Ray,Bite,high,low,medium,medium,Seviper,high,high,low,low,Poison Fang,Crunch,Glare,Screech,Arbok,high,low,medium,medium,Acid,Glare,Bite,Wrap
+Lugia,Psychic,Fog,1,0.6,0,Aeroblast,Hydro Pump,Psychic,Safeguard,medium,medium,high,high,Xatu,medium,high,low,low,Psychic,Confuse Ray,Future Sight,Teleport,Starmie,medium,high,medium,medium,Surf,Thunderbolt,Psychic,Ice Beam
+Deoxys,Psychic,,,,,Psychic,Cosmic Power,Thunderbolt,Ice Beam,high,high,low,low,Deoxys Attack,high,high,low,low,Psychic,Pursuit,Cosmic Power,Superpower,Deoxys Defense,low,low,high,high,Psychic,Pursuit,Cosmic Power,Protect
+Regirock,Rock,Sandstorm,1,0.6,0,Rock Slide,Superpower,Explosion,Curse,high,low,high,high,Cradily,medium,medium,high,high,AncientPower,Razor Leaf,Confuse Ray,Amnesia,Armaldo,high,low,high,medium,AncientPower,Slash,Fury Cutter,Protect
+Tyranitar,Rock,,,,,Crunch,Rock Slide,Earthquake,Dragon Dance,high,medium,high,medium,Kabutops,high,low,high,medium,Slash,AncientPower,Waterfall,Sand-Attack,Omastar,low,high,high,medium,Surf,Spike Cannon,Protect,Bite
+Registeel,Steel,,,,,Metal Claw,Superpower,Explosion,Curse,low,low,high,high,Magneton,low,high,high,medium,Thunderbolt,Supersonic,Lock-On,Zap Cannon,Skarmory,medium,low,high,medium,Steel Wing,Agility,Sand-Attack,Swift
+Jirachi,Steel,,,,,Psychic,Swift,Doom Desire,Double-Edge,medium,medium,medium,medium,Metagross,high,medium,high,medium,Meteor Mash,Psychic,Agility,Earthquake,Steelix,medium,low,high,low,Iron Tail,Rock Slide,Sandstorm,Screech
+Suicune,Water,Fog,1,0.6,0,Surf,Aurora Beam,Calm Mind,Mirror Coat,low,medium,high,high,Vaporeon,low,high,low,high,Surf,Aurora Beam,Acid Armor,Quick Attack,Vaporeon,low,high,low,high,Surf,Aurora Beam,Acid Armor,Quick Attack
+Kyogre,Water,,,,,Surf,Ice Beam,Calm Mind,Thunder,medium,high,medium,high,Gorebyss,medium,high,high,low,Surf,Psychic,Agility,Amnesia,Huntail,high,medium,high,low,Crunch,Water Pulse,Scary Face,Bite

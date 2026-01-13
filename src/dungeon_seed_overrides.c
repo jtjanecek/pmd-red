@@ -46,6 +46,8 @@
 #define SEEDED_SPAWN_TARGET_NUM 14    // Aim for ~1.4 species per floor (Purity Forest has ~1.39)
 #define SEEDED_SPAWN_TARGET_DEN 10
 #define SEEDED_MAIN_TYPE_PERCENT 80
+#define SEEDED_LOW_BST_PERCENT 15
+#define SEEDED_LOW_BST_FLAG_BYTES ((MONSTER_MAX + 7) / 8)
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
 #define SEEDED_DUNGEON_NAME_VERSION 2
 #define SEEDED_PREFIX_BUFFER_LEN 16
@@ -196,10 +198,13 @@ static const BossWeatherConfig *GetBossWeatherConfigForSpecies(s16 species);
 static void MaybeApplyBossWeather(BossFightConfig *bossFight, DungeonSeedRng *rng);
 static bool8 IsBossSpecies(s16 species);
 static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask);
-static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity);
+static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity, bool8 restrictLowBst);
 static u8 GetMainTypeForTileset(u8 tileset);
 static u32 GetCombinedSpawnMask(u8 tileset, u32 mainTypeMask);
 static s32 GetBaseStatTotal(s16 species);
+static bool8 ShouldUseLowBstSpawns(u8 dungeonId);
+static void EnsureLowBstSpeciesCache(void);
+static bool8 IsLowBstSpecies(s16 species);
 static u16 GetSeededStatTieBreak(s32 seed, u8 dungeonId, u8 tileset, s16 species);
 static void SortSpawnCandidatesByBaseStats(s16 *pool, s32 count, s32 seed, u8 dungeonId, u8 tileset);
 static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32 poolCount, bool8 *selectedFlags,
@@ -207,6 +212,7 @@ static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32
 static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount,
                                                       s32 entryIndex, s32 entryCount);
 static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog);
+static s16 SelectLowBstFallbackSpecies(DungeonSeedRng *rng, bool8 *selectedFlags);
 
 #ifdef DEV
 static s32 GetSpawnTableCount(const SpawnPokemonData *spawnTable);
@@ -446,6 +452,9 @@ static bool8 sSeededKecleonShopRareUsed = FALSE;
 static u16 sSeededKecleonShopRareId = ITEM_NOTHING;
 static bool8 sSeededIsForcedKecleonFloor = FALSE;
 static SeededSpawnRangeCache sSpawnRangeCache = {0};
+static bool8 sLowBstSpeciesReady = FALSE;
+static u8 sLowBstSpeciesFlags[SEEDED_LOW_BST_FLAG_BYTES];
+static s32 sLowBstSpeciesCount = 0;
 
 static void ResetSeededDungeonNameCache(void);
 static void GenerateSeededDungeonNames(u8 dungeonId, s32 seed);
@@ -1370,7 +1379,7 @@ static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask)
     return FALSE;
 }
 
-static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity)
+static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity, bool8 restrictLowBst)
 {
     s32 count = 0;
     s32 species;
@@ -1379,9 +1388,11 @@ static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity)
         return 0;
 
     for (species = 1; species < MONSTER_MAX && count < outCapacity; species++) {
-        if (SpeciesMatchesTypeMask((s16)species, typeMask)) {
-            out[count++] = (s16)species;
-        }
+        if (!SpeciesMatchesTypeMask((s16)species, typeMask))
+            continue;
+        if (restrictLowBst && !IsLowBstSpecies((s16)species))
+            continue;
+        out[count++] = (s16)species;
     }
     return count;
 }
@@ -1427,6 +1438,89 @@ static s32 GetBaseStatTotal(s16 species)
         + GetBaseOffensiveStat(species, OFFENSE_SP)
         + GetBaseDefensiveStat(species, 0)
         + GetBaseDefensiveStat(species, 1);
+}
+
+static bool8 ShouldUseLowBstSpawns(u8 dungeonId)
+{
+    s32 i;
+    s32 count = GetSequentialDungeonCountForRun();
+
+    if (dungeonId >= NUM_DUNGEONS)
+        return FALSE;
+
+    for (i = 0; i < count; i++) {
+        u8 listDungeonId = RescueDungeonToDungeonId(sSequentialDungeonList[i]);
+        if (listDungeonId == dungeonId)
+            return (i < 2);
+    }
+
+    return FALSE;
+}
+
+static void EnsureLowBstSpeciesCache(void)
+{
+    s16 speciesList[MONSTER_MAX];
+    s32 speciesCount = 0;
+    s32 bottomCount;
+    s32 i;
+
+    if (sLowBstSpeciesReady)
+        return;
+
+    for (i = 0; i < ARRAY_COUNT(sLowBstSpeciesFlags); i++)
+        sLowBstSpeciesFlags[i] = 0;
+
+    for (i = 1; i < MONSTER_MAX; i++) {
+        s32 total = GetBaseStatTotal((s16)i);
+        if (total <= 0)
+            continue;
+        if (i == MONSTER_KECLEON || i == MONSTER_DECOY || i == MONSTER_STATUE)
+            continue;
+        speciesList[speciesCount++] = (s16)i;
+    }
+
+    for (i = 1; i < speciesCount; i++) {
+        s16 key = speciesList[i];
+        s32 keyTotal = GetBaseStatTotal(key);
+        s32 j = i - 1;
+
+        while (j >= 0) {
+            s16 current = speciesList[j];
+            s32 currentTotal = GetBaseStatTotal(current);
+
+            if (currentTotal < keyTotal)
+                break;
+            if (currentTotal == keyTotal && current <= key)
+                break;
+
+            speciesList[j + 1] = speciesList[j];
+            j--;
+        }
+        speciesList[j + 1] = key;
+    }
+
+    bottomCount = (speciesCount * SEEDED_LOW_BST_PERCENT + 99) / 100;
+    if (bottomCount < 1)
+        bottomCount = 1;
+    if (bottomCount > speciesCount)
+        bottomCount = speciesCount;
+
+    for (i = 0; i < bottomCount; i++) {
+        s16 species = speciesList[i];
+        sLowBstSpeciesFlags[(u16)species >> 3] |= (1u << ((u16)species & 7));
+    }
+
+    sLowBstSpeciesCount = bottomCount;
+    sLowBstSpeciesReady = TRUE;
+}
+
+static bool8 IsLowBstSpecies(s16 species)
+{
+    if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+        return FALSE;
+
+    EnsureLowBstSpeciesCache();
+    return (sLowBstSpeciesFlags[(u16)species >> 3] & (1u << ((u16)species & 7))) != 0;
 }
 
 static u16 GetSeededStatTieBreak(s32 seed, u8 dungeonId, u8 tileset, s16 species)
@@ -1689,6 +1783,61 @@ static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8
     return MONSTER_NONE;
 }
 
+static s16 SelectLowBstFallbackSpecies(DungeonSeedRng *rng, bool8 *selectedFlags)
+{
+    s32 unselectedCount = 0;
+    s32 target;
+    s32 seen;
+    s32 i;
+
+    if (rng == NULL)
+        return MONSTER_NONE;
+
+    EnsureLowBstSpeciesCache();
+    if (sLowBstSpeciesCount <= 0)
+        return MONSTER_NONE;
+
+    if (selectedFlags != NULL) {
+        for (i = 1; i < MONSTER_MAX; i++) {
+            if (!IsLowBstSpecies((s16)i))
+                continue;
+            if (!selectedFlags[i])
+                unselectedCount++;
+        }
+
+        if (unselectedCount > 0) {
+            target = DungeonSeedRng_NextRange(rng, 0, unselectedCount);
+            seen = 0;
+            for (i = 1; i < MONSTER_MAX; i++) {
+                if (!IsLowBstSpecies((s16)i))
+                    continue;
+                if (selectedFlags[i])
+                    continue;
+                if (seen == target) {
+                    selectedFlags[i] = TRUE;
+                    return (s16)i;
+                }
+                seen++;
+            }
+        }
+    }
+
+    target = DungeonSeedRng_NextRange(rng, 0, sLowBstSpeciesCount);
+    seen = 0;
+    for (i = 1; i < MONSTER_MAX; i++) {
+        if (!IsLowBstSpecies((s16)i))
+            continue;
+        if (seen == target) {
+            if (selectedFlags != NULL)
+                selectedFlags[i] = TRUE;
+            return (s16)i;
+        }
+        seen++;
+    }
+
+    return MONSTER_NONE;
+}
+
 static void ResetSpawnRangeCache(void)
 {
     sSpawnRangeCache.valid = FALSE;
@@ -1866,11 +2015,17 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     s16 mainCandidatesCopy[MONSTER_MAX];
     s16 spawnCandidates[MONSTER_MAX];
     s16 combinedCandidates[MONSTER_MAX];
+    s16 normalCandidates[MONSTER_MAX];
     bool8 selectedFlags[MONSTER_MAX];
     s32 mainCandidateCount = 0;
     s32 mainCandidateCopyCount = 0;
     s32 spawnCandidateCount = 0;
     s32 combinedCandidateCount = 0;
+    s32 normalCandidateCount = 0;
+    s32 orderedCandidateCount = 0;
+    s32 orderedMainCount = 0;
+    s32 orderedSpawnCount = 0;
+    s32 orderedNormalCount = 0;
     s32 mainQuota;
     s32 spawnQuota;
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
@@ -1881,6 +2036,7 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     bool8 useBulbasaurOnly = FALSE;
     bool8 loggedFallback = FALSE;
     bool8 loggedInvalid = FALSE;
+    bool8 useLowBstSelection = FALSE;
     bool8 entryIsMain[SEEDED_FIXED_SPAWN_COUNT];
     s32 i;
 
@@ -1896,13 +2052,17 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     if (engineFloorCount > 0 && floorCount > engineFloorCount)
         floorCount = engineFloorCount;
 
+    useLowBstSelection = ShouldUseLowBstSpawns(dungeonId);
+
     if (mainTypeMask != 0)
-        mainCandidateCount = BuildSpawnCandidates(mainTypeMask, mainCandidates, ARRAY_COUNT(mainCandidates));
+        mainCandidateCount = BuildSpawnCandidates(mainTypeMask, mainCandidates, ARRAY_COUNT(mainCandidates), useLowBstSelection);
     if (spawnTypeMask != 0)
-        spawnCandidateCount = BuildSpawnCandidates(spawnTypeMask, spawnCandidates, ARRAY_COUNT(spawnCandidates));
+        spawnCandidateCount = BuildSpawnCandidates(spawnTypeMask, spawnCandidates, ARRAY_COUNT(spawnCandidates), useLowBstSelection);
     if (combinedMask != 0)
-        combinedCandidateCount = BuildSpawnCandidates(combinedMask, combinedCandidates, ARRAY_COUNT(combinedCandidates));
-    if (combinedMask != 0 && combinedCandidateCount == 0)
+        combinedCandidateCount = BuildSpawnCandidates(combinedMask, combinedCandidates, ARRAY_COUNT(combinedCandidates), useLowBstSelection);
+    if (useLowBstSelection)
+        normalCandidateCount = BuildSpawnCandidates(1u << TYPE_NORMAL, normalCandidates, ARRAY_COUNT(normalCandidates), TRUE);
+    if (combinedMask != 0 && combinedCandidateCount == 0 && !useLowBstSelection)
         useBulbasaurOnly = TRUE;
     if (mainCandidateCount > 0)
         SortSpawnCandidatesByBaseStats(mainCandidates, mainCandidateCount, seed, dungeonId, tileset);
@@ -1910,6 +2070,8 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         SortSpawnCandidatesByBaseStats(spawnCandidates, spawnCandidateCount, seed, dungeonId, tileset);
     if (combinedCandidateCount > 0)
         SortSpawnCandidatesByBaseStats(combinedCandidates, combinedCandidateCount, seed, dungeonId, tileset);
+    if (normalCandidateCount > 0)
+        SortSpawnCandidatesByBaseStats(normalCandidates, normalCandidateCount, seed, dungeonId, tileset);
     if (mainCandidateCount > 0) {
         mainCandidateCopyCount = mainCandidateCount;
         for (i = 0; i < mainCandidateCount; i++)
@@ -1918,8 +2080,46 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
 
     for (i = 0; i < MONSTER_MAX; i++)
         selectedFlags[i] = FALSE;
+    if (useLowBstSelection) {
+        orderedCandidateCount = 0;
+        for (i = 0; i < mainCandidateCount && orderedCandidateCount < ARRAY_COUNT(combinedCandidates); i++) {
+            s16 species = mainCandidates[i];
+            if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+                continue;
+            if (selectedFlags[species])
+                continue;
+            combinedCandidates[orderedCandidateCount++] = species;
+            selectedFlags[species] = TRUE;
+        }
+        orderedMainCount = orderedCandidateCount;
+        for (i = 0; i < spawnCandidateCount && orderedCandidateCount < ARRAY_COUNT(combinedCandidates); i++) {
+            s16 species = spawnCandidates[i];
+            if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+                continue;
+            if (selectedFlags[species])
+                continue;
+            combinedCandidates[orderedCandidateCount++] = species;
+            selectedFlags[species] = TRUE;
+        }
+        orderedSpawnCount = orderedCandidateCount - orderedMainCount;
+        for (i = 0; i < normalCandidateCount && orderedCandidateCount < ARRAY_COUNT(combinedCandidates); i++) {
+            s16 species = normalCandidates[i];
+            if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+                continue;
+            if (selectedFlags[species])
+                continue;
+            combinedCandidates[orderedCandidateCount++] = species;
+            selectedFlags[species] = TRUE;
+        }
+        orderedNormalCount = orderedCandidateCount - orderedMainCount - orderedSpawnCount;
 
-    if (mainTypeMask == 0) {
+        for (i = 0; i < MONSTER_MAX; i++)
+            selectedFlags[i] = FALSE;
+    }
+
+    if (useLowBstSelection) {
+        mainQuota = entryCount;
+    } else if (mainTypeMask == 0) {
         mainQuota = 0;
     } else {
         mainQuota = (entryCount * SEEDED_MAIN_TYPE_PERCENT + 99) / 100;
@@ -1986,6 +2186,25 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         if (useBulbasaurOnly) {
             species = MONSTER_BULBASAUR;
             selectedFlags[species] = TRUE;
+        } else if (useLowBstSelection) {
+            if (orderedCandidateCount > 0) {
+                s32 index = i;
+                if (index < orderedCandidateCount) {
+                    species = combinedCandidates[index];
+                } else if (orderedNormalCount > 0) {
+                    s32 normalStart = orderedMainCount + orderedSpawnCount;
+                    species = combinedCandidates[normalStart + ((index - orderedCandidateCount) % orderedNormalCount)];
+                } else if (orderedSpawnCount > 0) {
+                    s32 spawnStart = orderedMainCount;
+                    species = combinedCandidates[spawnStart + ((index - orderedMainCount) % orderedSpawnCount)];
+                } else if (orderedMainCount > 0) {
+                    species = combinedCandidates[index % orderedMainCount];
+                } else {
+                    species = MONSTER_NONE;
+                }
+            } else {
+                species = SelectLowBstFallbackSpecies(&rng, selectedFlags);
+            }
         } else if (fillingMain) {
             species = SelectSpeciesFromRankedPool(&rng, mainCandidates, mainCandidateCount, selectedFlags, i, entryCount);
             if (species == MONSTER_NONE && mainCandidateCopyCount > 0) {
@@ -2004,8 +2223,12 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
                 species = SelectSpeciesFromRankedPool(&rng, mainCandidates, mainCandidateCount, selectedFlags, i, entryCount);
         }
 
-        if (species == MONSTER_NONE)
-            species = SelectGenericSpecies(&rng, selectedFlags, &loggedFallback, combinedMask);
+        if (species == MONSTER_NONE) {
+            if (useLowBstSelection)
+                species = SelectLowBstFallbackSpecies(&rng, selectedFlags);
+            else
+                species = SelectGenericSpecies(&rng, selectedFlags, &loggedFallback, combinedMask);
+        }
 
         if (species <= MONSTER_NONE || species >= MONSTER_MAX) {
             species = MONSTER_BULBASAUR;

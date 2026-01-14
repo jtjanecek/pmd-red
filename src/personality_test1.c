@@ -56,6 +56,7 @@ enum
     PERSONALITY_DIFFICULTY_SELECTION,
     PERSONALITY_DUNGEON_COUNT_SELECTION,
     PERSONALITY_PLAYER_GENDER,
+    PERSONALITY_RECRUIT_LIMIT_NOTICE,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
     PERSONALITY_PLAYER_STARTER_SELECTION,
     PERSONALITY_ADVANCE_TO_STARTER_NICKNAME,
@@ -107,6 +108,7 @@ static void HandleLeaderSwapSelection(void);
 static void StartDifficultySelection(void);
 static void StartDungeonCountSelection(void);
 static void HandleDungeonCountSelection(void);
+static void HandleRecruitLimitNotice(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
 static void HandleTeamNameEntry(void);
@@ -229,9 +231,9 @@ static void InitializeTestStats(void)
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_ENTEI;
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_SWAMPERT;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
-    sPersonalityTestTracker->unk4.PartnerID = MONSTER_LATIOS;
+    sPersonalityTestTracker->unk4.PartnerID = MONSTER_BLAZIKEN;
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
@@ -292,6 +294,9 @@ u32 HandleTestTrackerState(void)
         case PERSONALITY_PLAYER_GENDER:
             SetPlayerGender();
             break;
+        case PERSONALITY_RECRUIT_LIMIT_NOTICE:
+            HandleRecruitLimitNotice();
+            break;
         case PERSONALITY_ADVANCE_TO_STARTER_SELECTION:
             AdvanceToStarterSelection();
             break;
@@ -348,7 +353,7 @@ u32 HandleTestTrackerState(void)
                 sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
 #ifdef DEV
                 // In DEV builds, always use this seed: 100
-                sPersonalityTestTracker->rngSeed = 1113;
+                sPersonalityTestTracker->rngSeed = 141412;
 #endif
                 sPersonalityTestTracker->seedChosen = TRUE;
             }
@@ -676,6 +681,17 @@ static void SetPlayerGender(void)
     }
 
     sub_8099690(0);
+    CreateDialogueBoxAndPortrait(gRecruitLimitNotice, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_RECRUIT_LIMIT_NOTICE;
+}
+
+static void HandleRecruitLimitNotice(void)
+{
+    s32 temp;
+
+    if (sub_80144A4(&temp) != 0)
+        return;
+
     CreateDialogueBoxAndPortrait(gStarterPrompt, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
 }

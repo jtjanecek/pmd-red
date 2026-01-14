@@ -34,6 +34,9 @@
 #include "rogue_item_tables.h"
 #include "dungeon_random.h"
 #include "string_format.h"
+#include "dungeon_message.h"
+#include "friend_area.h"
+#include "structs/menu.h"
 
 #define SEEDED_TILESET_COUNT 75  // Max valid tileset ID (gNaturePowerCalledMoves uses max 74)
 #define SEEDED_ITEM_DENSITY_MIN 3
@@ -60,6 +63,34 @@
 
 #define BOSS_SECONDARY_LOOT_LEFT ITEM_ORAN_BERRY
 #define BOSS_SECONDARY_LOOT_RIGHT ITEM_MAX_ELIXIR
+
+enum {
+    BOSS_REWARD_NONE = 0,
+    BOSS_REWARD_RARE_ITEMS = 1,
+    BOSS_REWARD_MONEY = 2,
+    BOSS_REWARD_RECRUIT = 3,
+};
+
+#define BOSS_REWARD_POKE_QUANTITY_3000 100
+
+ALIGNED(4) static const u8 sBossRewardPrompt[] = _(
+    "A strange voice eminates from somewhere...\n"
+    "What reward would you like?"
+);
+ALIGNED(4) static const u8 sBossRewardRecruitFailText[] = _(
+    "There is no space in the Friend Areas\n"
+    "for a new recruit."
+);
+ALIGNED(4) static const u8 sBossRewardRecruitSuccessText[] = _(
+    "{POKEMON_0} went to its Friend Area!"
+);
+
+static const MenuItem sBossRewardMenu[] = {
+    { _("Rare items"), BOSS_REWARD_RARE_ITEMS },
+    { _("Lots of money"), BOSS_REWARD_MONEY },
+    { _("A recruit"), BOSS_REWARD_RECRUIT },
+    { NULL, -1 },
+};
 
 // List of rescue dungeon IDs that appear in the dungeon list, for sequential unlocking
 // Exactly 20 dungeons - ONLY single-part dungeons (no peaks, summits, grottos, pits, or 2nd floors)
@@ -462,6 +493,7 @@ UNUSED static const char *SelectPrefixForDungeon(u8 dungeonId, DungeonSeedRng *r
 UNUSED static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 bufferSize);
 UNUSED static s32 GetSelectedTypeForDisplay(void);
 static s16 GetSeededBossHP(u8 dungeonId);
+static void SeedBossRewardLoot(BossFightConfig *bossFight, s32 seed, u8 dungeonId);
 
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result)
 {
@@ -2518,6 +2550,22 @@ static u16 SelectSecondaryBossLoot(DungeonSeedRng *rng)
     return sSecondaryFallback[DungeonSeedRng_NextRange(rng, 0, ARRAY_COUNT(sSecondaryFallback))];
 }
 
+static void SeedBossRewardLoot(BossFightConfig *bossFight, s32 seed, u8 dungeonId)
+{
+    DungeonSeedRng rng;
+
+    if (bossFight == NULL)
+        return;
+
+    if (seed < 0)
+        seed = 0;
+
+    rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x4C4F4F54); // "LOOT"
+    bossFight->dropItem = SelectPrimaryBossLoot(&rng);
+    bossFight->secondaryDropLeft = SelectSecondaryBossLoot(&rng);
+    bossFight->secondaryDropRight = SelectSecondaryBossLoot(&rng);
+}
+
 static bool8 TryGetTypeSelectionBoss(s16 *bossSpecies)
 {
     if (bossSpecies == NULL)
@@ -2779,9 +2827,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
         result->bossFight.bossSpecies = MONSTER_BULBASAUR;
         result->bossFight.bossHP = GetSeededBossHP(dungeonId);
         result->bossFight.bossMusic = MUS_BOSS_BATTLE;
-        result->bossFight.dropItem = SelectPrimaryBossLoot(rng);
-        result->bossFight.secondaryDropLeft = SelectSecondaryBossLoot(rng);
-        result->bossFight.secondaryDropRight = SelectSecondaryBossLoot(rng);
+        SeedBossRewardLoot(&result->bossFight, seed, dungeonId);
         result->bossFight.minionCount = 2;
         result->bossFight.minionFormation = MINION_FORMATION_DEFAULT;
         for (i = 0; i < result->bossFight.minionCount; i++) {
@@ -2829,9 +2875,7 @@ static void PopulateBossFightConfig(DungeonSeedFloorOverrides *result, DungeonSe
     result->bossFight.bossMusic = MUS_BOSS_BATTLE;
 
     // Procedurally select loot drops
-    result->bossFight.dropItem = SelectPrimaryBossLoot(rng);
-    result->bossFight.secondaryDropLeft = SelectSecondaryBossLoot(rng);
-    result->bossFight.secondaryDropRight = SelectSecondaryBossLoot(rng);
+    SeedBossRewardLoot(&result->bossFight, seed, dungeonId);
 
     // Prefer configured minions for type-selected bosses; fall back to random pool otherwise
     if (!GetTypeBossMinions(selectedBoss, result->bossFight.minionSpecies, &result->bossFight.minionCount)) {
@@ -3341,6 +3385,36 @@ static bool8 TrySpawnBossLoot(u16 itemId, s32 x, s32 y, const char *label)
     return TRUE;
 }
 
+static bool8 TrySpawnBossMoney(s32 x, s32 y, u8 quantity, const char *label)
+{
+    DungeonPos pos;
+    Tile *tile;
+    Item item;
+    s32 terrain;
+
+    if (x < 0 || y < 0 || x >= DUNGEON_MAX_SIZE_X || y >= DUNGEON_MAX_SIZE_Y) {
+        MGBA_Warnf("[BossFaint] Skipping %s money at (%d, %d): out of bounds", label, x, y);
+        return FALSE;
+    }
+
+    tile = GetTileMut(x, y);
+    terrain = GetTerrainType(tile);
+    if (terrain == TERRAIN_TYPE_WALL || (tile->terrainFlags & TERRAIN_TYPE_STAIRS) || tile->object != NULL) {
+        MGBA_Warnf("[BossFaint] Skipping %s money at (%d, %d): blocked (terrain=%d, stairs=%d, object=%p)",
+                   label, x, y, terrain, (tile->terrainFlags & TERRAIN_TYPE_STAIRS) != 0, tile->object);
+        return FALSE;
+    }
+
+    item.flags = ITEM_FLAG_EXISTS;
+    item.id = ITEM_POKE;
+    item.quantity = quantity;
+    pos.x = x;
+    pos.y = y;
+    SpawnItem(&pos, &item, TRUE);
+    MGBA_Warnf("[BossFaint] Spawned %s money (quantity=%d) at (%d, %d)", label, quantity, x, y);
+    return TRUE;
+}
+
 static bool8 AreBossMinionsDefeated(void)
 {
     s32 i;
@@ -3359,12 +3433,158 @@ static bool8 AreBossMinionsDefeated(void)
     return TRUE;
 }
 
+static u8 GetStrongestTeamLevel(void)
+{
+    s32 i;
+    u8 maxLevel = 1;
+
+    if (gRecruitedPokemonRef == NULL)
+        return maxLevel;
+
+    for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
+        DungeonMon *mon = &gRecruitedPokemonRef->dungeonTeam[i];
+        if (DungeonMonExists(mon) && mon->level > maxLevel)
+            maxLevel = mon->level;
+    }
+
+    return maxLevel;
+}
+
+// Lift a level 1 recruit to the target level while keeping stats consistent.
+static void ApplyLevelGains(Pokemon *mon, u8 targetLevel)
+{
+    u8 currentLevel;
+    s32 level;
+    LevelData levelData;
+
+    if (targetLevel < 1)
+        targetLevel = 1;
+    if (targetLevel > 100)
+        targetLevel = 100;
+
+    currentLevel = mon->level;
+    if (currentLevel < 1)
+        currentLevel = 1;
+
+    if (targetLevel <= currentLevel) {
+        mon->level = targetLevel;
+        return;
+    }
+
+    for (level = currentLevel; level < targetLevel; level++) {
+        s32 newStat;
+        GetLvlUpEntry(&levelData, mon->speciesNum, level + 1);
+
+        newStat = mon->pokeHP + levelData.gainHP;
+        mon->pokeHP = (newStat > 0xFFFF) ? 0xFFFF : (u16)newStat;
+
+        newStat = mon->offense.att[0] + levelData.gainAtt[0];
+        mon->offense.att[0] = (newStat > 0xFF) ? 0xFF : (u8)newStat;
+
+        newStat = mon->offense.att[1] + levelData.gainAtt[1];
+        mon->offense.att[1] = (newStat > 0xFF) ? 0xFF : (u8)newStat;
+
+        newStat = mon->offense.def[0] + levelData.gainDef[0];
+        mon->offense.def[0] = (newStat > 0xFF) ? 0xFF : (u8)newStat;
+
+        newStat = mon->offense.def[1] + levelData.gainDef[1];
+        mon->offense.def[1] = (newStat > 0xFF) ? 0xFF : (u8)newStat;
+    }
+
+    mon->level = targetLevel;
+    GetLvlUpEntry(&levelData, mon->speciesNum, targetLevel);
+    mon->currExp = levelData.expRequired;
+}
+
+static bool8 HasFriendAreaSpaceForSpecies(s16 species)
+{
+    FriendAreaCapacity capacity;
+    u8 friendArea = GetFriendArea(species);
+
+    GetFriendAreaCapacity2(friendArea, &capacity, FALSE, FALSE);
+    return capacity.hasFriendArea && capacity.currNoPokemon < capacity.maxPokemon;
+}
+
+static s16 SelectBossRewardRecruitSpecies(void)
+{
+    DungeonSeedRng rng;
+    s32 seed = sub_8011C34();
+    u8 dungeonId = gDungeon->unk644.dungeonLocation.id;
+    s32 attempts;
+
+    if (seed < 0)
+        seed = 0;
+
+    rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x52454352); // "RECR"
+    for (attempts = 0; attempts < 200; attempts++) {
+        s16 species = (s16)DungeonSeedRng_NextRange(&rng, MONSTER_NONE + 1, MONSTER_MAX);
+
+        if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+            continue;
+        if (species == MONSTER_DECOY || species == MONSTER_STATUE)
+            continue;
+        if (IS_CASTFORM_FORM_MONSTER(species) || IS_DEOXYS_FORM_MONSTER(species))
+            continue;
+        if (!HasFriendAreaSpaceForSpecies(species))
+            continue;
+
+        return species;
+    }
+
+    return MONSTER_NONE;
+}
+
+static bool8 TryAddBossRewardRecruit(void)
+{
+    Pokemon recruit;
+    DungeonLocation location;
+    s16 species;
+    u32 scaledLevel;
+
+    if (GetFriendSum_808D480() >= MAX_RECRUITED_POKEMON)
+        return FALSE;
+
+    species = SelectBossRewardRecruitSpecies();
+    if (species <= MONSTER_NONE)
+        return FALSE;
+
+    location = gDungeon->unk644.dungeonLocation;
+    CreateLevel1Pokemon(&recruit, species, NULL, 0, &location, NULL);
+
+    scaledLevel = (GetStrongestTeamLevel() * 80) / 100;
+    if (scaledLevel < 1)
+        scaledLevel = 1;
+    if (scaledLevel > 100)
+        scaledLevel = 100;
+
+    ApplyLevelGains(&recruit, (u8)scaledLevel);
+
+    if (TryAddPokemonToRecruited(&recruit) == NULL)
+        return FALSE;
+
+    CopyMonsterNameToBuffer(gFormatBuffer_Monsters[0], species);
+    DisplayDungeonMessage(NULL, sBossRewardRecruitSuccessText, TRUE);
+    return TRUE;
+}
+
+static s32 PromptBossRewardChoice(void)
+{
+    s32 choice;
+
+    do {
+        choice = DisplayDungeonMenuMessage(NULL, sBossRewardPrompt, sBossRewardMenu, 0x701);
+    } while (choice < BOSS_REWARD_RARE_ITEMS);
+
+    return choice;
+}
+
 static void TrySpawnBossRewards(void)
 {
     const BossFightConfig *bossFight;
     Tile *tile;
     s32 dropX;
     s32 dropY;
+    s32 rewardChoice;
 
     if (sCustomBossRewardsSpawned || !sCustomBossDefeated || !AreBossMinionsDefeated())
         return;
@@ -3400,12 +3620,27 @@ static void TrySpawnBossRewards(void)
     dropX = sStairsSpawnX;
     dropY = sStairsSpawnY + 1;  // One tile in front of stairs
 
-    if (bossFight->dropItem != ITEM_NOTHING)
-        TrySpawnBossLoot(bossFight->dropItem, dropX, dropY, "primary");
-    if (bossFight->secondaryDropLeft != ITEM_NOTHING)
-        TrySpawnBossLoot(bossFight->secondaryDropLeft, dropX - 1, dropY, "secondary-left");
-    if (bossFight->secondaryDropRight != ITEM_NOTHING)
-        TrySpawnBossLoot(bossFight->secondaryDropRight, dropX + 1, dropY, "secondary-right");
+    while (1) {
+        rewardChoice = PromptBossRewardChoice();
+        if (rewardChoice == BOSS_REWARD_RECRUIT) {
+            if (TryAddBossRewardRecruit())
+                break;
+            DisplayDungeonMessage(NULL, sBossRewardRecruitFailText, TRUE);
+            continue;
+        }
+        break;
+    }
+
+    if (rewardChoice == BOSS_REWARD_RARE_ITEMS) {
+        if (bossFight->dropItem != ITEM_NOTHING)
+            TrySpawnBossLoot(bossFight->dropItem, dropX, dropY, "primary");
+        if (bossFight->secondaryDropLeft != ITEM_NOTHING)
+            TrySpawnBossLoot(bossFight->secondaryDropLeft, dropX - 1, dropY, "secondary-left");
+        if (bossFight->secondaryDropRight != ITEM_NOTHING)
+            TrySpawnBossLoot(bossFight->secondaryDropRight, dropX + 1, dropY, "secondary-right");
+    } else if (rewardChoice == BOSS_REWARD_MONEY) {
+        TrySpawnBossMoney(dropX, dropY, BOSS_REWARD_POKE_QUANTITY_3000, "primary");
+    }
 
     // Update minimap and visibility
     UpdateTrapsVisibility();

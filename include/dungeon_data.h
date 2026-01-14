@@ -39,7 +39,7 @@ extern const u8 gInvalidItemIDs[16];
 extern const bool8 gTacticsTargetLeader[NUM_TACTICS];
 extern const s16 gReqTacticLvls[NUM_TACTICS];
 extern const s32 gReqIQSkillPts[NUM_IQ_SKILLS];
-extern const s32 gUnknown_810A3F0[100];
+extern const s32 gUnknown_810A3F0[101];
 extern const s16 gTypeGummiIQBoost[NUM_TYPES][NUMBER_OF_GUMMIS];
 extern const s16 gUnknown_810A808[NUM_TYPES][NUMBER_OF_GUMMIS];
 extern const FriendAreaSettings gFriendAreaSettings[NUM_FRIEND_AREAS];

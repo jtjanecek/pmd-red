@@ -755,6 +755,9 @@ static void InitEntityFromSpawnInfo(bool8 a0, Entity *entity, struct MonSpawnInf
     else {
         entInfo->level = monSpawnInfo->level;
     }
+    if (monSpawnInfo->species == MONSTER_KECLEON && entInfo->shopkeeper == SHOPKEEPER_MODE_SHOPKEEPER) {
+        entInfo->level = 90;
+    }
 
     entInfo->moveRandomly = monSpawnInfo->unk4;
     entInfo->IQ = 1;

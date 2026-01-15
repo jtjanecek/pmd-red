@@ -238,7 +238,7 @@ static void ApplySeedOverridesToCurrentFloor(void)
                 }
 
                 if (!found && emptyIndex >= 0) {
-                    SetSpeciesToExtract(&gDungeon->fileMonsterSpawns[emptyIndex], MONSTER_KECLEON);
+                    SetSpeciesLevelToExtract(&gDungeon->fileMonsterSpawns[emptyIndex], 90, MONSTER_KECLEON);
                     gDungeon->fileMonsterSpawns[emptyIndex].randNum[0] = 1;
                     gDungeon->fileMonsterSpawns[emptyIndex].randNum[1] = 1;
                     MGBA_Warnf("[Kecleon] Injected Kecleon into spawn table at index %d for sprite load", emptyIndex);

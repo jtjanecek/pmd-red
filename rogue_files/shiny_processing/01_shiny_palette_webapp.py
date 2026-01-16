@@ -478,6 +478,9 @@ INDEX_HTML = """<!doctype html>
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
+    .palette-panel {
+      justify-content: center;
+    }
     label {
       font-weight: 600;
       margin-right: 6px;
@@ -718,7 +721,7 @@ INDEX_HTML = """<!doctype html>
     <img id="preview" alt="Preview" />
   </div>
 
-  <div class="panel" style="margin-top:16px;">
+  <div class="panel palette-panel" style="margin-top:16px;">
     <div>
       <label for="palette">Palette</label>
       <select id="palette"></select>

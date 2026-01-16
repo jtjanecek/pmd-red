@@ -70,6 +70,30 @@ def load_vanilla_palettes(path):
     return result
 
 
+def load_monster_dex_ids(path):
+    if not os.path.isfile(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    result = {}
+    for entry in data:
+        name = entry.get("name", "")
+        dex_internal = entry.get("dexInternal")
+        if not dex_internal:
+            continue
+        try:
+            dex_id = int(dex_internal[0])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if dex_id <= 0:
+            continue
+        result[normalize_monster_name(name)] = dex_id
+    return result
+
+
 def read_png_chunks(data):
     if not data.startswith(PNG_SIGNATURE):
         raise ValueError("Not a PNG file")
@@ -100,6 +124,23 @@ def write_png(chunks):
         crc = binascii.crc32(chunk_data, crc) & 0xFFFFFFFF
         out += struct.pack(">I", crc)
     return bytes(out)
+
+
+def strip_apng(data):
+    if b"acTL" not in data:
+        return data
+    try:
+        chunks = read_png_chunks(data)
+    except Exception:
+        return data
+    filtered = [
+        (chunk_type, chunk_data)
+        for chunk_type, chunk_data in chunks
+        if chunk_type not in (b"acTL", b"fcTL", b"fdAT")
+    ]
+    if not any(chunk_type == b"IDAT" for chunk_type, _ in filtered):
+        return data
+    return write_png(filtered)
 
 
 def paeth_predictor(a, b, c):
@@ -263,12 +304,44 @@ def apply_overrides(pixels, overrides):
     return new_pixels
 
 
+def build_sprite_index(folder):
+    if not os.path.isdir(folder):
+        return {}
+    candidates = {}
+    for name in os.listdir(folder):
+        if not name.lower().endswith(".png"):
+            continue
+        match = re.match(r"^.+?_(\d{3})([A-Za-z]+)?(?:_s)?\.png$", name)
+        if not match:
+            continue
+        dex_id = int(match.group(1))
+        suffix = match.group(2) or ""
+        candidates.setdefault(dex_id, []).append((suffix, name))
+    index = {}
+    for dex_id, entries in candidates.items():
+        # Prefer base sprites when form-specific suffixes exist.
+        entries.sort(key=lambda item: (item[0] != "", item[0]))
+        index[dex_id] = entries[0][1]
+    return index
+
+
 class AppState:
     def __init__(self, frames_dir, monster_data_path):
         self.frames_dir = frames_dir
         self.grid_dir = os.path.join(os.path.dirname(frames_dir), "shiny_idle_grids")
         self.cache = {}
         self.vanilla_palettes = load_vanilla_palettes(monster_data_path)
+        self.dex_ids = load_monster_dex_ids(monster_data_path)
+        self.sprite_root = os.path.join(os.path.dirname(__file__), "shiny-download")
+        self.sprite_sources = {
+            "firered_normal": os.path.join(self.sprite_root, "firered_normal"),
+            "firered_shiny": os.path.join(self.sprite_root, "firered_shiny"),
+            "emerald_normal": os.path.join(self.sprite_root, "emerald_normal"),
+            "emerald_shiny": os.path.join(self.sprite_root, "emerald_shiny"),
+        }
+        self.sprite_indices = {
+            key: build_sprite_index(path) for key, path in self.sprite_sources.items()
+        }
 
     def list_monsters(self):
         if not os.path.isdir(self.frames_dir):
@@ -455,6 +528,28 @@ class AppState:
             return None
         return self.vanilla_palettes.get(normalize_monster_name(mon))
 
+    def get_dex_id(self, mon):
+        return self.dex_ids.get(normalize_monster_name(mon))
+
+    def get_dex_sprite(self, mon, variant, static=False):
+        dex_id = self.get_dex_id(mon)
+        if dex_id is None:
+            raise FileNotFoundError(f"Missing dex id for {mon}.")
+        source = self.sprite_sources.get(variant)
+        if source is None:
+            raise FileNotFoundError(f"Unknown sprite variant: {variant}.")
+        filename = self.sprite_indices.get(variant, {}).get(dex_id)
+        if not filename:
+            raise FileNotFoundError(f"Missing sprite for dex id {dex_id}.")
+        path = os.path.join(source, filename)
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"Missing sprite file: {filename}.")
+        with open(path, "rb") as f:
+            data = f.read()
+        if static:
+            return strip_apng(data)
+        return data
+
 
 INDEX_HTML = """<!doctype html>
 <html lang="en">
@@ -478,6 +573,35 @@ INDEX_HTML = """<!doctype html>
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
+    .sprite-panel {
+      justify-content: center;
+    }
+    .sprite-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .sprite-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .sprite-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+    }
+    .dex-sprite-img {
+      image-rendering: pixelated;
+      border: 1px solid #d9d9d9;
+      background: #f6f5f2;
+      display: block;
+    }
+    .dex-sprite-img.sprite-missing {
+      opacity: 0.35;
+    }
     .palette-panel {
       justify-content: center;
     }
@@ -497,6 +621,24 @@ INDEX_HTML = """<!doctype html>
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+    .preview-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .preview-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .preview-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      user-select: none;
     }
     .grid-output {
       align-items: flex-start;
@@ -668,6 +810,9 @@ INDEX_HTML = """<!doctype html>
     #preview {
       image-rendering: pixelated;
     }
+    #preview-base {
+      image-rendering: pixelated;
+    }
     #overrides {
       display: grid;
       grid-template-columns: repeat(16, minmax(40px, 1fr));
@@ -715,10 +860,46 @@ INDEX_HTML = """<!doctype html>
       <label for="grid-scale">Grid Scale</label>
       <select id="grid-scale"></select>
     </div>
+    <div>
+      <label for="pause-emerald">
+        <input type="checkbox" id="pause-emerald" checked />
+        Pause Emerald
+      </label>
+    </div>
+  </div>
+
+  <div class="panel sprite-panel">
+    <div class="sprite-row">
+      <div class="sprite-cell">
+        <div class="sprite-title">FireRed Normal</div>
+        <img id="dex-sprite-firered-normal" class="dex-sprite-img" alt="FireRed Normal sprite" />
+      </div>
+      <div class="sprite-cell">
+        <div class="sprite-title">FireRed Shiny</div>
+        <img id="dex-sprite-firered-shiny" class="dex-sprite-img" alt="FireRed Shiny sprite" />
+      </div>
+      <div class="sprite-cell">
+        <div class="sprite-title">Emerald Normal</div>
+        <img id="dex-sprite-emerald-normal" class="dex-sprite-img" alt="Emerald Normal sprite" />
+      </div>
+      <div class="sprite-cell">
+        <div class="sprite-title">Emerald Shiny</div>
+        <img id="dex-sprite-emerald-shiny" class="dex-sprite-img" alt="Emerald Shiny sprite" />
+      </div>
+    </div>
   </div>
 
   <div class="preview-wrap">
-    <img id="preview" alt="Preview" />
+    <div class="preview-stack">
+      <div class="preview-row">
+        <div class="preview-label">Before</div>
+        <img id="preview-base" alt="Preview (before)" />
+      </div>
+      <div class="preview-row">
+        <div class="preview-label">After</div>
+        <img id="preview" alt="Preview (after)" />
+      </div>
+    </div>
   </div>
 
   <div class="panel palette-panel" style="margin-top:16px;">
@@ -769,8 +950,10 @@ INDEX_HTML = """<!doctype html>
     const paletteSelect = document.getElementById("palette");
     const scaleSelect = document.getElementById("scale");
     const gridScaleSelect = document.getElementById("grid-scale");
+    const pauseEmerald = document.getElementById("pause-emerald");
     const overridesWrap = document.getElementById("overrides");
     const preview = document.getElementById("preview");
+    const previewBase = document.getElementById("preview-base");
     const statusEl = document.getElementById("status");
     const gridImg = document.getElementById("grid");
     const gridLabels = document.getElementById("grid-labels");
@@ -781,12 +964,21 @@ INDEX_HTML = """<!doctype html>
     const paletteLabels = document.getElementById("palette-labels");
     const paletteSwatches = document.getElementById("palette-swatches");
     const paletteAll = document.getElementById("palette-all");
+    const dexSpriteImgs = {
+      firered_normal: document.getElementById("dex-sprite-firered-normal"),
+      firered_shiny: document.getElementById("dex-sprite-firered-shiny"),
+      emerald_normal: document.getElementById("dex-sprite-emerald-normal"),
+      emerald_shiny: document.getElementById("dex-sprite-emerald-shiny"),
+    };
     const BODY_PART_SCALE = 0.4;
     let debounceTimer = null;
     let currentUrl = null;
+    let baseUrl = null;
     let lastPaletteMon = null;
     let lastPaletteIdx = null;
     let lastAllPalettesMon = null;
+    let lastBaseMon = null;
+    let lastBasePalette = null;
     let vanillaPalette = null;
     const INDEX_DEBUG_COLORS = [
       "#000000",
@@ -902,6 +1094,49 @@ INDEX_HTML = """<!doctype html>
         }
         img.style.width = (img.naturalWidth * scale) + "px";
         img.style.height = (img.naturalHeight * scale) + "px";
+      });
+    }
+
+    function syncBasePreviewScale() {
+      if (!previewBase.naturalWidth) {
+        return;
+      }
+      const scale = Number(scaleSelect.value);
+      previewBase.style.width = (previewBase.naturalWidth * scale) + "px";
+      previewBase.style.height = (previewBase.naturalHeight * scale) + "px";
+    }
+
+    function syncDexSpriteScale() {
+      const scale = Math.max(0.5, Number(scaleSelect.value) * 0.5);
+      Object.values(dexSpriteImgs).forEach((img) => {
+        if (!img || !img.naturalWidth) {
+          return;
+        }
+        img.style.width = (img.naturalWidth * scale) + "px";
+        img.style.height = (img.naturalHeight * scale) + "px";
+      });
+    }
+
+    function updateDexSprites(mon) {
+      const paused = pauseEmerald && pauseEmerald.checked;
+      Object.entries(dexSpriteImgs).forEach(([variant, img]) => {
+        if (!img) {
+          return;
+        }
+        const isEmerald = variant.startsWith("emerald");
+        const staticFlag = isEmerald && paused ? "1" : "0";
+        img.classList.remove("sprite-missing");
+        img.onload = () => {
+          img.classList.remove("sprite-missing");
+          syncDexSpriteScale();
+        };
+        img.onerror = () => {
+          img.classList.add("sprite-missing");
+        };
+        img.src =
+          `/api/dex_sprite?mon=${encodeURIComponent(mon)}&variant=${variant}` +
+          `&static=${staticFlag}` +
+          `&v=${Date.now()}`;
       });
     }
 
@@ -1032,15 +1267,51 @@ INDEX_HTML = """<!doctype html>
       updateGridLabelsVanilla();
     }
 
+    async function renderBasePreview(mon) {
+      const palette = vanillaPalette ?? 0;
+      if (mon === lastBaseMon && palette === lastBasePalette) {
+        return;
+      }
+      const payload = { mon, palette, overrides: Array(16).fill(null) };
+      let response = null;
+      try {
+        response = await fetch("/api/render", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        return;
+      }
+      if (!response.ok) {
+        return;
+      }
+      const blob = await response.blob();
+      if (baseUrl) {
+        URL.revokeObjectURL(baseUrl);
+      }
+      baseUrl = URL.createObjectURL(blob);
+      previewBase.onload = () => {
+        const scale = Number(scaleSelect.value);
+        previewBase.style.width = (previewBase.naturalWidth * scale) + "px";
+        previewBase.style.height = (previewBase.naturalHeight * scale) + "px";
+      };
+      previewBase.src = baseUrl;
+      lastBaseMon = mon;
+      lastBasePalette = palette;
+    }
+
     async function handlePokemonChange() {
       const mon = pokemonSelect.value;
       resetOverrides();
+      updateDexSprites(mon);
       vanillaPalette = null;
       updateGridLabelsVanilla();
       await updateAllPalettes(mon);
       if (vanillaPalette !== null && vanillaPalette !== undefined) {
         paletteSelect.value = vanillaPalette.toString();
       }
+      renderBasePreview(mon);
       lastAllPalettesMon = mon;
       lastPaletteMon = null;
       lastPaletteIdx = null;
@@ -1128,6 +1399,8 @@ INDEX_HTML = """<!doctype html>
       };
       gridImg.src = gridUrl;
       syncBodyPartScale();
+      syncBasePreviewScale();
+      syncDexSpriteScale();
     }
 
     async function init() {
@@ -1169,6 +1442,9 @@ INDEX_HTML = """<!doctype html>
       paletteSelect.addEventListener("change", scheduleRender);
       scaleSelect.addEventListener("change", scheduleRender);
       gridScaleSelect.addEventListener("change", scheduleRender);
+      pauseEmerald.addEventListener("change", () => {
+        updateDexSprites(pokemonSelect.value);
+      });
       if (mons.length > 0) {
         pokemonSelect.value = mons[0];
       }
@@ -1301,6 +1577,18 @@ class Handler(BaseHTTPRequestHandler):
             part_idx = max(0, min(15, part_idx))
             try:
                 png = self.server.app_state.render_body_part(mon, palette, part_idx)
+            except Exception as exc:
+                self._send(404, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
+                return
+            self._send(200, "image/png", png)
+            return
+        if parsed.path == "/api/dex_sprite":
+            params = parse_qs(parsed.query)
+            mon = params.get("mon", [""])[0]
+            variant = params.get("variant", [""])[0]
+            static = params.get("static", ["0"])[0] == "1"
+            try:
+                png = self.server.app_state.get_dex_sprite(mon, variant, static=static)
             except Exception as exc:
                 self._send(404, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
                 return

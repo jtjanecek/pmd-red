@@ -2651,15 +2651,8 @@ u32 BufferDungeonRequirementsText(u8 dungeonIndex, s32 speciesId_, u8 *buffer, b
         }
     }
 
-    // Remove entry party-size limits for Level 1 dungeons (allow full party)
-    maxPartyMembers = gDungeons[dungeonIndex].maxPartyMembers;
-    if (IsLevelResetDungeon(dungeonIndex)) {
-        maxPartyMembers = MAX_TEAM_MEMBERS; // allow 4
-    } else {
-        if (!requireHm && maxPartyMembers > 3) {
-            maxPartyMembers = 3;
-        }
-    }
+    // Force the member cap to 4 for all dungeons.
+    maxPartyMembers = MAX_TEAM_MEMBERS;
     if (counter > maxPartyMembers) {
         if (maxPartyMembers == 1) {
             FormatString(gText_OnlyOneMonMayEnterDungeon,text,&text[TXT_BUFFER_LEN], 0);

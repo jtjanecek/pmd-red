@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import pathlib
+import re
 import sys
 from collections import OrderedDict
 from typing import Dict, List
@@ -16,6 +18,15 @@ PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 DEFAULT_LOG_PATH = PROJECT_ROOT / "execution.log"
 DEFAULT_OUT_PATH = PROJECT_ROOT / "gen" / "seed_dump.csv"
 ITEM_POKE_ID = "105"  # ITEM_POKE constant from include/constants/item.h
+MONSTER_DATA_PATH = PROJECT_ROOT / "data" / "monster" / "monster_data.json"
+MONSTER_NAMES_PATH = PROJECT_ROOT / "data" / "monster" / "monster_names.s"
+
+GLOBAL_COLUMN_REMOVALS = {"species", "boss_species"}
+SECTION_COLUMN_REMOVALS = {
+    "spawn_range": {"start_idx", "end_idx"},
+    "spawn_entry": {"range_start_idx", "range_end_idx"},
+}
+SPECIES_NAME_COLUMNS = ("species_name", "boss_species_name")
 
 
 def extract_payload(line: str) -> str | None:
@@ -26,22 +37,116 @@ def extract_payload(line: str) -> str | None:
     return line[idx:].strip()
 
 
+def clean_value(value: str) -> str:
+    """Strip leading control tokens (e.g., '?O') and non-printable chars."""
+    if not isinstance(value, str):
+        return str(value)
+    cleaned = value
+    # Remove leading '?X' tokens commonly produced by control bytes.
+    while cleaned.startswith("?") and len(cleaned) > 1 and cleaned[1].isalnum():
+        cleaned = cleaned[2:].lstrip()
+    # Keep only printable ASCII.
+    cleaned = "".join(ch for ch in cleaned if 32 <= ord(ch) < 127)
+    return cleaned.strip()
+
+
+def parse_monster_names(path: pathlib.Path) -> Dict[str, str]:
+    names: Dict[str, str] = {}
+    current_label = None
+    try:
+        with path.open(encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if line.endswith(":"):
+                    label = line[:-1]
+                    current_label = label if label.startswith("MonsterName") else None
+                    continue
+                if current_label and (line.startswith(".string") or line.startswith(".asciz")):
+                    match = re.search(r"\"([^\"]*)\"", line)
+                    if not match:
+                        continue
+                    value = match.group(1).replace("\\0", "")
+                    names[current_label] = value
+                    current_label = None
+    except FileNotFoundError:
+        return {}
+    return names
+
+
+def load_bst_lookup() -> Dict[str, str]:
+    if not MONSTER_DATA_PATH.exists() or not MONSTER_NAMES_PATH.exists():
+        return {}
+    names_by_label = parse_monster_names(MONSTER_NAMES_PATH)
+    try:
+        with MONSTER_DATA_PATH.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+    except FileNotFoundError:
+        return {}
+
+    bst_by_name: Dict[str, str] = {}
+    for entry in data:
+        label = entry.get("name")
+        display = names_by_label.get(label)
+        if not display:
+            continue
+        base_hp = int(entry.get("baseHP", 0))
+        atk_sp = entry.get("baseAtkSpAtk") or [0, 0]
+        def_sp = entry.get("baseDefSpDef") or [0, 0]
+        try:
+            bst = base_hp + int(atk_sp[0]) + int(atk_sp[1]) + int(def_sp[0]) + int(def_sp[1])
+        except (TypeError, ValueError, IndexError):
+            continue
+        bst_value = str(bst)
+        if display not in bst_by_name:
+            bst_by_name[display] = bst_value
+        cleaned = clean_value(display)
+        if cleaned and cleaned not in bst_by_name:
+            bst_by_name[cleaned] = bst_value
+    return bst_by_name
+
+
+def insert_bst_header(headers: List[str]) -> List[str]:
+    if "bst" in headers:
+        return headers
+    for i, name in enumerate(headers):
+        if name in SPECIES_NAME_COLUMNS:
+            return headers[:i + 1] + ["bst"] + headers[i + 1:]
+    return headers
+
+
+def apply_seed_dump_overrides(rows_by_section: OrderedDict[str, List[Dict[str, str]]],
+                              headers_by_section: Dict[str, List[str]]) -> None:
+    bst_lookup = load_bst_lookup()
+    for section, rows in rows_by_section.items():
+        removals = set(GLOBAL_COLUMN_REMOVALS)
+        removals.update(SECTION_COLUMN_REMOVALS.get(section, set()))
+        headers = headers_by_section.get(section)
+        if headers:
+            headers = [h for h in headers if h not in removals]
+            if any(h in SPECIES_NAME_COLUMNS for h in headers):
+                headers = insert_bst_header(headers)
+            headers_by_section[section] = headers
+        for row in rows:
+            for column in removals:
+                row.pop(column, None)
+            bst_value = None
+            for name_key in SPECIES_NAME_COLUMNS:
+                species_name = row.get(name_key)
+                if not species_name:
+                    continue
+                bst_value = bst_lookup.get(species_name)
+                if bst_value is None:
+                    bst_value = bst_lookup.get(clean_value(species_name))
+                if bst_value is not None:
+                    break
+            if bst_value is not None:
+                row["bst"] = bst_value
+
+
 def parse_log(path: pathlib.Path) -> tuple[OrderedDict[str, List[Dict[str, str]]], Dict[str, List[str]]]:
     headers_by_section: Dict[str, List[str]] = {}
     rows_by_section: OrderedDict[str, List[Dict[str, str]]] = OrderedDict()
     section_counters: Dict[str, int] = {}
-
-    def clean_value(value: str) -> str:
-        """Strip leading control tokens (e.g., '?O') and non-printable chars."""
-        if not isinstance(value, str):
-            return value
-        cleaned = value
-        # Remove leading '?X' tokens commonly produced by control bytes.
-        while cleaned.startswith("?") and len(cleaned) > 1 and cleaned[1].isalnum():
-            cleaned = cleaned[2:].lstrip()
-        # Keep only printable ASCII.
-        cleaned = "".join(ch for ch in cleaned if 32 <= ord(ch) < 127)
-        return cleaned.strip()
 
     try:
         with path.open(encoding="utf-8") as handle:
@@ -180,6 +285,8 @@ def main() -> int:
     if not rows_by_section:
         print("No SEED_DUMP rows found.")
         return 0
+
+    apply_seed_dump_overrides(rows_by_section, headers_by_section)
 
     csv_headers = build_csv_headers(rows_by_section, headers_by_section)
     write_csv(rows_by_section, csv_headers, args.out)

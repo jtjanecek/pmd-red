@@ -481,6 +481,8 @@ INDEX_HTML = """<!doctype html>
     }
     .grid-labels span {
       text-align: center;
+      justify-self: center;
+      align-self: center;
     }
     .palette-preview {
       display: grid;
@@ -584,7 +586,11 @@ INDEX_HTML = """<!doctype html>
       user-select: none;
     }
     .palette-vanilla {
-      color: #b00020;
+      color: #2c3a64;
+      background: #e4e6ee;
+      border-radius: 999px;
+      padding: 2px 10px;
+      box-shadow: inset 0 0 0 1px #d2d6e4;
     }
     .palette-labels,
     .palette-swatches {
@@ -624,7 +630,11 @@ INDEX_HTML = """<!doctype html>
       user-select: none;
     }
     .override-used {
-      color: #b00020;
+      color: #2c3a64;
+      background: #e4e6ee;
+      border-radius: 999px;
+      padding: 2px 10px;
+      box-shadow: inset 0 0 0 1px #d2d6e4;
     }
     .status {
       min-height: 20px;
@@ -633,6 +643,10 @@ INDEX_HTML = """<!doctype html>
   </style>
 </head>
 <body>
+  <div class="panel" style="margin-bottom:8px;">
+    <div>Join the conversation here:</div>
+    <a href="https://discord.gg/6AvV9mRQCC">discord.gg/6AvV9mRQCC</a>
+  </div>
   <div class="panel">
     <div>
       <label for="pokemon">Pokemon</label>
@@ -901,10 +915,12 @@ INDEX_HTML = """<!doctype html>
         const label = document.createElement("div");
         label.className = "palette-index";
         const paletteId = Number(entry.palette);
-        label.textContent = `Palette ${paletteId.toString().padStart(2, "0")}`;
+        const labelText = document.createElement("span");
+        labelText.textContent = `Palette ${paletteId.toString().padStart(2, "0")}`;
         if (vanillaPalette === paletteId) {
-          label.classList.add("palette-vanilla");
+          labelText.classList.add("palette-vanilla");
         }
+        label.appendChild(labelText);
         row.appendChild(label);
 
         const swatches = document.createElement("div");

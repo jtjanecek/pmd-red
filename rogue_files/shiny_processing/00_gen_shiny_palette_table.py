@@ -30,6 +30,44 @@ DIRECTION_NAMES = [
 ]
 
 
+def normalize_header_label(value):
+    if value is None:
+        return ""
+    label = value.strip().lower()
+    if not label:
+        return ""
+    label = re.sub(r"[^a-z0-9]+", "_", label)
+    return label.strip("_")
+
+
+def find_first_index(labels, candidates):
+    for idx, label in enumerate(labels):
+        if label in candidates:
+            return idx
+    return None
+
+
+def resolve_remap_columns(labels):
+    mapping = {}
+    for idx in range(16):
+        candidates = [
+            str(idx),
+            f"index{idx}_remap",
+            f"index{idx}",
+        ]
+        col_idx = find_first_index(labels, set(candidates))
+        if col_idx is None:
+            return None
+        mapping[idx] = col_idx
+    return mapping
+
+
+def get_cell(row, idx):
+    if idx is None or idx >= len(row):
+        return ""
+    return row[idx].strip()
+
+
 def ensure_gen_monster_data(dest_path, source_path):
     norm_dest = os.path.normpath(dest_path)
     parts = norm_dest.split(os.sep)
@@ -122,45 +160,64 @@ FONT_SPACING = 1
 
 def load_shiny_palette_csv(path):
     with open(path, newline="") as csv_file:
-        reader = csv.DictReader(csv_file)
-        if reader.fieldnames is None:
-            raise ValueError("CSV header is missing")
-        required = {"id", "name", "shiny_palette_id", *REMAP_COLUMNS}
-        missing = required - set(reader.fieldnames)
-        if missing:
-            raise ValueError(f"CSV missing columns: {', '.join(sorted(missing))}")
+        reader = csv.reader(csv_file)
+        header = None
+        id_idx = None
+        palette_idx = None
+        remap_columns = None
+        for row in reader:
+            if not row or all(not cell.strip() for cell in row):
+                continue
+            normalized = [normalize_header_label(cell) for cell in row]
+            if not any(normalized):
+                continue
+            id_idx = find_first_index(normalized, {"id", "number"})
+            palette_idx = find_first_index(
+                normalized, {"shiny_palette_id", "shiny_palette"}
+            )
+            remap_columns = resolve_remap_columns(normalized)
+            if id_idx is None or palette_idx is None or remap_columns is None:
+                continue
+            header = row
+            break
+
+        if header is None:
+            raise ValueError("CSV header is missing or invalid")
 
         rows = []
         for row in reader:
-            if not row:
+            if not row or all(not cell.strip() for cell in row):
                 continue
             try:
-                monster_id = int(row["id"])
+                monster_id = int(get_cell(row, id_idx))
             except (TypeError, ValueError) as exc:
-                raise ValueError(f"Invalid id value: {row.get('id')}") from exc
-            try:
-                palette_id = int(row["shiny_palette_id"])
-            except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    f"Invalid shiny_palette_id value: {row.get('shiny_palette_id')}"
-                ) from exc
+                raise ValueError(f"Invalid id value: {get_cell(row, id_idx)}") from exc
+            palette_raw = get_cell(row, palette_idx)
+            if palette_raw == "" or palette_raw.lower() == "null":
+                palette_id = 0
+            else:
+                try:
+                    palette_id = int(palette_raw)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        f"Invalid shiny_palette_id value: {palette_raw}"
+                    ) from exc
             remap = []
-            for col in REMAP_COLUMNS:
-                raw = row.get(col, "")
-                if raw is None:
-                    remap.append(None)
-                    continue
-                raw = raw.strip()
+            for idx in range(16):
+                col_idx = remap_columns.get(idx)
+                raw = get_cell(row, col_idx)
                 if raw == "" or raw.lower() == "null":
                     remap.append(None)
                     continue
                 try:
                     remap_val = int(raw)
                 except (TypeError, ValueError) as exc:
-                    raise ValueError(f"Invalid {col} value: {raw}") from exc
+                    raise ValueError(f"Invalid index{idx}_remap value: {raw}") from exc
                 if remap_val < 0 or remap_val > MAX_REMAP_INDEX:
                     raise ValueError(
-                        f"{col} out of range (0-{MAX_REMAP_INDEX}): {remap_val}"
+                        "index{}_remap out of range (0-{}): {}".format(
+                            idx, MAX_REMAP_INDEX, remap_val
+                        )
                     )
                 remap.append(remap_val)
             rows.append((monster_id, palette_id, remap))

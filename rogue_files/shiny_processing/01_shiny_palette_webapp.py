@@ -10,6 +10,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+BODY_PART_BG = (246, 245, 242)
+BODY_PART_GRAY_MIN = 205
+BODY_PART_GRAY_RANGE = 30
 
 DIRECTION_NAMES = [
     "south",
@@ -388,7 +391,7 @@ class AppState:
                         used.add(idx)
         return sorted(used)
 
-    def render_index_map(self, mon, palette_idx):
+    def _get_reference_sprite(self, mon, palette_idx):
         palette_dir = os.path.join(
             self.frames_dir, mon, f"palette_{palette_idx:02d}"
         )
@@ -406,7 +409,10 @@ class AppState:
         if path is None or not os.path.isfile(path):
             raise FileNotFoundError(f"Missing sprites for {mon} palette {palette_idx}.")
 
-        width, height, pixels, _ = decode_png_indexed(path)
+        return decode_png_indexed(path)
+
+    def render_index_map(self, mon, palette_idx):
+        width, height, pixels, _ = self._get_reference_sprite(mon, palette_idx)
         rgba = bytearray(width * height * 4)
         for y in range(height):
             row = pixels[y]
@@ -416,6 +422,32 @@ class AppState:
                 a = 0 if idx == 0 else 255
                 pos = (y * width + x) * 4
                 rgba[pos:pos + 4] = bytes((r, g, b, a))
+        return write_png_rgba_bytes(width, height, rgba)
+
+    def render_body_part(self, mon, palette_idx, part_idx):
+        if part_idx < 0 or part_idx > 15:
+            raise ValueError("Invalid body part index.")
+        width, height, pixels, palette = self._get_reference_sprite(mon, palette_idx)
+        bg_r, bg_g, bg_b = BODY_PART_BG
+        rgba = bytearray(width * height * 4)
+        shade_map = {}
+        for y in range(height):
+            row = pixels[y]
+            for x in range(width):
+                idx = row[x]
+                pos = (y * width + x) * 4
+                if idx == part_idx and idx < len(palette):
+                    rgba[pos:pos + 4] = bytes((0, 0, 0, 255))
+                elif idx == 0:
+                    rgba[pos:pos + 4] = bytes((bg_r, bg_g, bg_b, 255))
+                else:
+                    shade = shade_map.get(idx)
+                    if shade is None:
+                        shade = BODY_PART_GRAY_MIN + (
+                            (idx * 17 + part_idx * 7) % BODY_PART_GRAY_RANGE
+                        )
+                        shade_map[idx] = shade
+                    rgba[pos:pos + 4] = bytes((shade, shade, shade, 255))
         return write_png_rgba_bytes(width, height, rgba)
 
     def get_vanilla_palette(self, mon):
@@ -517,6 +549,26 @@ INDEX_HTML = """<!doctype html>
       padding: 4px;
       border: 1px solid #d9d9d9;
       background: #f4f4f4;
+    }
+    .body-part-wrap {
+      display: grid;
+      grid-template-columns: repeat(16, minmax(40px, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+      align-items: center;
+      justify-items: center;
+    }
+    .body-part-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+    }
+    .body-part-img {
+      image-rendering: pixelated;
+      display: block;
+      border: 1px solid #d9d9d9;
+      background: #f6f5f2;
     }
     #index-map {
       image-rendering: pixelated;
@@ -677,6 +729,7 @@ INDEX_HTML = """<!doctype html>
     <strong>Body Part Color Overrides</strong>
   </div>
   <div id="overrides"></div>
+  <div id="body-part-wrap" class="body-part-wrap"></div>
   <div class="status" id="status"></div>
 
   <div class="palette-preview">
@@ -721,9 +774,11 @@ INDEX_HTML = """<!doctype html>
     const selectedPaletteLabel = document.getElementById("selected-palette-label");
     const indexMap = document.getElementById("index-map");
     const indexLegend = document.getElementById("index-legend");
+    const bodyPartWrap = document.getElementById("body-part-wrap");
     const paletteLabels = document.getElementById("palette-labels");
     const paletteSwatches = document.getElementById("palette-swatches");
     const paletteAll = document.getElementById("palette-all");
+    const BODY_PART_SCALE = 0.4;
     let debounceTimer = null;
     let currentUrl = null;
     let lastPaletteMon = null;
@@ -836,6 +891,39 @@ INDEX_HTML = """<!doctype html>
       });
     }
 
+    function syncBodyPartScale() {
+      const scale = Math.max(1, Number(scaleSelect.value) * BODY_PART_SCALE);
+      bodyPartWrap.querySelectorAll("img").forEach((img) => {
+        if (!img.naturalWidth) {
+          return;
+        }
+        img.style.width = (img.naturalWidth * scale) + "px";
+        img.style.height = (img.naturalHeight * scale) + "px";
+      });
+    }
+
+    function updateBodyPartSprites(used, mon, palette) {
+      bodyPartWrap.innerHTML = "";
+      const usedSet = new Set((used || []).filter((idx) => idx > 0));
+      for (let idx = 0; idx < 16; idx++) {
+        const cell = document.createElement("div");
+        cell.className = "body-part-cell";
+        if (usedSet.has(idx)) {
+          const img = document.createElement("img");
+          img.className = "body-part-img";
+          img.alt = `Body Part ${idx.toString().padStart(2, "0")}`;
+          img.onload = () => {
+            syncBodyPartScale();
+          };
+          img.src =
+            `/api/body_part?mon=${encodeURIComponent(mon)}&palette=${palette}` +
+            `&index=${idx}&v=${Date.now()}`;
+          cell.appendChild(img);
+        }
+        bodyPartWrap.appendChild(cell);
+      }
+    }
+
     function resetOverrides() {
       overridesWrap.querySelectorAll("input").forEach((input) => {
         input.value = "";
@@ -866,10 +954,12 @@ INDEX_HTML = """<!doctype html>
       paletteLabels.innerHTML = "";
       paletteSwatches.innerHTML = "";
       const count = colors.length || 0;
+      updateIndexLegend(used);
+      updateBodyPartSprites(used, mon, palette);
       if (count === 0) {
+        updateOverrideUsage([]);
         return;
       }
-      updateIndexLegend(used);
       const columns = `repeat(${count}, 22px)`;
       paletteLabels.style.gridTemplateColumns = columns;
       paletteSwatches.style.gridTemplateColumns = columns;
@@ -1034,6 +1124,7 @@ INDEX_HTML = """<!doctype html>
         syncGridLabelsWidth();
       };
       gridImg.src = gridUrl;
+      syncBodyPartScale();
     }
 
     async function init() {
@@ -1189,6 +1280,24 @@ class Handler(BaseHTTPRequestHandler):
             palette = max(0, min(15, palette))
             try:
                 png = self.server.app_state.render_index_map(mon, palette)
+            except Exception as exc:
+                self._send(404, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
+                return
+            self._send(200, "image/png", png)
+            return
+        if parsed.path == "/api/body_part":
+            params = parse_qs(parsed.query)
+            mon = params.get("mon", [""])[0]
+            try:
+                palette = int(params.get("palette", ["0"])[0])
+                part_idx = int(params.get("index", ["0"])[0])
+            except ValueError:
+                self._send(400, "text/plain; charset=utf-8", b"Invalid body part.")
+                return
+            palette = max(0, min(15, palette))
+            part_idx = max(0, min(15, part_idx))
+            try:
+                png = self.server.app_state.render_body_part(mon, palette, part_idx)
             except Exception as exc:
                 self._send(404, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
                 return

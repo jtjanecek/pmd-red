@@ -28,6 +28,17 @@ SECTION_COLUMN_REMOVALS = {
     "spawn_entry": {"range_start_idx", "range_end_idx"},
 }
 SPECIES_NAME_COLUMNS = ("species_name", "boss_species_name")
+DIFFICULTY_LABELS = {
+    0: "Normal",
+    1: "Hard",
+    2: "Nightmare",
+}
+RECRUIT_SETTING_LABELS = {
+    0: "Normal",
+    1: "All Recruitable",
+    2: "No Recruitable",
+    3: "Auto Recruit All",
+}
 
 
 def extract_payload(line: str) -> str | None:
@@ -227,6 +238,43 @@ def build_csv_headers(rows_by_section: OrderedDict[str, List[Dict[str, str]]],
     return columns
 
 
+def build_run_settings_line(rows_by_section: OrderedDict[str, List[Dict[str, str]]]) -> str | None:
+    settings_row = None
+    settings_rows = rows_by_section.get("save_overrides") or []
+    if settings_rows:
+        settings_row = settings_rows[0]
+    else:
+        settings_row = {}
+
+    seed = settings_row.get("seed")
+    if not seed:
+        meta_rows = rows_by_section.get("meta") or []
+        if meta_rows:
+            seed = meta_rows[0].get("seed")
+
+    items = []
+    if seed:
+        items.append(f"Seed {seed}")
+
+    diff_value = parse_int(settings_row.get("diff"))
+    if diff_value is not None:
+        diff_label = DIFFICULTY_LABELS.get(diff_value, f"Unknown ({diff_value})")
+        items.append(f"Difficulty {diff_label}")
+
+    skip_value = parse_int(settings_row.get("skip"))
+    if skip_value is not None:
+        items.append(f"Skip Basic Rescues {'On' if skip_value else 'Off'}")
+
+    recruit_value = parse_int(settings_row.get("recruit"))
+    if recruit_value is not None:
+        recruit_label = RECRUIT_SETTING_LABELS.get(recruit_value, f"Unknown ({recruit_value})")
+        items.append(f"Recruit {recruit_label}")
+
+    if not items:
+        return None
+    return "Run Settings: " + " | ".join(items)
+
+
 def write_csv(rows_by_section: OrderedDict[str, List[Dict[str, str]]],
               headers: List[str],
               out_path: pathlib.Path) -> None:
@@ -416,6 +464,7 @@ def write_spawn_range_plots(rows_by_section: OrderedDict[str, List[Dict[str, str
                                     pad=0.08, fraction=0.05)
             colorbar.set_label("BST")
 
+    settings_line = build_run_settings_line(rows_by_section)
     with PdfPages(out_path) as pdf:
         for dungeon_id in sorted(by_dungeon):
             entries = by_dungeon[dungeon_id]
@@ -425,7 +474,11 @@ def write_spawn_range_plots(rows_by_section: OrderedDict[str, List[Dict[str, str
             height = min(40.0, max(3.0, 0.3 * entry_count + 1.5))
             fig, ax = plt.subplots(figsize=(width, height))
             draw_spawn_chart(fig, ax, dungeon_id, entries)
-            fig.tight_layout()
+            if settings_line:
+                fig.tight_layout(rect=(0, 0, 1, 0.94))
+                fig.text(0.5, 0.985, settings_line, ha="center", va="top", fontsize=9)
+            else:
+                fig.tight_layout()
             pdf.savefig(fig, bbox_inches="tight")
             plt.close(fig)
 

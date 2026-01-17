@@ -13,7 +13,7 @@ static const MenuItem gSeedModeMenu[] = {
 ALIGNED(4) static const u8 gSeedCustomPrompt[] = _("{CENTER_ALIGN}Enter the dungeon seed\n{CENTER_ALIGN}using the number pad.");
 ALIGNED(4) static const u8 gRecruitAllPrompt[] = _(
     "{CENTER_ALIGN}Recruitment Settings:\n"
-    "{CENTER_ALIGN}All Recruitable - Can recruit fully evolved\n"
+    "{CENTER_ALIGN}All Recruitable - Includes Bosses\n"
     "{CENTER_ALIGN}No Recruitable - No in-dungeon recruits"
 );
 static const MenuItem gRecruitAllMenu[] = {
@@ -30,8 +30,8 @@ static const MenuItem gLeaderSwapMenu[] = {
     { NULL, -1 },
 };
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
-    "{CENTER_ALIGN}Normal: Similar difficulty to the base game.\n"
-    "{CENTER_ALIGN}Hard: Stronger enemies.\n"
+    "{CENTER_ALIGN}Normal: For casual playthroughs.\n"
+    "{CENTER_ALIGN}Hard: For experienced players.\n"
     "{CENTER_ALIGN}Nightmare: Only the best will survive."
 );
 static const MenuItem gDifficultyMenu[] = {

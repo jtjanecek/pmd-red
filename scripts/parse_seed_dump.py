@@ -17,6 +17,7 @@ from typing import Dict, List
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 DEFAULT_LOG_PATH = PROJECT_ROOT / "execution.log"
 DEFAULT_OUT_PATH = PROJECT_ROOT / "gen" / "seed_dump.csv"
+DEFAULT_PLOT_PATH = PROJECT_ROOT / "scripts" / "seed_spawn_ranges.pdf"
 ITEM_POKE_ID = "105"  # ITEM_POKE constant from include/constants/item.h
 MONSTER_DATA_PATH = PROJECT_ROOT / "data" / "monster" / "monster_data.json"
 MONSTER_NAMES_PATH = PROJECT_ROOT / "data" / "monster" / "monster_names.s"
@@ -48,6 +49,18 @@ def clean_value(value: str) -> str:
     # Keep only printable ASCII.
     cleaned = "".join(ch for ch in cleaned if 32 <= ord(ch) < 127)
     return cleaned.strip()
+
+
+def parse_int(value: str | None) -> int | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return int(text, 10)
+    except ValueError:
+        return None
 
 
 def parse_monster_names(path: pathlib.Path) -> Dict[str, str]:
@@ -271,14 +284,166 @@ def print_tables(rows_by_section: OrderedDict[str, List[Dict[str, str]]],
             print("(no columns)")
 
 
+def build_spawn_range_groups(rows_by_section: OrderedDict[str, List[Dict[str, str]]]
+                             ) -> OrderedDict[int, List[Dict[str, object]]]:
+    rows = rows_by_section.get("spawn_range") or []
+    by_dungeon: OrderedDict[int, List[Dict[str, object]]] = OrderedDict()
+    seen_by_dungeon: Dict[int, set[tuple[str, int | None, int, int]]] = {}
+
+    for row in rows:
+        dungeon_id = parse_int(row.get("dungeon_id"))
+        start_flr = parse_int(row.get("start_flr"))
+        end_flr = parse_int(row.get("end_flr"))
+        if dungeon_id is None or start_flr is None or end_flr is None:
+            continue
+        if end_flr < start_flr:
+            start_flr, end_flr = end_flr, start_flr
+
+        species_name = row.get("species_name") or row.get("species") or "Unknown"
+        level = parse_int(row.get("level"))
+        bst = parse_int(row.get("bst"))
+        index = parse_int(row.get("index")) or 0
+        label = species_name
+        if level is not None:
+            label = f"{species_name} Lv{level}"
+
+        seen_entries = seen_by_dungeon.setdefault(dungeon_id, set())
+        entry_key = (species_name, level, start_flr, end_flr)
+        if entry_key in seen_entries:
+            continue
+        seen_entries.add(entry_key)
+
+        by_dungeon.setdefault(dungeon_id, []).append({
+            "label": label,
+            "start_flr": start_flr,
+            "end_flr": end_flr,
+            "index": index,
+            "bst": bst,
+        })
+
+    for entries in by_dungeon.values():
+        entries.sort(key=lambda entry: (entry["index"], entry["start_flr"],
+                                        entry["end_flr"], entry["label"]))
+
+    return by_dungeon
+
+
+def write_spawn_range_plots(rows_by_section: OrderedDict[str, List[Dict[str, str]]],
+                            out_path: pathlib.Path) -> bool:
+    by_dungeon = build_spawn_range_groups(rows_by_section)
+    if not by_dungeon:
+        print("No spawn_range rows found for plotting.")
+        return False
+
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
+        from matplotlib.cm import ScalarMappable
+        from matplotlib.colors import Normalize
+        from matplotlib.ticker import MaxNLocator
+    except ImportError:
+        print("matplotlib not available; skipping spawn_range plot output.", file=sys.stderr)
+        return False
+
+    if out_path.suffix.lower() != ".pdf":
+        print(f"Plot output path {out_path} is not a .pdf; skipping plot output.")
+        return False
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    bst_values = []
+    for entries in by_dungeon.values():
+        for entry in entries:
+            bst = entry.get("bst")
+            if isinstance(bst, int):
+                bst_values.append(bst)
+    bst_min = min(bst_values) if bst_values else None
+    bst_max = max(bst_values) if bst_values else None
+
+    def draw_spawn_chart(fig, ax, dungeon_id: int, entries: List[Dict[str, object]]) -> None:
+        entry_count = len(entries)
+        if entry_count == 0:
+            return
+        max_floor = max(int(entry["end_flr"]) for entry in entries)
+        labels = [str(entry["label"]) for entry in entries]
+        y_positions = list(range(entry_count))
+        lefts = [int(entry["start_flr"]) - 0.5 for entry in entries]
+        widths = [int(entry["end_flr"]) - int(entry["start_flr"]) + 1 for entry in entries]
+
+        colors = []
+        if bst_min is not None and bst_max is not None and bst_min != bst_max:
+            norm = Normalize(vmin=bst_min, vmax=bst_max)
+            cmap = plt.get_cmap("YlGn")
+            for entry in entries:
+                bst = entry.get("bst")
+                if isinstance(bst, int):
+                    colors.append(cmap(norm(bst)))
+                else:
+                    colors.append("#d0d4d8")
+            sm = ScalarMappable(norm=norm, cmap=cmap)
+            sm.set_array([])
+        else:
+            sm = None
+            colors = ["#9ad66b"] * entry_count
+
+        ax.barh(y_positions, widths, left=lefts, height=0.7,
+                color=colors, edgecolor="#3d7f2f")
+        ax.set_yticks(y_positions)
+        if entry_count > 60:
+            label_size = 5
+        elif entry_count > 40:
+            label_size = 6
+        elif entry_count > 25:
+            label_size = 7
+        else:
+            label_size = 8
+        ax.set_yticklabels(labels, fontsize=label_size)
+        ax.invert_yaxis()
+        ax.set_xlabel("Floor")
+        ax.set_ylabel("Pokemon (level)")
+        ax.set_title(f"Dungeon {dungeon_id} Spawn Ranges")
+        ax.set_xlim(0.5, max_floor + 0.5)
+        if max_floor <= 30:
+            ax.set_xticks(range(1, max_floor + 1))
+        else:
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True, nbins=12))
+        ax.grid(axis="x", linestyle=":", linewidth=0.6, color="#c0c3c7")
+        ax.set_axisbelow(True)
+        if sm is not None:
+            colorbar = fig.colorbar(sm, ax=ax, orientation="horizontal",
+                                    pad=0.08, fraction=0.05)
+            colorbar.set_label("BST")
+
+    with PdfPages(out_path) as pdf:
+        for dungeon_id in sorted(by_dungeon):
+            entries = by_dungeon[dungeon_id]
+            entry_count = len(entries)
+            max_floor = max(int(entry["end_flr"]) for entry in entries)
+            width = max(9.0, min(16.0, max_floor * 0.25))
+            height = min(40.0, max(3.0, 0.3 * entry_count + 1.5))
+            fig, ax = plt.subplots(figsize=(width, height))
+            draw_spawn_chart(fig, ax, dungeon_id, entries)
+            fig.tight_layout()
+            pdf.savefig(fig, bbox_inches="tight")
+            plt.close(fig)
+
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Parse SEED_DUMP rows from execution.log.")
     parser.add_argument("--log", type=pathlib.Path, default=DEFAULT_LOG_PATH,
                         help=f"Path to log file (default: {DEFAULT_LOG_PATH})")
     parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT_PATH,
                         help=f"Output CSV path (default: {DEFAULT_OUT_PATH})")
+    parser.add_argument("--plot-out", type=pathlib.Path, default=DEFAULT_PLOT_PATH,
+                        help=f"Output PDF for spawn ranges (default: {DEFAULT_PLOT_PATH})")
     parser.add_argument("--no-print", action="store_true",
                         help="Skip printing tables to the terminal")
+    parser.add_argument("--no-plot", action="store_true",
+                        help="Skip spawn range plot output")
     args = parser.parse_args()
 
     rows_by_section, headers_by_section = parse_log(args.log)
@@ -292,6 +457,9 @@ def main() -> int:
     write_csv(rows_by_section, csv_headers, args.out)
 
     print(f"Wrote CSV: {args.out}")
+    if not args.no_plot:
+        if write_spawn_range_plots(rows_by_section, args.plot_out):
+            print(f"Wrote spawn range plots: {args.plot_out}")
     if not args.no_print:
         print_tables(rows_by_section, headers_by_section)
 

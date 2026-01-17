@@ -1,3 +1,4 @@
+*.pdf
 rogue_files/shiny_processing/shiny-download/
 deploy.sh
 *.tar.gz

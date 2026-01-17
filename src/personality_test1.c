@@ -231,9 +231,9 @@ static void InitializeTestStats(void)
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
     sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_ALTARIA;
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
-    sPersonalityTestTracker->unk4.PartnerID = MONSTER_ESPEON;
+    sPersonalityTestTracker->unk4.PartnerID = MONSTER_BLASTOISE;
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;

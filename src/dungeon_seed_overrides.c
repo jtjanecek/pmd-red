@@ -3895,6 +3895,8 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
                                       const DungeonSeedFloorOverrides *overrides,
                                       SpawnPokemonData *spawnTable)
 {
+    // Use the 1-based dungeon progression number in seed dump output.
+    s32 dungeonNumber = GetDungeonNumberForFloorScaling(dungeonId);
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
     s32 floorIndex = GetFloorIndexWithinDungeon(floorId, startFloorId, floorCount);
     s32 spawnCount = GetSpawnTableCount(spawnTable);
@@ -3936,7 +3938,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     // Use WARN level so the host emulator log captures these rows (INFO is often filtered out).
     MGBA_Warnf("SEED_DUMP_HEADER,meta,seed,dungeon_id,floor_id,start_floor_id,floor_index,floor_count,tileset,spawn_count,range_count,boss_enabled");
     MGBA_Warnf("SEED_DUMP,meta,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-               seed, dungeonId, floorId, startFloorId, floorIndex, floorCount, tileset, spawnCount, rangeCount, bossEnabled);
+               seed, dungeonNumber, floorId, startFloorId, floorIndex, floorCount, tileset, spawnCount, rangeCount, bossEnabled);
 
     TypeSelection_WriteSaveData(&typeSelectionData);
     MGBA_Warnf("SEED_DUMP_HEADER,save_overrides,seed,diff,skip,recruit,tc,ta,tsc,tsa,bc,ba,done,await");
@@ -3960,7 +3962,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
 
     MGBA_Warnf("SEED_DUMP_HEADER,special_floors,dungeon_id,kec_floor0_index,kec_floor0_num,kec_floor1_index,kec_floor1_num,super_trap_index,super_trap_num,monster_house_index,monster_house_num");
     MGBA_Warnf("SEED_DUMP,special_floors,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-               dungeonId,
+               dungeonNumber,
                kecleonFloors[0], kecleonFloors[0] + 1,
                kecleonFloors[1], kecleonFloors[1] + 1,
                superTrapFloor, superTrapFloor + 1,
@@ -3981,7 +3983,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
         GetItemNameForLog(secondaryLeftName, sizeof(secondaryLeftName), bossOverrides.bossFight.secondaryDropLeft);
         GetItemNameForLog(secondaryRightName, sizeof(secondaryRightName), bossOverrides.bossFight.secondaryDropRight);
         MGBA_Warnf("SEED_DUMP,boss_loot,%d,%d,%d,%d,%s,%d,%s,%d,%s,%d,%s",
-                   dungeonId,
+                   dungeonNumber,
                    bossFloorId,
                    bossOverrides.bossFight.enabled,
                    bossOverrides.bossFight.bossSpecies,
@@ -4000,7 +4002,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
             const SeededSpawnRange *range = &sSpawnRangeCache.ranges[i];
             GetSpeciesNameForLog(speciesName, sizeof(speciesName), range->species);
             MGBA_Warnf("SEED_DUMP,spawn_range,%d,%d,%d,%s,%d,%d,%d,%d,%d",
-                       dungeonId,
+                       dungeonNumber,
                        i,
                        range->species,
                        speciesName,
@@ -4026,7 +4028,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
 
             GetSpeciesNameForLog(speciesName, sizeof(speciesName), species);
             MGBA_Warnf("SEED_DUMP,spawn_entry,%d,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d",
-                       dungeonId,
+                       dungeonNumber,
                        i,
                        species,
                        speciesName,

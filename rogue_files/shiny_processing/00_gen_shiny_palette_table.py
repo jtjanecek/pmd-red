@@ -965,22 +965,38 @@ def apply_flips(pixels, hflip, vflip):
     return out
 
 
+def get_sprite_tiles(mon_dir, sprite_cache, png_cache, sprite_chunks, sprite_id):
+    tile_list = sprite_cache.get(sprite_id)
+    if tile_list is not None:
+        return tile_list
+    chunk_entries = []
+    if 0 <= sprite_id < len(sprite_chunks):
+        chunk_entries = sprite_chunks[sprite_id]
+    if not chunk_entries:
+        sprite_path = os.path.join(mon_dir, f"sprite_{sprite_id + 1}.png")
+        chunk_entries = [{"kind": "gfx", "path": sprite_path}]
+    tile_list = build_tile_list(chunk_entries, png_cache)
+    sprite_cache[sprite_id] = tile_list
+    return tile_list
+
+
 def render_pose(mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset):
+    pose_tiles = []
+    for entry in entries:
+        sprite_id = entry["sprite_id"]
+        if sprite_id < 0:
+            continue
+        tile_list = get_sprite_tiles(
+            mon_dir, sprite_cache, png_cache, sprite_chunks, sprite_id
+        )
+        if tile_list:
+            pose_tiles.extend(tile_list)
+
     parts = []
     for entry in entries:
         sprite_id = entry["sprite_id"]
         if sprite_id < 0:
             continue
-        if sprite_id >= len(sprite_chunks):
-            continue
-        chunk_entries = sprite_chunks[sprite_id]
-        if not chunk_entries:
-            sprite_path = os.path.join(mon_dir, f"sprite_{sprite_id + 1}.png")
-            chunk_entries = [{"kind": "gfx", "path": sprite_path}]
-        tile_list = sprite_cache.get(sprite_id)
-        if tile_list is None:
-            tile_list = build_tile_list(chunk_entries, png_cache)
-            sprite_cache[sprite_id] = tile_list
 
         flags1 = entry["flags1"]
         flags2 = entry["flags2"]
@@ -992,12 +1008,14 @@ def render_pose(mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset
         tile_num = flags3 & 0x3FF
 
         x = (flags2 & 0x1FF) - BASE_X_OFFSET + offset[0]
-        y = (flags1 & 0xFF) - BASE_Y_OFFSET + offset[1]
+        y = (flags1 & 0x3FF) - BASE_Y_OFFSET + offset[1]
 
         hflip = (flags2 >> 12) & 1
         vflip = (flags2 >> 13) & 1
 
-        sprite_pixels = extract_oam_sprite(tile_list, tile_num, width_px, height_px)
+        sprite_pixels = extract_oam_sprite(
+            pose_tiles, tile_num, width_px, height_px
+        )
         sprite_pixels = apply_flips(sprite_pixels, hflip, vflip)
 
         parts.append((x, y, sprite_pixels, width_px, height_px))
@@ -1031,7 +1049,35 @@ def render_pose(mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset
                 if 0 <= cx < out_w and 0 <= cy < out_h:
                     canvas[cy][cx] = idx
 
-    return canvas
+    return crop_canvas(canvas)
+
+
+def crop_canvas(canvas):
+    if not canvas:
+        return [[0]]
+    height = len(canvas)
+    width = len(canvas[0])
+    min_x = width
+    min_y = height
+    max_x = -1
+    max_y = -1
+    for y, row in enumerate(canvas):
+        for x, val in enumerate(row):
+            if val != 0:
+                if x < min_x:
+                    min_x = x
+                if y < min_y:
+                    min_y = y
+                if x > max_x:
+                    max_x = x
+                if y > max_y:
+                    max_y = y
+    if max_x < 0 or max_y < 0:
+        return [[0]]
+    cropped = []
+    for y in range(min_y, max_y + 1):
+        cropped.append(canvas[y][min_x:max_x + 1])
+    return cropped
 
 
 def iter_mon_dirs(base_dir, filters):

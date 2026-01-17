@@ -319,6 +319,15 @@ void sub_8068BDC(bool8 a0)
             break;
         }
     }
+    if (!a0 && leaderId < 0) {
+        for (id = 0; id < NUM_MONSTERS; id++) {
+            Pokemon *mon = &gRecruitedPokemonRef->pokemon[id];
+            if (PokemonExists(mon) && IsMonTeamLeader(mon)) {
+                leaderId = id;
+                break;
+            }
+        }
+    }
 
     for (id = 0; id < MAX_TEAM_MEMBERS; id++) {
         DungeonMon *monPtr = &gRecruitedPokemonRef->dungeonTeam[id];
@@ -362,6 +371,26 @@ void sub_8068BDC(bool8 a0)
             else {
                 if (a0) {
                     spArr[GetFriendArea(monPtr->speciesNum)] = TRUE;
+                }
+            }
+        }
+    }
+    if (!a0 && leaderId >= 0) {
+        for (id = 0; id < NUM_MONSTERS; id++) {
+            Pokemon *recruit = &gRecruitedPokemonRef->pokemon[id];
+            if (!PokemonExists(recruit))
+                continue;
+            if (id == leaderId) {
+                recruit->isTeamLeader = TRUE;
+                recruit->dungeonLocation.id = DUNGEON_JOIN_LOCATION_LEADER;
+                recruit->dungeonLocation.floor = 0;
+            }
+            else {
+                if (recruit->isTeamLeader) {
+                    recruit->isTeamLeader = FALSE;
+                }
+                if (recruit->dungeonLocation.id == DUNGEON_JOIN_LOCATION_LEADER) {
+                    recruit->dungeonLocation = gDungeon->unk644.dungeonLocation;
                 }
             }
         }

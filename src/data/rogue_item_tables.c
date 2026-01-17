@@ -24,7 +24,6 @@ static const u16 sRogueSecondaryLootItems[] = {
     8,
     16,
     29,
-    32,
     34,
     39,
     40,
@@ -597,7 +596,7 @@ static const u16 sRogueMonsterHouseItems[] = {
 
 const RogueItemPool gRogueItemPools[ROGUE_ITEM_POOL_COUNT] = {
     [ROGUE_ITEM_POOL_PRIMARY_LOOT] = { sRoguePrimaryLootItems, 13 },
-    [ROGUE_ITEM_POOL_SECONDARY_LOOT] = { sRogueSecondaryLootItems, 64 },
+    [ROGUE_ITEM_POOL_SECONDARY_LOOT] = { sRogueSecondaryLootItems, 63 },
     [ROGUE_ITEM_POOL_KECLEON_RARE] = { sRogueKecleonRareItems, 19 },
     [ROGUE_ITEM_POOL_KECLEON_COMMON] = { sRogueKecleonCommonItems, 186 },
     [ROGUE_ITEM_POOL_NORMAL] = { sRogueNormalItems, 230 },

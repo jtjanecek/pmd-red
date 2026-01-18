@@ -18,6 +18,7 @@ PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 DEFAULT_LOG_PATH = PROJECT_ROOT / "execution.log"
 DEFAULT_OUT_PATH = PROJECT_ROOT / "gen" / "seed_dump.csv"
 DEFAULT_PLOT_PATH = PROJECT_ROOT / "scripts" / "seed_spawn_ranges.pdf"
+DEFAULT_LOG_PREFIX = "seed"
 ITEM_POKE_ID = "105"  # ITEM_POKE constant from include/constants/item.h
 MONSTER_DATA_PATH = PROJECT_ROOT / "data" / "monster" / "monster_data.json"
 MONSTER_NAMES_PATH = PROJECT_ROOT / "data" / "monster" / "monster_names.s"
@@ -485,20 +486,24 @@ def write_spawn_range_plots(rows_by_section: OrderedDict[str, List[Dict[str, str
     return True
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Parse SEED_DUMP rows from execution.log.")
-    parser.add_argument("--log", type=pathlib.Path, default=DEFAULT_LOG_PATH,
-                        help=f"Path to log file (default: {DEFAULT_LOG_PATH})")
-    parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT_PATH,
-                        help=f"Output CSV path (default: {DEFAULT_OUT_PATH})")
-    parser.add_argument("--plot-out", type=pathlib.Path, default=DEFAULT_PLOT_PATH,
-                        help=f"Output PDF for spawn ranges (default: {DEFAULT_PLOT_PATH})")
-    parser.add_argument("--no-print", action="store_true",
-                        help="Skip printing tables to the terminal")
-    parser.add_argument("--no-plot", action="store_true",
-                        help="Skip spawn range plot output")
-    args = parser.parse_args()
+class TeeStream:
+    def __init__(self, *streams: object) -> None:
+        self._streams = streams
 
+    def write(self, data: str) -> int:
+        for stream in self._streams:
+            stream.write(data)
+        return len(data)
+
+    def flush(self) -> None:
+        for stream in self._streams:
+            stream.flush()
+
+    def isatty(self) -> bool:
+        return any(getattr(stream, "isatty", lambda: False)() for stream in self._streams)
+
+
+def run(args: argparse.Namespace) -> int:
     rows_by_section, headers_by_section = parse_log(args.log)
     if not rows_by_section:
         print("No SEED_DUMP rows found.")
@@ -518,6 +523,37 @@ def main() -> int:
 
     return 0
 
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Parse SEED_DUMP rows from execution.log.")
+    parser.add_argument("--log", type=pathlib.Path, default=DEFAULT_LOG_PATH,
+                        help=f"Path to log file (default: {DEFAULT_LOG_PATH})")
+    parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT_PATH,
+                        help=f"Output CSV path (default: {DEFAULT_OUT_PATH})")
+    parser.add_argument("--plot-out", type=pathlib.Path,
+                        help="Output PDF for spawn ranges (default: scripts/{prefix}_spawn_ranges.pdf)")
+    parser.add_argument("log_prefix", nargs="?", default=DEFAULT_LOG_PREFIX,
+                        help=f"Prefix for scripts/{{prefix}}.log (default: {DEFAULT_LOG_PREFIX})")
+    parser.add_argument("--no-print", action="store_true",
+                        help="Skip printing tables to the terminal")
+    parser.add_argument("--no-plot", action="store_true",
+                        help="Skip spawn range plot output")
+    args = parser.parse_args()
+
+    log_path = PROJECT_ROOT / "scripts" / f"{args.log_prefix}.log"
+    if args.plot_out is None:
+        args.plot_out = PROJECT_ROOT / "scripts" / f"{args.log_prefix}_spawn_ranges.pdf"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("w", encoding="utf-8") as handle:
+        stdout = sys.stdout
+        stderr = sys.stderr
+        sys.stdout = TeeStream(stdout, handle)
+        sys.stderr = TeeStream(stderr, handle)
+        try:
+            return run(args)
+        finally:
+            sys.stdout = stdout
+            sys.stderr = stderr
 
 if __name__ == "__main__":
     sys.exit(main())

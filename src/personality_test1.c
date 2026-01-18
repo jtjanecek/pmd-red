@@ -229,7 +229,7 @@ static void InitializeTestStats(void)
     // - Skip Cutscenes: Yes
     // - Difficulty: Normal
     #ifdef DEV
-    sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
+    sPersonalityTestTracker->TestState = PERSONALITY_TEST_END; // 100
     sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
     sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
@@ -238,12 +238,12 @@ static void InitializeTestStats(void)
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NIGHTMARE;
+    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
     sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_15;
     sPersonalityTestTracker->unk4.enableLeaderSwap = 0;
     SetRecruitAllSetting(RECRUIT_ALL_NONE);
     SetSkipBasicRescuesSetting(1);
-    SetGameDifficultySetting(DIFFICULTY_NIGHTMARE);
+    SetGameDifficultySetting(DIFFICULTY_NORMAL);
     SetMaxDungeonsSetting(MAX_DUNGEONS_15);
     SetEnableLeaderSwapSetting(1);
     

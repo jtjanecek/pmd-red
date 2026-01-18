@@ -467,8 +467,12 @@ static void AnimateSprites(bool8 a0)
         const u8 *prevRemap = NULL;
 
         if (player != NULL && (player->flags & POKEMON_FLAG_SHINY)) {
-            palette = GetMonsterShinyPalette(player->speciesNum);
-            indexRemap = GetMonsterShinyIndexRemap(player->speciesNum);
+            u8 shinyPalette = GetMonsterShinyPalette(player->speciesNum);
+
+            if (shinyPalette != 0) {
+                palette = shinyPalette;
+                indexRemap = GetMonsterShinyIndexRemap(player->speciesNum);
+            }
         }
         prevRemap = GetSpriteIndexRemap();
 

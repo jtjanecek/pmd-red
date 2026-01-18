@@ -25,6 +25,8 @@
 #include "exclusive_pokemon.h"
 #include "file_system.h"
 #include "dungeon_seed_overrides.h"
+#include "save.h"
+#include "constants/difficulty.h"
 #include "constants/dungeon_exit.h"
 #include "move_orb_effects_1.h"
 #include "moves.h"
@@ -47,6 +49,37 @@
 static bool8 RollShinySpawn(void)
 {
     return DungeonRandInt(100) < SHINY_SPAWN_CHANCE_PERCENT;
+}
+
+static s32 AdjustEnemyLevelForDifficulty(s32 level)
+{
+    s32 adjusted = level;
+    u32 difficulty = GetGameDifficultySetting();
+    const BossFightConfig *bossFight = DungeonFloorSpawns_GetBossFightConfig();
+
+    if (adjusted < 1)
+        adjusted = 1;
+    if (bossFight != NULL && bossFight->enabled)
+        return adjusted;
+
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    switch (difficulty) {
+        case DIFFICULTY_NORMAL:
+            adjusted = (adjusted * 60) / 100;
+            break;
+        case DIFFICULTY_HARD:
+            adjusted = (adjusted * 80) / 100;
+            break;
+        case DIFFICULTY_NIGHTMARE:
+        default:
+            break;
+    }
+
+    if (adjusted < 1)
+        adjusted = 1;
+    return adjusted;
 }
 
 static s32 CalcSpeciesHPAtLevel(s32 species, s32 level);
@@ -754,6 +787,9 @@ static void InitEntityFromSpawnInfo(bool8 a0, Entity *entity, struct MonSpawnInf
     }
     else {
         entInfo->level = monSpawnInfo->level;
+    }
+    if (!a0) {
+        entInfo->level = AdjustEnemyLevelForDifficulty(entInfo->level);
     }
     if (monSpawnInfo->species == MONSTER_KECLEON && entInfo->shopkeeper == SHOPKEEPER_MODE_SHOPKEEPER) {
         entInfo->level = 90;

@@ -137,7 +137,7 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
         },
         .moves = {
             {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_CALM_MIND, MOVE_MIRROR_COAT},
-            {MOVE_SURF, MOVE_ICE_BEAM, MOVE_CALM_MIND, MOVE_THUNDER},
+            {MOVE_SURF, MOVE_ICE_BEAM, MOVE_CALM_MIND, MOVE_ANCIENTPOWER},
         },
         .hasCustomMoves = {TRUE, TRUE},
         .minionMoves = {

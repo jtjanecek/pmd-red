@@ -260,9 +260,9 @@ static const u8 sItemLimitsByDifficulty[NUM_DIFFICULTY_SETTINGS] = {
 };
 
 static const s16 sRecruitBaseChancePercent[NUM_DIFFICULTY_SETTINGS] = {
-    [DIFFICULTY_NORMAL] = 10,
+    [DIFFICULTY_NORMAL] = 8,
     [DIFFICULTY_HARD] = 5,
-    [DIFFICULTY_NIGHTMARE] = 1,
+    [DIFFICULTY_NIGHTMARE] = 3,
 };
 
 static const s16 sRecruitFriendBowBonusPercent[NUM_DIFFICULTY_SETTINGS] = {
@@ -3852,6 +3852,36 @@ static const SeededSpawnRange *FindSpawnRangeForSpecies(s16 species)
     return NULL;
 }
 
+static s32 AdjustSeedDumpSpawnLevel(s32 level, bool8 bossEnabled)
+{
+    s32 adjusted = level;
+    u32 difficulty = GetGameDifficultySetting();
+
+    if (adjusted < 1)
+        adjusted = 1;
+    if (bossEnabled)
+        return adjusted;
+
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    switch (difficulty) {
+        case DIFFICULTY_NORMAL:
+            adjusted = (adjusted * 60) / 100;
+            break;
+        case DIFFICULTY_HARD:
+            adjusted = (adjusted * 80) / 100;
+            break;
+        case DIFFICULTY_NIGHTMARE:
+        default:
+            break;
+    }
+
+    if (adjusted < 1)
+        adjusted = 1;
+    return adjusted;
+}
+
 static void GetSpeciesNameForLog(char *out, size_t outLen, s16 species)
 {
     const char *name = GetMonSpecies(species);
@@ -4000,13 +4030,14 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
         MGBA_Warnf("SEED_DUMP_HEADER,spawn_range,dungeon_id,index,species,species_name,level,start_idx,end_idx,start_flr,end_flr");
         for (i = 0; i < sSpawnRangeCache.rangeCount; i++) {
             const SeededSpawnRange *range = &sSpawnRangeCache.ranges[i];
+            s32 level = AdjustSeedDumpSpawnLevel(range->level, bossEnabled);
             GetSpeciesNameForLog(speciesName, sizeof(speciesName), range->species);
             MGBA_Warnf("SEED_DUMP,spawn_range,%d,%d,%d,%s,%d,%d,%d,%d,%d",
                        dungeonNumber,
                        i,
                        range->species,
                        speciesName,
-                       range->level,
+                       level,
                        range->start,
                        range->end,
                        range->start + 1,
@@ -4019,7 +4050,7 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
         for (i = 0; i < spawnCount; i++) {
             SpawnPokemonData *entry = &spawnTable[i];
             s16 species = ExtractSpeciesIndex(entry);
-            s32 level = ExtractLevel(entry);
+            s32 level = AdjustSeedDumpSpawnLevel(ExtractLevel(entry), bossEnabled);
             const SeededSpawnRange *range = FindSpawnRangeForSpecies(species);
             s32 rangeStart = range ? range->start : -1;
             s32 rangeEnd = range ? range->end : -1;

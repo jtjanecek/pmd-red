@@ -71,6 +71,9 @@ enum {
     BOSS_REWARD_RECRUIT = 3,
 };
 
+// Money quantities map into gUnknown_810A3F0 in src/dungeon_data.c.
+#define BOSS_REWARD_POKE_QUANTITY_1000 95
+#define BOSS_REWARD_POKE_QUANTITY_1500 98
 #define BOSS_REWARD_POKE_QUANTITY_3000 100
 
 ALIGNED(4) static const u8 sBossRewardPrompt[] = _(
@@ -3064,7 +3067,7 @@ static s16 GetSeededBossHP(u8 dungeonId)
             break;
     }
 
-    return (s16)(100 * dungeonNumber + difficultyBonus);
+    return (s16)(80 * dungeonNumber + difficultyBonus);
 }
 
 static void ResetSeededDungeonNameCache(void)
@@ -3415,6 +3418,33 @@ static bool8 TrySpawnBossMoney(s32 x, s32 y, u8 quantity, const char *label)
     return TRUE;
 }
 
+static void TrySpawnBossMoneyReward(s32 dropX, s32 dropY)
+{
+    u32 difficulty = GetGameDifficultySetting();
+    bool8 spawnedSecondary;
+
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            TrySpawnBossMoney(dropX, dropY, BOSS_REWARD_POKE_QUANTITY_1000, "primary");
+            spawnedSecondary = TrySpawnBossMoney(dropX + 1, dropY, BOSS_REWARD_POKE_QUANTITY_1000, "secondary-right");
+            if (!spawnedSecondary)
+                spawnedSecondary = TrySpawnBossMoney(dropX - 1, dropY, BOSS_REWARD_POKE_QUANTITY_1000, "secondary-left");
+            if (!spawnedSecondary)
+                TrySpawnBossMoney(dropX, dropY + 1, BOSS_REWARD_POKE_QUANTITY_1000, "secondary-down");
+            break;
+        case DIFFICULTY_NIGHTMARE:
+            TrySpawnBossMoney(dropX, dropY, BOSS_REWARD_POKE_QUANTITY_1500, "primary");
+            break;
+        case DIFFICULTY_NORMAL:
+        default:
+            TrySpawnBossMoney(dropX, dropY, BOSS_REWARD_POKE_QUANTITY_3000, "primary");
+            break;
+    }
+}
+
 static bool8 AreBossMinionsDefeated(void)
 {
     s32 i;
@@ -3639,7 +3669,7 @@ static void TrySpawnBossRewards(void)
         if (bossFight->secondaryDropRight != ITEM_NOTHING)
             TrySpawnBossLoot(bossFight->secondaryDropRight, dropX + 1, dropY, "secondary-right");
     } else if (rewardChoice == BOSS_REWARD_MONEY) {
-        TrySpawnBossMoney(dropX, dropY, BOSS_REWARD_POKE_QUANTITY_3000, "primary");
+        TrySpawnBossMoneyReward(dropX, dropY);
     }
 
     // Update minimap and visibility

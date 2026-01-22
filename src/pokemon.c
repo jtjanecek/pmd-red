@@ -325,6 +325,41 @@ Pokemon * GetPlayerPokemonStruct(void)
     return NULL;
 }
 
+void SetPokemonAsTeamLeader(Pokemon *newLeader)
+{
+    Pokemon *leaderByFlag;
+    Pokemon *leaderByLoc;
+    DungeonLocation prevLoc;
+    DungeonLocation demoteLoc;
+
+    if (newLeader == NULL || !PokemonExists(newLeader))
+        return;
+
+    prevLoc = newLeader->dungeonLocation;
+    demoteLoc = prevLoc;
+    if (demoteLoc.id == DUNGEON_JOIN_LOCATION_LEADER) {
+        demoteLoc.id = DUNGEON_RESCUE_TEAM_BASE;
+        demoteLoc.floor = 0;
+    }
+    leaderByFlag = GetPlayerPokemonStruct();
+    leaderByLoc = sub_808D3BC();
+
+    if (leaderByFlag != NULL && leaderByFlag != newLeader) {
+        leaderByFlag->isTeamLeader = FALSE;
+    }
+
+    if (leaderByLoc != NULL && leaderByLoc != newLeader) {
+        if (leaderByLoc->dungeonLocation.id == DUNGEON_JOIN_LOCATION_LEADER) {
+            leaderByLoc->dungeonLocation = demoteLoc;
+        }
+    }
+
+    newLeader->isTeamLeader = TRUE;
+    newLeader->dungeonLocation.id = DUNGEON_JOIN_LOCATION_LEADER;
+    newLeader->dungeonLocation.floor = 0;
+    SetPokemonFlag2(newLeader);
+}
+
 Pokemon * sub_808D378(void)
 {
     s32 index;

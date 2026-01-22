@@ -47,6 +47,7 @@ Pokemon *sub_808D278(s32 species);
 Pokemon *TryAddLevel1PokemonToRecruited(s32 species, u8 *name, u32 _itemID, const DungeonLocation *location, u16 *moveID);
 void sub_808D31C(Pokemon *param_1);
 Pokemon *GetPlayerPokemonStruct(void);
+void SetPokemonAsTeamLeader(Pokemon *newLeader);
 Pokemon *sub_808D378(void);
 Pokemon *sub_808D3BC(void);
 Pokemon *sub_808D3F8(void);

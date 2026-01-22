@@ -412,7 +412,6 @@ void sub_80277FC(void)
 
 void sub_80278B4(void)
 {
-  Pokemon *playerStruct;
   Pokemon *newLeader;
   u32 menuAction;
 
@@ -438,10 +437,8 @@ void sub_80278B4(void)
         break;
       case FRIEND_AREA_ACTION_MENU_ACTION_MAKE_LEADER:
         newLeader = &gRecruitedPokemonRef->pokemon[sUnknown_203B2BC->targetPoke];
-        playerStruct = GetPlayerPokemonStruct();
         if (!newLeader->isTeamLeader) {
-          playerStruct->isTeamLeader = FALSE;
-          newLeader->isTeamLeader = TRUE;
+          SetPokemonAsTeamLeader(newLeader);
           nullsub_104();
         }
         sub_808ED00();

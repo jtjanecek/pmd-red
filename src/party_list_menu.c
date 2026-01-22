@@ -534,7 +534,6 @@ static void PartyListMenu_BuildYesNoMenu(void)
 
 static void PartyListMenu_HandleMenu1(void)
 {
-  Pokemon *playerPokemon;
   Pokemon *newLeader;
   s32 choice;
 
@@ -559,11 +558,8 @@ static void PartyListMenu_HandleMenu1(void)
         break;
     case PARTY_LIST_MENU_MAKE_LEADER:
         newLeader = &gRecruitedPokemonRef->pokemon[sUnknown_203B2B8->pokeSpecies];
-        playerPokemon = GetPlayerPokemonStruct();
-
         if (!newLeader->isTeamLeader) {
-            playerPokemon->isTeamLeader = FALSE;
-            newLeader->isTeamLeader = TRUE;
+            SetPokemonAsTeamLeader(newLeader);
             nullsub_104();
         }
         sub_808ED00();

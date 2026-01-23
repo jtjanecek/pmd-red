@@ -1,3 +1,6 @@
+// Shared version label for title/menus
+#include "shiny_version.h"
+
 static const WindowTemplate sUnknown_80E59C8 = {
     0,
     3,
@@ -160,7 +163,7 @@ static const WindowTemplate sUnknown_80E5CB4 = {
 };
 
 static const MenuItem sUnknown_80E5CCC[] = {
-    {_("Start an entirely new adventure."), 0xFFDE},
+    {_(SHINY_VERSION_LABEL), 0xFFDE},
     {_("  "), 0xFFDE},
     {NULL, 0xFFDD},
 };
@@ -178,8 +181,8 @@ static const MenuItem sUnknown_80E5D48[] = {
 };
 
 static const MenuItem sUnknown_80E5DA0[] = {
-    {_("Resume your adventure from where"), 0xFFDE},
-    {_("you last saved.  "), 0xFFDE},
+    {_(SHINY_VERSION_LABEL), 0xFFDE},
+    {_("  "), 0xFFDE},
     {NULL, 0xFFDD},
 };
 

@@ -12,10 +12,12 @@ struct PersonalityStruct_203B404
     /* 0x0 */ s16 StarterID;
     /* 0x2 */ s16 PartnerArray[NUM_PARTNERS];
     u8 unk16;
+    bool8 selectingStarter;
     /* 0x18 */ MenuHeaderWindow s18;
 };
 
 void CreatePartnerSelectionMenu(s16 starterID);
+void CreateStarterSelectionMenu(void);
 u16 HandlePartnerSelectionInput(void);
 
 void sub_803CE6C(void);

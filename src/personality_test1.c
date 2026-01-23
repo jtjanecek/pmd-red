@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "constants/emotions.h"
+#include "constants/monster.h"
 #include "bg_palette_buffer.h"
 #include "confirm_name_menu.h"
 #include "random_mersenne_twister.h"
@@ -21,11 +22,8 @@
 
 enum
 {
-    PERSONALITY_GENERATE_NEW_QUESTION,
-    PERSONALITY_ASK_QUESTION,
-    PERSONALITY_UPDATE_TOTALS,
-    PERSONALITY_PLAYER_GENDER,
-    PERSONALITY_REVEAL,
+    PERSONALITY_STARTER_SELECTION_INIT,
+    PERSONALITY_PLAYER_STARTER_SELECTION,
     PERSONALITY_STARTER_REVEAL,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_1,
     PERSONALITY_ADVANCE_TO_PARTNER_SELECTION_2,
@@ -48,20 +46,15 @@ static void AdvanceToPartnerSelection(void);
 static void AdvanceToPickPartnerPrompt(void);
 static void AdvanceToTestEnd(void);
 static void CallCreatePartnerSelectionMenu(void);
-static void CallPromptNewQuestion(void);
-static void GenerateNewQuestionOrGender(void);
 static void InitializeTestStats(void);
+static void StartStarterSelection(void);
+static void HandleStarterSelection(void);
 static void NicknamePartner(void);
 static void PersonalityTest_DisplayStarterSprite(void);
 static void PrintEndIntroText(void);
-static void PrintPersonalityTypeDescription(void);
 static void PromptForPartnerNickname(void);
-static void PromptNewQuestion(void);
 static void PromptPickPartner(void);
-static void RevealPersonality(void);
 static void RevealStarter(void);
-static void SetPlayerGender(void);
-static void UpdateNatureTotals(void);
 
 bool8 CreateTestTracker(void)
 {
@@ -74,23 +67,20 @@ bool8 CreateTestTracker(void)
 
 static void InitializeTestStats(void)
 {
-    s32 i;
-
     ReadTeamBasicInfo(&sPersonalityTestTracker->TeamBasicInfo);
     sPersonalityTestTracker->FrameCounter = 0;
-    sPersonalityTestTracker->TestState = 0;
+    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_SELECTION_INIT;
     sPersonalityTestTracker->QuestionCounter = 0;
-
-    for (i = 0; i < NUM_PERSONALITIES; i++)
-        sPersonalityTestTracker->NatureTotals[i] = 0;
-
+    MemoryFill8(sPersonalityTestTracker->NatureTotals, 0, sizeof(sPersonalityTestTracker->NatureTotals));
     sPersonalityTestTracker->currQuestionIndex = 0;
-
-    for (i = 0; i < NUM_QUIZ_QUESTIONS; i++)
-        sPersonalityTestTracker->QuestionTracker[i] = 0;
-
+    MemoryFill8(sPersonalityTestTracker->QuestionTracker, 0, sizeof(sPersonalityTestTracker->QuestionTracker));
     sPersonalityTestTracker->playerNature = 0;
-    sPersonalityTestTracker->playerGender = 0;
+    sPersonalityTestTracker->playerGender = MALE;
+    gGameOptionsRef->playerGender = MALE;
+    sPersonalityTestTracker->TeamBasicInfo.StarterID = MONSTER_NONE;
+    sPersonalityTestTracker->TeamBasicInfo.PartnerID = MONSTER_NONE;
+    sPersonalityTestTracker->TeamBasicInfo.StarterName[0] = '\0';
+    sPersonalityTestTracker->TeamBasicInfo.PartnerNick[0] = '\0';
 }
 
 u32 HandleTestTrackerState(void)
@@ -101,20 +91,11 @@ u32 HandleTestTrackerState(void)
     sPersonalityTestTracker->FrameCounter++;
 
     switch (sPersonalityTestTracker->TestState) {
-        case PERSONALITY_GENERATE_NEW_QUESTION:
-            GenerateNewQuestionOrGender();
+        case PERSONALITY_STARTER_SELECTION_INIT:
+            StartStarterSelection();
             break;
-        case PERSONALITY_ASK_QUESTION:
-            CallPromptNewQuestion();
-            break;
-        case PERSONALITY_UPDATE_TOTALS:
-            UpdateNatureTotals();
-            break;
-        case PERSONALITY_PLAYER_GENDER:
-            SetPlayerGender();
-            break;
-        case PERSONALITY_REVEAL:
-            RevealPersonality();
+        case PERSONALITY_PLAYER_STARTER_SELECTION:
+            HandleStarterSelection();
             break;
         case PERSONALITY_STARTER_REVEAL:
             RevealStarter();
@@ -172,109 +153,25 @@ void DeleteTestTracker(void)
     sPersonalityTestTracker = NULL;
 }
 
-static void GenerateNewQuestionOrGender(void)
+static void StartStarterSelection(void)
 {
-    u8 category;
-    s32 i;
-    s32 newQuestion;
-
-    sPersonalityTestTracker->QuestionCounter++;
-
-    if (sPersonalityTestTracker->QuestionCounter > MAX_ASKED_QUESTIONS) {
-        CreateMenuDialogueBoxAndPortrait(sGender0, 0, 0, gGenderMenu, 0, 3, 0, 0, 257);
-        sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_GENDER;
-    }
-    else {
-        do {
-            // Generate new question number and make sure we haven't done it
-            newQuestion = RandInt(NUM_QUIZ_QUESTIONS);
-            sPersonalityTestTracker->currQuestionIndex = newQuestion;
-        } while (sPersonalityTestTracker->QuestionTracker[newQuestion] == 1);
-
-        // Found one so let's get the category
-        category = gNatureQuestionTable[sPersonalityTestTracker->currQuestionIndex];
-
-        // Mark all of the questions in the category as used
-        for (i = 0; i < NUM_QUIZ_QUESTIONS; i++) {
-            if (gNatureQuestionTable[i] == category)
-                sPersonalityTestTracker->QuestionTracker[i] = 1;
-        }
-        sPersonalityTestTracker->TestState = PERSONALITY_ASK_QUESTION;
-    }
+    CreateStarterSelectionMenu();
+    sPersonalityTestTracker->TestState = PERSONALITY_PLAYER_STARTER_SELECTION;
 }
 
-static void CallPromptNewQuestion(void)
+static void HandleStarterSelection(void)
 {
-    PromptNewQuestion();
-    sPersonalityTestTracker->TestState = PERSONALITY_UPDATE_TOTALS;
-}
+    u16 chosen;
 
-static void UpdateNatureTotals(void)
-{
-    s32 answerIndex;
-    s32 natureIndex;
-    const PersonalityEffects *pointArray;
+    chosen = HandlePartnerSelectionInput();
 
-    if (sub_80144A4(&answerIndex))
+    if (chosen == 0xFFFF || chosen == 0xFFFE)
         return;
 
-    // This is for the second part of Brave 2 Question if you fight..
-    if (answerIndex == BRAVE_2B_TRIGGER) {
-        // Set question to BRAVE_2B and ask the question..
-        sPersonalityTestTracker->currQuestionIndex = NUM_QUIZ_QUESTIONS;
-        sPersonalityTestTracker->TestState = PERSONALITY_ASK_QUESTION;
-    }
-    else {
-        pointArray = gPersonalityQuestionPointerTable[sPersonalityTestTracker->currQuestionIndex]->effects;
-        pointArray += answerIndex;
-        for (natureIndex = 0; natureIndex < NUM_PERSONALITIES; natureIndex++)
-            sPersonalityTestTracker->NatureTotals[natureIndex] += (*pointArray)[natureIndex];
-
-        sPersonalityTestTracker->TestState = PERSONALITY_GENERATE_NEW_QUESTION;
-    }
-}
-
-static void SetPlayerGender(void)
-{
-    s32 gender;
-
-    if (sub_80144A4(&gender) != 0)
-        return;
-
-    if (gender == MALE) {
-        sPersonalityTestTracker->playerGender = MALE;
-        gGameOptionsRef->playerGender = MALE;
-    }
-    else {
-        sPersonalityTestTracker->playerGender = FEMALE;
-        gGameOptionsRef->playerGender = FEMALE;
-    }
-
-    sub_8099690(0);
-    sPersonalityTestTracker->TestState = PERSONALITY_REVEAL;
-}
-
-static void RevealPersonality(void)
-{
-    s32 currentNature;
-    s32 i;
-
-    sPersonalityTestTracker->playerNature = RandInt(NUM_PERSONALITIES);
-    currentNature = sPersonalityTestTracker->playerNature;
-
-    for (i = 0; i < NUM_PERSONALITIES - 1; i++) {
-        currentNature++;
-
-        // Wraparound check
-        if (currentNature > QUIRKY)
-            currentNature = HARDY;
-
-        if (sPersonalityTestTracker->NatureTotals[currentNature] > sPersonalityTestTracker->NatureTotals[sPersonalityTestTracker->playerNature])
-            sPersonalityTestTracker->playerNature = currentNature;
-    }
-
-    sPersonalityTestTracker->TeamBasicInfo.StarterID = gStarters[sPersonalityTestTracker->playerNature][sPersonalityTestTracker->playerGender];
-    PrintPersonalityTypeDescription();
+    sub_803CE6C();
+    sPersonalityTestTracker->TeamBasicInfo.StarterID = chosen;
+    CopyMonsterNameToBuffer(gFormatBuffer_Monsters[0], chosen);
+    CopyMonsterNameToBuffer(sPersonalityTestTracker->TeamBasicInfo.StarterName, chosen);
     sPersonalityTestTracker->TestState = PERSONALITY_STARTER_REVEAL;
 }
 
@@ -365,45 +262,19 @@ static void AdvanceToTestEnd(void)
         sPersonalityTestTracker->TestState = PERSONALITY_TEST_END;
 }
 
-static void PromptNewQuestion(void)
-{
-    CreateMenuDialogueBoxAndPortrait(gPersonalityQuestionPointerTable[sPersonalityTestTracker->currQuestionIndex]->question,
-        0, 0,
-        gPersonalityQuestionPointerTable[sPersonalityTestTracker->currQuestionIndex]->answers,
-        0, 3, 0, 0, 0x101);
-}
-
-static void PrintPersonalityTypeDescription(void)
-{
-    CopyMonsterNameToBuffer(gFormatBuffer_Monsters[0], sPersonalityTestTracker->TeamBasicInfo.StarterID);
-    CreateDialogueBoxAndPortrait(sPersonalityTypeDescriptionTable[sPersonalityTestTracker->playerNature], 0, 0, 0x101);
-}
-
 static void PersonalityTest_DisplayStarterSprite(void)
 {
-    s32 starterID;
-    struct OpenedFile *faceFile;
-    s32 paletteIndex;
-    s32 emotionId;
-    const u8 *gfx;
     WindowTemplates stackArray;
 
-    starterID = sPersonalityTestTracker->TeamBasicInfo.StarterID;
     RestoreSavedWindows(&stackArray);
-    stackArray.id[1] = sUnknown_80F4244;
+    stackArray.id[1].width = 0;
+    stackArray.id[1].height = 0;
+    stackArray.id[1].totalHeight = 0;
+    stackArray.id[1].unk12 = 0;
+    stackArray.id[1].header = NULL;
     ResetUnusedInputStruct();
     ShowWindows(&stackArray, TRUE, FALSE);
     CallPrepareTextbox_8008C54(1);
     sub_80073B8(1);
-
-    faceFile = GetDialogueSpriteDataPtr(starterID);
-    gfx = ((PortraitGfx *)(faceFile->data))->sprites[EMOTION_HAPPY].gfx;
-    emotionId = EMOTION_HAPPY;
-    for (paletteIndex = 0; paletteIndex < 0x10; paletteIndex++) {
-        SetBGPaletteBufferColorArray(paletteIndex + 0xE0, &((PortraitGfx *)(faceFile->data))->sprites[emotionId].pal[paletteIndex]);
-    }
-
-    DisplayMonPortraitSpriteFlipped(1, gfx, 14);
-    CloseFile(faceFile);
     sub_80073E0(1);
 }

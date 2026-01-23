@@ -10,28 +10,36 @@
 #include "menu_input.h"
 #include "personality_test2.h"
 #include "pokemon.h"
+#include "random.h"
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
+#include "constants/monster.h"
 
 EWRAM_INIT struct PersonalityStruct_203B404 *gUnknown_203B404 = {NULL};
 
 #include "data/personality_test2.h"
 
 static s32 GetValidPartners(void);
+static s32 GetGlobalIndex(s32 localIndex);
 static void nullsub_135(void);
 static void PersonalityTest_DisplayPartnerSprite(void);
 static void RedrawPartnerSelectionMenu(void);
+static s16 ChooseRandomPartner(void);
+static bool8 UpdateSelectionMenuCursor(MenuInputStruct *menuInput);
+static void ScrollSelectionMenu(MenuInputStruct *menuInput, bool8 moveRight);
 
 static void sub_803CEAC(void);
 static void sub_803CECC(void);
+static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter);
 
-void CreatePartnerSelectionMenu(s16 starterID)
+static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter)
 {
     s32 starterID_s32;
     starterID_s32 = starterID; // force an asr shift.. does lsr without it
 
     sub_803CEAC();
+    gUnknown_203B404->selectingStarter = selectingStarter;
     gUnknown_203B404->StarterID = starterID_s32;
     gUnknown_203B404->s18.m.menuWinId = 0;
     gUnknown_203B404->s18.m.menuWindow = &gUnknown_203B404->s18.m.windows.id[0];
@@ -54,23 +62,41 @@ void CreatePartnerSelectionMenu(s16 starterID)
     PersonalityTest_DisplayPartnerSprite();
 }
 
+void CreatePartnerSelectionMenu(s16 starterID)
+{
+    CreateSelectionMenuInternal(starterID, FALSE);
+}
+
+void CreateStarterSelectionMenu(void)
+{
+    CreateSelectionMenuInternal(MONSTER_NONE, TRUE);
+}
+
 u16 HandlePartnerSelectionInput(void)
 {
-    s32 partnerID;
+    s32 previousIndex;
+    s32 keyPress;
+    bool8 pageChanged;
 
-    partnerID = gUnknown_203B404->s18.m.input.menuIndex;
+    previousIndex = gUnknown_203B404->s18.m.input.menuIndex;
     gUnknown_203B404->unk16 = 0;
 
-    if (GetKeyPress(&gUnknown_203B404->s18.m.input) == INPUT_A_BUTTON) {
-        PlayMenuSoundEffect(MENU_SFX_ACCEPT);
-        return gUnknown_203B404->PartnerArray[gUnknown_203B404->s18.m.input.menuIndex];
-    }
+    pageChanged = UpdateSelectionMenuCursor(&gUnknown_203B404->s18.m.input);
 
-    if (MenuCursorUpdate(&gUnknown_203B404->s18.m.input, TRUE))
+    if (pageChanged)
         RedrawPartnerSelectionMenu();
 
-    if (partnerID != gUnknown_203B404->s18.m.input.menuIndex)
+    if (pageChanged || previousIndex != gUnknown_203B404->s18.m.input.menuIndex)
         PersonalityTest_DisplayPartnerSprite();
+
+    keyPress = GetKeyPress(&gUnknown_203B404->s18.m.input);
+    if (keyPress == INPUT_A_BUTTON) {
+        s32 globalIndex = GetGlobalIndex(gUnknown_203B404->s18.m.input.menuIndex);
+        PlayMenuSoundEffect(MENU_SFX_ACCEPT);
+        if (globalIndex == 0)
+            return ChooseRandomPartner();
+        return gUnknown_203B404->PartnerArray[globalIndex - 1];
+    }
 
     if (gUnknown_203B404->unk16 != 0) {
         return -2;
@@ -94,6 +120,7 @@ void sub_803CE6C(void)
     gUnknown_203B404->s18.m.windows.id[gUnknown_203B404->s18.m.menuWinId] = gUnknown_80F4278;
     ResetUnusedInputStruct();
     ShowWindows(&gUnknown_203B404->s18.m.windows, TRUE, TRUE);
+    gUnknown_203B404->selectingStarter = FALSE;
     sub_803CECC();
 }
 
@@ -126,13 +153,21 @@ static void RedrawPartnerSelectionMenu(void)
 
     CallPrepareTextbox_8008C54(gUnknown_203B404->s18.m.menuWinId);
     sub_80073B8(gUnknown_203B404->s18.m.menuWinId);
-    PrintStringOnWindow(12, 0, gPartnerSelectionHeaderText, gUnknown_203B404->s18.m.menuWinId, 0);
+    if (gUnknown_203B404->selectingStarter)
+        PrintStringOnWindow(12, 0, gStarterSelectionHeaderText, gUnknown_203B404->s18.m.menuWinId, 0);
+    else
+        PrintStringOnWindow(12, 0, gPartnerSelectionHeaderText, gUnknown_203B404->s18.m.menuWinId, 0);
 
     monCounter = 0;
     while (monCounter < gUnknown_203B404->s18.m.input.currPageEntries) {
         yCoord = GetMenuEntryYCoord(&gUnknown_203B404->s18.m.input, monCounter);
-        monName = GetMonSpecies(gUnknown_203B404->PartnerArray[monCounter]);
-        PrintStringOnWindow(8, yCoord, monName, gUnknown_203B404->s18.m.menuWinId, 0);
+        if (GetGlobalIndex(monCounter) == 0) {
+            PrintStringOnWindow(8, yCoord, gMenuRandomSelectionText, gUnknown_203B404->s18.m.menuWinId, 0);
+        }
+        else {
+            monName = GetMonSpecies(gUnknown_203B404->PartnerArray[GetGlobalIndex(monCounter) - 1]);
+            PrintStringOnWindow(8, yCoord, monName, gUnknown_203B404->s18.m.menuWinId, 0);
+        }
         monCounter++;
     }
     sub_80073E0(gUnknown_203B404->s18.m.menuWinId);
@@ -141,59 +176,136 @@ static void RedrawPartnerSelectionMenu(void)
 
 static void PersonalityTest_DisplayPartnerSprite(void)
 {
-    s32 partnerID;
-    struct OpenedFile *faceFile;
-    const u8 *gfx;
-    s32 emotionId;
-    s32 i;
-
-    partnerID = gUnknown_203B404->PartnerArray[gUnknown_203B404->s18.m.input.menuIndex];
-
     CallPrepareTextbox_8008C54(1);
     sub_80073B8(1);
-
-    faceFile = GetDialogueSpriteDataPtr(partnerID);
-#define FACE_DATA ((PortraitGfx *)faceFile->data)
-
-    gfx = FACE_DATA->sprites[EMOTION_NORMAL].gfx;
-    emotionId = EMOTION_NORMAL;
-
-    for (i = 0; i < 16; i++) {
-        SetBGPaletteBufferColorArray(i + 0xE0, &FACE_DATA->sprites[emotionId].pal[i]);
-    }
-
-    DisplayMonPortraitSpriteFlipped(1, gfx, 14);
-
-#undef FACE_DATA
-    CloseFile(faceFile);
-
     sub_80073E0(1);
     gUnknown_203B404->unk16 = 1;
 }
 
 static s32 GetValidPartners(void)
 {
-    u8 PlayerType[2];
-    u8 currentPartnerTypes[2];
     s32 i;
     s32 ValidPartnerCounter;
-    s32 CurrentPartnerID;
+
+    if (gUnknown_203B404->selectingStarter) {
+        for (i = 0; i < NUM_PARTNERS; i++)
+            gUnknown_203B404->PartnerArray[i] = gPartners[i];
+        return NUM_PARTNERS + 1;
+    }
 
     ValidPartnerCounter = 0;
-    PlayerType[0] = GetPokemonType(gUnknown_203B404->StarterID, 0);
-    PlayerType[1] = GetPokemonType(gUnknown_203B404->StarterID, 1);
 
     for (i = 0; i < NUM_PARTNERS; i++) {
-        CurrentPartnerID = gPartners[i];
-        currentPartnerTypes[0] = GetPokemonType(CurrentPartnerID, 0);
-        currentPartnerTypes[1] = GetPokemonType(CurrentPartnerID, 1);
+        gUnknown_203B404->PartnerArray[ValidPartnerCounter] = gPartners[i];
+        ValidPartnerCounter++;
+    }
 
-        if ((currentPartnerTypes[0] == TYPE_NONE || (currentPartnerTypes[0] != PlayerType[0] && currentPartnerTypes[0] != PlayerType[1]))
-        && ((currentPartnerTypes[1] == TYPE_NONE || (currentPartnerTypes[1] != PlayerType[0] && currentPartnerTypes[1] != PlayerType[1])))) {
-            gUnknown_203B404->PartnerArray[ValidPartnerCounter] = CurrentPartnerID;
-            ValidPartnerCounter++;
+    return ValidPartnerCounter + 1;
+}
+
+static s32 GetGlobalIndex(s32 localIndex)
+{
+    MenuInputStruct *input = &gUnknown_203B404->s18.m.input;
+    return input->currPage * input->entriesPerPage + localIndex;
+}
+
+static s16 ChooseRandomPartner(void)
+{
+    s16 selection;
+    s32 availableCount = gUnknown_203B404->s18.m.input.totalEntriesCount - 1;
+
+    if (availableCount <= 0)
+        return MONSTER_NONE;
+
+    if (!gUnknown_203B404->selectingStarter && gUnknown_203B404->StarterID != MONSTER_NONE && availableCount > 1) {
+        s32 attempts;
+
+        for (attempts = 0; attempts < 256; attempts++) {
+            selection = gUnknown_203B404->PartnerArray[RandInt(availableCount)];
+            if (selection != gUnknown_203B404->StarterID)
+                return selection;
+        }
+
+        for (attempts = 0; attempts < availableCount; attempts++) {
+            selection = gUnknown_203B404->PartnerArray[attempts];
+            if (selection != gUnknown_203B404->StarterID)
+                return selection;
         }
     }
 
-    return ValidPartnerCounter;
+    selection = gUnknown_203B404->PartnerArray[RandInt(availableCount)];
+    return selection;
+}
+
+static bool8 UpdateSelectionMenuCursor(MenuInputStruct *menuInput)
+{
+    s32 previousPage = menuInput->currPage;
+    s32 previousIndex = menuInput->menuIndex;
+    bool8 movedWithinPage = FALSE;
+    s32 key;
+
+    AddMenuCursorSprite(menuInput);
+
+    key = GetKeyPress(menuInput);
+    switch (key) {
+        case INPUT_DPAD_UP:
+            menuInput->unk24 = 0;
+            if (menuInput->currPageEntries > 0) {
+                if (menuInput->menuIndex <= 0)
+                    menuInput->menuIndex = menuInput->currPageEntries - 1;
+                else
+                    menuInput->menuIndex--;
+                movedWithinPage = TRUE;
+            }
+            break;
+        case INPUT_DPAD_DOWN:
+            menuInput->unk24 = 0;
+            if (menuInput->currPageEntries > 0) {
+                if (menuInput->menuIndex >= menuInput->currPageEntries - 1)
+                    menuInput->menuIndex = 0;
+                else
+                    menuInput->menuIndex++;
+                movedWithinPage = TRUE;
+            }
+            break;
+        case INPUT_DPAD_LEFT:
+            menuInput->unk24 = 0;
+            ScrollSelectionMenu(menuInput, FALSE);
+            break;
+        case INPUT_DPAD_RIGHT:
+            menuInput->unk24 = 0;
+            ScrollSelectionMenu(menuInput, TRUE);
+            break;
+    }
+
+    if (menuInput->currPage != previousPage) {
+        PlayMenuSoundEffect(4);
+        return TRUE;
+    }
+
+    if (movedWithinPage && menuInput->menuIndex != previousIndex)
+        PlayMenuSoundEffect(3);
+
+    return FALSE;
+}
+
+static void ScrollSelectionMenu(MenuInputStruct *menuInput, bool8 moveRight)
+{
+    if (menuInput->pagesCount <= 0)
+        return;
+
+    if (moveRight) {
+        if (menuInput->currPage < menuInput->pagesCount - 1)
+            menuInput->currPage++;
+        else
+            menuInput->currPage = 0;
+    }
+    else {
+        if (menuInput->currPage <= 0)
+            menuInput->currPage = menuInput->pagesCount - 1;
+        else
+            menuInput->currPage--;
+    }
+
+    MenuUpdatePagesData(menuInput);
 }

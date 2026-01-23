@@ -19,7 +19,7 @@ enum NaturePersonalities
     MISC,
 };
 
-#define NUM_PARTNERS 10
+#define NUM_PARTNERS 386
 #define NUM_QUIZ_QUESTIONS 55
 #define MAX_ASKED_QUESTIONS 8
 #define NUM_PERSONALITIES MISC

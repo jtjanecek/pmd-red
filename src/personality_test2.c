@@ -45,7 +45,7 @@ static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter)
     gUnknown_203B404->s18.m.menuWindow = &gUnknown_203B404->s18.m.windows.id[0];
 
     gUnknown_203B404->s18.m.windows.id[0] = gUnknown_80F4290;
-    gUnknown_203B404->s18.m.windows.id[1] = gUnknown_80F42A8;
+    gUnknown_203B404->s18.m.windows.id[1] = gUnknown_80F4278;
     gUnknown_203B404->s18.m.windows.id[2] = gUnknown_80F4278;
     gUnknown_203B404->s18.m.windows.id[3] = gUnknown_80F4278;
 
@@ -176,9 +176,6 @@ static void RedrawPartnerSelectionMenu(void)
 
 static void PersonalityTest_DisplayPartnerSprite(void)
 {
-    CallPrepareTextbox_8008C54(1);
-    sub_80073B8(1);
-    sub_80073E0(1);
     gUnknown_203B404->unk16 = 1;
 }
 

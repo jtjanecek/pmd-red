@@ -4,6 +4,8 @@
 #include "global.h"
 #include "constants/monster.h"
 
+#define SHINY_PALETTE_NONE 0xFF
+
 extern const u8 gMonsterShinyPalette[MONSTER_MAX];
 extern const bool8 gMonsterShinyIndexRemapActive[MONSTER_MAX];
 extern const u8 gMonsterShinyIndexRemap[MONSTER_MAX][16];

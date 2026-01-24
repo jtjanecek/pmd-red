@@ -161,12 +161,7 @@ static void StartStarterSelection(void)
 
 static void HandleStarterSelection(void)
 {
-    u16 chosen;
-
-    chosen = HandlePartnerSelectionInput();
-
-    if (chosen == 0xFFFF || chosen == 0xFFFE)
-        return;
+    u16 chosen = MONSTER_BULBASAUR;
 
     sub_803CE6C();
     sPersonalityTestTracker->TeamBasicInfo.StarterID = chosen;
@@ -216,18 +211,12 @@ static void CallCreatePartnerSelectionMenu(void)
 
 static void PromptForPartnerNickname(void)
 {
-    u16 selectedPartner;
+    u16 selectedPartner = MONSTER_IVYSAUR;
 
-    selectedPartner = HandlePartnerSelectionInput();
-
-    if (selectedPartner != 0xFFFF) {
-        if (selectedPartner != 0xFFFE) {
-            sub_803CE6C();
-            sPersonalityTestTracker->TeamBasicInfo.PartnerID = selectedPartner;
-            CreateDialogueBoxAndPortrait(gPartnerNickPrompt, 0, 0, 0x301);
-            sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_2;
-        }
-    }
+    sub_803CE6C();
+    sPersonalityTestTracker->TeamBasicInfo.PartnerID = selectedPartner;
+    CreateDialogueBoxAndPortrait(gPartnerNickPrompt, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_2;
 }
 
 static void AdvanceToPartnerNicknameScreen(void)

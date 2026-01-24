@@ -284,10 +284,10 @@ void UpdateMonsterSprite(Entity *entity)
             s16 shinySpecies = decoySprite ? MONSTER_DECOY : entInfo->apparentID;
             u8 shinyPalette = GetMonsterShinyPalette(shinySpecies);
 
-            if (shinyPalette != 0) {
+            if (shinyPalette != SHINY_PALETTE_NONE) {
                 overworldPal = shinyPalette;
-                indexRemap = GetMonsterShinyIndexRemap(shinySpecies);
             }
+            indexRemap = GetMonsterShinyIndexRemap(shinySpecies);
         }
 
         if (entity->unk22 == 0) {

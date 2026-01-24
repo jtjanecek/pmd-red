@@ -5,7 +5,7 @@
 u8 GetMonsterShinyPalette(s16 species)
 {
     if (species < 0 || species >= MONSTER_MAX) {
-        return 0;
+        return SHINY_PALETTE_NONE;
     }
     return gMonsterShinyPalette[species];
 }

@@ -10,6 +10,7 @@ import sys
 import zlib
 
 MAX_PALETTE_ID = 12
+SHINY_PALETTE_NONE = 255
 MAX_REMAP_INDEX = 15
 REMAP_COLUMNS = [f"index{i}_remap" for i in range(16)]
 
@@ -194,7 +195,7 @@ def load_shiny_palette_csv(path):
                 raise ValueError(f"Invalid id value: {get_cell(row, id_idx)}") from exc
             palette_raw = get_cell(row, palette_idx)
             if palette_raw == "" or palette_raw.lower() == "null":
-                palette_id = 0
+                palette_id = SHINY_PALETTE_NONE
             else:
                 try:
                     palette_id = int(palette_raw)
@@ -232,7 +233,7 @@ def load_shiny_palette_csv(path):
             raise ValueError(f"Negative id value: {monster_id}")
         if monster_id in seen_ids:
             raise ValueError(f"Duplicate id value: {monster_id}")
-        if palette_id < 0 or palette_id > MAX_PALETTE_ID:
+        if palette_id != SHINY_PALETTE_NONE and (palette_id < 0 or palette_id > MAX_PALETTE_ID):
             raise ValueError(
                 f"Palette id out of range (0-{MAX_PALETTE_ID}): {palette_id}"
             )

@@ -1,6 +1,7 @@
 #include "global.h"
 #include "globaldata.h"
 #include "constants/bg_music.h"
+#include "constants/dungeon.h"
 #include "constants/friend_area.h"
 #include "constants/ground_map.h"
 #include "constants/main_menu.h"
@@ -107,6 +108,7 @@ static void MainLoops_RunFrameActions(u32 unused);
 static void NDS_LoadOverlay_GroundMain();
 static void RemoveAllMoneyAndItems(void);
 static void RemoveMoneyAndRandomItems(void);
+static void AutoRecruitAllFriendAreaPokemon(void);
 static u32 RunGameMode_Async(u32 param_1);
 static u32 xxx_script_related_8001334_Async(u32 startMode);
 static u8 sub_8001170(void);
@@ -989,6 +991,42 @@ void sub_8001064(void)
             psVar2++;
         }
         SetScriptVarValue(NULL, PARTNER_TALK_KIND, psVar2->unk0);
+    }
+
+    AutoRecruitAllFriendAreaPokemon();
+}
+
+static void AutoRecruitAllFriendAreaPokemon(void)
+{
+    DungeonLocation location = { .id = DUNGEON_RESCUE_TEAM_BASE, .floor = 0 };
+    s32 species;
+    static const s16 sExtraSpecies[] = {
+        MONSTER_DEOXYS_NORMAL,
+        MONSTER_UNOWN_EMARK,
+        MONSTER_UNOWN_QMARK,
+    };
+    s32 extraIndex;
+
+    if (!HasAllFriendAreas())
+        InitializeFriendAreas();
+
+    for (species = 1; species <= MONSTER_JIRACHI; species++) {
+        if (species == MONSTER_BULBASAUR || species == MONSTER_IVYSAUR)
+            continue;
+        if (GetFriendArea(species) == FRIEND_AREA_NONE)
+            continue;
+        if (HasRecruitedMon(species))
+            continue;
+        TryAddLevel1PokemonToRecruited(species, NULL, ITEM_NOTHING, &location, NULL);
+    }
+
+    for (extraIndex = 0; extraIndex < (s32)ARRAY_COUNT(sExtraSpecies); extraIndex++) {
+        species = sExtraSpecies[extraIndex];
+        if (GetFriendArea(species) == FRIEND_AREA_NONE)
+            continue;
+        if (HasRecruitedMon(species))
+            continue;
+        TryAddLevel1PokemonToRecruited(species, NULL, ITEM_NOTHING, &location, NULL);
     }
 }
 

@@ -17970,7 +17970,7 @@
         "types": [
             "TYPE_NORMAL"
         ],
-        "friendArea": "THUNDER_MEADOW",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_FORECAST"
         ],
@@ -18013,7 +18013,7 @@
         "types": [
             "TYPE_NORMAL"
         ],
-        "friendArea": "THUNDER_MEADOW",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_FORECAST"
         ],
@@ -18056,7 +18056,7 @@
         "types": [
             "TYPE_NORMAL"
         ],
-        "friendArea": "THUNDER_MEADOW",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_FORECAST"
         ],
@@ -19825,7 +19825,7 @@
             "TYPE_PSYCHIC"
         ],
         "movementType": "MOVEMENT_TYPE_CHASM",
-        "friendArea": "ENCLOSED_ISLAND",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_PRESSURE"
         ],
@@ -19870,7 +19870,7 @@
             "TYPE_PSYCHIC"
         ],
         "movementType": "MOVEMENT_TYPE_CHASM",
-        "friendArea": "ENCLOSED_ISLAND",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_PRESSURE"
         ],
@@ -19915,7 +19915,7 @@
             "TYPE_PSYCHIC"
         ],
         "movementType": "MOVEMENT_TYPE_CHASM",
-        "friendArea": "ENCLOSED_ISLAND",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_PRESSURE"
         ],
@@ -19959,7 +19959,7 @@
         "types": [
             "TYPE_NORMAL"
         ],
-        "friendArea": "FRIGID_CAVERN",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_PRESSURE"
         ],
@@ -20002,7 +20002,7 @@
         "types": [
             "TYPE_STEEL"
         ],
-        "friendArea": "FRIGID_CAVERN",
+        "friendArea": "FRIEND_AREA_NONE",
         "abilities": [
             "ABILITY_PRESSURE"
         ],

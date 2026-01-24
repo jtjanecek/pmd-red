@@ -29,7 +29,8 @@ void InitializeFriendAreas(void)
     s32 i;
 
     for (i = 0; i < NUM_FRIEND_AREAS; i++)
-        gFriendAreas[i] = FALSE;
+        gFriendAreas[i] = TRUE;
+    gFriendAreas[FRIEND_AREA_NONE] = FALSE;
 }
 
 u8 sub_80923D4(s32 target)

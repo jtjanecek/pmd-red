@@ -16,7 +16,8 @@
 
 static EWRAM_DATA OpenedFile *sWazaParametersFile = { NULL }; // NDS=213C188
 static EWRAM_DATA MoveDataEntry *sMovesData = { NULL }; // NDS=213C18C
-static EWRAM_DATA MoveLearnset *sMoveLearnsets = { NULL }; // NDS=0213C184 | 420 entries, aka (MONSTER_DEOXYS_SPEED + 1), aka (MONSTER_MUNCHLAX)
+static EWRAM_DATA MoveLearnset *sMoveLearnsets = { NULL }; // NDS=0213C184 | 421 entries up to MONSTER_DECOY
+extern MoveDataEntry gMoveData[]; // ROM copy of move data (pointers are stable)
 
 static void CopyAndResetMove(Move *, Move *);
 static bool8 sub_80933D8(s32, Move *);
@@ -40,6 +41,8 @@ void LoadWazaParameters(void)
 
     sMovesData = ((MoveDataFile *)(sWazaParametersFile->data))->moveData;
     sMoveLearnsets = ((MoveDataFile *)(sWazaParametersFile->data))->moveLearnsets;
+    // The ROM copy has canonical pointers; prefer it in case the file-archive copy is corrupted.
+    sMovesData = gMoveData;
 }
 
 static u8 GetColorForMove(Move *move)
@@ -156,9 +159,7 @@ static const u8 gDummyMoves[] = {0};
 const u8 *GetLevelUpMoves(s16 species)
 {
     s32 id = SpeciesId(species);
-    if (species == MONSTER_DECOY || species == MONSTER_NONE)
-        return gDummyMoves;
-    if (id == MONSTER_MUNCHLAX)
+    if (species == MONSTER_NONE)
         return gDummyMoves;
 
     return sMoveLearnsets[id].levelUpMoves;
@@ -167,9 +168,7 @@ const u8 *GetLevelUpMoves(s16 species)
 const u8 *GetHMTMMoves(s16 species)
 {
     s32 id = SpeciesId(species);
-    if (species == MONSTER_DECOY || species == MONSTER_NONE)
-        return gDummyMoves;
-    if (id == MONSTER_MUNCHLAX)
+    if (species == MONSTER_NONE)
         return gDummyMoves;
 
     return sMoveLearnsets[id].HMTMMoves;

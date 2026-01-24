@@ -225,8 +225,6 @@ void UpdateAdventureAchievements(void)
         if (i == MONSTER_DEOXYS_ATTACK) continue;
         if (i == MONSTER_DEOXYS_DEFENSE) continue;
         if (i == MONSTER_DEOXYS_SPEED) continue;
-        if (i == MONSTER_MUNCHLAX) continue;
-        if (i == MONSTER_DECOY) continue;
         if (i == MONSTER_STATUE) continue;
         if (i == MONSTER_RAYQUAZA_CUTSCENE) continue;
 

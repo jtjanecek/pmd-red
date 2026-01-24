@@ -304,7 +304,7 @@ static void SetRecruitableMons(struct MonRecruitList *tabsData)
         s32 j;
         // Line below is only to trick compiler into generating matching stack pattern.
         dummy = tabsData[i].count;
-        for (j = 1; j < MONSTER_MUNCHLAX; j++) {
+        for (j = 1; j < MONSTER_MAX; j++) {
             s32 k;
             s32 speciesId = (s16) j;
             s32 monNameColor = 7;

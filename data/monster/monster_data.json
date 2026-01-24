@@ -19957,9 +19957,9 @@
         "movementSpeed": 1,
         "dialogueSprites": "0b0000000000111111",
         "types": [
-            "TYPE_PSYCHIC"
+            "TYPE_NORMAL"
         ],
-        "friendArea": "FRIEND_AREA_NONE",
+        "friendArea": "FRIGID_CAVERN",
         "abilities": [
             "ABILITY_PRESSURE"
         ],
@@ -19987,7 +19987,7 @@
             387,
             419
         ],
-        "recruitRate": 0,
+        "recruitRate": 10,
         "alphabetParent": [
             220,
             414
@@ -20002,7 +20002,7 @@
         "types": [
             "TYPE_STEEL"
         ],
-        "friendArea": "FRIEND_AREA_NONE",
+        "friendArea": "FRIGID_CAVERN",
         "abilities": [
             "ABILITY_PRESSURE"
         ],
@@ -20030,11 +20030,12 @@
             388,
             420
         ],
-        "recruitRate": 0,
+        "recruitRate": 10,
         "alphabetParent": [
             67,
             415
-        ]
+        ],
+        "dialogueSprites": "0b0000000000111111"
     },
     {
         "name": "MonsterNameStatue",

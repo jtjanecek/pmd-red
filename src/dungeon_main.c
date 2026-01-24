@@ -3,6 +3,7 @@
 #include "constants/dungeon.h"
 #include "constants/dungeon_action.h"
 #include "constants/iq_skill.h"
+#include "constants/monster.h"
 #include "constants/status.h"
 #include "constants/tactic.h"
 #include "structs/map.h"
@@ -22,6 +23,7 @@
 #include "dungeon_mon_sprite_render.h"
 #include "dungeon_action.h"
 #include "dungeon_ai_movement.h"
+#include "dungeon_astar.h"
 #include "dungeon_logic.h"
 #include "dungeon_items.h"
 #include "dungeon_range.h"
@@ -50,6 +52,7 @@
 #include "play_time.h"
 #include "pokemon.h"
 #include "pokemon_3.h"
+#include "position_util.h"
 #include "sprite.h"
 #include "string_format.h"
 #include "trap.h"
@@ -72,6 +75,14 @@ static EWRAM_DATA s16 sArrowsFrames = 0;
 static EWRAM_DATA bool8 sShowThreeArrows1 = 0;
 static EWRAM_DATA bool8 sShowThreeArrows2 = 0;
 
+// Auto-explore state
+EWRAM_DATA bool8 gAutoExploreActive = FALSE;
+EWRAM_DATA DungeonPos gAutoExploreTarget = {0, 0};
+EWRAM_DATA bool8 gAutoExploreHasTarget = FALSE;
+EWRAM_DATA DungeonPos gAutoExploreLastTarget = {0, 0};
+EWRAM_DATA bool8 gAutoExploreTargetPreserved = FALSE;
+EWRAM_DATA DungeonPos gAutoCrawlTargetPos = {-1, -1};
+
 static void TryCreateModeArrows(Entity *leader);
 static void sub_805E738(Entity *a0);
 static bool8 sub_805E874(void);
@@ -80,6 +91,544 @@ static bool8 sub_805EC4C(Entity *a0, u8 a1);
 static bool8 sub_805EF60(Entity *a0, EntityInfo *a1);
 static void ShowMainMenu(bool8 fromBPress, bool8 a1);
 static void PrintOnMainMenu(bool8 printAll);
+static bool8 AreStairsInCurrentRoom(DungeonPos *playerPos);
+static bool8 ArePlayerAndTargetInSameRoom(DungeonPos *playerPos, DungeonPos *targetPos);
+static void CalculateSimplePath(Entity *leader, DungeonPos *target);
+static void CalculateFullPath(Entity *leader, DungeonPos *target);
+static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction);
+static bool8 IsTileWalkableForAutoExplore(const DungeonPos *pos);
+static bool8 IsReachableAutoExploreTarget(Entity *leader, DungeonPos *target);
+
+static void CheckTileDebugNotification(Entity *leader)
+{
+    (void)leader;
+}
+
+void ResetAutoExplore(void)
+{
+    gAutoExploreHasTarget = FALSE;
+    gAutoExploreLastTarget.x = 0;
+    gAutoExploreLastTarget.y = 0;
+    gAutoExploreTargetPreserved = FALSE;
+}
+
+void SetAutoExploreActive(bool8 active)
+{
+    gAutoExploreActive = active;
+    if (!active) {
+        gAutoExploreTargetPreserved = gAutoExploreHasTarget;
+        gAutoExploreHasTarget = FALSE;
+    } else {
+        if (gAutoExploreTargetPreserved) {
+            Entity *leader = GetLeader();
+            if (leader != NULL) {
+                if (AreStairsInCurrentRoom(&leader->pos) ||
+                    ArePlayerAndTargetInSameRoom(&leader->pos, &gAutoExploreTarget)) {
+                    gAutoExploreTargetPreserved = FALSE;
+                } else {
+                    gAutoExploreHasTarget = TRUE;
+                    gAutoCrawlTargetPos = gAutoExploreTarget;
+                    gAutoExploreTargetPreserved = FALSE;
+                    CalculateSimplePath(leader, &gAutoExploreTarget);
+                    CalculateFullPath(leader, &gAutoExploreTarget);
+                    UpdateMinimap();
+                }
+            } else {
+                gAutoExploreTargetPreserved = FALSE;
+            }
+        }
+    }
+}
+
+bool8 IsAutoExploreActive(void)
+{
+    return gAutoExploreActive;
+}
+
+bool8 AreStairsVisible(void)
+{
+    const Tile *tile;
+    DungeonPos stairsPos = gDungeon->stairsSpawn;
+
+    if (stairsPos.x < 0 || stairsPos.y < 0)
+        return FALSE;
+    if (stairsPos.x >= DUNGEON_MAX_SIZE_X || stairsPos.y >= DUNGEON_MAX_SIZE_Y)
+        return FALSE;
+
+    tile = GetTile(stairsPos.x, stairsPos.y);
+    return (tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_REVEALED) != 0;
+}
+
+static bool8 AreStairsInCurrentRoom(DungeonPos *playerPos)
+{
+    const Tile *playerTile = GetTile(playerPos->x, playerPos->y);
+    const Tile *stairsTile = GetTile(gDungeon->stairsSpawn.x, gDungeon->stairsSpawn.y);
+
+    return (playerTile->room == stairsTile->room) && (stairsTile->room != CORRIDOR_ROOM);
+}
+
+static bool8 ArePlayerAndTargetInSameRoom(DungeonPos *playerPos, DungeonPos *targetPos)
+{
+    const Tile *playerTile = GetTile(playerPos->x, playerPos->y);
+    const Tile *targetTile = GetTile(targetPos->x, targetPos->y);
+
+    return (playerTile->room == targetTile->room) && (playerTile->room != CORRIDOR_ROOM);
+}
+
+bool8 ShouldExitAutoExploreOnInput(void)
+{
+    bool8 isActivating = ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & A_BUTTON)) ||
+                         ((gRealInputs.held & A_BUTTON) && (gRealInputs.pressed & R_BUTTON));
+    u16 exitMask = A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON | DPAD_ANY;
+
+    if (isActivating)
+        return FALSE;
+
+    if (gRealInputs.held & B_BUTTON)
+        return TRUE;
+
+    return (gRealInputs.pressed & exitMask) != 0;
+}
+
+static bool8 IsTileWalkableForAutoExplore(const DungeonPos *pos)
+{
+    const Tile *tile;
+    u16 terrainType;
+
+    if (pos->x < 0 || pos->y < 0 || pos->x >= DUNGEON_MAX_SIZE_X || pos->y >= DUNGEON_MAX_SIZE_Y)
+        return FALSE;
+
+    tile = GetTile(pos->x, pos->y);
+    terrainType = tile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+
+    if (terrainType != TERRAIN_TYPE_NORMAL)
+        return FALSE;
+
+    if (tile->terrainFlags & (TERRAIN_TYPE_IMPASSABLE_WALL | TERRAIN_TYPE_UNREACHABLE_FROM_STAIRS | TERRAIN_TYPE_UNBREAKABLE))
+        return FALSE;
+
+    return TRUE;
+}
+
+static bool8 IsReachableAutoExploreTarget(Entity *leader, DungeonPos *target)
+{
+    DungeonPos firstStep;
+    DungeonPos bestNeighbor = {-1, -1};
+    s32 bestNeighborScore = 0x7FFFFFFF;
+    s32 dx, dy;
+
+    if (leader == NULL)
+        return FALSE;
+
+    if (!IsTileWalkableForAutoExplore(&leader->pos))
+        return FALSE;
+
+    if (IsTileWalkableForAutoExplore(target)) {
+        firstStep = AStarPathfind(leader->pos, *target);
+        if (firstStep.x != -1 && firstStep.y != -1)
+            return TRUE;
+    }
+
+    for (dx = -1; dx <= 1; dx++) {
+        for (dy = -1; dy <= 1; dy++) {
+            DungeonPos neighbor;
+            s32 dist;
+
+            if (dx == 0 && dy == 0)
+                continue;
+
+            neighbor.x = target->x + dx;
+            neighbor.y = target->y + dy;
+
+            if (!IsTileWalkableForAutoExplore(&neighbor))
+                continue;
+
+            firstStep = AStarPathfind(leader->pos, neighbor);
+            if (firstStep.x == -1 || firstStep.y == -1)
+                continue;
+
+            dist = GetDistance(&neighbor, target);
+            if (dist < bestNeighborScore) {
+                bestNeighborScore = dist;
+                bestNeighbor = neighbor;
+            }
+        }
+    }
+
+    if (bestNeighbor.x != -1 && bestNeighbor.y != -1) {
+        *target = bestNeighbor;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static bool8 FindRandomUndiscoveredRoom(Entity *leader, DungeonPos *outTarget)
+{
+    s32 x, y;
+    s32 attempts = 0;
+    const Tile *tile;
+    bool8 found = FALSE;
+
+    while (attempts < 250 && !found) {
+        x = DungeonRandInt(DUNGEON_MAX_SIZE_X);
+        y = DungeonRandInt(DUNGEON_MAX_SIZE_Y);
+        tile = GetTile(x, y);
+
+        if (tile->room != CORRIDOR_ROOM && tile->room != ROOM_0xFE) {
+            if (!(tile->spawnOrVisibilityFlags.visibility & VISIBILITY_FLAG_REVEALED)) {
+                outTarget->x = x;
+                outTarget->y = y;
+                found = IsReachableAutoExploreTarget(leader, outTarget);
+            }
+        }
+        attempts++;
+    }
+
+    return found;
+}
+
+bool8 GetAutoExploreTarget(Entity *leader, DungeonPos *outTarget)
+{
+    const Tile *currentTile;
+
+    CheckTileDebugNotification(leader);
+
+    if (AreStairsInCurrentRoom(&leader->pos)) {
+        outTarget->x = gDungeon->stairsSpawn.x;
+        outTarget->y = gDungeon->stairsSpawn.y;
+
+        if (!IsReachableAutoExploreTarget(leader, outTarget)) {
+            LogMessageByIdWithPopupCheckUser_Async(leader, "No path to stairs - stopping auto-navigate");
+            gAutoExploreHasTarget = FALSE;
+            gAutoCrawlTargetPos.x = -1;
+            gAutoCrawlTargetPos.y = -1;
+            UpdateMinimap();
+            return FALSE;
+        }
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+
+        gAutoExploreActive = TRUE;
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+
+        CalculateSimplePath(leader, outTarget);
+        CalculateFullPath(leader, outTarget);
+        UpdateMinimap();
+        return TRUE;
+    }
+
+    if (gAutoExploreHasTarget) {
+        bool8 reachedTarget = FALSE;
+
+        if (leader->pos.x == gAutoExploreTarget.x && leader->pos.y == gAutoExploreTarget.y) {
+            reachedTarget = TRUE;
+        }
+        else if (ArePlayerAndTargetInSameRoom(&leader->pos, &gAutoExploreTarget)) {
+            reachedTarget = TRUE;
+        }
+
+        if (reachedTarget) {
+            LogMessageByIdWithPopupCheckUser_Async(leader, "Reached target!");
+            currentTile = GetTile(leader->pos.x, leader->pos.y);
+            if (currentTile->room != CORRIDOR_ROOM && currentTile->room != ROOM_0xFE) {
+                GetTileMut(leader->pos.x, leader->pos.y)->spawnOrVisibilityFlags.visibility |= VISIBILITY_FLAG_VISITED;
+            }
+            gAutoExploreHasTarget = FALSE;
+            gAutoCrawlTargetPos.x = -1;
+            gAutoCrawlTargetPos.y = -1;
+            UpdateMinimap();
+        } else {
+            *outTarget = gAutoExploreTarget;
+            return TRUE;
+        }
+    }
+
+    if (FindRandomUndiscoveredRoom(leader, outTarget)) {
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+
+        gAutoExploreActive = TRUE;
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+
+        CalculateSimplePath(leader, outTarget);
+        CalculateFullPath(leader, outTarget);
+        UpdateMinimap();
+        return TRUE;
+    }
+
+    if (AreStairsVisible()) {
+        outTarget->x = gDungeon->stairsSpawn.x;
+        outTarget->y = gDungeon->stairsSpawn.y;
+
+        if (!IsReachableAutoExploreTarget(leader, outTarget)) {
+            LogMessageByIdWithPopupCheckUser_Async(leader, "No path to stairs - stopping auto-navigate");
+            gAutoExploreHasTarget = FALSE;
+            gAutoCrawlTargetPos.x = -1;
+            gAutoCrawlTargetPos.y = -1;
+            UpdateMinimap();
+            return FALSE;
+        }
+
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+
+        gAutoExploreActive = TRUE;
+        gAutoExploreHasTarget = TRUE;
+        gAutoExploreTarget = *outTarget;
+        gAutoCrawlTargetPos = *outTarget;
+
+        CalculateSimplePath(leader, outTarget);
+        CalculateFullPath(leader, outTarget);
+        UpdateMinimap();
+        return TRUE;
+    }
+
+    gAutoExploreHasTarget = FALSE;
+    gAutoCrawlTargetPos.x = -1;
+    gAutoCrawlTargetPos.y = -1;
+    return FALSE;
+}
+
+static s32 FindBestPathToTarget(Entity *leader, DungeonPos *target)
+{
+    s32 direction;
+    s32 bestDirection = -1;
+    s32 bestScore = -9999;
+    s32 score;
+    DungeonPos testPos;
+    s32 currentDistance;
+    u16 terrainType;
+    s32 testDistance;
+    const Tile *targetTile;
+
+    currentDistance = GetDistance(&leader->pos, target);
+
+    direction = GetDirectionTowardsPosition(&leader->pos, target);
+    if (CanMoveInDirectionIgnoreMonsters(leader, direction)) {
+        return direction;
+    }
+
+    for (direction = 0; direction < 8; direction++) {
+        if (!CanMoveInDirectionIgnoreMonsters(leader, direction)) {
+            continue;
+        }
+
+        testPos.x = leader->pos.x + gAdjacentTileOffsets[direction].x;
+        testPos.y = leader->pos.y + gAdjacentTileOffsets[direction].y;
+        targetTile = GetTile(testPos.x, testPos.y);
+
+        if (targetTile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL) {
+            continue;
+        } else if (targetTile->terrainFlags & TERRAIN_TYPE_UNREACHABLE_FROM_STAIRS) {
+            continue;
+        } else if (targetTile->terrainFlags & TERRAIN_TYPE_UNBREAKABLE) {
+            continue;
+        } else if (testPos.x < 0 || testPos.y < 0 ||
+                   testPos.x >= DUNGEON_MAX_SIZE_X || testPos.y >= DUNGEON_MAX_SIZE_Y) {
+            continue;
+        }
+
+        terrainType = targetTile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+        if (terrainType == 0) {
+            continue;
+        }
+
+        testDistance = GetDistance(&testPos, target);
+        score = currentDistance - testDistance;
+        if (testDistance < currentDistance) {
+            score += 20;
+        }
+        if (testDistance > currentDistance) {
+            score -= 2;
+        }
+
+        {
+            s32 targetDirection = GetDirectionTowardsPosition(&leader->pos, target);
+            s32 directionDiff = (direction - targetDirection + 8) % 8;
+            if (directionDiff > 4) directionDiff = 8 - directionDiff;
+            score += (4 - directionDiff) * 3;
+        }
+
+        score += 1;
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestDirection = direction;
+        }
+    }
+
+    return bestDirection;
+}
+
+static bool8 CanMoveInDirectionIgnoreMonsters(Entity *pokemon, u32 direction)
+{
+    const Tile *targetTile = GetTile(pokemon->pos.x + gAdjacentTileOffsets[direction].x,
+        pokemon->pos.y + gAdjacentTileOffsets[direction].y);
+    s32 testX = pokemon->pos.x + gAdjacentTileOffsets[direction].x;
+    s32 testY = pokemon->pos.y + gAdjacentTileOffsets[direction].y;
+    u16 terrainType;
+
+    if (testX < 0 || testY < 0 ||
+        testX >= DUNGEON_MAX_SIZE_X || testY >= DUNGEON_MAX_SIZE_Y)
+        return FALSE;
+
+    if (targetTile->terrainFlags & TERRAIN_TYPE_IMPASSABLE_WALL)
+        return FALSE;
+
+    if (targetTile->terrainFlags & TERRAIN_TYPE_UNREACHABLE_FROM_STAIRS)
+        return FALSE;
+
+    if (targetTile->terrainFlags & TERRAIN_TYPE_UNBREAKABLE)
+        return FALSE;
+
+    terrainType = targetTile->terrainFlags & (TERRAIN_TYPE_NORMAL | TERRAIN_TYPE_SECONDARY);
+    if (terrainType != TERRAIN_TYPE_NORMAL) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static void CalculateSimplePath(Entity *leader, DungeonPos *target)
+{
+    (void)leader;
+    (void)target;
+}
+
+static void CalculateFullPath(Entity *leader, DungeonPos *target)
+{
+    (void)leader;
+    (void)target;
+}
+
+s32 GetAutoExploreDirection(Entity *leader)
+{
+    DungeonPos target;
+    DungeonPos nextStep;
+    s32 direction;
+    s32 attackDirection;
+    s32 dir;
+    DungeonPos adjacentPos;
+
+    if (!gAutoExploreActive) {
+        return -1;
+    }
+
+    if (ShouldExitAutoExploreOnInput()) {
+        SetAutoExploreActive(FALSE);
+        LogMessageByIdWithPopupCheckUser_Async(leader, "Autopilot OFF!");
+        return -1;
+    }
+
+    if (gAutoExploreHasTarget) {
+        bool8 reachedTarget = FALSE;
+
+        if (leader->pos.x == gAutoExploreTarget.x && leader->pos.y == gAutoExploreTarget.y) {
+            reachedTarget = TRUE;
+        }
+        else if (ArePlayerAndTargetInSameRoom(&leader->pos, &gAutoExploreTarget)) {
+            reachedTarget = TRUE;
+        }
+
+        if (reachedTarget) {
+            gAutoExploreLastTarget = gAutoExploreTarget;
+            gAutoExploreHasTarget = FALSE;
+        }
+    }
+
+    if (!GetAutoExploreTarget(leader, &target)) {
+        LogMessageByIdWithPopupCheckUser_Async(leader, "No targets found - stopping auto-navigate");
+        SetAutoExploreActive(FALSE);
+        return -1;
+    }
+
+    nextStep = AStarPathfind(leader->pos, target);
+
+    gDungeon->unk644.unk28 = 1;
+
+    attackDirection = -1;
+    for (dir = 0; dir < 8; dir++) {
+        adjacentPos.x = leader->pos.x + gAdjacentTileOffsets[dir].x;
+        adjacentPos.y = leader->pos.y + gAdjacentTileOffsets[dir].y;
+
+        if (adjacentPos.x >= 0 && adjacentPos.y >= 0 &&
+            adjacentPos.x < DUNGEON_MAX_SIZE_X && adjacentPos.y < DUNGEON_MAX_SIZE_Y) {
+
+            const Tile *adjacentTile = GetTile(adjacentPos.x, adjacentPos.y);
+
+            if (adjacentTile->monster != NULL && GetEntityType(adjacentTile->monster) == ENTITY_MONSTER) {
+                EntityInfo *targetInfo = GetEntInfo(adjacentTile->monster);
+
+                if (targetInfo->isNotTeamMember) {
+                    if (targetInfo->id == MONSTER_KECLEON)
+                        continue;
+                    if (CanAttackInDirection(leader, dir) && !CannotAttack(leader, FALSE)) {
+                        attackDirection = dir;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        EntityInfo *leaderInfo = GetEntInfo(leader);
+        if (leaderInfo->burnClassStatus.status == STATUS_PARALYSIS ||
+            leaderInfo->cringeClassStatus.status == STATUS_CRINGE ||
+            leaderInfo->cringeClassStatus.status == STATUS_COWERING ||
+            leaderInfo->cringeClassStatus.status == STATUS_CONFUSED) {
+            SetMonsterActionFields(&leaderInfo->action, ACTION_PASS_TURN);
+            return -3;
+        }
+    }
+
+    if (attackDirection != -1) {
+        EntityInfo *leaderInfo = GetEntInfo(leader);
+
+        SetMonsterActionFields(&leaderInfo->action, ACTION_REGULAR_ATTACK);
+        leaderInfo->action.direction = attackDirection & DIRECTION_MASK;
+        TargetTileInFront(leader);
+
+        return -2;
+    }
+
+    if (nextStep.x != -1 && nextStep.y != -1) {
+        direction = AStarGetDirection(leader->pos, nextStep);
+
+        if (!CanMoveInDirectionIgnoreMonsters(leader, direction)) {
+            direction = FindBestPathToTarget(leader, &target);
+        }
+    } else {
+        direction = FindBestPathToTarget(leader, &target);
+    }
+
+    if (direction < 0) {
+        LogMessageByIdWithPopupCheckUser_Async(leader, "Path not able to be found - autopilot OFF!");
+        gAutoExploreHasTarget = FALSE;
+        gAutoExploreTargetPreserved = FALSE;
+        gAutoCrawlTargetPos.x = -1;
+        gAutoCrawlTargetPos.y = -1;
+        SetAutoExploreActive(FALSE);
+        UpdateMinimap();
+        return -1;
+    }
+
+    UpdateMinimap();
+
+    return direction;
+}
+
+void AutoExploreInit(void)
+{
+}
 
 void DungeonHandlePlayerInput(void)
 {
@@ -105,7 +654,18 @@ void DungeonHandlePlayerInput(void)
         if (!ShouldMonsterRunAwayAndShowEffect(GetLeader(), TRUE)) {
             SetLeaderActionToNothing(TRUE);
             sub_805E804();
-            ShowDungeonStairsMenu(GetLeader());
+            if (IsAutoExploreActive()) {
+                ActionContainer *action = &GetEntInfo(GetLeader())->action;
+                SetMonsterActionFields(action, ACTION_STAIRS);
+                action->actionParameters[0].actionUseIndex = 0;
+                action->actionParameters[0].itemPos.x = 0;
+                action->actionParameters[0].itemPos.y = 0;
+                action->actionParameters[1].actionUseIndex = 0;
+                action->actionParameters[1].itemPos.x = 0;
+                action->actionParameters[1].itemPos.y = 0;
+            } else {
+                ShowDungeonStairsMenu(GetLeader());
+            }
             ResetRepeatTimers();
             ResetUnusedInputStruct();
             if (GetLeaderActionId() != ACTION_NOTHING) {
@@ -115,11 +675,23 @@ void DungeonHandlePlayerInput(void)
     }
 
     sub_806A914(1, 1, 1);
+    if (IsAutoExploreActive()) {
+        if (ShouldExitAutoExploreOnInput()) {
+            SetAutoExploreActive(FALSE);
+            LogMessageByIdWithPopupCheckUser_Async(GetLeader(), "Autopilot OFF!");
+        }
+    }
     while (TRUE) {
         Entity *leader = GetLeader();
         EntityInfo *leaderInfo = GetEntInfo(leader);
 
         sub_80978C8(leaderInfo->id);
+        if (IsAutoExploreActive()) {
+            if (ShouldExitAutoExploreOnInput()) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser_Async(leader, "Autopilot OFF!");
+            }
+        }
         if (gDungeon->unk644.unk28 != 0) {
             if (sub_805E874()) {
                 leaderInfo->action.action = 2;
@@ -181,6 +753,29 @@ void DungeonHandlePlayerInput(void)
 
             bPress = FALSE;
             rPress = FALSE;
+
+            if ((gRealInputs.held & R_BUTTON) && (gRealInputs.pressed & A_BUTTON)) {
+                if (!IsAutoExploreActive()) {
+                    SetAutoExploreActive(TRUE);
+                    LogMessageByIdWithPopupCheckUser_Async(leader, "Autopilot ON!");
+                } else {
+                    LogMessageByIdWithPopupCheckUser_Async(leader, "Already active!");
+                }
+                UnpressButtons();
+                ResetRepeatTimers();
+                ResetUnusedInputStruct();
+            }
+            else if ((gRealInputs.held & A_BUTTON) && (gRealInputs.pressed & R_BUTTON)) {
+                if (!IsAutoExploreActive()) {
+                    SetAutoExploreActive(TRUE);
+                    LogMessageByIdWithPopupCheckUser_Async(leader, "Autopilot ON!");
+                } else {
+                    LogMessageByIdWithPopupCheckUser_Async(leader, "Already active!");
+                }
+                UnpressButtons();
+                ResetRepeatTimers();
+                ResetUnusedInputStruct();
+            }
 
             if (gRealInputs.pressed & A_BUTTON) {
                 if (gRealInputs.held & B_BUTTON) {
@@ -307,6 +902,11 @@ void DungeonHandlePlayerInput(void)
                 }
             }
 
+            if ((gRealInputs.pressed & B_BUTTON) && IsAutoExploreActive()) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser_Async(leader, "Autopilot OFF!");
+            }
+
             tryItemThrow = FALSE;
             if (gRealInputs.held & R_BUTTON) {
                 if (!sInDiagonalMode) {
@@ -385,6 +985,64 @@ void DungeonHandlePlayerInput(void)
                 SetBGOBJEnableFlags(0);
                 DungeonRunFrameActions(0x2F);
                 DungeonRunFrameActions(0x2F);
+            }
+
+            if (IsAutoExploreActive() && !sInRotateMode) {
+                s32 autoExploreDir = GetAutoExploreDirection(leader);
+                if (autoExploreDir == -2) {
+                    break;
+                }
+                else if (autoExploreDir == -3) {
+                    break;
+                }
+                else if (autoExploreDir >= 0) {
+                    u8 canMoveFlags = 0;
+                    const u8 *immobilizedMsg = NULL;
+
+                    leaderInfo->action.direction = autoExploreDir & DIRECTION_MASK;
+
+                    if (sub_805EC4C(leader, 1))
+                        break;
+
+                    if (leaderInfo->frozenClassStatus.status == STATUS_SHADOW_HOLD) {
+                        immobilizedMsg = gUnknown_80F8A84, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_CONSTRICTION) {
+                        immobilizedMsg = gUnknown_80F8A6C, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_INGRAIN) {
+                        immobilizedMsg = gUnknown_80F8AB0, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_WRAP) {
+                        immobilizedMsg = gUnknown_80F8ADC, canMoveFlags |= 1;
+                    }
+                    else if (leaderInfo->frozenClassStatus.status == STATUS_WRAPPED) {
+                        immobilizedMsg = gUnknown_80F8B0C, canMoveFlags |= 1;
+                    }
+
+                    if (!CanMoveInDirection(leader, autoExploreDir))
+                        canMoveFlags |= 2;
+
+                    sub_806CDD4(leader, sub_806CEBC(leader), autoExploreDir);
+
+                    if (!(canMoveFlags & 2)) {
+                        if (canMoveFlags & 1) {
+                            if (immobilizedMsg != NULL) {
+                                LogMessageByIdWithPopupCheckUser_Async(leader, immobilizedMsg);
+                            }
+                            SetLeaderActionFields(ACTION_PASS_TURN);
+                            gDungeon->unk644.unk2F = 1;
+                        }
+                        else {
+                            SetLeaderActionFields(ACTION_WALK);
+                            leaderInfo->action.actionParameters[0].actionUseIndex = 1;
+                        }
+                        break;
+                    }
+                    else {
+                        SetAutoExploreActive(FALSE);
+                    }
+                }
             }
 
             if (gDungeon->unk644.unk29 != 0 && !sInDiagonalMode) {
@@ -970,6 +1628,8 @@ void CheckLeaderTile(void)
         break;
         case ENTITY_ITEM: {
             Item *item = GetItemInfo(tileObject);
+            if (IsAutoExploreActive())
+                break;
             if (!(item->flags & ITEM_FLAG_IN_SHOP)) {
                 TryLeaderItemPickUp_Async(&leader->pos, 1);
             }
@@ -1437,7 +2097,18 @@ static void ShowMainMenu(bool8 fromBPress, bool8 a1)
             }
             else if (tile->terrainFlags & TERRAIN_TYPE_STAIRS) {
                 SetLeaderActionToNothing(TRUE);
-                ShowDungeonStairsMenu(GetLeader());
+                if (IsAutoExploreActive()) {
+                    ActionContainer *action = &GetEntInfo(GetLeader())->action;
+                    SetMonsterActionFields(action, ACTION_STAIRS);
+                    action->actionParameters[0].actionUseIndex = 0;
+                    action->actionParameters[0].itemPos.x = 0;
+                    action->actionParameters[0].itemPos.y = 0;
+                    action->actionParameters[1].actionUseIndex = 0;
+                    action->actionParameters[1].itemPos.x = 0;
+                    action->actionParameters[1].itemPos.y = 0;
+                } else {
+                    ShowDungeonStairsMenu(GetLeader());
+                }
                 if (GetLeaderActionId() != ACTION_NOTHING)
                     break;
             }

@@ -7,6 +7,7 @@
 #include "dungeon_message.h"
 #include "dungeon_random.h"
 #include "dungeon_util.h"
+#include "dungeon_auto_explore.h"
 #include "items.h"
 #include "pokemon.h"
 #include "constants/direction.h"
@@ -178,6 +179,7 @@ void GenerateFloor(void)
     sKecleonShopPosition.minY = -1;
     sKecleonShopPosition.maxY = -1;
 
+    ResetAutoExplore();
     ResetFloor();
 
     gDungeon->unk644.enemyDensity = abs(floorProps->enemyDensity);

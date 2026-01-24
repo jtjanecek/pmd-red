@@ -19,4 +19,10 @@ ActionContainer *GetLeaderActionContainer(void);
 u16 GetLeaderActionId(void);
 bool8 DungeonGiveNameToRecruitedMon(u8 *name);
 
+// Auto-explore functions
+bool8 IsAutoExploreActive(void);
+void SetAutoExploreActive(bool8 active);
+bool8 ShouldExitAutoExploreOnInput(void);
+void ResetAutoExplore(void);
+
 #endif // GUARD_DUNGEON_MAIN_H

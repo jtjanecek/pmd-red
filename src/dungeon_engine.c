@@ -114,11 +114,23 @@ static bool8 RunLeaderTurn_Async(bool8 param_1)
             return FALSE;
         EnemyEvolution(entity);
         gDungeon->noActionInProgress = TRUE;
+        if (IsAutoExploreActive()) {
+            if (ShouldExitAutoExploreOnInput()) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser_Async(entity, "Autopilot OFF!");
+            }
+        }
         DungeonHandlePlayerInput();
         gDungeon->noActionInProgress = FALSE;
         if (IsFloorOver())
             break;
         ExecuteEntityDungeonAction_Async(entity);
+        if (IsAutoExploreActive()) {
+            if (ShouldExitAutoExploreOnInput()) {
+                SetAutoExploreActive(FALSE);
+                LogMessageByIdWithPopupCheckUser_Async(entity, "Autopilot OFF!");
+            }
+        }
         sub_8086AC0();
         TryForcedLoss_Async(FALSE);
         if (IsFloorOver())

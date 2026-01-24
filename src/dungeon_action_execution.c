@@ -65,6 +65,12 @@ bool8 ExecuteEntityDungeonAction_Async(Entity *entity)
     sub_804178C_Async(1);
     gUnknown_203B434 = TRUE;
     info = GetEntInfo(entity);
+    if (IsAutoExploreActive() && info->isTeamLeader) {
+        if (ShouldExitAutoExploreOnInput()) {
+            SetAutoExploreActive(FALSE);
+            LogMessageByIdWithPopupCheckUser_Async(entity, "Autopilot OFF!");
+        }
+    }
     info->useHeldItem = FALSE;
     info->unkF3 = FALSE;
     gDungeon->unkB8 = entity;
@@ -465,4 +471,3 @@ static void HandleFlashFire(void)
         }
     }
 }
-

@@ -3,4 +3,5 @@
 .include "src/text_1.o"
 .include "src/music.o"
 .include "src/dungeon_tilemap.o"
+.include "src/dungeon_astar.o"
 .include "src/random_mersenne_twister.o"

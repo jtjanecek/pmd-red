@@ -20,6 +20,7 @@ SECTIONS {
 
         data/sound_data.o(.bss);
         INCLUDE "sym_ewram.ld"
+        src/dungeon_astar.o(.bss);
         *libgcc.a:fp-bit.o(.bss);
         *libgcc.a:dp-bit.o(.bss);
         *libc.a:syscalls.o(.bss);
@@ -217,6 +218,7 @@ SECTIONS {
         src/dungeon_message_log.o(.text);
         src/dungeon_move.o(.text);
         src/dungeon_move_util.o(.text);
+        src/dungeon_astar.o(.text);
         src/move_orb_actions_1.o(.text);
         src/move_orb_actions_2.o(.text);
         src/move_orb_actions_3.o(.text);
@@ -603,6 +605,7 @@ SECTIONS {
         src/dungeon_message_log.o(.rodata);
         src/dungeon_move.o(.rodata);
         src/dungeon_move_util.o(.rodata);
+        src/dungeon_astar.o(.rodata);
         src/move_orb_actions_1.o(.rodata);
         src/move_orb_actions_2.o(.rodata);
         src/move_orb_actions_3.o(.rodata);

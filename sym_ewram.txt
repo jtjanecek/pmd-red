@@ -39,6 +39,7 @@
     .include "src/dungeon_message.o"
     .include "src/dungeon_message_log.o"
     .include "src/dungeon_move.o"
+    .include "src/dungeon_astar.o"
     .include "src/dungeon_main.o"
 	.space 4
     .include "src/dungeon_menu_items.o"

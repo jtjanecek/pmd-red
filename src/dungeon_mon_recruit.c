@@ -262,6 +262,9 @@ bool8 MonsterJoinSequence_Async(Entity *entity1, Entity *entity2, struct unkStru
     HandleFaint_Async(entity2,DUNGEON_EXIT_TRANSFORMED_INTO_FRIEND,entity1);
     dungeonMon = &gRecruitedPokemonRef->dungeonTeam[pokeIndex];
     dungeonMon->flags = POKEMON_FLAG_EXISTS | POKEMON_FLAG_ON_TEAM;
+    if (param_3->isShiny) {
+        dungeonMon->flags |= POKEMON_FLAG_SHINY;
+    }
     dungeonMon->isTeamLeader = FALSE;
     dungeonMon->level = param_3->level;
     dungeonMon->IQ = 1;
@@ -387,6 +390,9 @@ bool8 HandleSpecialEntityJoinSequence(Entity *entity1,Entity *entity2,Entity **e
     friendArea = GetFriendArea(local_74.id);
     dungeonMon = &gRecruitedPokemonRef->dungeonTeam[index];
     dungeonMon->flags = POKEMON_FLAG_EXISTS | POKEMON_FLAG_ON_TEAM;
+    if (local_74.isShiny) {
+        dungeonMon->flags |= POKEMON_FLAG_SHINY;
+    }
     dungeonMon->isTeamLeader = FALSE;
     dungeonMon->level = local_74.level;
     dungeonMon->IQ = 1;

@@ -78,6 +78,7 @@ GBAFIX    := tools/gbafix/gbafix
 AIF2PCM   := tools/aif2pcm/aif2pcm
 MID2AGB   := tools/mid2agb/mid2agb
 PREPROC   := tools/preproc/preproc
+PYTHON    ?= python3
 SCANINC   := tools/scaninc/scaninc
 RAMSCRGEN := tools/ramscrgen/ramscrgen
 DUNGEONJSON := tools/dungeonjson/dungeonjson
@@ -160,6 +161,15 @@ ALL_OBJECTS := $(C_OBJECTS) $(ASM_OBJECTS) $(C_ASM_OBJECTS) $(SONG_OBJS)
 OBJS_REL := $(patsubst $(BUILD_DIR)/%,%,$(ALL_OBJECTS))
 
 SUBDIRS := $(sort $(dir $(ALL_OBJECTS)))
+
+.DEFAULT_GOAL := all
+
+SHINY_PALETTE_CSV := rogue_files/shiny_palette.csv
+SHINY_PALETTE_TABLE_SRC := src/data/shiny_palette_table.c
+SHINY_PALETTE_TABLE_GENERATOR := rogue_files/shiny_processing/00_gen_shiny_palette_table.py
+
+$(SHINY_PALETTE_TABLE_SRC): $(SHINY_PALETTE_CSV) $(SHINY_PALETTE_TABLE_GENERATOR)
+	$(PYTHON) $(SHINY_PALETTE_TABLE_GENERATOR) --mode table --input $(SHINY_PALETTE_CSV) --output $(SHINY_PALETTE_TABLE_SRC)
 
 # Special configurations required for lib files
 ifeq ($(MODERN),0)

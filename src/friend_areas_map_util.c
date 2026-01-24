@@ -24,6 +24,7 @@
 #include "text_1.h"
 #include "text_2.h"
 #include "text_3.h"
+#include "shiny_palette_table.h"
 
 static inline bool8 ResetFlags(axdata *ptr)
 {
@@ -107,7 +108,27 @@ static void AnimateSprites(void)
     var_30.unkA = 0x800;
     bgPos = gFriendAreasMapPtr->bgPos;
     RunAxAnimationFrame(&gFriendAreasMapPtr->monAxSprite);
-    DoAxFrame_800558C(&gFriendAreasMapPtr->monAxSprite, gFriendAreasMapPtr->monSpritePos.x - bgPos.x, gFriendAreasMapPtr->monSpritePos.y - bgPos.y, 3, gFriendAreasMapPtr->unk4DD0, &var_30);
+    {
+        Pokemon *player = GetLeaderMon1();
+        u8 palette = gFriendAreasMapPtr->unk4DD0;
+        const u8 *indexRemap = NULL;
+        const u8 *prevRemap = NULL;
+
+        if (player != NULL && (player->flags & POKEMON_FLAG_SHINY)) {
+            u8 shinyPalette = GetMonsterShinyPalette(player->speciesNum);
+
+            if (shinyPalette != 0) {
+                palette = shinyPalette;
+                indexRemap = GetMonsterShinyIndexRemap(player->speciesNum);
+            }
+        }
+        prevRemap = GetSpriteIndexRemap();
+
+        SetSpriteIndexRemap(indexRemap);
+        DoAxFrame_800558C(&gFriendAreasMapPtr->monAxSprite, gFriendAreasMapPtr->monSpritePos.x - bgPos.x,
+                          gFriendAreasMapPtr->monSpritePos.y - bgPos.y, 3, palette, &var_30);
+        SetSpriteIndexRemap(prevRemap);
+    }
 
     for (i = 0; i < NUM_FRIEND_AREA_LOCATIONS; i++) {
         struct MapLocation *mapLocation = &gFriendAreasMapPtr->mapLocations[i];

@@ -1,0 +1,6 @@
+#ifndef GUARD_SHINY_H
+#define GUARD_SHINY_H
+
+#define SHINY_SPAWN_CHANCE_PERCENT 90
+
+#endif // GUARD_SHINY_H

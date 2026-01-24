@@ -14,6 +14,8 @@
 #include "friend_area.h"
 #include "moves.h"
 #include "pokemon_3.h"
+#include "random.h"
+#include "shiny.h"
 #include "sprite.h"
 #include "text_util.h"
 #include "dungeon_data.h"
@@ -34,6 +36,11 @@ struct unkStruct_8107654
     s16 species;
     s32 unk4;
 };
+
+static bool8 RollShinyChance(void)
+{
+    return RandInt(100) < SHINY_SPAWN_CHANCE_PERCENT;
+}
 
 // arm9.bin::0205C34C
 void LoadMonsterParameters(void)
@@ -78,6 +85,9 @@ void CreateLeaderPartnerData(s16 _species, bool32 _isLeader, u8* name)
      bool8 isLeader = _isLeader;
 
      pokemon.flags = POKEMON_FLAG_EXISTS | POKEMON_FLAG_ON_TEAM;
+     if (RollShinyChance()) {
+         pokemon.flags |= POKEMON_FLAG_SHINY;
+     }
      if (isLeader) {
          pokemon.isTeamLeader = TRUE;
          pokemon.dungeonLocation.id = DUNGEON_JOIN_LOCATION_LEADER;
@@ -137,6 +147,9 @@ void CreateLevel1Pokemon(Pokemon *pokemon, s16 _species, u8* name, u32 _itemID, 
     u8 itemID = _itemID;
 
     pokemon->flags = POKEMON_FLAG_EXISTS;
+    if (RollShinyChance()) {
+        pokemon->flags |= POKEMON_FLAG_SHINY;
+    }
     pokemon->isTeamLeader = FALSE;
     pokemon->level = 1;
     pokemon->pokeHP = GetBaseHP(species);
@@ -200,6 +213,9 @@ void ConvertStoryMonToPokemon(Pokemon *dst, const struct StoryMonData *src)
     s32 i;
 
     dst->flags = POKEMON_FLAG_EXISTS;
+    if (RollShinyChance()) {
+        dst->flags |= POKEMON_FLAG_SHINY;
+    }
     dst->isTeamLeader = FALSE;
     dst->level = src->level;
     dst->pokeHP = src->pokeHP;

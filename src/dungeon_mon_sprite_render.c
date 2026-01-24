@@ -30,6 +30,7 @@
 #include "text_util.h"
 #include "sprite.h"
 #include "random.h"
+#include "shiny_palette_table.h"
 
 static const u8 gUnknown_8106EC8[][13] = {
     {0, 1, 7, 7, 7, 5, 6, 7, 7, 7, 7, 7, 7},
@@ -267,6 +268,7 @@ void UpdateMonsterSprite(Entity *entity)
 
     if (entInfo->unkFF != 2) {
         s32 overworldPal;
+        const u8 *indexRemap = NULL;
 
         if (entInfo->frozenClassStatus.status == STATUS_PETRIFIED || entInfo->burnClassStatus.status == STATUS_PARALYSIS || entInfo->frozenClassStatus.status == STATUS_SHADOW_HOLD) {
             x += gDungeonFramesCounter & 2;
@@ -278,12 +280,29 @@ void UpdateMonsterSprite(Entity *entity)
         else {
             overworldPal = GetPokemonOverworldPalette(entInfo->apparentID, FALSE);
         }
+        if (entInfo->visualFlags & VISUAL_FLAG_SHINY) {
+            s16 shinySpecies = decoySprite ? MONSTER_DECOY : entInfo->apparentID;
+            u8 shinyPalette = GetMonsterShinyPalette(shinySpecies);
+
+            if (shinyPalette != 0) {
+                overworldPal = shinyPalette;
+                indexRemap = GetMonsterShinyIndexRemap(shinySpecies);
+            }
+        }
 
         if (entity->unk22 == 0) {
+            const u8 *prevRemap = GetSpriteIndexRemap();
+
+            SetSpriteIndexRemap(indexRemap);
             DoAxFrame_800558C(&entity->axObj.axdata, x, y, y2, overworldPal, &spriteMasks);
+            SetSpriteIndexRemap(prevRemap);
         }
         else if (entity->unk22 == 1 && (gDungeonFramesCounter & 1)) {
+            const u8 *prevRemap = GetSpriteIndexRemap();
+
+            SetSpriteIndexRemap(indexRemap);
             DoAxFrame_800558C(&entity->axObj.axdata, x, y, y2, overworldPal, &spriteMasks);
+            SetSpriteIndexRemap(prevRemap);
         }
     }
 

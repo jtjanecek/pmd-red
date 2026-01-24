@@ -25,6 +25,7 @@ EWRAM_DATA static void *sCharMemCursor = { NULL }; // R=2026E30
 UNUSED EWRAM_DATA static u32 sUnused3 = {0}; // R=2026E34
 
 EWRAM_INIT static unkStruct_20266B0 *sUnknown_203B074 = {0};
+EWRAM_INIT static const u8 *sSpriteIndexRemap = NULL;
 
 static void AxResInitUnoriented(axdata *, EfoFileData *, u32, u32, u32, bool8);
 static void RegisterSpriteParts_80052BC(const ax_sprite *spritesPtr);
@@ -139,6 +140,16 @@ void ResetSprites(bool8 a0)
 
     sSpriteList.unk800 = 0;
     sSpriteList.unk804 = 0;
+}
+
+const u8 *GetSpriteIndexRemap(void)
+{
+    return sSpriteIndexRemap;
+}
+
+void SetSpriteIndexRemap(const u8 *indexRemap)
+{
+    sSpriteIndexRemap = indexRemap;
 }
 
 // arm9.bin::020024CC
@@ -437,6 +448,7 @@ static void RegisterSpriteParts_80052BC(const ax_sprite *spritesPtr)
         sUnknown_203B074->byteCount = spritesPtr->byteCount;
         sUnknown_203B074->src = spritesPtr->gfx;
         sUnknown_203B074->dest = sCharMemCursor;
+        sUnknown_203B074->indexRemap = sSpriteIndexRemap;
         sCharMemCursor += spritesPtr->byteCount;
         sUnknown_203B074++;
         spritesPtr++;
@@ -449,8 +461,28 @@ void sub_8005304(void)
     unkStruct_20266B0 *s;
 
     for (s = &sUnknown_20266B0[0]; s < sUnknown_203B074; s++) {
-        if (s->src != NULL)
-            CpuCopy(s->dest, s->src, s->byteCount);
+        if (s->src != NULL) {
+            if (s->indexRemap == NULL) {
+                CpuCopy(s->dest, s->src, s->byteCount);
+            }
+            else {
+                const u8 *src = s->src;
+                u16 *dest = (u16 *)s->dest;
+                const u8 *remap = s->indexRemap;
+                s32 i;
+                s32 wordCount = s->byteCount >> 1;
+
+                // OBJ VRAM requires 16-bit writes; remap two bytes at a time.
+                for (i = 0; i < wordCount; i++) {
+                    u8 value0 = *src++;
+                    u8 value1 = *src++;
+                    u8 out0 = (remap[value0 >> 4] << 4) | remap[value0 & 0xF];
+                    u8 out1 = (remap[value1 >> 4] << 4) | remap[value1 & 0xF];
+
+                    *dest++ = out0 | (out1 << 8);
+                }
+            }
+        }
         else
             CpuClear(s->dest, s->byteCount);
     }

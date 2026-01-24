@@ -334,6 +334,7 @@ void sub_80A67CC(struct UnkGroundSpriteStruct *ptr, struct UnkGroundSpriteSubStr
     ptr->unk6E = 0;
     ptr->unk52 = -1;
     ptr->unk54 = NULL;
+    ptr->indexRemap = NULL;
     ptr->unk64 = 0;
     ptr->unk66 = -1;
     ptr->unk68 = 0;
@@ -889,14 +890,22 @@ bool8 sub_80A7094(struct UnkGroundSpriteStruct *ptr, PixelPos *r10, PixelPos *po
     unkY = resultPos.y - (a3 / 256);
     if (resultPos.x >= -64 && resultPos.x <= 303 && resultPos.y >= -16 && resultPos.y <= 207 && unkY >= -16 && unkY <= 207) {
         if ((ptr->flags_0x50 & 0x10) && (gUnknown_2039DCC & 1)) {
+            const u8 *prevRemap = GetSpriteIndexRemap();
+
             sub_80A72B8(ptr, FALSE);
+            SetSpriteIndexRemap(ptr->indexRemap);
             DoAxFrame_800558C(&ptr->axdata, 304, 208, 0, ptr->unk68, &ptr->unk3C);
+            SetSpriteIndexRemap(prevRemap);
             ptr->unk70 = 0;
             return FALSE;
         }
         else {
+            const u8 *prevRemap = GetSpriteIndexRemap();
+
             sub_80A72B8(ptr, ptr->unk70);
+            SetSpriteIndexRemap(ptr->indexRemap);
             DoAxFrame_800558C(&ptr->axdata, resultPos.x, unkY, resultPos.y + ptr->unk6A, ptr->unk68, &ptr->unk3C);
+            SetSpriteIndexRemap(prevRemap);
             ptr->unk70 = 0;
             if (r10 != NULL) {
                 *r10 = resultPos;
@@ -905,8 +914,12 @@ bool8 sub_80A7094(struct UnkGroundSpriteStruct *ptr, PixelPos *r10, PixelPos *po
         }
     }
     else if (ptr->unk70 != 0) {
+        const u8 *prevRemap = GetSpriteIndexRemap();
+
         sub_80A72B8(ptr, TRUE);
+        SetSpriteIndexRemap(ptr->indexRemap);
         DoAxFrame_800558C(&ptr->axdata, 304, 208, 0, ptr->unk68, &ptr->unk3C);
+        SetSpriteIndexRemap(prevRemap);
         ptr->unk70 = 0;
         return FALSE;
     }

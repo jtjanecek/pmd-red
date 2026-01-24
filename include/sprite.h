@@ -26,6 +26,7 @@ typedef struct unkStruct_20266B0
     /* 0x0 */ s32 byteCount;
     /* 0x4 */ const void *src;
     /* 0x8 */ void *dest;
+    /* 0xC */ const u8 *indexRemap;
 } unkStruct_20266B0;
 
 void AddAxSprite(const ax_pose *axPose, const axdata1 *axData, const ax_sprite *axSprite, unkStruct_2039DB0 *spriteMasks);
@@ -35,6 +36,7 @@ void AxResInitFile(axdata *, OpenedFile *, u32, u32, u32, u32 spriteAnimIndex, b
 void AxResInitUnorientedFile(axdata *, OpenedFile *, u32, u32, u32 spriteAnimIndex, bool8);
 void BlinkSavingIcon(void);
 void CopySpritesToOam(void);
+const u8 *GetSpriteIndexRemap(void);
 void DoAxFrame_800558C(axdata *, s32 spriteX, s32 spriteY, u32, u32 paletteNum, unkStruct_2039DB0 *spriteMasks);
 void InitSprites(void);
 void nullsub_7(DungeonPos *);
@@ -47,6 +49,7 @@ void nullsub_13(void);
 void nullsub_14(void);
 void ResetSprites(bool8);
 void RunAxAnimationFrame(axdata *);
+void SetSpriteIndexRemap(const u8 *indexRemap);
 void SetSavingIconCoords(DungeonPos *pos);
 void sub_8004E8C(unkStruct_2039DB0 *);
 void sub_8005180(void);

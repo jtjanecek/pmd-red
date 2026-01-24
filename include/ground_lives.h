@@ -7,6 +7,8 @@
 #include "structs/str_pokemon.h"
 #include "structs/str_dungeon_location.h"
 
+#define GROUND_LIVE_FLAG_SHINY 0x80000000
+
 void AllocGroundLives(void);
 void DeleteGroundLives(void);
 void FreeGroundLives(void);

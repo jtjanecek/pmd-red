@@ -60,6 +60,7 @@ SECTIONS {
         src/other_random.o(.text);
         src/util.o(.text);
         src/bg_palette_buffer.o(.text);
+        src/shiny_palette_table.o(.text);
         src/input.o(.text);
         src/code_8004AA0.o(.text);
         src/sprite.o(.text);
@@ -712,6 +713,7 @@ SECTIONS {
         src/number_util.o(.rodata);
         src/dungeon_run_end.o(.rodata);
         src/data_serializer.o(.rodata);
+        src/data/shiny_palette_table.o(.rodata);
         src/game_options.o(.rodata);
         src/random_mersenne_twister.o(.rodata);
         src/play_time.o(.rodata);

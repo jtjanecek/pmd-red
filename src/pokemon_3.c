@@ -14,6 +14,7 @@
 #include "pokemon.h"
 #include "pokemon_3.h"
 #include "random.h"
+#include "shiny.h"
 #include "string_format.h"
 #include "strings.h"
 #include "text_1.h"
@@ -33,6 +34,167 @@ struct UnusedOffenseStruct
 
 static void ReadHiddenPowerBits(DataSerializer* a1, HiddenPower* a2);
 static void WriteHiddenPowerBits(DataSerializer* a1, HiddenPower* a2);
+
+#define SHINY_SAVE_MAGIC 0x594E4853u
+#define SHINY_SAVE_VERSION 1
+#define SHINY_SAVE_HEADER_SIZE 8
+
+static void WriteShinyHeader(u8 *ptr, u16 count)
+{
+    ptr[0] = (u8)(SHINY_SAVE_MAGIC & 0xFF);
+    ptr[1] = (u8)((SHINY_SAVE_MAGIC >> 8) & 0xFF);
+    ptr[2] = (u8)((SHINY_SAVE_MAGIC >> 16) & 0xFF);
+    ptr[3] = (u8)((SHINY_SAVE_MAGIC >> 24) & 0xFF);
+    ptr[4] = (u8)(count & 0xFF);
+    ptr[5] = (u8)((count >> 8) & 0xFF);
+    ptr[6] = SHINY_SAVE_VERSION;
+    ptr[7] = 0;
+}
+
+static bool8 ReadShinyHeader(const u8 *ptr, u16 *outCount)
+{
+    u32 magic = (u32)ptr[0]
+        | ((u32)ptr[1] << 8)
+        | ((u32)ptr[2] << 16)
+        | ((u32)ptr[3] << 24);
+    u8 version = ptr[6];
+
+    if (magic != SHINY_SAVE_MAGIC || version != SHINY_SAVE_VERSION) {
+        return FALSE;
+    }
+    *outCount = (u16)(ptr[4] | (ptr[5] << 8));
+    return TRUE;
+}
+
+static u8 *GetShinySavePtr(u8 *buffer, s32 size, u32 bitCount, s32 *outAvail)
+{
+    u32 offset = (bitCount + 7) / 8;
+
+    if (offset >= (u32)size) {
+        return NULL;
+    }
+    if (outAvail != NULL) {
+        *outAvail = size - (s32)offset;
+    }
+    return buffer + offset;
+}
+
+static void SaveShinyFlags(u8 *buffer, s32 size, u32 bitCount)
+{
+    s32 avail;
+    u8 *ptr = GetShinySavePtr(buffer, size, bitCount, &avail);
+    s32 shinyBytes;
+    s32 i;
+
+    if (ptr == NULL) {
+        return;
+    }
+
+    shinyBytes = (NUM_MONSTERS + 7) / 8;
+    if (avail < SHINY_SAVE_HEADER_SIZE + shinyBytes) {
+        return;
+    }
+
+    {
+        u8 *bits = ptr + SHINY_SAVE_HEADER_SIZE;
+
+        WriteShinyHeader(ptr, NUM_MONSTERS);
+
+        memset(bits, 0, shinyBytes);
+        for (i = 0; i < NUM_MONSTERS; i++) {
+            if (gRecruitedPokemonRef->pokemon[i].flags & POKEMON_FLAG_SHINY) {
+                bits[i / 8] |= (1 << (i & 7));
+            }
+        }
+    }
+}
+
+static bool8 LoadShinyFlags(u8 *buffer, s32 size, u32 bitCount)
+{
+    s32 avail;
+    u8 *ptr = GetShinySavePtr(buffer, size, bitCount, &avail);
+    s32 shinyBytes;
+    s32 i;
+    u16 count;
+
+    if (ptr == NULL || avail < SHINY_SAVE_HEADER_SIZE) {
+        return FALSE;
+    }
+
+    {
+        const u8 *bits;
+
+        if (!ReadShinyHeader(ptr, &count)) {
+            return FALSE;
+        }
+        if (count > NUM_MONSTERS) {
+            return FALSE;
+        }
+
+        shinyBytes = (count + 7) / 8;
+        if (avail < SHINY_SAVE_HEADER_SIZE + shinyBytes) {
+            return FALSE;
+        }
+
+        bits = ptr + SHINY_SAVE_HEADER_SIZE;
+        for (i = 0; i < count; i++) {
+            if (bits[i / 8] & (1 << (i & 7))) {
+                gRecruitedPokemonRef->pokemon[i].flags |= POKEMON_FLAG_SHINY;
+            }
+            else {
+                gRecruitedPokemonRef->pokemon[i].flags &= ~POKEMON_FLAG_SHINY;
+            }
+        }
+    }
+
+    return TRUE;
+}
+
+static u32 LocalRand32(u32 *state)
+{
+    u32 a;
+    u32 b;
+
+    *state = (1566083941 * (*state)) + 1;
+    a = (*state >> 16) & 0xFFFF;
+    *state = (1566083941 * (*state)) + 1;
+    b = (*state >> 16) & 0xFFFF;
+    return (a << 16) | b;
+}
+
+static s32 LocalRandInt(u32 *state, s32 maxExclusive)
+{
+    return (((LocalRand32(state) & 0xFFFF) * maxExclusive) >> 16) & 0xFFFF;
+}
+
+static bool8 RollShinyChanceLocal(u32 *state)
+{
+    if (SHINY_SPAWN_CHANCE_PERCENT <= 0) {
+        return FALSE;
+    }
+    if (SHINY_SPAWN_CHANCE_PERCENT >= 100) {
+        return TRUE;
+    }
+    return LocalRandInt(state, 100) < SHINY_SPAWN_CHANCE_PERCENT;
+}
+
+static void ApplyShinyChanceToTeam(void)
+{
+    u32 state = ((u32)GetRNGState()) ^ 0x5A5A5A5A;
+    Pokemon *player = GetLeaderMon1();
+    Pokemon *partner = GetPartnerMon();
+
+    if (player != NULL && !(player->flags & POKEMON_FLAG_SHINY)) {
+        if (RollShinyChanceLocal(&state)) {
+            player->flags |= POKEMON_FLAG_SHINY;
+        }
+    }
+    if (partner != NULL && !(partner->flags & POKEMON_FLAG_SHINY)) {
+        if (RollShinyChanceLocal(&state)) {
+            partner->flags |= POKEMON_FLAG_SHINY;
+        }
+    }
+}
 
 // arm9.bin::02059FDC
 void GenerateHiddenPower(HiddenPower* a1)
@@ -570,6 +732,7 @@ s32 SaveRecruitedPokemon(u8 *a1, s32 a2)
     WriteBits(&backup, &teamLeader, 16);
 
     FinishBitSerializer(&backup);
+    SaveShinyFlags(a1, a2, backup.unkC);
     return backup.count;
 }
 
@@ -610,6 +773,9 @@ s32 RestoreRecruitedPokemon(u8 *a1, s32 a2)
         gRecruitedPokemonRef->pokemon[data_s16].isTeamLeader = TRUE;
 
     FinishBitSerializer(&backup);
+    if (!LoadShinyFlags(a1, a2, backup.unkC)) {
+        ApplyShinyChanceToTeam();
+    }
     return backup.count;
 }
 

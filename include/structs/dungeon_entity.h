@@ -20,6 +20,7 @@
 #define MAX_STOCKPILE_STAGE 3
 #define NUM_SPEED_COUNTERS 5
 #define NUM_PREV_POS 4
+#define VISUAL_FLAG_SHINY 0x8000
 
 // size: 0x8
 typedef struct ActionParameter

@@ -14,6 +14,7 @@ enum PokemonUnk0Flags
     POKEMON_FLAG_NONE = 0,
     POKEMON_FLAG_EXISTS = 1 << 0,
     POKEMON_FLAG_ON_TEAM = 1 << 1, // Mon is not on "standby"
+    POKEMON_FLAG_SHINY = 1 << 2,
     POKEMON_FLAG_x4000 = 1 << 14,
     POKEMON_FLAG_x8000 = 1 << 15,
 };

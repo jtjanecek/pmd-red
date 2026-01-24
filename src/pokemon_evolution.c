@@ -217,12 +217,15 @@ Pokemon *sub_808F798(Pokemon *pokemon, s16 _species)
     u8 buffer [64];
     s32 species = _species;
     bool8 copy;
+    u16 shinyFlag;
 
     pokeStruct = *pokemon;
     r6 = pokeStruct.speciesNum;
     GetLvlUpEntry(&levelData,species,pokeStruct.level);
     pokeStruct.currExp = levelData.expRequired;
+    shinyFlag = pokeStruct.flags & POKEMON_FLAG_SHINY;
     pokemon->flags = 0;
+    pokeStruct.flags = (pokeStruct.flags & ~POKEMON_FLAG_SHINY) | shinyFlag;
     pokeStruct.speciesNum = species;
     if (pokeStruct.unkC[0].level == 0) {
         pokeStruct.unkC[0].level = pokeStruct.level;

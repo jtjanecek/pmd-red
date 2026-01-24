@@ -20,6 +20,7 @@ struct unkStruct_8069D4C
     Item heldItem;
     Moves moves;
     HiddenPower hiddenPower;
+    bool8 isShiny;
 };
 
 void OpenDungeonPaletteFile(void);

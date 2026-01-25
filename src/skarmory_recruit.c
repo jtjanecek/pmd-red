@@ -22,6 +22,7 @@ static u32 MixSeeds(u32 dungeonNumber, s32 personalitySeed);
 static bool8 IsEligibleSpecies(s16 species);
 static u8 GetMaxRecruitedLevel(void);
 static void ApplyLevelGains(Pokemon *mon, u8 targetLevel);
+static s32 GetBaseStatTotal(s16 species);
 
 void SkarmoryRecruit_Init(void)
 {
@@ -246,22 +247,19 @@ static void ApplyLevelGains(Pokemon *mon, u8 targetLevel)
 s32 SkarmoryRecruit_GetCostForSpecies(s16 species)
 {
     s32 baseCost = 25;
-    s32 rarity = GetRecruitRate(species);
-    s32 level = SkarmoryRecruit_GetRecommendedLevel();
+    s32 bst = GetBaseStatTotal(species);
     s32 cost;
     u32 difficulty = GetGameDifficultySetting();
     static const s32 sDifficultySurcharge[] = {
-        [DIFFICULTY_NORMAL] = 0,
+        [DIFFICULTY_NORMAL] = 250,
         [DIFFICULTY_HARD] = 500,
         [DIFFICULTY_NIGHTMARE] = 1000,
     };
 
-    if (rarity < 0)
-        rarity = -rarity;
-    if (rarity > 200)
-        rarity = 200;
+    if (bst < 0)
+        bst = 0;
 
-    cost = baseCost + rarity * 2 + level * 3;
+    cost = baseCost + bst * 2;
     if (difficulty < ARRAY_COUNT(sDifficultySurcharge))
         cost += sDifficultySurcharge[difficulty];
 
@@ -271,6 +269,17 @@ s32 SkarmoryRecruit_GetCostForSpecies(s16 species)
         cost = MAX_TEAM_MONEY;
 
     return cost;
+}
+
+static s32 GetBaseStatTotal(s16 species)
+{
+    s32 hp = GetBaseHP(species);
+    s32 atk = GetBaseOffensiveStat(species, OFFENSE_NRM);
+    s32 spAtk = GetBaseOffensiveStat(species, OFFENSE_SP);
+    s32 def = GetBaseDefensiveStat(species, OFFENSE_NRM);
+    s32 spDef = GetBaseDefensiveStat(species, OFFENSE_SP);
+
+    return hp + atk + spAtk + def + spDef;
 }
 
 const void *const gSkarmoryRecruitLinkAnchor[] = {

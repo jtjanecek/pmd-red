@@ -2560,7 +2560,7 @@ static void SeedBossRewardLoot(BossFightConfig *bossFight, s32 seed, u8 dungeonI
     if (bossFight == NULL)
         return;
 
-    if (seed < 0)
+    if (seed == -1)
         seed = 0;
 
     rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x4C4F4F54); // "LOOT"
@@ -3542,8 +3542,10 @@ static s16 SelectBossRewardRecruitSpecies(void)
     u8 dungeonId = gDungeon->unk644.dungeonLocation.id;
     s32 attempts;
 
-    if (seed < 0)
-        seed = 0;
+    if (seed < 0) {
+        if (!DungeonSeedOverrides_IsEnabled(&seed))
+            seed = 0;
+    }
 
     rng = DungeonSeedRng_Init(seed, dungeonId, 0, 0x52454352); // "RECR"
     for (attempts = 0; attempts < 200; attempts++) {

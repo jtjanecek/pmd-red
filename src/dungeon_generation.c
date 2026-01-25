@@ -6389,7 +6389,7 @@ static void SeedBossArenaRng(void)
     s32 floorId = 0;
 
     DungeonSeedOverrides_IsEnabled(&seed);
-    if (seed < 0)
+    if (seed == -1)
         seed = sub_8011C34();
 
     if (gDungeon != NULL) {
@@ -6397,7 +6397,7 @@ static void SeedBossArenaRng(void)
         floorId = gDungeon->unk644.dungeonLocation.floor;
     }
 
-    if (seed < 0)
+    if (seed == -1)
         seed = 0;
 
     sBossArenaRngState = DungeonSeedOverrides_GetDungeonRngSeed(seed, dungeonId, floorId) ^ 0xB055A4EA;

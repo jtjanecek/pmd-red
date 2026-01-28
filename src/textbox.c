@@ -173,6 +173,9 @@ static void StartGengarHintConversation(void);
 static bool8 UpdateGengarHintConversation(void);
 static void ShowGengarHintMessage(const u8 *text);
 static s32 GetCurrentDungeonForHint(void);
+static s32 GetGengarHintCost(void);
+static const u8 *BuildGengarHintIntroText(void);
+static const u8 *BuildGengarHintPayText(void);
 static bool8 HasEnoughMoneyForGengarHint(void);
 static const u8 *BuildKecleonShopHintText(void);
 static const u8 *BuildSuperTrapHintText(void);
@@ -184,7 +187,6 @@ static void CleanupGengarHintPortrait(void);
 static MonPortraitMsg *GetGengarHintPortrait(void);
 static s32 GetQueuedDungeonForHint(void);
 
-static const u8 sGengarHintIntroText[] = _("{color YELLOW}Gengar{reset}: Heh heh heh...\nI know something about the dungeon ahead.\nGive me 1000 {POKE} for a hint.");
 static const u8 sGengarHintFreeIntroText[] = _("{color YELLOW}Gengar{reset}: Heh heh... you're new here.\nI'll give you a free hint this time.\nWhich would you like?");
 static const u8 sGengarHintChoicePrompt[] = _("{color YELLOW}Gengar{reset}: Heh heh. Which hint would you like?");
 static const u8 sGengarHintGreedyText[] = _("{color YELLOW}Gengar{reset}: Trying again? Heh...\nSomeone's feeling a little desperate.");
@@ -199,8 +201,8 @@ static EWRAM_DATA u8 sGengarHintBossFloorBuffer[96] = {0};
 static EWRAM_DATA u8 sDungeonEntryReqBuffer[200] = {0};
 
 
-static const MenuItem sGengarHintPaymentMenu[] = {
-    {_("Pay 1000 {POKE}"), 1},
+static MenuItem sGengarHintPaymentMenu[] = {
+    {NULL, 1},
     {_("No thanks"), 0},
     {NULL, -1},
 };
@@ -239,7 +241,7 @@ static void CleanupSkarmoryRecruitPortrait(void);
 static MonPortraitMsg *GetSkarmoryRecruitPortrait(void);
 
 static const u8 sSkarmoryRecruitUnavailableText[] = _("{color YELLOW}Skarmory{reset}: I don't have anyone else\navailable yet.");
-static const u8 sSkarmoryRecruitNoMoneyText[] = _("{color YELLOW}Skarmory{reset}: Airlift costs 50 {POKE}.\nYou're short.");
+static const u8 sSkarmoryRecruitNoMoneyText[] = _("{color YELLOW}Skarmory{reset}: You don't have enough.");
 static const u8 sSkarmoryRecruitDeclineText[] = _("{color YELLOW}Skarmory{reset}: Copy.");
 static const u8 sSkarmoryRecruitRosterFullText[] = _("{color YELLOW}Skarmory{reset}: No room to station them.\nClear some space.");
 
@@ -2407,7 +2409,8 @@ static void StartGengarHintConversation(void)
     }
 
     // After first hint, ALWAYS show the intro text and payment menu
-    CreateMenuDialogueBoxAndPortrait(sGengarHintIntroText, 0, 0, sGengarHintPaymentMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
+    sGengarHintPaymentMenu[0].text = BuildGengarHintPayText();
+    CreateMenuDialogueBoxAndPortrait(BuildGengarHintIntroText(), 0, 0, sGengarHintPaymentMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
     sGengarHintState.stage = GENGAR_HINT_STAGE_PAYMENT_MENU;
 }
 
@@ -2434,18 +2437,7 @@ static bool8 UpdateGengarHintConversation(void)
                     return FALSE;
                 }
                 // Has money - deduct it and proceed
-                {
-                    u32 difficulty = GetGameDifficultySetting();
-                    static const s32 sGengarHintSurcharge[] = {
-                        [DIFFICULTY_NORMAL] = 0,
-                        [DIFFICULTY_HARD] = 500,
-                        [DIFFICULTY_NIGHTMARE] = 1000,
-                    };
-                    s32 cost = GENGAR_HINT_COST;
-                    if (difficulty < ARRAY_COUNT(sGengarHintSurcharge))
-                        cost += sGengarHintSurcharge[difficulty];
-                    AddToTeamMoney(-cost);
-                }
+                AddToTeamMoney(-GetGengarHintCost());
                 BuildGengarHintChoiceMenu();
                 CreateMenuDialogueBoxAndPortrait(sGengarHintChoicePrompt, 0, 0, sGengarHintChoiceMenu, 0, 3, 0, GetGengarHintPortrait(), 0x101);
                 sGengarHintState.stage = GENGAR_HINT_STAGE_HINT_MENU;
@@ -2568,19 +2560,54 @@ static s32 GetQueuedDungeonForHint(void)
     return dungeonId;
 }
 
+static s32 GetGengarHintCost(void)
+{
+    s32 dungeonNumber = 1;
+    s32 dungeonId = sGengarHintState.dungeonId;
+    u32 difficulty = GetGameDifficultySetting();
+    static const s32 sGengarHintSurcharge[] = {
+        [DIFFICULTY_NORMAL] = 100,
+        [DIFFICULTY_HARD] = 200,
+        [DIFFICULTY_NIGHTMARE] = 250,
+    };
+    s32 surcharge = 0;
+
+    if (difficulty < ARRAY_COUNT(sGengarHintSurcharge))
+        surcharge = sGengarHintSurcharge[difficulty];
+
+    if (dungeonId >= 0 && DungeonSeedOverrides_IsEnabled(NULL)) {
+        dungeonNumber = DungeonSeedOverrides_GetDungeonNumberForDisplay((u8)dungeonId);
+        if (dungeonNumber < 1)
+            dungeonNumber = 1;
+    }
+
+    return GENGAR_HINT_COST + surcharge * dungeonNumber;
+}
+
+static const u8 *BuildGengarHintIntroText(void)
+{
+    s32 cost = GetGengarHintCost();
+
+    sprintfStatic(sDungeonEntryReqBuffer,
+                  _("{color YELLOW}Gengar{reset}: Heh heh heh...\n"
+                    "I know something about the dungeon ahead.\n"
+                    "Give me %d {POKE} for a hint."),
+                  cost);
+    return sDungeonEntryReqBuffer;
+}
+
+static const u8 *BuildGengarHintPayText(void)
+{
+    s32 cost = GetGengarHintCost();
+
+    sprintfStatic(sGengarHintShopBuffer, _("Pay %d {POKE}"), cost);
+    return sGengarHintShopBuffer;
+}
+
 static bool8 HasEnoughMoneyForGengarHint(void)
 {
     TeamInventory *inventory = GetMoneyItemsInfo();
-    u32 difficulty = GetGameDifficultySetting();
-    static const s32 sGengarHintSurcharge[] = {
-        [DIFFICULTY_NORMAL] = 0,
-        [DIFFICULTY_HARD] = 500,
-        [DIFFICULTY_NIGHTMARE] = 1000,
-    };
-    s32 cost = GENGAR_HINT_COST;
-
-    if (difficulty < ARRAY_COUNT(sGengarHintSurcharge))
-        cost += sGengarHintSurcharge[difficulty];
+    s32 cost = GetGengarHintCost();
 
     if (inventory == NULL)
         return FALSE;

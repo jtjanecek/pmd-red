@@ -980,12 +980,16 @@ def get_sprite_tiles(mon_dir, sprite_cache, png_cache, sprite_chunks, sprite_id)
     return tile_list
 
 
-def render_pose(mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset):
+def build_pose_parts(mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset):
     pose_tiles = []
+    seen_ids = set()
     for entry in entries:
         sprite_id = entry["sprite_id"]
         if sprite_id < 0:
             continue
+        if sprite_id in seen_ids:
+            continue
+        seen_ids.add(sprite_id)
         tile_list = get_sprite_tiles(
             mon_dir, sprite_cache, png_cache, sprite_chunks, sprite_id
         )
@@ -1020,6 +1024,13 @@ def render_pose(mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset
 
         parts.append((x, y, sprite_pixels, width_px, height_px))
 
+    return parts
+
+
+def render_pose(mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset):
+    parts = build_pose_parts(
+        mon_dir, sprite_cache, png_cache, sprite_chunks, entries, offset
+    )
     if not parts:
         return [[0]]
 
@@ -1292,32 +1303,53 @@ def run_idle_frames(args):
                 print(f"skip {mon_name}: missing anim {anim_name}")
                 break
             frames = parse_anim_frames(anim_block)
-            if args.frames_frame_index >= len(frames):
-                print(
-                    f"skip {mon_name} {dir_name}: frame_index {args.frames_frame_index} out of range"
-                )
-                continue
-            pose_id, off_x, off_y = frames[args.frames_frame_index]
-            if pose_id >= len(poses_list):
-                print(
-                    f"skip {mon_name} {dir_name}: pose_id {pose_id} out of range"
-                )
-                continue
-            pose_name = poses_list[pose_id]
-            entries = pose_blocks.get(pose_name)
-            if entries is None:
-                print(
-                    f"skip {mon_name} {dir_name}: missing pose {pose_name}"
-                )
+            if not frames:
+                print(f"skip {mon_name} {dir_name}: no frames found")
                 continue
 
-            for palette_idx, plte_data in palette_bytes.items():
-                out_dir = os.path.join(
-                    args.frames_output_dir, mon_name, f"palette_{palette_idx:02d}"
+            resolved_frames = []
+            last_pose_id = None
+            for pose_id, off_x, off_y in frames:
+                resolved_pose = pose_id
+                if resolved_pose < 0:
+                    if last_pose_id is None:
+                        resolved_frames.append(None)
+                        continue
+                    resolved_pose = last_pose_id
+                if resolved_pose >= len(poses_list):
+                    print(
+                        f"skip {mon_name} {dir_name}: pose_id {resolved_pose} out of range"
+                    )
+                    resolved_frames.append(None)
+                    continue
+                last_pose_id = resolved_pose
+                resolved_frames.append((resolved_pose, off_x, off_y))
+
+            base_frame = args.frames_frame_index
+            if base_frame < 0 or base_frame >= len(resolved_frames):
+                base_frame = 0
+            if resolved_frames and resolved_frames[base_frame] is None:
+                base_frame = next(
+                    (idx for idx, entry in enumerate(resolved_frames) if entry is not None),
+                    base_frame,
                 )
-                os.makedirs(out_dir, exist_ok=True)
-                out_path = os.path.join(out_dir, f"idle_{dir_name}.png")
-                canvas = render_pose(
+
+            frame_parts = []
+            frame_bounds = []
+            for frame_idx, entry in enumerate(resolved_frames):
+                if entry is None:
+                    frame_parts.append([])
+                    continue
+                pose_id, off_x, off_y = entry
+                pose_name = poses_list[pose_id]
+                entries = pose_blocks.get(pose_name)
+                if entries is None:
+                    print(
+                        f"skip {mon_name} {dir_name}: missing pose {pose_name}"
+                    )
+                    frame_parts.append([])
+                    continue
+                parts = build_pose_parts(
                     mon_dir,
                     sprite_cache,
                     png_cache,
@@ -1325,14 +1357,79 @@ def run_idle_frames(args):
                     entries,
                     (off_x, off_y),
                 )
-                write_png_indexed(
-                    out_path,
-                    len(canvas[0]),
-                    len(canvas),
-                    canvas,
-                    plte_data,
-                    bit_depth=4,
+                if not parts:
+                    frame_parts.append([])
+                    continue
+                min_x = min(p[0] for p in parts)
+                min_y = min(p[1] for p in parts)
+                max_x = max(p[0] + p[3] for p in parts)
+                max_y = max(p[1] + p[4] for p in parts)
+                frame_bounds.append((min_x, min_y, max_x, max_y))
+                frame_parts.append(parts)
+
+            if not frame_bounds:
+                print(f"skip {mon_name} {dir_name}: no drawable frames")
+                continue
+            global_min_x = min(b[0] for b in frame_bounds)
+            global_min_y = min(b[1] for b in frame_bounds)
+            global_max_x = max(b[2] for b in frame_bounds)
+            global_max_y = max(b[3] for b in frame_bounds)
+            out_w = global_max_x - global_min_x
+            out_h = global_max_y - global_min_y
+            if out_w <= 0:
+                out_w = 1
+            if out_h <= 0:
+                out_h = 1
+
+            frame_canvases = []
+            for parts in frame_parts:
+                if parts is None:
+                    parts = []
+                canvas = [[0 for _ in range(out_w)] for _ in range(out_h)]
+                for x, y, sprite_pixels, width_px, height_px in parts:
+                    dest_x = x - global_min_x
+                    dest_y = y - global_min_y
+                    for py in range(height_px):
+                        row = sprite_pixels[py]
+                        for px in range(width_px):
+                            idx = row[px]
+                            if idx == 0:
+                                continue
+                            cx = dest_x + px
+                            cy = dest_y + py
+                            if 0 <= cx < out_w and 0 <= cy < out_h:
+                                canvas[cy][cx] = idx
+                frame_canvases.append(canvas)
+
+            for palette_idx, plte_data in palette_bytes.items():
+                out_dir = os.path.join(
+                    args.frames_output_dir, mon_name, f"palette_{palette_idx:02d}"
                 )
+                os.makedirs(out_dir, exist_ok=True)
+                for frame_idx, canvas in enumerate(frame_canvases):
+                    if canvas is None:
+                        continue
+                    out_path = os.path.join(
+                        out_dir, f"idle_{dir_name}_frame{frame_idx:02d}.png"
+                    )
+                    write_png_indexed(
+                        out_path,
+                        len(canvas[0]),
+                        len(canvas),
+                        canvas,
+                        plte_data,
+                        bit_depth=4,
+                    )
+                    if frame_idx == base_frame:
+                        base_path = os.path.join(out_dir, f"idle_{dir_name}.png")
+                        write_png_indexed(
+                            base_path,
+                            len(canvas[0]),
+                            len(canvas),
+                            canvas,
+                            plte_data,
+                            bit_depth=4,
+                        )
         print(f"wrote {mon_name}")
 
 

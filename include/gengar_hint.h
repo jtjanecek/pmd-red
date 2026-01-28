@@ -4,7 +4,7 @@
 #include "global.h"
 #include "constants/dungeon.h"
 
-#define GENGAR_HINT_COST 500
+#define GENGAR_HINT_COST 750
 #define GENGAR_HINT_FLAG_BYTES ((NUM_DUNGEONS + 7) / 8)
 
 typedef struct GengarHintSaveData

@@ -23,6 +23,7 @@ static bool8 IsEligibleSpecies(s16 species);
 static u8 GetMaxRecruitedLevel(void);
 static void ApplyLevelGains(Pokemon *mon, u8 targetLevel);
 static s32 GetBaseStatTotal(s16 species);
+static s32 GetMaxRecruitBst(void);
 
 void SkarmoryRecruit_Init(void)
 {
@@ -246,25 +247,49 @@ static void ApplyLevelGains(Pokemon *mon, u8 targetLevel)
 
 s32 SkarmoryRecruit_GetCostForSpecies(s16 species)
 {
-    s32 baseCost = 25;
     s32 bst = GetBaseStatTotal(species);
-    s32 cost;
+    s32 cost = 0;
+    s32 bstScale = 0;
     u32 difficulty = GetGameDifficultySetting();
     static const s32 sDifficultySurcharge[] = {
-        [DIFFICULTY_NORMAL] = 250,
-        [DIFFICULTY_HARD] = 500,
-        [DIFFICULTY_NIGHTMARE] = 1000,
+        [DIFFICULTY_NORMAL] = 1000,
+        [DIFFICULTY_HARD] = 2000,
+        [DIFFICULTY_NIGHTMARE] = 3000,
     };
+    s32 surcharge = 0;
+    s32 maxBst = 1;
+    s32 dungeonNumber = 1;
+    enum { BST_SCALE_MAX = 10000, BST_SCALE_MIN = 100 };
 
     if (bst < 0)
         bst = 0;
 
-    cost = baseCost + bst * 2;
     if (difficulty < ARRAY_COUNT(sDifficultySurcharge))
-        cost += sDifficultySurcharge[difficulty];
+        surcharge = sDifficultySurcharge[difficulty];
 
-    if (cost < 50)
-        cost = 50;
+    if (sSkarmoryRecruitState.data.lastDungeonId >= 0
+        && sSkarmoryRecruitState.data.lastDungeonId < NUM_DUNGEONS
+        && DungeonSeedOverrides_IsEnabled(NULL)) {
+        dungeonNumber = DungeonSeedOverrides_GetDungeonNumberForDisplay(
+            (u8)sSkarmoryRecruitState.data.lastDungeonId);
+        if (dungeonNumber < 1)
+            dungeonNumber = 1;
+    }
+
+    maxBst = GetMaxRecruitBst();
+    if (maxBst < 1)
+        maxBst = 1;
+
+    bstScale = (bst * BST_SCALE_MAX + maxBst / 2) / maxBst;
+    if (bstScale < BST_SCALE_MIN)
+        bstScale = BST_SCALE_MIN;
+    if (bstScale > BST_SCALE_MAX)
+        bstScale = BST_SCALE_MAX;
+    if (species == MONSTER_STATUE)
+        bstScale = BST_SCALE_MIN;
+
+    cost = (surcharge * bstScale + (BST_SCALE_MAX / 2)) / BST_SCALE_MAX;
+    cost += dungeonNumber * 75;
     if (cost > MAX_TEAM_MONEY)
         cost = MAX_TEAM_MONEY;
 
@@ -280,6 +305,28 @@ static s32 GetBaseStatTotal(s16 species)
     s32 spDef = GetBaseDefensiveStat(species, OFFENSE_SP);
 
     return hp + atk + spAtk + def + spDef;
+}
+
+static s32 GetMaxRecruitBst(void)
+{
+    s32 species;
+    s32 maxBst = 0;
+
+    for (species = 0; species < MONSTER_MAX; species++) {
+        s32 bst;
+
+        if (species == MONSTER_STATUE)
+            continue;
+
+        bst = GetBaseStatTotal(species);
+        if (bst > maxBst)
+            maxBst = bst;
+    }
+
+    if (maxBst < 1)
+        maxBst = 1;
+
+    return maxBst;
 }
 
 const void *const gSkarmoryRecruitLinkAnchor[] = {

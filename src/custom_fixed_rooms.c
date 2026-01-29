@@ -123,7 +123,7 @@ static const u8 sFixedRoom7_Tiles[] = {
     // Row 0
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
     // Row 1 - Stairs at very top (originally had tile 35 at col 5)
-    2,   2,  60,  60,  60,   4,  60,  60,  60,   2,   2,
+    2,   2,  60,  60,   4,  60,  60,  60,  60,   2,   2,
     // Row 2 - Stairs decoration part 1 (originally had tile 66 at col 6)
     2,  60,  60,  60,  23,  22,  24,  60,  60,  60,   2,
     // Row 3 - Stairs decoration part 2 (originally had tile 31 at col 5, tile 66 at col 8)

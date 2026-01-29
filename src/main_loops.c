@@ -1256,9 +1256,7 @@ static void BuildCreditsHeader(void)
 {
     TeamBasicInfo info;
     u8 heroName[20];
-    u8 partnerName[20];
     Pokemon *hero = GetPlayerPokemonStruct();
-    Pokemon *partner = sub_808D378();
     s32 seed = -1;
     u8 maxDungeons = GetMaxDungeonsSetting();
     const char *difficulty = "Normal";
@@ -1270,11 +1268,6 @@ static void BuildCreditsHeader(void)
         PrintPokeNameToBuffer(heroName, hero);
     else
         CopyMonsterNameToBuffer(heroName, info.StarterID);
-
-    if (partner != NULL)
-        PrintPokeNameToBuffer(partnerName, partner);
-    else
-        CopyMonsterNameToBuffer(partnerName, info.PartnerID);
 
     switch (GetGameDifficultySetting()) {
         case DIFFICULTY_HARD:
@@ -1289,12 +1282,11 @@ static void BuildCreditsHeader(void)
     }
 
     sprintfStatic((char *)sCreditsHeaderBuffer,
-                  "ROGUE RESCUE TEAM v%s\nSeed: %d\nDifficulty: %s\nHero: %s\nPartner: %s\nDungeon count: %d",
+                  "ROGUE RESCUE TEAM v%s\nSeed: %d\nDifficulty: %s\nHero: %s\nDungeon count: %d",
                   ROGUE_VERSION_STRING,
                   seed,
                   difficulty,
                   heroName,
-                  partnerName,
                   maxDungeons);
     Credits1_SetCustomHeader(sCreditsHeaderBuffer);
 }

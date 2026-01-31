@@ -154,7 +154,7 @@ static bool8 RunLeaderTurn(bool8 param_1)
         if (gDungeon->unkBC != 0) {
             sub_805F02C();
             gDungeon->unkBC = 0;
-            param_1 = TRUE;
+            param_1 = !ConsumeAutoLeaderSwapTriggered();
         }
         else {
             if (!GetEntInfo(entity)->speedStageChanged)

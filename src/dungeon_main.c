@@ -110,6 +110,7 @@ static EWRAM_DATA bool8 sSuppressLeaderSwapMessage = FALSE;
 static EWRAM_DATA u8 sAutoLeaderSwapActedMask = 0;
 static EWRAM_DATA s8 sAutoLeaderSwapChainLeaderIndex = -1;
 static EWRAM_DATA s8 sAutoLeaderSwapReturnIndex = -1;
+static EWRAM_DATA bool8 sAutoLeaderSwapTriggered = FALSE;
 
 // Debug position tracking
 EWRAM_DATA s32 gLastDebugX = -1;
@@ -255,6 +256,7 @@ void SetAutoLeaderSwapActive(bool8 active)
     sAutoLeaderSwapActedMask = 0;
     sAutoLeaderSwapChainLeaderIndex = -1;
     sAutoLeaderSwapReturnIndex = -1;
+    sAutoLeaderSwapTriggered = FALSE;
 }
 
 void ResetAutoLeaderSwapChain(void)
@@ -264,6 +266,7 @@ void ResetAutoLeaderSwapChain(void)
     sAutoLeaderSwapChainLeaderIndex = -1;
     sAutoLeaderSwapReturnIndex = -1;
     sSuppressLeaderSwapMessage = FALSE;
+    sAutoLeaderSwapTriggered = FALSE;
 }
 
 void QueueAutoLeaderSwapAfterAction(Entity *leader, u16 action)
@@ -310,6 +313,7 @@ void ApplyPendingAutoLeaderSwap(void)
 
     if (!sAutoLeaderSwapActive)
         return;
+    sAutoLeaderSwapTriggered = FALSE;
     if (sAutoLeaderSwapPendingIndex < 0)
         return;
     if (!CanAutoLeaderSwapNow()) {
@@ -330,6 +334,7 @@ void ApplyPendingAutoLeaderSwap(void)
 
     gDungeon->unkBC = target;
     sSuppressLeaderSwapMessage = TRUE;
+    sAutoLeaderSwapTriggered = TRUE;
 }
 
 void ApplyAutoLeaderSwapReturn(void)
@@ -338,6 +343,7 @@ void ApplyAutoLeaderSwapReturn(void)
 
     if (!sAutoLeaderSwapActive)
         return;
+    sAutoLeaderSwapTriggered = FALSE;
     if (sAutoLeaderSwapReturnIndex < 0)
         return;
     if (gDungeon->unkBC != 0)
@@ -357,6 +363,14 @@ void ApplyAutoLeaderSwapReturn(void)
     sub_805F02C();
     sSuppressLeaderSwapMessage = FALSE;
     gDungeon->unkBC = 0;
+    sAutoLeaderSwapTriggered = FALSE;
+}
+
+bool8 ConsumeAutoLeaderSwapTriggered(void)
+{
+    bool8 wasTriggered = sAutoLeaderSwapTriggered;
+    sAutoLeaderSwapTriggered = FALSE;
+    return wasTriggered;
 }
 
 bool8 AutoLeaderSwapHasActedIndex(s32 index)

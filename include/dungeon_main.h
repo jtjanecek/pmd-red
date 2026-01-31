@@ -33,5 +33,6 @@ void QueueAutoLeaderSwapAfterAction(Entity *leader, u16 action);
 void ApplyPendingAutoLeaderSwap(void);
 void ApplyAutoLeaderSwapReturn(void);
 bool8 AutoLeaderSwapHasActedIndex(s32 index);
+bool8 ConsumeAutoLeaderSwapTriggered(void);
 
 #endif // GUARD_DUNGEON_MAIN_H

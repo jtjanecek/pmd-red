@@ -29,6 +29,25 @@ DIRECTION_NAMES = [
     "southwest",
 ]
 
+ANIM_PRESETS = {
+    "idle": {
+        "anim_id": 7,
+        "output_dir": "gen/shiny_idle_frames",
+        "prefix": "idle",
+    },
+    "sleep": {
+        "anim_id": 5,
+        "output_dir": "gen/shiny_sleep_frames",
+        "prefix": "sleep",
+    },
+    "attack": {
+        "anim_id": 1,
+        "output_dir": "gen/shiny_attack_frames",
+        "prefix": "attack",
+    },
+}
+DEFAULT_ANIM_SETS = ["idle", "sleep", "attack"]
+
 
 def normalize_header_label(value):
     if value is None:
@@ -1241,9 +1260,9 @@ def run_table(args):
     write_table(values, remaps, remap_active, args.output, args.input)
 
 
-def run_idle_frames(args):
+def run_anim_frames(args, anim_id, output_dir, prefix):
     base_dir = "graphics/ax/mon"
-    os.makedirs(args.frames_output_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     if args.frames_palette_rows:
         palette_rows = parse_palette_rows(args.frames_palette_rows)
@@ -1285,10 +1304,10 @@ def run_idle_frames(args):
         except ValueError as exc:
             print(f"skip {mon_name}: {exc}")
             continue
-        if args.frames_anim_id >= len(anims_list):
-            print(f"skip {mon_name}: anim_id {args.frames_anim_id} out of range")
+        if anim_id >= len(anims_list):
+            print(f"skip {mon_name}: anim_id {anim_id} out of range")
             continue
-        anim_table_name = anims_list[args.frames_anim_id]
+        anim_table_name = anims_list[anim_id]
         dir_anim_names = parse_name_list(text, anim_table_name)
         if dir_anim_names is None or len(dir_anim_names) < len(DIRECTION_NAMES):
             print(f"skip {mon_name}: missing anim table {anim_table_name}")
@@ -1403,14 +1422,14 @@ def run_idle_frames(args):
 
             for palette_idx, plte_data in palette_bytes.items():
                 out_dir = os.path.join(
-                    args.frames_output_dir, mon_name, f"palette_{palette_idx:02d}"
+                    output_dir, mon_name, f"palette_{palette_idx:02d}"
                 )
                 os.makedirs(out_dir, exist_ok=True)
                 for frame_idx, canvas in enumerate(frame_canvases):
                     if canvas is None:
                         continue
                     out_path = os.path.join(
-                        out_dir, f"idle_{dir_name}_frame{frame_idx:02d}.png"
+                        out_dir, f"{prefix}_{dir_name}_frame{frame_idx:02d}.png"
                     )
                     write_png_indexed(
                         out_path,
@@ -1421,7 +1440,7 @@ def run_idle_frames(args):
                         bit_depth=4,
                     )
                     if frame_idx == base_frame:
-                        base_path = os.path.join(out_dir, f"idle_{dir_name}.png")
+                        base_path = os.path.join(out_dir, f"{prefix}_{dir_name}.png")
                         write_png_indexed(
                             base_path,
                             len(canvas[0]),
@@ -1430,7 +1449,11 @@ def run_idle_frames(args):
                             plte_data,
                             bit_depth=4,
                         )
-        print(f"wrote {mon_name}")
+        print(f"wrote {mon_name} ({prefix})")
+
+
+def run_idle_frames(args):
+    run_anim_frames(args, args.frames_anim_id, args.frames_output_dir, "idle")
 
 
 def run_idle_grid(args):
@@ -1513,7 +1536,7 @@ def run_idle_grid(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate shiny palette table, idle frames, and grids."
+        description="Generate shiny palette table, animation frames, and grids."
     )
     parser.add_argument(
         "--mode",
@@ -1542,6 +1565,13 @@ def main():
         type=int,
         default=7,
         help="Animation ID to use (default: 7 for idle).",
+    )
+    parser.add_argument(
+        "--frames-anim",
+        action="append",
+        dest="frames_anims",
+        choices=DEFAULT_ANIM_SETS,
+        help="Animation preset to render (repeatable). Default: idle,sleep,attack.",
     )
     parser.add_argument(
         "--frames-frame-index",
@@ -1598,7 +1628,25 @@ def main():
         if args.mode in ("all", "table"):
             run_table(args)
         if args.mode in ("all", "frames"):
-            run_idle_frames(args)
+            frame_sets = args.frames_anims or DEFAULT_ANIM_SETS
+            for anim_name in frame_sets:
+                if anim_name == "idle":
+                    run_anim_frames(
+                        args,
+                        args.frames_anim_id,
+                        args.frames_output_dir,
+                        "idle",
+                    )
+                    continue
+                preset = ANIM_PRESETS.get(anim_name)
+                if not preset:
+                    continue
+                run_anim_frames(
+                    args,
+                    preset["anim_id"],
+                    preset["output_dir"],
+                    preset["prefix"],
+                )
         if args.mode in ("all", "grid"):
             run_idle_grid(args)
     except ValueError as exc:

@@ -331,6 +331,21 @@ class AppState:
         self.grid_dir = os.path.join(os.path.dirname(frames_dir), "shiny_idle_grids")
         self.cache = {}
         self.anim_cache = {}
+        base_dir = os.path.dirname(frames_dir)
+        self.anim_sets = {
+            "idle": {
+                "dir": frames_dir,
+                "prefix": "idle",
+            },
+            "sleep": {
+                "dir": os.path.join(base_dir, "shiny_sleep_frames"),
+                "prefix": "sleep",
+            },
+            "attack": {
+                "dir": os.path.join(base_dir, "shiny_attack_frames"),
+                "prefix": "attack",
+            },
+        }
         self.vanilla_palettes = load_vanilla_palettes(monster_data_path)
         self.dex_ids = load_monster_dex_ids(monster_data_path)
         self.sprite_root = os.path.join(os.path.dirname(__file__), "shiny-download")
@@ -352,21 +367,30 @@ class AppState:
             if os.path.isdir(os.path.join(self.frames_dir, name))
         )
 
-    def load_frames(self, mon, palette_idx):
-        key = (mon, palette_idx)
+    def _get_anim_set(self, anim):
+        key = (anim or "idle").lower()
+        anim_set = self.anim_sets.get(key)
+        if anim_set is None:
+            raise ValueError(f"Unknown animation set: {anim}")
+        return key, anim_set
+
+    def load_frames(self, mon, palette_idx, anim="idle"):
+        anim_key, anim_set = self._get_anim_set(anim)
+        key = (anim_key, mon, palette_idx)
         cached = self.cache.get(key)
         if cached is not None:
             return cached
 
         palette_dir = f"palette_{palette_idx:02d}"
-        mon_dir = os.path.join(self.frames_dir, mon, palette_dir)
+        mon_dir = os.path.join(anim_set["dir"], mon, palette_dir)
         if not os.path.isdir(mon_dir):
-            raise FileNotFoundError(f"Missing {mon}/{palette_dir} in shiny_idle_frames.")
+            raise FileNotFoundError(f"Missing {mon}/{palette_dir} in {anim_set['dir']}.")
 
         images = {}
         base_palette = None
+        prefix = anim_set["prefix"]
         for direction in DIRECTION_NAMES:
-            path = os.path.join(mon_dir, f"idle_{direction}.png")
+            path = os.path.join(mon_dir, f"{prefix}_{direction}.png")
             if not os.path.isfile(path):
                 continue
             width, height, pixels, palette = decode_png_indexed(path)
@@ -375,28 +399,36 @@ class AppState:
             images[direction] = (width, height, pixels)
 
         if not images or base_palette is None:
-            raise FileNotFoundError(f"No idle frames found for {mon}/{palette_dir}.")
+            raise FileNotFoundError(
+                f"No {prefix} frames found for {mon}/{palette_dir}."
+            )
 
         payload = (images, base_palette)
         self.cache[key] = payload
         return payload
 
-    def load_animation_frames(self, mon, palette_idx):
-        key = (mon, palette_idx)
+    def load_animation_frames(self, mon, palette_idx, anim="idle"):
+        anim_key, anim_set = self._get_anim_set(anim)
+        key = (anim_key, mon, palette_idx)
         cached = self.anim_cache.get(key)
         if cached is not None:
             return cached
 
         palette_dir = os.path.join(
-            self.frames_dir, mon, f"palette_{palette_idx:02d}"
+            anim_set["dir"], mon, f"palette_{palette_idx:02d}"
         )
         if not os.path.isdir(palette_dir):
-            raise FileNotFoundError(f"Missing {mon}/palette_{palette_idx:02d} in shiny_idle_frames.")
+            raise FileNotFoundError(
+                f"Missing {mon}/palette_{palette_idx:02d} in {anim_set['dir']}."
+            )
 
         frames_by_dir = {}
         base_palette = None
+        prefix = anim_set["prefix"]
         for direction in DIRECTION_NAMES:
-            pattern = re.compile(rf"^idle_{re.escape(direction)}_frame(\d+)\.png$")
+            pattern = re.compile(
+                rf"^{re.escape(prefix)}_{re.escape(direction)}_frame(\d+)\.png$"
+            )
             frame_files = []
             try:
                 filenames = os.listdir(palette_dir)
@@ -419,7 +451,7 @@ class AppState:
                         base_palette = palette
                     frames.append((width, height, pixels))
             else:
-                path = os.path.join(palette_dir, f"idle_{direction}.png")
+                path = os.path.join(palette_dir, f"{prefix}_{direction}.png")
                 if os.path.isfile(path):
                     width, height, pixels, palette = decode_png_indexed(path)
                     if base_palette is None:
@@ -428,7 +460,9 @@ class AppState:
             frames_by_dir[direction] = frames
 
         if base_palette is None:
-            raise FileNotFoundError(f"No idle frames found for {mon}/palette_{palette_idx:02d}.")
+            raise FileNotFoundError(
+                f"No {prefix} frames found for {mon}/palette_{palette_idx:02d}."
+            )
 
         payload = (frames_by_dir, base_palette)
         self.anim_cache[key] = payload
@@ -479,8 +513,10 @@ class AppState:
 
         return write_png_rgba_bytes(grid_w, grid_h, canvas)
 
-    def render_grid_animation(self, mon, palette_idx, overrides):
-        frames_by_dir, base_palette = self.load_animation_frames(mon, palette_idx)
+    def render_grid_animation(self, mon, palette_idx, overrides, anim="idle"):
+        frames_by_dir, base_palette = self.load_animation_frames(
+            mon, palette_idx, anim=anim
+        )
         available_frames = [
             len(frames) for frames in frames_by_dir.values() if frames
         ]
@@ -720,6 +756,12 @@ INDEX_HTML = """<!doctype html>
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+    .extra-anim-section {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 12px;
     }
     .preview-stack {
       display: flex;
@@ -1013,6 +1055,36 @@ INDEX_HTML = """<!doctype html>
     </div>
   </div>
 
+  <div id="extra-anim-section" class="extra-anim-section">
+    <div class="panel" style="margin-bottom:0;">
+      <strong>Extra Animations</strong>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Sleep (Before)</div>
+          <canvas id="preview-base-anim-sleep" class="preview-anim" aria-label="Sleep preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Sleep (After)</div>
+          <canvas id="preview-anim-sleep" class="preview-anim" aria-label="Sleep preview (after animation)"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Attack (Before)</div>
+          <canvas id="preview-base-anim-attack" class="preview-anim" aria-label="Attack preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Attack (After)</div>
+          <canvas id="preview-anim-attack" class="preview-anim" aria-label="Attack preview (after animation)"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="panel palette-panel" style="margin-top:16px;">
     <div>
       <label for="palette">Palette</label>
@@ -1068,6 +1140,11 @@ INDEX_HTML = """<!doctype html>
     const previewBase = document.getElementById("preview-base");
     const previewAnim = document.getElementById("preview-anim");
     const previewBaseAnim = document.getElementById("preview-base-anim");
+    const extraAnimSection = document.getElementById("extra-anim-section");
+    const previewAnimSleep = document.getElementById("preview-anim-sleep");
+    const previewBaseAnimSleep = document.getElementById("preview-base-anim-sleep");
+    const previewAnimAttack = document.getElementById("preview-anim-attack");
+    const previewBaseAnimAttack = document.getElementById("preview-base-anim-attack");
     const statusEl = document.getElementById("status");
     const gridImg = document.getElementById("grid");
     const gridLabels = document.getElementById("grid-labels");
@@ -1090,12 +1167,6 @@ INDEX_HTML = """<!doctype html>
     let baseUrl = null;
     let animTimer = null;
     let animFrame = 0;
-    let animState = null;
-    let animBaseState = null;
-    let animUrl = null;
-    let animBaseUrl = null;
-    let animKey = null;
-    let animBaseKey = null;
     let animRequestId = 0;
     let lastPaletteMon = null;
     let lastPaletteIdx = null;
@@ -1103,6 +1174,38 @@ INDEX_HTML = """<!doctype html>
     let lastBaseMon = null;
     let lastBasePalette = null;
     let vanillaPalette = null;
+    const animPreviews = {
+      idle: {
+        canvas: previewAnim,
+        baseCanvas: previewBaseAnim,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      sleep: {
+        canvas: previewAnimSleep,
+        baseCanvas: previewBaseAnimSleep,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      attack: {
+        canvas: previewAnimAttack,
+        baseCanvas: previewBaseAnimAttack,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+    };
     const INDEX_DEBUG_COLORS = [
       "#000000",
       "#e74c3c",
@@ -1243,8 +1346,24 @@ INDEX_HTML = """<!doctype html>
     function setAnimationVisibility(enabled) {
       preview.style.display = enabled ? "none" : "block";
       previewBase.style.display = enabled ? "none" : "block";
-      previewAnim.style.display = enabled ? "block" : "none";
-      previewBaseAnim.style.display = enabled ? "block" : "none";
+      const canvasDisplay = enabled ? "block" : "none";
+      previewAnim.style.display = canvasDisplay;
+      previewBaseAnim.style.display = canvasDisplay;
+      if (previewAnimSleep) {
+        previewAnimSleep.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimSleep) {
+        previewBaseAnimSleep.style.display = canvasDisplay;
+      }
+      if (previewAnimAttack) {
+        previewAnimAttack.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimAttack) {
+        previewBaseAnimAttack.style.display = canvasDisplay;
+      }
+      if (extraAnimSection) {
+        extraAnimSection.style.display = enabled ? "flex" : "none";
+      }
     }
 
     function stopAnimation() {
@@ -1254,15 +1373,33 @@ INDEX_HTML = """<!doctype html>
       }
     }
 
+    function resetAnimationPreviews() {
+      Object.values(animPreviews).forEach((previewState) => {
+        previewState.key = null;
+        previewState.baseKey = null;
+        previewState.state = null;
+        previewState.baseState = null;
+        if (previewState.url) {
+          URL.revokeObjectURL(previewState.url);
+          previewState.url = null;
+        }
+        if (previewState.baseUrl) {
+          URL.revokeObjectURL(previewState.baseUrl);
+          previewState.baseUrl = null;
+        }
+      });
+    }
+
     function buildOverridesParam(overrides) {
       return overrides.map((value) => (value === null ? "" : String(value))).join(",");
     }
 
-    async function fetchAnimationSheet(mon, palette, overrides, isBase) {
+    async function fetchAnimationSheet(mon, palette, overrides, animType) {
       const params = new URLSearchParams();
       params.set("mon", mon);
       params.set("palette", palette.toString());
       params.set("overrides", buildOverridesParam(overrides));
+      params.set("anim", animType);
       params.set("v", Date.now().toString());
       const response = await fetch(`/api/anim?${params.toString()}`);
       if (!response.ok) {
@@ -1279,19 +1416,9 @@ INDEX_HTML = """<!doctype html>
         img.onerror = reject;
         img.src = url;
       });
-      if (isBase) {
-        if (animBaseUrl) {
-          URL.revokeObjectURL(animBaseUrl);
-        }
-        animBaseUrl = url;
-      } else {
-        if (animUrl) {
-          URL.revokeObjectURL(animUrl);
-        }
-        animUrl = url;
-      }
       return {
         img,
+        url,
         frameCount: Math.max(1, frameCount),
         frameWidth: Math.max(1, frameWidth),
         frameHeight: Math.max(1, frameHeight),
@@ -1300,14 +1427,8 @@ INDEX_HTML = """<!doctype html>
 
     function drawAnimationFrame() {
       const scale = Number(scaleSelect.value);
-      const maxFrames = Math.max(
-        animState ? animState.frameCount : 1,
-        animBaseState ? animBaseState.frameCount : 1
-      );
-      const frameIndex = maxFrames > 0 ? animFrame % maxFrames : 0;
-
-      function drawSheet(canvas, state) {
-        if (!state) {
+      function drawSheet(canvas, state, frameIndex) {
+        if (!canvas || !state) {
           return;
         }
         const ctx = canvas.getContext("2d");
@@ -1332,13 +1453,23 @@ INDEX_HTML = """<!doctype html>
         );
       }
 
-      drawSheet(previewBaseAnim, animBaseState);
-      drawSheet(previewAnim, animState);
+      Object.values(animPreviews).forEach((previewState) => {
+        const maxFrames = Math.max(
+          previewState.state ? previewState.state.frameCount : 1,
+          previewState.baseState ? previewState.baseState.frameCount : 1
+        );
+        const frameIndex = maxFrames > 0 ? animFrame % maxFrames : 0;
+        drawSheet(previewState.baseCanvas, previewState.baseState, frameIndex);
+        drawSheet(previewState.canvas, previewState.state, frameIndex);
+      });
     }
 
     function startAnimationLoop() {
       stopAnimation();
-      if (!animState && !animBaseState) {
+      const hasAny = Object.values(animPreviews).some(
+        (previewState) => previewState.state || previewState.baseState
+      );
+      if (!hasAny) {
         return;
       }
       animFrame = 0;
@@ -1349,43 +1480,124 @@ INDEX_HTML = """<!doctype html>
       }, 400);
     }
 
+    async function renderAnimationSet(
+      animType,
+      mon,
+      palette,
+      overrides,
+      basePalette,
+      overridesKey,
+      requestId,
+      strict
+    ) {
+      const previewState = animPreviews[animType];
+      if (!previewState) {
+        return;
+      }
+      const nextKey = `${animType}|${mon}|${palette}|${overridesKey}`;
+      const nextBaseKey = `${animType}|${mon}|${basePalette}`;
+
+      if (nextKey !== previewState.key) {
+        previewState.key = nextKey;
+        previewState.state = null;
+        if (previewState.url) {
+          URL.revokeObjectURL(previewState.url);
+          previewState.url = null;
+        }
+        try {
+          const state = await fetchAnimationSheet(mon, palette, overrides, animType);
+          if (requestId !== animRequestId) {
+            return;
+          }
+          previewState.state = state;
+          previewState.url = state.url;
+        } catch (err) {
+          if (strict) {
+            throw err;
+          }
+          return;
+        }
+      }
+
+      if (nextBaseKey !== previewState.baseKey) {
+        previewState.baseKey = nextBaseKey;
+        previewState.baseState = null;
+        if (previewState.baseUrl) {
+          URL.revokeObjectURL(previewState.baseUrl);
+          previewState.baseUrl = null;
+        }
+        try {
+          const baseState = await fetchAnimationSheet(
+            mon,
+            basePalette,
+            Array(16).fill(null),
+            animType
+          );
+          if (requestId !== animRequestId) {
+            return;
+          }
+          previewState.baseState = baseState;
+          previewState.baseUrl = baseState.url;
+        } catch (err) {
+          if (strict) {
+            throw err;
+          }
+        }
+      }
+    }
+
     async function renderAnimationPreview(mon, palette, overrides) {
       stopAnimation();
       setAnimationVisibility(true);
-      previewAnim.width = 1;
-      previewAnim.height = 1;
-      previewBaseAnim.width = 1;
-      previewBaseAnim.height = 1;
+      Object.values(animPreviews).forEach((previewState) => {
+        if (!previewState.canvas || !previewState.baseCanvas) {
+          return;
+        }
+        previewState.canvas.width = 1;
+        previewState.canvas.height = 1;
+        previewState.baseCanvas.width = 1;
+        previewState.baseCanvas.height = 1;
+      });
       const basePalette = vanillaPalette ?? 0;
       const overridesKey = buildOverridesParam(overrides);
-      const nextKey = `${mon}|${palette}|${overridesKey}`;
-      const nextBaseKey = `${mon}|${basePalette}`;
       const requestId = ++animRequestId;
 
-      if (nextKey !== animKey) {
-        animKey = nextKey;
-        animState = null;
-        const state = await fetchAnimationSheet(mon, palette, overrides, false);
-        if (requestId !== animRequestId) {
-          return;
-        }
-        animState = state;
-      }
-      if (nextBaseKey !== animBaseKey) {
-        animBaseKey = nextBaseKey;
-        animBaseState = null;
-        const baseState = await fetchAnimationSheet(
+      await renderAnimationSet(
+        "idle",
+        mon,
+        palette,
+        overrides,
+        basePalette,
+        overridesKey,
+        requestId,
+        true
+      );
+      await Promise.all([
+        renderAnimationSet(
+          "sleep",
           mon,
+          palette,
+          overrides,
           basePalette,
-          Array(16).fill(null),
-          true
-        );
-        if (requestId !== animRequestId) {
-          return;
-        }
-        animBaseState = baseState;
-      }
+          overridesKey,
+          requestId,
+          false
+        ),
+        renderAnimationSet(
+          "attack",
+          mon,
+          palette,
+          overrides,
+          basePalette,
+          overridesKey,
+          requestId,
+          false
+        ),
+      ]);
 
+      if (requestId !== animRequestId) {
+        return;
+      }
       startAnimationLoop();
     }
 
@@ -1578,11 +1790,8 @@ INDEX_HTML = """<!doctype html>
 
     async function handlePokemonChange() {
       const mon = pokemonSelect.value;
-      animKey = null;
-      animBaseKey = null;
-      animState = null;
-      animBaseState = null;
       animRequestId += 1;
+      resetAnimationPreviews();
       stopAnimation();
       if (playAnimation && playAnimation.checked) {
         setAnimationVisibility(true);
@@ -1870,10 +2079,13 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError:
                 self._send(400, "text/plain; charset=utf-8", b"Invalid palette.")
                 return
+            anim = params.get("anim", ["idle"])[0]
             overrides = self._parse_overrides_param(params)
             try:
                 png, frame_count, frame_w, frame_h = (
-                    self.server.app_state.render_grid_animation(mon, palette, overrides)
+                    self.server.app_state.render_grid_animation(
+                        mon, palette, overrides, anim=anim
+                    )
                 )
             except Exception as exc:
                 self._send(400, "text/plain; charset=utf-8", str(exc).encode("utf-8"))

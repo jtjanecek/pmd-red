@@ -306,12 +306,38 @@ void sub_8068BDC(bool8 a0)
     FriendAreaCapacity areaCapacity;
     s32 leaderId;
     s32 i, j, id;
+    s32 leaderTeamIndex = -1;
+    s32 desiredLeaderId = -1;
 
     for (i = 0; i < NUM_FRIEND_AREAS; i++) {
         spArr[i] = FALSE;
     }
 
-    leaderId = -1;
+    // Sync dungeonTeam leader flags with the current in-dungeon leader so the
+    // exit leader resolution doesn't fall back to the original starter.
+    if (gDungeon != NULL) {
+        Entity *leaderEntity = GetLeader();
+        if (EntityIsValid(leaderEntity)) {
+            EntityInfo *info = GetEntInfo(leaderEntity);
+            leaderTeamIndex = info->teamIndex;
+            if (leaderTeamIndex >= 0 && leaderTeamIndex < MAX_TEAM_MEMBERS) {
+                DungeonMon *leaderMon = &gRecruitedPokemonRef->dungeonTeam[leaderTeamIndex];
+                if (DungeonMonExists(leaderMon) && sub_806A58C(leaderMon->recruitedPokemonId)) {
+                    desiredLeaderId = leaderMon->recruitedPokemonId;
+                }
+            }
+        }
+        if (leaderTeamIndex >= 0 && leaderTeamIndex < MAX_TEAM_MEMBERS) {
+            for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
+                DungeonMon *monPtr = &gRecruitedPokemonRef->dungeonTeam[i];
+                if (DungeonMonExists(monPtr)) {
+                    monPtr->isTeamLeader = (i == leaderTeamIndex);
+                }
+            }
+        }
+    }
+
+    leaderId = desiredLeaderId;
     for (id = 0; id < MAX_TEAM_MEMBERS; id++) {
         DungeonMon *monPtr = &gRecruitedPokemonRef->dungeonTeam[id];
         if (DungeonMonExists(monPtr) && monPtr->isTeamLeader && sub_806A58C(monPtr->recruitedPokemonId)) {
@@ -456,6 +482,27 @@ void sub_8068BDC(bool8 a0)
                 if (PokemonExists(monPointers[id]) && (monPointers[id]->flags & POKEMON_FLAG_x4000)) {
                     TryAddPokemonToRecruited(monPointers[id]);
                     monPointers[id]->flags = 0;
+                }
+            }
+        }
+    }
+
+    if (leaderId >= 0) {
+        for (id = 0; id < NUM_MONSTERS; id++) {
+            Pokemon *recruit = &gRecruitedPokemonRef->pokemon[id];
+            if (!PokemonExists(recruit))
+                continue;
+            if (id == leaderId) {
+                recruit->isTeamLeader = TRUE;
+                SetPokemonFlag2(recruit);
+                recruit->dungeonLocation.id = DUNGEON_JOIN_LOCATION_LEADER;
+                recruit->dungeonLocation.floor = 0;
+            }
+            else {
+                if (recruit->isTeamLeader)
+                    recruit->isTeamLeader = FALSE;
+                if (recruit->dungeonLocation.id == DUNGEON_JOIN_LOCATION_LEADER) {
+                    recruit->dungeonLocation = gDungeon->unk644.dungeonLocation;
                 }
             }
         }

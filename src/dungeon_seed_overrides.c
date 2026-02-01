@@ -77,7 +77,7 @@ enum {
 #define BOSS_REWARD_POKE_QUANTITY_3000 100
 
 ALIGNED(4) static const u8 sBossRewardPrompt[] = _(
-    "A strange voice eminates from somewhere...\n"
+    "A strange voice emanates from somewhere...\n"
     "What reward would you like?"
 );
 ALIGNED(4) static const u8 sBossRewardRecruitFailText[] = _(

@@ -363,7 +363,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 360,335,MonsterNameZangoose,Zangoose,5,,,,,10,8,9,10,,,,,,,,,FairyForestKing
 361,336,MonsterNameSeviper,Seviper,11,,,,8,9,2,3,4,5,6,,5,6,7,,,FourBolt
 362,337,MonsterNameLunatone,Lunatone,0,,,,,,,,,,,,8,9,10,10,,FairyForestKing
-363,338,MonsterNameSolrock,Solrock,6,,,,,,,,,12,,,8,9,9,10,,FairyForestKing
+363,338,MonsterNameSolrock,Solrock,0,,,,,,,,,,,,,,,13,,FairyForestKing
 364,339,MonsterNameBarboach,Barboach,5,,,,,,,,,2,3,4,,,,,,FairyForestKing
 365,340,MonsterNameWhiscash,Whiscash,6,,,11,12,13,12,13,14,,,,,,,,,FairyForestKing
 366,341,MonsterNameCorphish,Corphish,11,,,,,,,,,,,,12,13,14,,,FairyForestKing

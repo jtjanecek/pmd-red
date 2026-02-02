@@ -57,6 +57,7 @@ extern const u8 *const gUnknown_810DE58;
 extern const u8 *const gUnknown_810DE6C;
 extern const u8 *const gUnknown_810DE80;
 extern const u8 *const gUnknown_810DE98;
+extern const u8 *const gText_ShinySummary;
 extern const u8 *const gUnknown_810DEB4;
 extern const u8 *const gUnknown_810DEC8;
 extern const u8 *const gUnknown_810DEDC;

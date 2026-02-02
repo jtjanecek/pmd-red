@@ -542,6 +542,7 @@ const u8 *const gUnknown_810DE58 = _("None");
 const u8 *const gUnknown_810DE6C = _("Item:{UNK_MACRO_3E M3E_46}{MOVE_ITEM_0} ");
 const u8 *const gUnknown_810DE80 = _("IQ:{UNK_MACRO_3E M3E_52}{POKEMON_0} ");
 const u8 *const gUnknown_810DE98 = _("Tactics:{UNK_MACRO_3E M3E_52}{POKEMON_0} ");
+const u8 *const gText_ShinySummary = _("Shiny:{UNK_MACRO_3E M3E_52}{MOVE_ITEM_0} ");
 const u8 *const gUnknown_810DEB4 = _("Species:{UNK_MACRO_3E M3E_54}{COLOR YELLOW}{POKEMON_0}{RESET} ");
 const u8 *const gUnknown_810DEC8 = _("Friend Area: ");
 const u8 *const gUnknown_810DEDC = _("{UNK_MACRO_3E M3E_22}{COLOR GREEN}{MOVE_ITEM_0}{RESET}");

@@ -1026,7 +1026,7 @@ static void sub_80011CC(DungeonSetupSubstruct *info, u8 dungId)
 static void sub_80011E8(DungeonSetupSubstruct *info)
 {
     info->canChangeLeader = CheckQuest(QUEST_CAN_CHANGE_LEADER);
-    info->canRecruit = CheckQuest(QUEST_CAN_RECRUIT);
+    info->canRecruit = TRUE;
     info->unlockedEvolutions = CheckQuest(QUEST_UNLOCKED_EVOLUTIONS);
     info->hasInventory = CheckQuest(QUEST_SET_TEAM_NAME);
     info->unkA = CheckQuest(QUEST_UNK5);

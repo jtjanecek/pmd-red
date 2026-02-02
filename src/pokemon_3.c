@@ -169,13 +169,13 @@ static s32 LocalRandInt(u32 *state, s32 maxExclusive)
 
 static bool8 RollShinyChanceLocal(u32 *state)
 {
-    if (SHINY_SPAWN_CHANCE_PERCENT <= 0) {
+    if (SHINY_SPAWN_CHANCE <= 0) {
         return FALSE;
     }
-    if (SHINY_SPAWN_CHANCE_PERCENT >= 100) {
+    if (SHINY_SPAWN_CHANCE >= SHINY_SPAWN_CHANCE_DENOM) {
         return TRUE;
     }
-    return LocalRandInt(state, 100) < SHINY_SPAWN_CHANCE_PERCENT;
+    return LocalRandInt(state, SHINY_SPAWN_CHANCE_DENOM) < SHINY_SPAWN_CHANCE;
 }
 
 static void ApplyShinyChanceToTeam(void)

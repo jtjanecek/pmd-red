@@ -153,6 +153,7 @@ extern const u8 *const gText_SomethingStirring;
 extern const u8 *const gText_SomethingApproaching;
 extern const u8 *const gText_ItsGettingCloser;
 extern const u8 *const gText_ItsRightNearbyGustingHard;
+extern const u8 *const gText_ThisFloorYouSenseSomethingRare;
 extern const u8 *const gUnknown_80F9CC0[];
 extern const u8 *const gUnknown_80F9CEC[];
 extern const u8 *const gUnknown_80F9D28[];

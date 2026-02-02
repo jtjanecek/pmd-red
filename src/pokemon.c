@@ -39,7 +39,7 @@ struct unkStruct_8107654
 
 static bool8 RollShinyChance(void)
 {
-    return RandInt(100) < SHINY_SPAWN_CHANCE_PERCENT;
+    return RandInt(SHINY_SPAWN_CHANCE_DENOM) < SHINY_SPAWN_CHANCE;
 }
 
 // arm9.bin::0205C34C

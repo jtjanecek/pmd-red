@@ -40,6 +40,7 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     s32 i;
     s32 rand;
     s32 recruitRate;
+    bool8 isShiny;
     EntityInfo *attackerInfo = GetEntInfo(attacker);
     EntityInfo *targetInfo = GetEntInfo(target);
     s32 foundIndex = -1;
@@ -98,6 +99,7 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     if (!CanSeeTarget(target,attacker))
         return FALSE;
 
+    isShiny = (targetInfo->visualFlags & VISUAL_FLAG_SHINY) != 0;
     sub_806F910();
     rand = DungeonRandInt(1000);
     recruitRate = GetRecruitRate(targetInfo->id);
@@ -108,7 +110,7 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
         recruitRate += gFriendBowRecruitRateUpValue;
 
     recruitRate += gRecruitRateByLevel[attackerInfo->level];
-    if (rand >= recruitRate)
+    if (!isShiny && rand >= recruitRate)
         return FALSE;
 
     for (i = 0; i <= (MAX_TEAM_BODY_SIZE - size); i++) {

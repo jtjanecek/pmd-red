@@ -20,6 +20,8 @@
 #include "dungeon_logic.h"
 #include "dungeon_random.h"
 #include "dungeon_message.h"
+#include "dungeon_music.h"
+#include "dungeon_strings.h"
 #include "dungeon_pokemon_sprites.h"
 #include "dungeon_util.h"
 #include "exclusive_pokemon.h"
@@ -43,7 +45,7 @@
 
 static bool8 RollShinySpawn(void)
 {
-    return DungeonRandInt(100) < SHINY_SPAWN_CHANCE_PERCENT;
+    return DungeonRandInt(SHINY_SPAWN_CHANCE_DENOM) < SHINY_SPAWN_CHANCE;
 }
 
 static s32 CalcSpeciesHPAtLevel(s32 species, s32 level);
@@ -522,6 +524,9 @@ Entity* SpawnWildMon(struct MonSpawnInfo *monSpawnInfo, bool8 a1)
     entityInfo->moveRandomly = monSpawnInfo->unk4;
     if (RollShinySpawn()) {
         entityInfo->visualFlags |= VISUAL_FLAG_SHINY;
+        sub_8083E28();
+        DisplayDungeonMessage_Async(NULL, gText_ThisFloorYouSenseSomethingRare, TRUE);
+        DisplayDungeonLoggableMessageFalse_Async(GetLeader(), gText_ThisFloorYouSenseSomethingRare);
     }
     if (!monSpawnInfo->unk2 && !a1 && !monSpawnInfo->unk10) {
         s32 rand = DungeonRandInt(100);

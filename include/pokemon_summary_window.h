@@ -44,7 +44,7 @@ typedef struct MonSummaryInfo
     /* R=0x4D | B=???? */ u8 fill4D[3];
     /* R=0x50 | B=???? */ IqSkillFlags IQSkills;
     /* R=0x54 | B=???? */ u8 tactic;
-    /* R=0x55 | B=???? */ u8 fill55;
+    /* R=0x55 | B=???? */ bool8 isShiny;
     /* R=0x56 | B=???? */ s16 unk56;
     /* R=0x58 | B=???? */ u8 unk58[MON_SUMMARY_UNK58_COUNT];
 } MonSummaryInfo;

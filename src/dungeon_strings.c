@@ -311,6 +311,7 @@ const u8 *const gText_SomethingStirring = _("...Something's stirring.");
 const u8 *const gText_SomethingApproaching = _("...Something's approaching.");
 const u8 *const gText_ItsGettingCloser = _("It's getting closer!");
 const u8 *const gText_ItsRightNearbyGustingHard = _("It's right nearby! It's gusting hard!");
+const u8 *const gText_ThisFloorYouSenseSomethingRare = _("A rare and unusual presence is on this\nfloor.");
 const u8 *const gUnknown_80F9CC0[] = {
     [0] = _("{POKEMON_1} was defeated!"),
     [1] = _("{POKEMON_1} fainted!"),
@@ -1030,7 +1031,7 @@ const TutorialFlagMsg gUnknown_80FF020 = {
 };
 
 const TutorialFlagMsg gUnknown_80FF080 = {
-    TUTORIAL_FLAG_OPEN_MENU, _("Foes won't move until you do.\nOpen the menu with {B_BUTTON} and\nthink before you act!")
+    TUTORIAL_FLAG_OPEN_MENU, _("Press {R_BUTTON}+{A_BUTTON} to enable Autopilot.\nHold {B_BUTTON} to cancel.")
 };
 
 const TutorialFlagMsg gUnknown_80FF0D8 = {

@@ -2,7 +2,7 @@
     {
         "name": "DUNGEON_TINY_WOODS",
         "stairDirectionUp": false,
-        "recruitingEnabled": false,
+        "recruitingEnabled": true,
         "rescuesAllowed": -1,
         "maxItemsAllowed": 20,
         "maxPartyMembers": 3,
@@ -296,7 +296,7 @@
     {
         "name": "DUNGEON_MT_FREEZE_PEAK_2",
         "stairDirectionUp": true,
-        "recruitingEnabled": false,
+        "recruitingEnabled": true,
         "rescuesAllowed": -1,
         "maxItemsAllowed": 20,
         "maxPartyMembers": 4,
@@ -636,7 +636,7 @@
     {
         "name": "DUNGEON_ROCK_PATH",
         "stairDirectionUp": false,
-        "recruitingEnabled": false,
+        "recruitingEnabled": true,
         "rescuesAllowed": -1,
         "maxItemsAllowed": 20,
         "maxPartyMembers": 3,
@@ -649,7 +649,7 @@
     {
         "name": "DUNGEON_SNOW_PATH",
         "stairDirectionUp": false,
-        "recruitingEnabled": false,
+        "recruitingEnabled": true,
         "rescuesAllowed": -1,
         "maxItemsAllowed": 20,
         "maxPartyMembers": 3,

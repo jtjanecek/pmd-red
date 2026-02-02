@@ -3,6 +3,7 @@
 #include "pokemon_summary_window.h"
 #include "string_format.h"
 #include "strings.h"
+#include "common_strings.h"
 #include "pokemon_3.h"
 #include "pokemon_evolution.h"
 #include "text_1.h"
@@ -102,6 +103,10 @@ void ShowPokemonSummaryWindow(s32 which, s32 currSubWindowId, MonSummaryInfo *mo
             else
                 strcpy(gFormatBuffer_Items[0], gUnknown_810DE58);
             PrintFormattedStringOnWindow(4, y, gUnknown_810DE6C, windowId, '\0');
+
+            y += 10;
+            InlineStrcpy(gFormatBuffer_Items[0], monInfo->isShiny ? gCommonYes[0] : gCommonNo[0]);
+            PrintFormattedStringOnWindow(4, y, gText_ShinySummary, windowId, '\0');
 
             y += 12;
             gFormatArgs[0] = monInfo->IQ;
@@ -301,6 +306,7 @@ void SetMonSummaryInfo(MonSummaryInfo *dst, Pokemon *pokemon, bool8 unlockedEvol
     dst->unk44[0] = pokemon->unkC[0];
     dst->unk44[1] = pokemon->unkC[1];
     dst->IQSkills = pokemon->IQSkills;
+    dst->isShiny = (pokemon->flags & POKEMON_FLAG_SHINY) != 0;
 
     if (unlockedEvolutions)
         dst->evoStringId = GetMonSummaryScreenEvoStringId(pokemon);

@@ -104,10 +104,6 @@ void ShowPokemonSummaryWindow(s32 which, s32 currSubWindowId, MonSummaryInfo *mo
                 strcpy(gFormatBuffer_Items[0], gUnknown_810DE58);
             PrintFormattedStringOnWindow(4, y, gUnknown_810DE6C, windowId, '\0');
 
-            y += 10;
-            InlineStrcpy(gFormatBuffer_Items[0], monInfo->isShiny ? gCommonYes[0] : gCommonNo[0]);
-            PrintFormattedStringOnWindow(4, y, gText_ShinySummary, windowId, '\0');
-
             y += 12;
             gFormatArgs[0] = monInfo->IQ;
             //iVar8 = clamp(monInfo->IQ / 10, 0, 99);
@@ -238,6 +234,9 @@ void ShowPokemonSummaryWindow(s32 which, s32 currSubWindowId, MonSummaryInfo *mo
             y += 0xA;
             PrintFormattedStringOnWindow(4,y,gUnknown_810DEDC,windowId,'\0');
             y += 0xD;
+            InlineStrcpy(gFormatBuffer_Items[0], monInfo->isShiny ? gCommonYes[0] : gCommonNo[0]);
+            PrintFormattedStringOnWindow(4, y, gText_ShinySummary, windowId, '\0');
+            y += 0xA;
             PrintFormattedStringOnWindow(4,y,gUnknown_810DFB4,windowId,'\0');
             y += 0xA;
             PrintYellowDungeonNametoBuffer(gFormatBuffer_Items[0],&monInfo->dungeonLocation);

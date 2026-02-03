@@ -103,6 +103,15 @@ void CreateLeaderPartnerData(s16 _species, bool32 _isLeader, u8* name)
      pokemon.offense.def[0] = GetBaseDefensiveStat(species, 0);
      pokemon.offense.def[1] = GetBaseDefensiveStat(species, 1);
      pokemon.IQ = 1;
+#ifdef DEV
+     pokemon.level = 100;
+     pokemon.pokeHP = 999;
+     pokemon.offense.att[0] = 255;
+     pokemon.offense.att[1] = 255;
+     pokemon.offense.def[0] = 255;
+     pokemon.offense.def[1] = 255;
+     pokemon.IQ = 999;
+#endif
      pokemon.unkC[0].level = 0;
      pokemon.unkC[1].level = 0;
      SetDefaultIQSkills(&pokemon.IQSkills, FALSE);
@@ -966,6 +975,21 @@ void PokemonToDungeonMon(DungeonMon *dst, Pokemon *src, s32 recruitedPokemonId)
         dst->offense.att[i] = src->offense.att[i];
         dst->offense.def[i] = src->offense.def[i];
     }
+
+#ifdef DEV
+    if (src->dungeonLocation.id == DUNGEON_JOIN_LOCATION_LEADER
+        || src->dungeonLocation.id == DUNGEON_JOIN_LOCATION_PARTNER)
+    {
+        dst->level = 100;
+        dst->IQ = 999;
+        dst->unk12 = 999;
+        dst->unk10 = 999;
+        dst->offense.att[0] = 255;
+        dst->offense.att[1] = 255;
+        dst->offense.def[0] = 255;
+        dst->offense.def[1] = 255;
+    }
+#endif
 
     dst->currExp = src->currExp;
     CopyAndResetMoves(&dst->moves, src->moves);

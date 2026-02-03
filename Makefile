@@ -32,7 +32,7 @@ ifeq (modern,$(MAKECMDGOALS))
 endif
 
 # Enable dev-only code paths
-DEV ?= 0
+DEV ?= 1
 
 PREFIX := arm-none-eabi-
 OBJCOPY := $(PREFIX)objcopy

@@ -164,6 +164,14 @@ static void sub_8084854(const FixedRoomCutsceneData *data)
             SetTempCutsceneFlag(data->cutscene2Flag);
     }
 
+    // For repeat runs, keep the fixed-room boss fight but skip poststory dialogue cutscenes.
+    if ((data->fixedRoomNum == FIXED_ROOM_MT_STEEL_SKARMORY && gDungeon->cutscene == CUTSCENE_MT_STEEL_POSTSTORY)
+        || (data->fixedRoomNum == FIXED_ROOM_SINISTER_WOODS_TEAM_MEANIES && gDungeon->cutscene == CUTSCENE_SINISTER_WOODS_POSTSTORY)) {
+        gDungeon->cutscene = CUTSCENE_NONE;
+        gDungeon->unk644.unk31 = 0;
+        return;
+    }
+
     gDungeon->unk644.unk31 = 1;
     sub_807E5E4(WEATHER_CLEAR);
 }
@@ -1996,4 +2004,3 @@ bool8 sub_8086AE4(s16 _index)
     else
         return HasRecruitedMon(pokeIndex);
 }
-

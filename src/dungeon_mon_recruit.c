@@ -34,17 +34,21 @@
 
 static void nullsub_96(Entity *pokemon,Entity *target);
 static void sub_806F910(void);
+static bool8 IsMonsterRecruitableInternal(s32 species, bool8 bypassStoryRestrictions);
 
 bool8 TryRecruitMonster(Entity *attacker, Entity *target)
 {
     s32 i;
     s32 rand;
     s32 recruitRate;
+    bool8 bypassStoryRestrictions;
     bool8 isShiny;
     EntityInfo *attackerInfo = GetEntInfo(attacker);
     EntityInfo *targetInfo = GetEntInfo(target);
     s32 foundIndex = -1;
     s32 size = GetBodySize(targetInfo->apparentID);
+    isShiny = (targetInfo->visualFlags & VISUAL_FLAG_SHINY) != 0;
+    bypassStoryRestrictions = isShiny;
 
     if (gDungeon->fixedRoomNumber != FIXED_ROOM_FROSTY_GROTTO_ARTICUNO
         && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_BLAZE_PEAK_MOLTRES
@@ -88,7 +92,7 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
         return FALSE;
     }
 
-    if (!IsMonsterRecruitable(targetInfo->id))
+    if (!IsMonsterRecruitableInternal(targetInfo->id, bypassStoryRestrictions))
         return FALSE;
     if (abs((attacker->pos).x - (target->pos).x) >= 2 || abs((attacker->pos).y - (target->pos).y) >= 2)
         return FALSE;
@@ -99,11 +103,10 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     if (!CanSeeTarget(target,attacker))
         return FALSE;
 
-    isShiny = (targetInfo->visualFlags & VISUAL_FLAG_SHINY) != 0;
     sub_806F910();
     rand = DungeonRandInt(1000);
     recruitRate = GetRecruitRate(targetInfo->id);
-    if (recruitRate == -999)
+    if (!isShiny && recruitRate == -999)
         return FALSE;
 
     if (HasHeldItem(attacker, ITEM_FRIEND_BOW))
@@ -186,20 +189,25 @@ static void sub_806F910(void)
 
 bool8 IsMonsterRecruitable(s32 species)
 {
+    return IsMonsterRecruitableInternal(species, FALSE);
+}
+
+static bool8 IsMonsterRecruitableInternal(s32 species, bool8 bypassStoryRestrictions)
+{
     s32 id = (s16) species;
     if (!gDungeon->unk644.canRecruit) {
         return FALSE;
     }
-    else if (!MonCutsceneCompleted(id)) {
+    else if (!bypassStoryRestrictions && !MonCutsceneCompleted(id)) {
         return FALSE;
     }
     else if (id == MONSTER_MEW && gDungeon->unk644.missionKind == DUNGEON_MISSION_OUTONRESCUE) {
         return FALSE;
     }
-    else if (id == MONSTER_LATIAS) {
+    else if (!bypassStoryRestrictions && id == MONSTER_LATIAS) {
         return FALSE;
     }
-    else if (id == MONSTER_LATIOS) {
+    else if (!bypassStoryRestrictions && id == MONSTER_LATIOS) {
         return FALSE;
     }
     else if (id == MONSTER_DEOXYS_ATTACK) {

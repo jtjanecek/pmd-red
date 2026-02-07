@@ -2,6 +2,7 @@
 #include "globaldata.h"
 #include "dungeon_mon_spawn.h"
 #include "constants/ability.h"
+#include "constants/fixed_rooms.h"
 #include "constants/iq_skill.h"
 #include "constants/move_id.h"
 #include "constants/status.h"
@@ -523,10 +524,13 @@ Entity* SpawnWildMon(struct MonSpawnInfo *monSpawnInfo, bool8 a1)
     entityInfo->HP = entityInfo->maxHPStat;
     entityInfo->moveRandomly = monSpawnInfo->unk4;
     if (RollShinySpawn()) {
+        bool8 showRareFloorMessage = (gDungeon->fixedRoomNumber == FIXED_ROOM_NONE || gDungeon->fixedRoomNumber > LAST_FLOORWIDE_FIXED_ROOM);
         entityInfo->visualFlags |= VISUAL_FLAG_SHINY;
-        sub_8083E28();
-        DisplayDungeonMessage_Async(NULL, gText_ThisFloorYouSenseSomethingRare, TRUE);
-        DisplayDungeonLoggableMessageFalse_Async(GetLeader(), gText_ThisFloorYouSenseSomethingRare);
+        if (showRareFloorMessage) {
+            sub_8083E28();
+            DisplayDungeonMessage_Async(NULL, gText_ThisFloorYouSenseSomethingRare, TRUE);
+            DisplayDungeonLoggableMessageFalse_Async(GetLeader(), gText_ThisFloorYouSenseSomethingRare);
+        }
     }
     if (!monSpawnInfo->unk2 && !a1 && !monSpawnInfo->unk10) {
         s32 rand = DungeonRandInt(100);

@@ -513,7 +513,6 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         sub_8041888(1);
 
 #ifdef DEV
-        /*
         // DEV: Apply permanent Protect status to the leader
         {
             Entity *leader = GetLeader();
@@ -524,7 +523,6 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
                 // Note: Status sprite will update naturally on first turn
             }
         }
-        */
 #endif
 
         MGBA_Warnf("[Dungeon] Post-init: About to call sub_80848F0");

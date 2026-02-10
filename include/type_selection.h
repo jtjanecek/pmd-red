@@ -12,6 +12,8 @@
 #define TYPE_SELECTION_MAX_WEATHERS_PER_TYPE 8
 #define TYPE_SELECTION_STAT_COUNT 5
 #define BOSS_WEATHER_CHANCE_SCALE 1000
+#define TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT 20
+#define TYPE_SELECTION_SAVE_VERSION 0xA7
 
 typedef enum
 {
@@ -95,7 +97,9 @@ typedef struct TypeSelectionSaveData
     u8 committedBossValid;
     u8 activeBossValid;
     u8 awaitingChoice;
-    u8 reserved;
+    u8 hintChoiceCount;
+    u8 hintChoiceHistory[TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT];
+    u8 saveVersion;
 } TypeSelectionSaveData;
 
 extern const TypeHintDefinition gTypeHintTable[];

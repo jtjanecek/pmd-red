@@ -34,9 +34,11 @@ static void ResetPendingHints(void);
 static bool8 IsTypeWithinBounds(u8 type);
 static bool8 IsTypeAvailable(u8 type);
 static bool8 ShouldGenerateHints(void);
+static void ResetHintChoiceHistory(void);
 static void SanitizePendingHints(void);
 static void SanitizeBossState(void);
 static void SanitizeTilesetState(void);
+static void SanitizeHintChoiceHistory(void);
 static bool8 IsBossInPool(u8 type, s16 species);
 static bool8 IsTilesetInPool(u8 type, u8 tilesetId);
 static bool8 SelectBossForType(u8 type, u32 *rngState, s16 *bossOut);
@@ -61,6 +63,8 @@ void TypeSelection_ResetForNewRun(void)
 
     MemoryFill8(&sTypeSelectionState.data, 0, sizeof(sTypeSelectionState.data));
     ResetPendingHints();
+    ResetHintChoiceHistory();
+    sTypeSelectionState.data.saveVersion = TYPE_SELECTION_SAVE_VERSION;
     sTypeSelectionState.data.awaitingChoice = TRUE;
 }
 
@@ -73,9 +77,15 @@ void TypeSelection_ReadSaveData(const TypeSelectionSaveData *data)
         sTypeSelectionState.data = *data;
     }
 
+    if (sTypeSelectionState.data.saveVersion != TYPE_SELECTION_SAVE_VERSION) {
+        ResetHintChoiceHistory();
+        sTypeSelectionState.data.saveVersion = TYPE_SELECTION_SAVE_VERSION;
+    }
+
     SanitizePendingHints();
     SanitizeBossState();
     SanitizeTilesetState();
+    SanitizeHintChoiceHistory();
 
     if (!sTypeSelectionState.data.awaitingChoice
         && !sTypeSelectionState.data.committedTypeValid
@@ -91,6 +101,7 @@ void TypeSelection_WriteSaveData(TypeSelectionSaveData *data)
     if (!sTypeSelectionState.initialized)
         TypeSelection_Init();
 
+    sTypeSelectionState.data.saveVersion = TYPE_SELECTION_SAVE_VERSION;
     *data = sTypeSelectionState.data;
 }
 
@@ -175,6 +186,7 @@ const TypeHintDefinition *TypeSelection_GetPendingHint(u32 index)
 bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
 {
     const TypeHintDefinition *hint;
+    u8 selectedHintPath;
     u8 chosenType;
     u8 fallbackType;
     s16 chosenBoss = MONSTER_NONE;
@@ -219,6 +231,12 @@ bool8 TypeSelection_SelectHint(u32 index, u8 *chosenTypeOut)
     tilesetValid = SelectTilesetForType(chosenType, &tilesetRng, &chosenTileset);
     if (!tilesetValid)
         MGBA_Warnf("[TypeSelection] No tileset available for type %d", chosenType);
+
+    selectedHintPath = (index > 1) ? 1 : (u8)index;
+    if (sTypeSelectionState.data.hintChoiceCount < TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT) {
+        sTypeSelectionState.data.hintChoiceHistory[sTypeSelectionState.data.hintChoiceCount] = selectedHintPath;
+        sTypeSelectionState.data.hintChoiceCount++;
+    }
 
     sTypeSelectionState.data.pickCount[chosenType]++;
     sTypeSelectionState.data.pendingHintCount = 0;
@@ -410,6 +428,16 @@ static void ResetPendingHints(void)
     sTypeSelectionState.data.pendingHintCount = 0;
 }
 
+static void ResetHintChoiceHistory(void)
+{
+    s32 i;
+
+    sTypeSelectionState.data.hintChoiceCount = 0;
+    for (i = 0; i < TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT; i++) {
+        sTypeSelectionState.data.hintChoiceHistory[i] = 0xFF;
+    }
+}
+
 static void SanitizePendingHints(void)
 {
     if (sTypeSelectionState.data.pendingHintCount > ARRAY_COUNT(sTypeSelectionState.data.pendingHintIds))
@@ -485,6 +513,23 @@ static void SanitizeTilesetState(void)
         || !IsTilesetInPool(sTypeSelectionState.data.activeType, sTypeSelectionState.data.activeTileset)) {
         sTypeSelectionState.data.activeTilesetValid = FALSE;
         sTypeSelectionState.data.activeTileset = 0;
+    }
+}
+
+static void SanitizeHintChoiceHistory(void)
+{
+    s32 i;
+
+    if (sTypeSelectionState.data.hintChoiceCount > TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT)
+        sTypeSelectionState.data.hintChoiceCount = TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT;
+
+    for (i = 0; i < sTypeSelectionState.data.hintChoiceCount; i++) {
+        if (sTypeSelectionState.data.hintChoiceHistory[i] > 1)
+            sTypeSelectionState.data.hintChoiceHistory[i] = 0;
+    }
+
+    for (; i < TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT; i++) {
+        sTypeSelectionState.data.hintChoiceHistory[i] = 0xFF;
     }
 }
 

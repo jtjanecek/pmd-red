@@ -231,20 +231,20 @@ static void InitializeTestStats(void)
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END; // 100
     sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARMANDER;
+    sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
-    sPersonalityTestTracker->unk4.PartnerID = MONSTER_SQUIRTLE;
+    sPersonalityTestTracker->unk4.PartnerID = MONSTER_METAGROSS;
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
-    sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_10;
+    sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_20;
     sPersonalityTestTracker->unk4.enableLeaderSwap = 1;
     SetRecruitAllSetting(RECRUIT_ALL_NONE);
     SetSkipBasicRescuesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
-    SetMaxDungeonsSetting(MAX_DUNGEONS_10);
+    SetMaxDungeonsSetting(MAX_DUNGEONS_20);
     SetEnableLeaderSwapSetting(1);
     
     // Level up team to 100 in dev mode
@@ -353,7 +353,7 @@ u32 HandleTestTrackerState(void)
                 sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
 #ifdef DEV
                 // In DEV builds, always use this seed: 100
-                //sPersonalityTestTracker->rngSeed = 141412;
+                sPersonalityTestTracker->rngSeed = 1414122;
 #endif
                 sPersonalityTestTracker->seedChosen = TRUE;
             }

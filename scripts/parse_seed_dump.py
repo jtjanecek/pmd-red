@@ -276,6 +276,45 @@ def build_run_settings_line(rows_by_section: OrderedDict[str, List[Dict[str, str
     return "Run Settings: " + " | ".join(items)
 
 
+def build_hint_choice_history_line(rows_by_section: OrderedDict[str, List[Dict[str, str]]]) -> str | None:
+    rows = rows_by_section.get("hint_choice_history") or []
+    if rows:
+        parsed: List[tuple[int, int, int]] = []
+        for row in rows:
+            section_index = parse_int(row.get("section_index"))
+            index = parse_int(row.get("index"))
+            selection = parse_int(row.get("selection"))
+            if section_index is None or index is None or selection is None:
+                continue
+            parsed.append((section_index, index, selection))
+
+        if not parsed:
+            return "Hint Choices: (unavailable)"
+
+        # Keep only the latest emitted snapshot (last index=0 block).
+        latest_snapshot: List[tuple[int, int]] = []
+        for _, index, selection in reversed(parsed):
+            latest_snapshot.append((index, selection))
+            if index == 0:
+                break
+        latest_snapshot.reverse()
+
+        if not latest_snapshot:
+            return "Hint Choices: (unavailable)"
+
+        latest_snapshot.sort(key=lambda item: item[0])
+        selections = ",".join(str(selection) for _, selection in latest_snapshot)
+        return f"Hint Choices: {selections}"
+
+    settings_rows = rows_by_section.get("save_overrides") or []
+    if settings_rows:
+        hint_count = parse_int(settings_rows[0].get("hint_count"))
+        if hint_count is not None and hint_count > 0:
+            return f"Hint Choices: (missing rows, expected {hint_count})"
+
+    return "Hint Choices: (none)"
+
+
 def write_csv(rows_by_section: OrderedDict[str, List[Dict[str, str]]],
               headers: List[str],
               out_path: pathlib.Path) -> None:
@@ -515,6 +554,13 @@ def run(args: argparse.Namespace) -> int:
     write_csv(rows_by_section, csv_headers, args.out)
 
     print(f"Wrote CSV: {args.out}")
+    if not args.no_print:
+        settings_line = build_run_settings_line(rows_by_section)
+        if settings_line:
+            print(settings_line)
+        hint_choices_line = build_hint_choice_history_line(rows_by_section)
+        if hint_choices_line:
+            print(hint_choices_line)
     if not args.no_plot:
         if write_spawn_range_plots(rows_by_section, args.plot_out):
             print(f"Wrote spawn range plots: {args.plot_out}")

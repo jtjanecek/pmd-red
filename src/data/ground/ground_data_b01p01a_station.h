@@ -706,7 +706,7 @@ static const struct ScriptCommand s_gs9_gulpin_base_dlg0[] = { /* custom */
 const struct ScriptCommand s_gs9_skarmory_base_dlg0[] = { /* custom */
     DEBUGINFO_O(740),
     SELECT_ANIMATION(2),
-    MSG_NPC(1, _("Skarmory, commander of the\nIron Wing. I can spare a recruit...\nfor a fee.")),
+    MSG_NPC(1, _("Hi hi! I'm Ariados!\nI may not be great at fighting,\nbut I know lots of friends!")),
     SPECIAL_TEXT(SPECIAL_TEXT_SKARMORY_RECRUIT, 0, 0),
     JUMP_SCRIPT(END_TALK),
 };

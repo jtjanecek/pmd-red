@@ -72,7 +72,7 @@ struct UnkStruct_sub_8011DAC
     u32 savedMailInfo;
     TypeSelectionSaveData typeSelection;
     GengarHintSaveData gengarHints;
-    u8 unk448[0x5320];
+    u8 unk448[0x530A];
     SkarmoryRecruitSaveData skarmoryRecruit;
 };
 

@@ -49,6 +49,9 @@
 #define SEEDED_SPAWN_TARGET_NUM 14    // Aim for ~1.4 species per floor (Purity Forest has ~1.39)
 #define SEEDED_SPAWN_TARGET_DEN 10
 #define SEEDED_MAIN_TYPE_PERCENT 80
+#define SEEDED_BST_CAP_PERCENT_DUNGEON_3_4 70
+#define SEEDED_TARGET_ACTIVE_SPECIES_PER_FLOOR 5
+#define SEEDED_MIN_RANGE_FLOORS 2
 #define SEEDED_LOW_BST_PERCENT 15
 #define SEEDED_LOW_BST_FLAG_BYTES ((MONSTER_MAX + 7) / 8)
 #define SEEDED_DUNGEON_NAME_MAX_LEN 32
@@ -241,10 +244,14 @@ static void EnsureLowBstSpeciesCache(void);
 static bool8 IsLowBstSpecies(s16 species);
 static u16 GetSeededStatTieBreak(s32 seed, u8 dungeonId, u8 tileset, s16 species);
 static void SortSpawnCandidatesByBaseStats(s16 *pool, s32 count, s32 seed, u8 dungeonId, u8 tileset);
-static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32 poolCount, bool8 *selectedFlags,
-                                       s32 entryIndex, s32 entryCount);
-static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount,
-                                                      s32 entryIndex, s32 entryCount);
+UNUSED static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32 poolCount, bool8 *selectedFlags,
+                                              s32 entryIndex, s32 entryCount);
+UNUSED static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount,
+                                                             s32 entryIndex, s32 entryCount);
+static s16 SelectSpeciesFromRankedBandByTypeMask(DungeonSeedRng *rng, const s16 *rankedSpecies, s32 speciesCount,
+                                                 bool8 *selectedFlags, s32 bandStart, s32 bandEnd,
+                                                 u32 typeMask, bool8 allowReplacement);
+static s32 GetBstBandSelectionCount(u8 dungeonId, s32 speciesCount);
 static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog);
 static s16 SelectLowBstFallbackSpecies(DungeonSeedRng *rng, bool8 *selectedFlags);
 
@@ -274,13 +281,21 @@ static const s16 sRecruitFriendBowBonusPercent[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NIGHTMARE] = 1,
 };
 
-static const u8 sDifficultyLevelOffset[NUM_DIFFICULTY_SETTINGS] = {0, 0, 0};
+// Fixed-point scalar (x / 1000) applied to dungeon progression base level.
+// Example: 850 = 0.85x progression speed, 1200 = 1.2x progression speed.
+static const u16 sDifficultyBaseLevelScalePermille[NUM_DIFFICULTY_SETTINGS] = {
+    [DIFFICULTY_NORMAL] = 1000,
+    [DIFFICULTY_HARD] = 1100,
+    [DIFFICULTY_NIGHTMARE] = 1200,
+};
+
+static const u8 sDifficultyLevelOffset[NUM_DIFFICULTY_SETTINGS] = {0, 1, 2};
 
 // Max per-dungeon floor ramp applied across the full depth; keeps 99F dungeons tame.
 static const u8 sDifficultyFloorRampMax[NUM_DIFFICULTY_SETTINGS] = {
     [DIFFICULTY_NORMAL] = 2,
-    [DIFFICULTY_HARD] = 2,
-    [DIFFICULTY_NIGHTMARE] = 2,
+    [DIFFICULTY_HARD] = 3,
+    [DIFFICULTY_NIGHTMARE] = 4,
 };
 
 static const SeededFloorGenerationConfig sSeededFloorGenConfig = {
@@ -1614,8 +1629,8 @@ static s32 GetRankTargetIndex(s32 entryIndex, s32 entryCount, s32 poolCount)
     return (entryIndex * (poolCount - 1)) / (entryCount - 1);
 }
 
-static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32 poolCount, bool8 *selectedFlags,
-                                       s32 entryIndex, s32 entryCount)
+UNUSED static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32 poolCount, bool8 *selectedFlags,
+                                              s32 entryIndex, s32 entryCount)
 {
     s32 target;
     s32 window;
@@ -1705,8 +1720,8 @@ static s16 SelectSpeciesFromRankedPool(DungeonSeedRng *rng, const s16 *pool, s32
     return MONSTER_NONE;
 }
 
-static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount,
-                                                      s32 entryIndex, s32 entryCount)
+UNUSED static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const s16 *pool, s32 poolCount,
+                                                             s32 entryIndex, s32 entryCount)
 {
     s32 target;
     s32 window;
@@ -1785,6 +1800,81 @@ static s16 SelectSpeciesFromRankedPoolWithReplacement(DungeonSeedRng *rng, const
     }
 
     return MONSTER_NONE;
+}
+
+static s16 SelectSpeciesFromRankedBandByTypeMask(DungeonSeedRng *rng, const s16 *rankedSpecies, s32 speciesCount,
+                                                 bool8 *selectedFlags, s32 bandStart, s32 bandEnd,
+                                                 u32 typeMask, bool8 allowReplacement)
+{
+    s32 i;
+    s32 matchCount = 0;
+    s32 target;
+
+    if (rng == NULL || rankedSpecies == NULL || speciesCount <= 0)
+        return MONSTER_NONE;
+    if (bandStart < 0)
+        bandStart = 0;
+    if (bandEnd >= speciesCount)
+        bandEnd = speciesCount - 1;
+    if (bandEnd < bandStart)
+        return MONSTER_NONE;
+
+    for (i = bandStart; i <= bandEnd; i++) {
+        s16 species = rankedSpecies[i];
+
+        if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+            continue;
+        if (typeMask != 0 && !SpeciesMatchesTypeMask(species, typeMask))
+            continue;
+        if (!allowReplacement && selectedFlags != NULL && selectedFlags[species])
+            continue;
+        matchCount++;
+    }
+
+    if (matchCount <= 0)
+        return MONSTER_NONE;
+
+    target = DungeonSeedRng_NextRange(rng, 0, matchCount);
+    matchCount = 0;
+    for (i = bandStart; i <= bandEnd; i++) {
+        s16 species = rankedSpecies[i];
+
+        if (species <= MONSTER_NONE || species >= MONSTER_MAX)
+            continue;
+        if (typeMask != 0 && !SpeciesMatchesTypeMask(species, typeMask))
+            continue;
+        if (!allowReplacement && selectedFlags != NULL && selectedFlags[species])
+            continue;
+
+        if (matchCount == target) {
+            if (!allowReplacement && selectedFlags != NULL)
+                selectedFlags[species] = TRUE;
+            return species;
+        }
+        matchCount++;
+    }
+
+    return MONSTER_NONE;
+}
+
+static s32 GetBstBandSelectionCount(u8 dungeonId, s32 speciesCount)
+{
+    s32 dungeonNumber;
+    s32 cappedCount;
+
+    if (speciesCount <= 0)
+        return speciesCount;
+
+    dungeonNumber = GetDungeonNumberForFloorScaling(dungeonId);
+    if (dungeonNumber != 3 && dungeonNumber != 4)
+        return speciesCount;
+
+    cappedCount = (speciesCount * SEEDED_BST_CAP_PERCENT_DUNGEON_3_4 + 99) / 100;
+    if (cappedCount < 1)
+        cappedCount = 1;
+    if (cappedCount > speciesCount)
+        cappedCount = speciesCount;
+    return cappedCount;
 }
 
 static s16 SelectGenericSpecies(DungeonSeedRng *rng, bool8 *selectedFlags, bool8 *loggedFallback, u32 maskForLog)
@@ -1912,6 +2002,7 @@ static s32 CalcSeededSpawnLevel(s32 seed, u8 dungeonId, s32 floorIndex, s32 floo
     s32 dungeonNumber = GetDungeonNumberForFloorScaling(dungeonId);
     u32 difficulty = GetGameDifficultySetting();
     s32 baseLevel;
+    s32 progressionScaledBaseLevel;
     s32 level;
     s32 denom;
     s32 jitter = 0;
@@ -1929,6 +2020,10 @@ static s32 CalcSeededSpawnLevel(s32 seed, u8 dungeonId, s32 floorIndex, s32 floo
         floorIndex = floorCount - 1;
 
     baseLevel = 1 + (dungeonNumber - 1);
+    progressionScaledBaseLevel = (baseLevel * sDifficultyBaseLevelScalePermille[difficulty] + 500) / 1000;
+    if (progressionScaledBaseLevel < 1)
+        progressionScaledBaseLevel = 1;
+    baseLevel = progressionScaledBaseLevel;
     baseLevel += sDifficultyLevelOffset[difficulty];
 
     denom = floorCount - 1;
@@ -2063,16 +2158,16 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     s32 orderedNormalCount = 0;
     s32 mainQuota;
     s32 spawnQuota;
+    s32 bstBandCandidateCount = 0;
     s32 floorCount = DungeonSeedOverrides_GetFloorCount(seed, dungeonId);
     s32 engineFloorCount = GetDungeonFloorCount(dungeonId);
     s32 startFloorId = GetDungeonStartingFloor(dungeonId);
-    s32 lengthMin;
-    s32 lengthMax;
     bool8 useBulbasaurOnly = FALSE;
     bool8 loggedFallback = FALSE;
     bool8 loggedInvalid = FALSE;
     bool8 useLowBstSelection = FALSE;
     bool8 entryIsMain[SEEDED_FIXED_SPAWN_COUNT];
+    s16 selectedSpeciesByBand[SEEDED_FIXED_SPAWN_COUNT];
     s32 i;
 
     // Scale spawn variety with dungeon length (~1.4 species per floor) but cap to engine limits.
@@ -2095,9 +2190,8 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         spawnCandidateCount = BuildSpawnCandidates(spawnTypeMask, spawnCandidates, ARRAY_COUNT(spawnCandidates), useLowBstSelection);
     if (combinedMask != 0)
         combinedCandidateCount = BuildSpawnCandidates(combinedMask, combinedCandidates, ARRAY_COUNT(combinedCandidates), useLowBstSelection);
-    if (useLowBstSelection)
-        normalCandidateCount = BuildSpawnCandidates(1u << TYPE_NORMAL, normalCandidates, ARRAY_COUNT(normalCandidates), TRUE);
-    if (combinedMask != 0 && combinedCandidateCount == 0 && !useLowBstSelection)
+    normalCandidateCount = BuildSpawnCandidates(1u << TYPE_NORMAL, normalCandidates, ARRAY_COUNT(normalCandidates), useLowBstSelection);
+    if (combinedMask != 0 && combinedCandidateCount == 0 && !useLowBstSelection && normalCandidateCount == 0)
         useBulbasaurOnly = TRUE;
     if (mainCandidateCount > 0)
         SortSpawnCandidatesByBaseStats(mainCandidates, mainCandidateCount, seed, dungeonId, tileset);
@@ -2111,6 +2205,20 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         mainCandidateCopyCount = mainCandidateCount;
         for (i = 0; i < mainCandidateCount; i++)
             mainCandidatesCopy[i] = mainCandidates[i];
+    }
+    if (!useLowBstSelection) {
+        mainCandidateCopyCount = BuildSpawnCandidates(0xFFFFFFFFu, mainCandidatesCopy, ARRAY_COUNT(mainCandidatesCopy), FALSE);
+        if (mainCandidateCopyCount > 0)
+            SortSpawnCandidatesByBaseStats(mainCandidatesCopy, mainCandidateCopyCount, seed, dungeonId, tileset);
+        bstBandCandidateCount = GetBstBandSelectionCount(dungeonId, mainCandidateCopyCount);
+        if (bstBandCandidateCount > 0 && bstBandCandidateCount < mainCandidateCopyCount) {
+            MGBA_Infof("[SeedOverrides] BST band cap: dungeon=%d progression=%d pool=%d capped=%d (%d%%)",
+                       dungeonId,
+                       GetDungeonNumberForFloorScaling(dungeonId),
+                       mainCandidateCopyCount,
+                       bstBandCandidateCount,
+                       SEEDED_BST_CAP_PERCENT_DUNGEON_3_4);
+        }
     }
 
     for (i = 0; i < MONSTER_MAX; i++)
@@ -2172,20 +2280,6 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
     sSpawnRangeCache.floorCount = (s16)floorCount;
     sSpawnRangeCache.rangeCount = 0;
 
-    // Scale band lengths with dungeon length while keeping a reasonable minimum.
-    lengthMin = floorCount / entryCount;
-    if (lengthMin < 1)
-        lengthMin = 1;
-    lengthMax = lengthMin + 3;
-    if (lengthMin < 4)
-        lengthMin = 4;
-    if (lengthMax < lengthMin)
-        lengthMax = lengthMin;
-    if (lengthMax > floorCount)
-        lengthMax = floorCount;
-    if (lengthMin > floorCount)
-        lengthMin = floorCount;
-
     MGBA_Infof("[SeedOverrides] Spawn ranges build tileset=%d mainTypeMask=0x%08x spawnMask=0x%08x combined=0x%08x floors=%d entryCount=%d startFloor=%d",
                tileset,
                mainTypeMask,
@@ -2207,16 +2301,8 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
 
     for (i = 0; i < entryCount; i++) {
         s16 species;
-        s32 length;
-        s32 bucketStart;
-        s32 bucketEnd;
-        s32 bucketSpan;
-        s32 mid;
-        s32 startIndex = 0;
-        s32 endIndex;
         bool8 fillingMain = entryIsMain[i];
         bool8 pickedWithReplacement = FALSE;
-        SeededSpawnRange *range;
 
         if (useBulbasaurOnly) {
             species = MONSTER_BULBASAUR;
@@ -2240,22 +2326,65 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
             } else {
                 species = SelectLowBstFallbackSpecies(&rng, selectedFlags);
             }
-        } else if (fillingMain) {
-            species = SelectSpeciesFromRankedPool(&rng, mainCandidates, mainCandidateCount, selectedFlags, i, entryCount);
-            if (species == MONSTER_NONE && mainCandidateCopyCount > 0) {
-                species = SelectSpeciesFromRankedPoolWithReplacement(&rng, mainCandidatesCopy, mainCandidateCopyCount, i, entryCount);
+        } else {
+            s32 bandStart = 0;
+            s32 bandEnd = 0;
+            u32 normalMask = (1u << TYPE_NORMAL);
+            u32 firstMask = fillingMain ? mainTypeMask : spawnTypeMask;
+            u32 secondMask = fillingMain ? spawnTypeMask : mainTypeMask;
+
+            if (bstBandCandidateCount > 0) {
+                bandStart = (i * bstBandCandidateCount) / entryCount;
+                bandEnd = ((i + 1) * bstBandCandidateCount) / entryCount - 1;
+                if (bandEnd < bandStart)
+                    bandEnd = bandStart;
+                if (bandEnd >= bstBandCandidateCount)
+                    bandEnd = bstBandCandidateCount - 1;
+            }
+
+            species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                            selectedFlags, bandStart, bandEnd, firstMask, FALSE);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, secondMask, FALSE);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, combinedMask, FALSE);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, normalMask, FALSE);
+            if (species == MONSTER_NONE)
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, 0, FALSE);
+
+            if (species == MONSTER_NONE) {
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, firstMask, TRUE);
                 pickedWithReplacement = (species != MONSTER_NONE);
             }
-            if (species == MONSTER_NONE)
-                species = SelectSpeciesFromRankedPool(&rng, combinedCandidates, combinedCandidateCount, selectedFlags, i, entryCount);
-            if (species == MONSTER_NONE)
-                species = SelectSpeciesFromRankedPool(&rng, spawnCandidates, spawnCandidateCount, selectedFlags, i, entryCount);
-        } else {
-            species = SelectSpeciesFromRankedPool(&rng, spawnCandidates, spawnCandidateCount, selectedFlags, i, entryCount);
-            if (species == MONSTER_NONE)
-                species = SelectSpeciesFromRankedPool(&rng, combinedCandidates, combinedCandidateCount, selectedFlags, i, entryCount);
-            if (species == MONSTER_NONE)
-                species = SelectSpeciesFromRankedPool(&rng, mainCandidates, mainCandidateCount, selectedFlags, i, entryCount);
+            if (species == MONSTER_NONE) {
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, secondMask, TRUE);
+                if (species != MONSTER_NONE)
+                    pickedWithReplacement = TRUE;
+            }
+            if (species == MONSTER_NONE) {
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, combinedMask, TRUE);
+                if (species != MONSTER_NONE)
+                    pickedWithReplacement = TRUE;
+            }
+            if (species == MONSTER_NONE) {
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, normalMask, TRUE);
+                if (species != MONSTER_NONE)
+                    pickedWithReplacement = TRUE;
+            }
+            if (species == MONSTER_NONE) {
+                species = SelectSpeciesFromRankedBandByTypeMask(&rng, mainCandidatesCopy, mainCandidateCopyCount,
+                                                                selectedFlags, bandStart, bandEnd, 0, TRUE);
+                pickedWithReplacement = (species != MONSTER_NONE);
+            }
         }
 
         if (species == MONSTER_NONE) {
@@ -2275,49 +2404,72 @@ static void BuildSpawnRangesForDungeon(s32 seed, u8 dungeonId, u8 tileset, u32 m
         } else if (pickedWithReplacement) {
             selectedFlags[species] = TRUE;
         }
+        selectedSpeciesByBand[i] = species;
+    }
 
-        // Pick a scaled band (min 4 floors) and center it within an even bucketed midpoint.
-        length = DungeonSeedRng_NextRange(&rng, lengthMin, lengthMax + 1);
-        if (length > floorCount)
-            length = floorCount;
+    // Low-BST mode can still benefit from a final sort after type-limited selection.
+    if (useLowBstSelection)
+        SortSpawnCandidatesByBaseStats(selectedSpeciesByBand, entryCount, seed, dungeonId, tileset);
 
-        bucketStart = (i * floorCount) / entryCount;
-        bucketEnd = ((i + 1) * floorCount) / entryCount - 1;
-        if (bucketEnd < bucketStart)
-            bucketEnd = bucketStart;
-        bucketSpan = bucketEnd - bucketStart;
+    {
+        s32 rangeSpanFloors = (SEEDED_TARGET_ACTIVE_SPECIES_PER_FLOOR * floorCount + (entryCount - 1)) / entryCount;
+        if (rangeSpanFloors < SEEDED_MIN_RANGE_FLOORS)
+            rangeSpanFloors = SEEDED_MIN_RANGE_FLOORS;
+        if (rangeSpanFloors > floorCount)
+            rangeSpanFloors = floorCount;
 
-        // Random midpoint within this bucket (stratified distribution)
-        if (bucketSpan > 0)
-            mid = bucketStart + DungeonSeedRng_NextRange(&rng, 0, bucketSpan + 1);
-        else
-            mid = bucketStart;
+        for (i = 0; i < entryCount; i++) {
+            s16 species = selectedSpeciesByBand[i];
+            s32 centerIndex;
+            s32 halfLeft;
+            s32 halfRight;
+            s32 mid;
+            s32 startIndex;
+            s32 endIndex;
+            SeededSpawnRange *range;
 
-        startIndex = mid - length / 2;
-        if (startIndex < 0)
-            startIndex = 0;
-        endIndex = startIndex + length - 1;
-        if (endIndex >= floorCount) {
-            endIndex = floorCount - 1;
-            startIndex = endIndex - length + 1;
+            // Map BST percentile to a floor percentile center, then widen to an overlap window.
+            // The overlap target keeps ~4-5 active species available on each floor.
+            centerIndex = ((2 * i + 1) * floorCount) / (2 * entryCount);
+            if (centerIndex < 0)
+                centerIndex = 0;
+            if (centerIndex >= floorCount)
+                centerIndex = floorCount - 1;
+
+            halfLeft = (rangeSpanFloors - 1) / 2;
+            halfRight = rangeSpanFloors - halfLeft - 1;
+            startIndex = centerIndex - halfLeft;
+            endIndex = centerIndex + halfRight;
+
+            if (startIndex < 0) {
+                endIndex -= startIndex;
+                startIndex = 0;
+            }
+            if (endIndex >= floorCount) {
+                startIndex -= (endIndex - (floorCount - 1));
+                endIndex = floorCount - 1;
+            }
             if (startIndex < 0)
                 startIndex = 0;
-        }
+            if (endIndex >= floorCount)
+                endIndex = floorCount - 1;
+            mid = startIndex + (endIndex - startIndex) / 2;
 
-        if (sSpawnRangeCache.rangeCount < SEEDED_FIXED_SPAWN_COUNT) {
-            range = &sSpawnRangeCache.ranges[sSpawnRangeCache.rangeCount++];
-            range->species = species;
-            range->start = (s16)startIndex;
-            range->end = (s16)endIndex;
-            range->level = (u8)CalcSeededSpawnLevel(seed, dungeonId, mid, floorCount);
-            MGBA_Warnf("[SeedOverrides] Range %d: species=%d len=%d mid=%d floors=%d-%d level=%d",
-                       i,
-                       species,
-                       endIndex - startIndex + 1,
-                       mid + startFloorId + 1,
-                       startIndex + startFloorId + 1,
-                       endIndex + startFloorId + 1,
-                       range->level);
+            if (sSpawnRangeCache.rangeCount < SEEDED_FIXED_SPAWN_COUNT) {
+                range = &sSpawnRangeCache.ranges[sSpawnRangeCache.rangeCount++];
+                range->species = species;
+                range->start = (s16)startIndex;
+                range->end = (s16)endIndex;
+                range->level = (u8)CalcSeededSpawnLevel(seed, dungeonId, mid, floorCount);
+                MGBA_Warnf("[SeedOverrides] Range %d: species=%d len=%d mid=%d floors=%d-%d level=%d",
+                           i,
+                           species,
+                           endIndex - startIndex + 1,
+                           mid + startFloorId + 1,
+                           startIndex + startFloorId + 1,
+                           endIndex + startFloorId + 1,
+                           range->level);
+            }
         }
     }
 
@@ -3902,9 +4054,11 @@ static s32 AdjustSeedDumpSpawnLevel(s32 level, bool8 bossEnabled)
             adjusted = (adjusted * 60) / 100;
             break;
         case DIFFICULTY_HARD:
-            adjusted = (adjusted * 80) / 100;
+            adjusted = (adjusted * 90) / 100;
             break;
         case DIFFICULTY_NIGHTMARE:
+            adjusted = (adjusted * 110) / 100;
+            break;
         default:
             break;
     }
@@ -4003,8 +4157,8 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
                seed, dungeonNumber, floorId, startFloorId, floorIndex, floorCount, tileset, spawnCount, rangeCount, bossEnabled);
 
     TypeSelection_WriteSaveData(&typeSelectionData);
-    MGBA_Warnf("SEED_DUMP_HEADER,save_overrides,seed,diff,skip,recruit,tc,ta,tsc,tsa,bc,ba,done,await");
-    MGBA_Warnf("SEED_DUMP,save_overrides,%d,%u,%u,%u,%d,%d,%d,%d,%d,%d,%d,%u",
+    MGBA_Warnf("SEED_DUMP_HEADER,save_overrides,seed,diff,skip,recruit,tc,ta,tsc,tsa,bc,ba,done,await,hint_count");
+    MGBA_Warnf("SEED_DUMP,save_overrides,%d,%u,%u,%u,%d,%d,%d,%d,%d,%d,%d,%u,%u",
                sub_8011C34(),
                GetGameDifficultySetting(),
                GetSkipBasicRescuesSetting(),
@@ -4016,7 +4170,14 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
                typeSelectionData.committedBossValid ? typeSelectionData.committedBoss : -1,
                typeSelectionData.activeBossValid ? typeSelectionData.activeBoss : -1,
                typeSelectionData.completedDungeons,
-               typeSelectionData.awaitingChoice);
+               typeSelectionData.awaitingChoice,
+               typeSelectionData.hintChoiceCount);
+    MGBA_Warnf("SEED_DUMP_HEADER,hint_choice_history,index,selection");
+    for (i = 0; i < typeSelectionData.hintChoiceCount; i++) {
+        MGBA_Warnf("SEED_DUMP,hint_choice_history,%d,%u",
+                   i,
+                   typeSelectionData.hintChoiceHistory[i]);
+    }
 
     DungeonSeedOverrides_GetKecleonFloors(dungeonId, seed, &kecleonFloors[0], &kecleonFloors[1]);
     superTrapFloor = DungeonSeedOverrides_GetSuperTrapFloor(dungeonId, seed);

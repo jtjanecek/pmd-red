@@ -21,6 +21,7 @@
 #include "training_maze.h"
 #include "rescue_scenario.h"
 #include "gengar_hint.h"
+#include "mgba_log.h"
 #include "skarmory_recruit.h"
 
 // size: 0x800
@@ -40,7 +41,7 @@ struct unk_struct
     u8 enableLeaderSwap;
     TypeSelectionSaveData typeSelection;
     GengarHintSaveData gengarHints;
-    u32 padding[474];
+    u8 padding[1874];
     SkarmoryRecruitSaveData skarmoryRecruit;
 };
 
@@ -67,6 +68,31 @@ extern u32 sub_8095624(u8 *, u32);
 extern u32 RestoreMailInfo(void* a, s32 b);
 extern u32 SaveMailInfo(u8 *, u32);
 extern void sub_80958E4(u32 *a, u32 b);
+
+static void LogTypeSelectionChoicesOnLoad(const TypeSelectionSaveData *data, const char *source)
+{
+    u32 i;
+    u32 count;
+
+    if (data == NULL)
+        return;
+
+    count = data->hintChoiceCount;
+    if (count > TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT)
+        count = TYPE_SELECTION_HINT_CHOICE_HISTORY_COUNT;
+
+    MGBA_Warnf("[TypeSelection][Load] source=%s saveVersion=0x%02X choiceCount=%u",
+               source,
+               data->saveVersion,
+               count);
+
+    for (i = 0; i < count; i++) {
+        MGBA_Warnf("[TypeSelection][Load] source=%s choice[%u]=%u",
+                   source,
+                   i,
+                   data->hintChoiceHistory[i]);
+    }
+}
 
 u32 sub_8011C1C(void)
 {
@@ -278,6 +304,7 @@ UNUSED static bool8 sub_8011DA8(void)
 u32 ReadSaveFromPak(u32 *a)
 {
     struct UnkStruct_sub_8011DAC *playerSave = MemoryAlloc(sizeof(struct UnkStruct_sub_8011DAC), 5);
+    TypeSelectionSaveData loadedTypeSelection;
     u8 *r4 = playerSave->unk448;
     u32 saveStatus = ReadSaveSector(a, (u8*)playerSave, sizeof(struct UnkStruct_sub_8011DAC));
     u32 r1;
@@ -324,6 +351,8 @@ u32 ReadSaveFromPak(u32 *a)
         GengarHint_ReadSaveData(&playerSave->gengarHints);
         SkarmoryRecruit_ReadSaveData(&playerSave->skarmoryRecruit);
     }
+        TypeSelection_WriteSaveData(&loadedTypeSelection);
+        LogTypeSelectionChoicesOnLoad(&loadedTypeSelection, "ReadSaveFromPak");
     }
     if (!saveStatus)
     {
@@ -392,6 +421,7 @@ u32 sub_8011FA8(void)
     u32 saveStatus;
     u32 temp3;
     u32 temp;
+    TypeSelectionSaveData loadedTypeSelection;
     struct unk_struct *r5 = MemoryAlloc(sizeof(struct unk_struct), 5);
     temp = 0x1F;
     saveStatus = ReadSaveSector(&temp, (u8 *)r5, sizeof(struct unk_struct));
@@ -415,6 +445,8 @@ u32 sub_8011FA8(void)
             SetEnableLeaderSwapSetting(r5->enableLeaderSwap);
             TypeSelection_ReadSaveData(&r5->typeSelection);
             GengarHint_ReadSaveData(&r5->gengarHints);
+            TypeSelection_WriteSaveData(&loadedTypeSelection);
+            LogTypeSelectionChoicesOnLoad(&loadedTypeSelection, "sub_8011FA8");
         }
     }
     MemoryFree(r5);

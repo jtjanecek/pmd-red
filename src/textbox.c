@@ -240,10 +240,10 @@ static void InitSkarmoryRecruitPortrait(void);
 static void CleanupSkarmoryRecruitPortrait(void);
 static MonPortraitMsg *GetSkarmoryRecruitPortrait(void);
 
-static const u8 sSkarmoryRecruitUnavailableText[] = _("{color YELLOW}Skarmory{reset}: I don't have anyone else\navailable yet.");
-static const u8 sSkarmoryRecruitNoMoneyText[] = _("{color YELLOW}Skarmory{reset}: You don't have enough.");
-static const u8 sSkarmoryRecruitDeclineText[] = _("{color YELLOW}Skarmory{reset}: Copy.");
-static const u8 sSkarmoryRecruitRosterFullText[] = _("{color YELLOW}Skarmory{reset}: No room to station them.\nClear some space.");
+static const u8 sSkarmoryRecruitUnavailableText[] = _("{color YELLOW}Ariados{reset}: Aww, nobody's\navailable right now.");
+static const u8 sSkarmoryRecruitNoMoneyText[] = _("{color YELLOW}Ariados{reset}: Oops! You're short\non {POKE} right now.");
+static const u8 sSkarmoryRecruitDeclineText[] = _("{color YELLOW}Ariados{reset}: Okie! Come back\nanytime!");
+static const u8 sSkarmoryRecruitRosterFullText[] = _("{color YELLOW}Ariados{reset}: Your roster is full!\nPlease make a little room first.");
 
 static MenuItem sSkarmoryRecruitMenu[] = {
     {NULL, 1},
@@ -2842,7 +2842,7 @@ static void StartSkarmoryRecruitConversation(void)
     sSkarmoryRecruitMenu[0].text = sSkarmoryRecruitCostBuffer;
 
     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[0], sSkarmoryRecruitState.species);
-    sprintfStatic(sSkarmoryRecruitBuffer, _("{color YELLOW}Skarmory{reset}: You want reinforcements?\n%s is available."), gFormatBuffer_Monsters[0]);
+    sprintfStatic(sSkarmoryRecruitBuffer, _("{color YELLOW}Ariados{reset}: I can introduce %s for\n%d {POKE}!"), gFormatBuffer_Monsters[0], sSkarmoryRecruitState.cost);
     CreateMenuDialogueBoxAndPortrait(sSkarmoryRecruitBuffer, 0, 0, sSkarmoryRecruitMenu, 0, 3, 0, GetSkarmoryRecruitPortrait(), 0x101);
     sSkarmoryRecruitState.stage = SKARMORY_RECRUIT_STAGE_PROMPT;
 }
@@ -2866,7 +2866,7 @@ static bool8 UpdateSkarmoryRecruitConversation(void)
                 }
                 if (TrySkarmoryRecruitRecruitment(sSkarmoryRecruitState.species)) {
                     CopyYellowMonsterNametoBuffer(gFormatBuffer_Monsters[0], sSkarmoryRecruitState.species);
-                    sprintfStatic(sSkarmoryRecruitBuffer, _("{color YELLOW}Skarmory{reset}: %s is en route.\nThey'll await you at base."), gFormatBuffer_Monsters[0]);
+                    sprintfStatic(sSkarmoryRecruitBuffer, _("{color YELLOW}Ariados{reset}: Yay! %s is on\nthe way to your base!"), gFormatBuffer_Monsters[0]);
                     SkarmoryRecruit_MarkUsed();
                     ShowSkarmoryRecruitMessage(sSkarmoryRecruitBuffer);
                     return FALSE;
@@ -2924,7 +2924,7 @@ static void InitSkarmoryRecruitPortrait(void)
 {
     CleanupSkarmoryRecruitPortrait();
 
-    sSkarmoryRecruitState.portrait.faceFile = GetDialogueSpriteDataPtr(MONSTER_SKARMORY);
+    sSkarmoryRecruitState.portrait.faceFile = GetDialogueSpriteDataPtr(MONSTER_ARIADOS);
     if (sSkarmoryRecruitState.portrait.faceFile == NULL)
         return;
 

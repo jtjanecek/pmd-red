@@ -182,7 +182,7 @@ static void MaybeAddTeamBaseSkarmory(s32 scriptId, s32 group, s32 sector)
         return;
     }
 
-    MGBA_Printf(0, "[TeamBase] Adding Skarmory NPC (map=%d)", scriptId);
+    MGBA_Printf(0, "[TeamBase] Adding shiny Ariados NPC (map=%d)", scriptId);
     GroundLives_Add(-1, &sTeamBaseSkarmory, group, sector);
 }
 static bool8 CallbackLivesSpriteRelated_80AB1E4(void *livesPtr_);
@@ -814,6 +814,9 @@ static s32 GroundLives_Add(s32 id_, const GroundLivesData *ptr, s32 group_, s32 
     livesPtr->unk4 = group;
     livesPtr->unk6 = sector;
     livesPtr->speciesId = species;
+    if (livesPtr->unk2 == TEAM_BASE_SKARMORY_KIND) {
+        livesPtr->speciesId = MONSTER_ARIADOS;
+    }
     sub_809CD68(&livesPtr->unk120);
     livesPtr->unk120.unk0 = 9;
 
@@ -857,6 +860,9 @@ static s32 GroundLives_Add(s32 id_, const GroundLivesData *ptr, s32 group_, s32 
         else {
             livesPtr->flags &= ~GROUND_LIVE_FLAG_SHINY;
         }
+    }
+    if (livesPtr->unk2 == TEAM_BASE_SKARMORY_KIND) {
+        livesPtr->flags |= GROUND_LIVE_FLAG_SHINY;
     }
 
     livesPtr->unkC.x = typeDataPtr->unk8 << 11;
@@ -1422,6 +1428,9 @@ void sub_80A8EC0(u8 *buffer, s32 a1)
         const struct GroundLiveTypeData *dataPtr = &gGroundLivesTypeData_811E63C[sp];
 
         switch (sp) {
+            case TEAM_BASE_SKARMORY_KIND:
+                CopyMonsterNameToBuffer(buffer, MONSTER_ARIADOS);
+                break;
             case 52:
             case 100:
                 strcpy(buffer, dataPtr->unk4);

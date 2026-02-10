@@ -70,10 +70,10 @@ static s32 AdjustEnemyLevelForDifficulty(s32 level)
             adjusted = (adjusted * 60) / 100;
             break;
         case DIFFICULTY_HARD:
-            adjusted = (adjusted * 90) / 100;
+            adjusted = (adjusted * 80) / 100;
             break;
         case DIFFICULTY_NIGHTMARE:
-            adjusted = (adjusted * 110) / 100;
+            adjusted = (adjusted * 100) / 100;
             break;
         default:
             break;

@@ -126,6 +126,8 @@ void SetGameDifficultySetting(u32 value)
     if (value >= NUM_DIFFICULTY_SETTINGS)
         value = DIFFICULTY_NORMAL;
     gUnknown_202DE2C = value;
+    if (gUnknown_203B184 != NULL)
+        gUnknown_203B184->difficulty = value;
 }
 
 u8 GetSkipBasicRescuesSetting(void)
@@ -497,7 +499,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
   else {
     playerSave->unk41C = gUnknown_203B184->unk054;
     playerSave->unk418 = gUnknown_203B184->unk050;
-    playerSave->difficulty = gUnknown_203B184->difficulty;
+    playerSave->difficulty = GetGameDifficultySetting();
     playerSave->RngState = gUnknown_203B184->RngState;
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();

@@ -22,7 +22,8 @@ static const MenuItem gRecruitAllMenu[] = {
     { NULL, -1 },
 };
 ALIGNED(4) static const u8 gLeaderSwapPrompt[] = _(
-    "{CENTER_ALIGN}Do you want to allow leader swapping?"
+    "{CENTER_ALIGN}Do you want to allow leader swapping?\n"
+    "{CENTER_ALIGN}R+B to autoswap leader each turn."
 );
 static const MenuItem gLeaderSwapMenu[] = {
     { _("Yes"), 1 },
@@ -32,7 +33,7 @@ static const MenuItem gLeaderSwapMenu[] = {
 ALIGNED(4) static const u8 gDifficultyPrompt[] = _(
     "{CENTER_ALIGN}Normal: For casual playthroughs.\n"
     "{CENTER_ALIGN}Hard: For experienced players.\n"
-    "{CENTER_ALIGN}Nightmare: Only the best will survive."
+    "{CENTER_ALIGN}Nightmare: Experts only. Luck required."
 );
 static const MenuItem gDifficultyMenu[] = {
     { _("Normal"), DIFFICULTY_NORMAL },

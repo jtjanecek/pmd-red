@@ -4220,13 +4220,14 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     }
 
     if (sSpawnRangeCache.valid) {
-        MGBA_Warnf("SEED_DUMP_HEADER,spawn_range,dungeon_id,index,species,species_name,level,start_idx,end_idx,start_flr,end_flr");
+        MGBA_Warnf("SEED_DUMP_HEADER,spawn_range,dungeon_id,floor_id,index,species,species_name,level,start_idx,end_idx,start_flr,end_flr");
         for (i = 0; i < sSpawnRangeCache.rangeCount; i++) {
             const SeededSpawnRange *range = &sSpawnRangeCache.ranges[i];
             s32 level = AdjustSeedDumpSpawnLevel(range->level, bossEnabled);
             GetSpeciesNameForLog(speciesName, sizeof(speciesName), range->species);
-            MGBA_Warnf("SEED_DUMP,spawn_range,%d,%d,%d,%s,%d,%d,%d,%d,%d",
+            MGBA_Warnf("SEED_DUMP,spawn_range,%d,%d,%d,%d,%s,%d,%d,%d,%d,%d",
                        dungeonNumber,
+                       floorId,
                        i,
                        range->species,
                        speciesName,
@@ -4239,11 +4240,12 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
     }
 
     if (spawnTable != NULL) {
-        MGBA_Warnf("SEED_DUMP_HEADER,spawn_entry,dungeon_id,index,species,species_name,level,weight1,weight2,range_start_idx,range_end_idx,range_start_flr,range_end_flr");
+        MGBA_Warnf("SEED_DUMP_HEADER,spawn_entry,dungeon_id,floor_id,index,species,species_name,level,level_seeded,weight1,weight2,range_start_idx,range_end_idx,range_start_flr,range_end_flr");
         for (i = 0; i < spawnCount; i++) {
             SpawnPokemonData *entry = &spawnTable[i];
             s16 species = ExtractSpeciesIndex(entry);
-            s32 level = AdjustSeedDumpSpawnLevel(ExtractLevel(entry), bossEnabled);
+            s32 seededLevel = ExtractLevel(entry);
+            s32 level = AdjustSeedDumpSpawnLevel(seededLevel, bossEnabled);
             const SeededSpawnRange *range = FindSpawnRangeForSpecies(species);
             s32 rangeStart = range ? range->start : -1;
             s32 rangeEnd = range ? range->end : -1;
@@ -4251,12 +4253,14 @@ void DungeonSeedOverrides_LogSeedDump(s32 seed, u8 dungeonId, s32 floorId, s32 s
             s32 rangeEndFloor = (rangeEnd >= 0) ? (rangeEnd + 1) : -1;
 
             GetSpeciesNameForLog(speciesName, sizeof(speciesName), species);
-            MGBA_Warnf("SEED_DUMP,spawn_entry,%d,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d",
+            MGBA_Warnf("SEED_DUMP,spawn_entry,%d,%d,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d",
                        dungeonNumber,
+                       floorId,
                        i,
                        species,
                        speciesName,
                        level,
+                       seededLevel,
                        entry->randNum[0],
                        entry->randNum[1],
                        rangeStart,

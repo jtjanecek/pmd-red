@@ -33,6 +33,7 @@
 #include "move_orb_effects_5.h"
 #include "adventure_info.h"
 #include "save.h"
+#include "mgba_log.h"
 
 static void nullsub_96(Entity *pokemon,Entity *target);
 static void sub_806F910(void);
@@ -357,6 +358,17 @@ bool8 HandleMonsterJoinSequence(Entity *entity1, Entity *entity2, struct unkStru
 
     dungeonMon->itemSlot = param_3->heldItem;
     BoundedCopyStringtoBuffer(dungeonMon->name,GetMonSpecies(param_3->id),10);
+
+#ifdef DEV
+    MGBA_Warnf("SEED_DUMP_HEADER,recruit_join,dungeon_id,floor_id,species,species_name,level,diff");
+    MGBA_Warnf("SEED_DUMP,recruit_join,%d,%d,%d,%s,%d,%u",
+               gDungeon->unk644.dungeonLocation.id,
+               gDungeon->unk644.dungeonLocation.floor,
+               param_3->id,
+               GetMonSpecies(param_3->id),
+               dungeonMon->level,
+               GetGameDifficultySetting());
+#endif
 
     IncrementAdventureNumJoined();
 

@@ -513,16 +513,17 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         sub_8041888(1);
 
 #ifdef DEV
-        // DEV: Apply permanent Protect status to the leader
+        // DEV auto-protect disabled.
+        /*
         {
             Entity *leader = GetLeader();
             if (EntityIsValid(leader)) {
                 EntityInfo *leaderInfo = GetEntInfo(leader);
                 leaderInfo->reflectClassStatus.status = STATUS_PROTECT;
-                leaderInfo->reflectClassStatus.turns = 255; // Max u8 value (won't decrement anyway due to mod above)
-                // Note: Status sprite will update naturally on first turn
+                leaderInfo->reflectClassStatus.turns = 255;
             }
         }
+        */
 #endif
 
         MGBA_Warnf("[Dungeon] Post-init: About to call sub_80848F0");

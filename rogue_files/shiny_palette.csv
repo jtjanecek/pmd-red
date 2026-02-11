@@ -4,7 +4,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 1,1,MonsterNameBulbasaur,Bulbasaur,8,,,5,,6,,,,,,,,,,,,FairyForestKing
 2,2,MonsterNameIvysaur,Ivysaur,3,,,8,9,10,,,,,8,9,,11,12,13,,FairyForestKing
 3,3,MonsterNameVenusaur,Venusaur,3,,,8,9,10,,,,,,,,,,,,FairyForestKing
-4,4,MonsterNameCharmander,Charmander,0,,,,,,3,4,,,,,5,6,7,,,FairyForestKing
+4,4,MonsterNameCharmander,Charmander,0,,,,,,3,4,,,,,5,6,7,6,,FairyForestKing
 5,5,MonsterNameCharmeleon,Charmeleon,0,,,,,,,,,,,,6,7,,,,FairyForestKing
 6,6,MonsterNameCharizard,Charizard,6,,,,,,2,3,4,,,,,,,,,FairyForestKing
 7,7,MonsterNameSquirtle,Squirtle,3,,,12,13,14,11,3,14,5,6,7,,,,,,FairyForestKing
@@ -65,7 +65,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 62,62,MonsterNamePoliwrath,Poliwrath,3,,,,,,,,,11,12,13,,,,,,FairyForestKing
 63,63,MonsterNameAbra,Abra,4,,,,,,,,4,,,,,8,9,10,,FairyForestKing
 64,64,MonsterNameKadabra,Kadabra,4,,,,,,2,3,4,,,,,8,9,,,FairyForestKing
-65,65,MonsterNameAlakazam,Alakazam,7,,,,6,7,6,5,6,,,,,8,9,,,FairyForestKing
+65,65,MonsterNameAlakazam,Alakazam,7,,,,6,7,6,5,6,,,,8,9,10,,,FairyForestKing
 66,66,MonsterNameMachop,Machop,8,,,6,9,,2,3,4,10,,,5,7,,,,FairyForestKing
 67,67,MonsterNameMachoke,Machoke,3,,,11,12,13,8,9,10,,,,,5,6,,,FairyForestKing
 68,68,MonsterNameMachamp,Machamp,3,,,,8,,11,12,13,9,,,3,4,,,,FairyForestKing
@@ -155,7 +155,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 152,152,MonsterNameChikorita,Chikorita,0,,,11,12,13,,,,,,,5,2,6,7,,FairyForestKing
 153,153,MonsterNameBayleef,Bayleef,4,,,,,,,,,,,,5,2,6,4,,FairyForestKing
 154,154,MonsterNameMeganium,Meganium,3,,,,,,,,,,,,,8,9,10,,FairyForestKing
-155,155,MonsterNameCyndaquil,Cyndaquil,6,,,,,,2,3,4,5,6,7,8,9,,,,FairyForestKing
+155,155,MonsterNameCyndaquil,Cyndaquil,6,,,,,,2,3,4,5,6,7,8,9,7,,,FairyForestKing
 156,156,MonsterNameQuilava,Quilava,2,,,,,,,,,11,12,13,13,11,,,,FairyForestKing
 157,157,MonsterNameTyphlosion,Typhlosion,2,,,,,,,,,11,12,13,13,11,,,,FairyForestKing
 158,158,MonsterNameTotodile,Totodile,0,,,5,6,7,,,,9,10,15,8,8,9,10,,FairyForestKing
@@ -247,7 +247,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 244,219,MonsterNameMagcargo,Magcargo,2,,,,,,,,,11,12,13,2,3,4,15,,FairyForestKing
 245,220,MonsterNameSwinub,Swinub,12,,,,,,,,,5,6,7,,,,,,FairyForestKing
 246,221,MonsterNamePiloswine,Piloswine,4,,,8,9,10,,,4,2,3,4,,,,6,,FairyForestKing
-247,222,MonsterNameCorsola,Corsola,5,,,8,9,10,,13,14,,,,8,11,,,,FairyForestKing
+247,222,MonsterNameCorsola,Corsola,5,,,8,9,10,8,13,14,,,,8,11,,,,FairyForestKing
 248,223,MonsterNameRemoraid,Remoraid,7,,,,,,11,11,,3,4,,8,8,9,10,,FairyForestKing
 249,224,MonsterNameOctillery,Octillery,4,,,,,,3,7,4,,,,5,2,6,3,,FairyForestKing
 250,225,MonsterNameDelibird,Delibird,7,,,,,,,,,,,,8,9,,,,FairyForestKing
@@ -404,7 +404,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 401,373,MonsterNameSalamence,Salamence,10,,,,,,2,3,4,,,,5,6,7,15,,FairyForestKing
 402,374,MonsterNameBeldum,Beldum,11,,,,,,8,9,10,3,4,,,,,,,FairyForestKing
 403,375,MonsterNameMetang,Metang,11,,,,,,8,9,10,2,3,4,,,,,,FairyForestKing
-404,376,MonsterNameMetagross,Metagross,11,,,,,,8,9,10,,,3,,,,,4,FairyForestKing
+404,376,MonsterNameMetagross,Metagross,11,,,,,,8,9,10,2,3,4,,,,,4,FairyForestKing
 405,377,MonsterNameRegirock,Regirock,8,,,,7,,,,,,,5,8,2,3,4,9,FairyForestKing
 406,378,MonsterNameRegice,Regice,0,,,8,,,8,9,10,,,,,6,7,,,FairyForestKing
 407,379,MonsterNameRegisteel,Registeel,12,,,,,,,,11,,,,5,6,5,6,7,FairyForestKing

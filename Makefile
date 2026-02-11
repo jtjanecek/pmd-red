@@ -33,7 +33,7 @@ endif
 
 # Dev flag to skip personality quiz
 # Default to DEV=1 so developer conveniences are enabled without passing the flag.
-DEV         ?= 1
+DEV         ?= 0
 
 PREFIX := arm-none-eabi-
 OBJCOPY := $(PREFIX)objcopy

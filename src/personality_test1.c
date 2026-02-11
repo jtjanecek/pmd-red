@@ -231,17 +231,17 @@ static void InitializeTestStats(void)
     #ifdef DEV
     sPersonalityTestTracker->TestState = PERSONALITY_TEST_END; // 100
     sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
+    // sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
     sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
-    sPersonalityTestTracker->unk4.PartnerID = MONSTER_METAGROSS;
+    // sPersonalityTestTracker->unk4.PartnerID = MONSTER_METAGROSS;
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
     CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
-    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
+    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_ALL;
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
     sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
     sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_20;
     sPersonalityTestTracker->unk4.enableLeaderSwap = 1;
-    SetRecruitAllSetting(RECRUIT_ALL_NONE);
+    SetRecruitAllSetting(RECRUIT_ALL_ALL);
     SetSkipBasicRescuesSetting(1);
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
     SetMaxDungeonsSetting(MAX_DUNGEONS_20);

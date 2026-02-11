@@ -243,7 +243,7 @@ def build_run_settings_line(rows_by_section: OrderedDict[str, List[Dict[str, str
     settings_row = None
     settings_rows = rows_by_section.get("save_overrides") or []
     if settings_rows:
-        settings_row = settings_rows[0]
+        settings_row = settings_rows[-1]
     else:
         settings_row = {}
 
@@ -251,7 +251,7 @@ def build_run_settings_line(rows_by_section: OrderedDict[str, List[Dict[str, str
     if not seed:
         meta_rows = rows_by_section.get("meta") or []
         if meta_rows:
-            seed = meta_rows[0].get("seed")
+            seed = meta_rows[-1].get("seed")
 
     items = []
     if seed:
@@ -374,6 +374,66 @@ def print_tables(rows_by_section: OrderedDict[str, List[Dict[str, str]]],
 
 def build_spawn_range_groups(rows_by_section: OrderedDict[str, List[Dict[str, str]]]
                              ) -> OrderedDict[int, List[Dict[str, object]]]:
+    # Prefer per-floor spawn_entry data when available; this mirrors effective runtime
+    # spawn levels and therefore recruit join levels on each floor.
+    spawn_entry_rows = rows_by_section.get("spawn_entry") or []
+    floors_by_dungeon: Dict[int, Dict[tuple[str, int | None, int | None], set[int]]] = {}
+    for row in spawn_entry_rows:
+        dungeon_id = parse_int(row.get("dungeon_id"))
+        floor_id = parse_int(row.get("floor_id"))
+        if dungeon_id is None or floor_id is None:
+            continue
+
+        species_name = row.get("species_name") or row.get("species") or "Unknown"
+        level = parse_int(row.get("level"))
+        bst = parse_int(row.get("bst"))
+        species_key = (species_name, level, bst)
+
+        dungeon_rows = floors_by_dungeon.setdefault(dungeon_id, {})
+        floor_set = dungeon_rows.setdefault(species_key, set())
+        floor_set.add(floor_id)
+
+    if floors_by_dungeon:
+        by_dungeon: OrderedDict[int, List[Dict[str, object]]] = OrderedDict()
+        for dungeon_id in sorted(floors_by_dungeon):
+            entries: List[Dict[str, object]] = []
+            for species_key, floors in floors_by_dungeon[dungeon_id].items():
+                species_name, level, bst = species_key
+                label = species_name
+                if level is not None:
+                    label = f"{species_name} Lv{level}"
+
+                sorted_floors = sorted(floors)
+                start_flr = sorted_floors[0]
+                end_flr = sorted_floors[0]
+                for floor in sorted_floors[1:]:
+                    if floor == end_flr + 1:
+                        end_flr = floor
+                        continue
+                    entries.append({
+                        "label": label,
+                        "start_flr": start_flr,
+                        "end_flr": end_flr,
+                        "index": start_flr,
+                        "bst": bst,
+                    })
+                    start_flr = floor
+                    end_flr = floor
+
+                entries.append({
+                    "label": label,
+                    "start_flr": start_flr,
+                    "end_flr": end_flr,
+                    "index": start_flr,
+                    "bst": bst,
+                })
+
+            entries.sort(key=lambda entry: (entry["start_flr"], entry["end_flr"], entry["label"]))
+            by_dungeon[dungeon_id] = entries
+
+        return by_dungeon
+
+    # Fallback for older logs that only include spawn_range.
     rows = rows_by_section.get("spawn_range") or []
     by_dungeon: OrderedDict[int, List[Dict[str, object]]] = OrderedDict()
     seen_by_dungeon: Dict[int, set[tuple[str, int | None, int, int]]] = {}
@@ -420,7 +480,7 @@ def write_spawn_range_plots(rows_by_section: OrderedDict[str, List[Dict[str, str
                             out_path: pathlib.Path) -> bool:
     by_dungeon = build_spawn_range_groups(rows_by_section)
     if not by_dungeon:
-        print("No spawn_range rows found for plotting.")
+        print("No spawn_entry/spawn_range rows found for plotting.")
         return False
 
     try:

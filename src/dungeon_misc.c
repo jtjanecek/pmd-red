@@ -846,6 +846,7 @@ void SetMonSummaryInfoFromEntity(MonSummaryInfo *param_1, Entity *target)
     param_1->unk44[0].level = 0;
     param_1->unk44[1].level = 0;
     param_1->IQSkills = info->IQSkillMenuFlags;
+    param_1->isShiny = (info->visualFlags & VISUAL_FLAG_SHINY) != 0;
     if (gDungeon->unk644.unlockedEvolutions) {
         param_1->evoStringId = sub_806A4DC(info);
     }

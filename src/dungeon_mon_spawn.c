@@ -976,6 +976,12 @@ void sub_806C264(s32 teamIndex, EntityInfo *entInfo)
     monPtr->belly = entInfo->belly;
     monPtr->maxBelly = entInfo->maxBelly;
     monPtr->itemSlot = entInfo->heldItem;
+    if (entInfo->visualFlags & VISUAL_FLAG_SHINY) {
+        monPtr->flags |= POKEMON_FLAG_SHINY;
+    }
+    else {
+        monPtr->flags &= ~POKEMON_FLAG_SHINY;
+    }
     if (monPtr->recruitedPokemonId == UNK_RECRUITED_POKEMON_ID_55AA) {
         monPtr->recruitedPokemonId = UNK_RECRUITED_POKEMON_ID_5AA5;
     }

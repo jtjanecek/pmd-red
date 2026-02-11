@@ -164,12 +164,16 @@ static void sub_8084854(const FixedRoomCutsceneData *data)
             SetTempCutsceneFlag(data->cutscene2Flag);
     }
 
-    // For repeat runs, keep the fixed-room boss fight but skip poststory dialogue cutscenes.
-    if ((data->fixedRoomNum == FIXED_ROOM_MT_STEEL_SKARMORY && gDungeon->cutscene == CUTSCENE_MT_STEEL_POSTSTORY)
-        || (data->fixedRoomNum == FIXED_ROOM_SINISTER_WOODS_TEAM_MEANIES && gDungeon->cutscene == CUTSCENE_SINISTER_WOODS_POSTSTORY)) {
+    // For repeat Skarmory runs, keep the fixed-room boss fight but skip the poststory dialogue cutscene.
+    if (data->fixedRoomNum == FIXED_ROOM_MT_STEEL_SKARMORY && gDungeon->cutscene == CUTSCENE_MT_STEEL_POSTSTORY) {
         gDungeon->cutscene = CUTSCENE_NONE;
         gDungeon->unk644.unk31 = 0;
         return;
+    }
+
+    // Team Meanies rematches need the normal boss setup path so they spawn in their scripted fight positions.
+    if (data->fixedRoomNum == FIXED_ROOM_SINISTER_WOODS_TEAM_MEANIES && gDungeon->cutscene == CUTSCENE_SINISTER_WOODS_POSTSTORY) {
+        gDungeon->cutscene = CUTSCENE_SINISTER_WOODS_ATTEMPT2;
     }
 
     gDungeon->unk644.unk31 = 1;
@@ -551,6 +555,12 @@ void HandleBossFaint_Async(Entity *entity, u8 monsterBehavior, bool8 transformed
 
     switch (gDungeon->cutscene) {
         case CUTSCENE_NONE:
+            if (gDungeon->fixedRoomNumber == FIXED_ROOM_MT_STEEL_SKARMORY) {
+                HandleSkarmoryBossFaint(monsterBehavior, CUTSCENE_MT_STEEL_ATTEMPT2);
+            }
+            else if (gDungeon->fixedRoomNumber == FIXED_ROOM_SINISTER_WOODS_TEAM_MEANIES) {
+                HandleMeaniesBossFaint(monsterBehavior, CUTSCENE_SINISTER_WOODS_ATTEMPT2);
+            }
             break;
         case CUTSCENE_MT_STEEL_ATTEMPT1:
         case CUTSCENE_MT_STEEL_ATTEMPT2:

@@ -70,7 +70,7 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
         }
     }
 
-    if (gDungeon->unk644.unk19 != 0)
+    if (gDungeon->unk644.unk19 != 0 && !isShiny)
         return FALSE;
 
     // Legendaries can only be recruited once.

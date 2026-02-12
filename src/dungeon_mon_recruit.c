@@ -49,6 +49,11 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     s32 size = GetBodySize(targetInfo->apparentID);
     isShiny = (targetInfo->visualFlags & VISUAL_FLAG_SHINY) != 0;
     bypassStoryRestrictions = isShiny;
+#ifdef DEV
+    if (!isShiny) {
+        return FALSE;
+    }
+#endif
 
     if (gDungeon->fixedRoomNumber != FIXED_ROOM_FROSTY_GROTTO_ARTICUNO
         && gDungeon->fixedRoomNumber != FIXED_ROOM_MT_BLAZE_PEAK_MOLTRES

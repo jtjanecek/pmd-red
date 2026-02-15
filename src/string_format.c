@@ -295,6 +295,14 @@ s32 sub_80144A4(s32 *a0)
     return sPrintStringState;
 }
 
+s32 GetDialogueBoxMenuCurrentIndex(void)
+{
+    if (sPrintStringState != STATE_4 || sDialogueMenuItems == NULL)
+        return -1;
+
+    return GET_CURRENT_MENU_ENTRY(gUnknown_202EBC0.input);
+}
+
 // arm9.bin::0201CEB0
 void DrawDialogueBoxString(void)
 {

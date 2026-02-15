@@ -69,6 +69,7 @@ enum
     PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_1,
     PERSONALITY_ADVANCE_TO_PARTNER_NICKNAME_2,
     PERSONALITY_PARTNER_NICKNAME,
+    PERSONALITY_STARTER_ITEM_PROMPT,
     PERSONALITY_STARTER_ITEM_SELECTION,
     PERSONALITY_TEAM_NAME_PROMPT,
     PERSONALITY_TEAM_NAME_ENTRY,
@@ -79,6 +80,8 @@ enum
 };
 
 static EWRAM_INIT PersonalityTestTracker *sPersonalityTestTracker = {NULL};
+static EWRAM_INIT s32 sStarterItemPreviewIndex = {-1};
+static const u8 sStarterItemNoDescription[] = _("No description available.");
 
 #define INT32_MAX_VALUE 2147483647
 #define INT32_MIN_VALUE (-2147483647 - 1)
@@ -134,7 +137,11 @@ static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
 static void CleanupNamingScreen(void);
 static void HandleDifficultySelection(void);
 static void StartStarterItemSelection(void);
+static void HandleStarterItemPrompt(void);
 static void HandleStarterItemSelection(void);
+static void OpenStarterItemSelectionMenu(void);
+static void UpdateStarterItemDescriptionPreview(void);
+static const u8 *GetStarterItemDescriptionSafe(u8 itemId);
 static void GenerateStarterItemOptions(void);
 static void BuildStarterItemMenu(void);
 static bool8 IsValidStarterItem(u8 itemId);
@@ -217,6 +224,7 @@ static void InitializeTestStats(void)
     MemoryFill8(sPersonalityTestTracker->starterItemMenu, 0, sizeof(sPersonalityTestTracker->starterItemMenu));
     MemoryFill8(sPersonalityTestTracker->starterItemNameBuffers, 0, sizeof(sPersonalityTestTracker->starterItemNameBuffers));
     sPersonalityTestTracker->chosenStarterItem = ITEM_NOTHING;
+    sStarterItemPreviewIndex = -1;
     
     // DEV: Skip personality quiz and set dev defaults
     // To enable dev mode, compile with: make DEV=1
@@ -332,6 +340,9 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_PARTNER_NICKNAME:
             NicknamePartner();
+            break;
+        case PERSONALITY_STARTER_ITEM_PROMPT:
+            HandleStarterItemPrompt();
             break;
         case PERSONALITY_STARTER_ITEM_SELECTION:
             HandleStarterItemSelection();
@@ -789,8 +800,30 @@ static void HandleDungeonCountSelection(void)
 static void StartStarterItemSelection(void)
 {
     sPersonalityTestTracker->chosenStarterItem = ITEM_NOTHING;
+    sStarterItemPreviewIndex = -1;
     GenerateStarterItemOptions();
-    CreateMenuDialogueBoxAndPortrait(gStarterItemPrompt, 0, 0, sPersonalityTestTracker->starterItemMenu, 0, 3, 0, 0, 0x101);
+    CreateDialogueBoxAndPortrait(gStarterItemPrompt, 0, 0, 0x301);
+    sPersonalityTestTracker->TestState = PERSONALITY_STARTER_ITEM_PROMPT;
+}
+
+static void HandleStarterItemPrompt(void)
+{
+    s32 temp;
+
+    if (sub_80144A4(&temp) != 0)
+        return;
+
+    OpenStarterItemSelectionMenu();
+}
+
+static void OpenStarterItemSelectionMenu(void)
+{
+    u8 itemId = sPersonalityTestTracker->starterItemOptions[0];
+
+    if (!IsValidStarterItem(itemId))
+        itemId = ITEM_ORAN_BERRY;
+
+    CreateMenuDialogueBoxAndPortrait(GetStarterItemDescriptionSafe(itemId), 0, itemId, sPersonalityTestTracker->starterItemMenu, 0, 3, 0, 0, 0x101);
     sPersonalityTestTracker->TestState = PERSONALITY_STARTER_ITEM_SELECTION;
 }
 
@@ -798,8 +831,10 @@ static void HandleStarterItemSelection(void)
 {
     s32 selection;
 
-    if (sub_80144A4(&selection) != 0)
+    if (sub_80144A4(&selection) != 0) {
+        UpdateStarterItemDescriptionPreview();
         return;
+    }
 
     if (selection < 0 || selection >= NUMBER_OF_ITEM_IDS)
         selection = sPersonalityTestTracker->starterItemOptions[0];
@@ -807,6 +842,38 @@ static void HandleStarterItemSelection(void)
     sPersonalityTestTracker->chosenStarterItem = (u8)selection;
     CreateDialogueBoxAndPortrait(gTeamNamePrompt, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_TEAM_NAME_PROMPT;
+}
+
+static void UpdateStarterItemDescriptionPreview(void)
+{
+    s32 menuIndex = GetDialogueBoxMenuCurrentIndex();
+    u8 itemId;
+
+    if (menuIndex < 0 || menuIndex >= PERSONALITY_STARTER_ITEM_OPTION_COUNT)
+        return;
+
+    if (menuIndex == sStarterItemPreviewIndex)
+        return;
+
+    itemId = sPersonalityTestTracker->starterItemOptions[menuIndex];
+    if (!IsValidStarterItem(itemId))
+        return;
+
+    CallPrepareTextbox_8008C54(0);
+    sub_80073B8(0);
+    PrintFormattedStringOnWindow(8, 2, GetStarterItemDescriptionSafe(itemId), 0, 0);
+    sub_80073E0(0);
+    sStarterItemPreviewIndex = menuIndex;
+}
+
+static const u8 *GetStarterItemDescriptionSafe(u8 itemId)
+{
+    const u8 *description = GetItemDescription(itemId);
+
+    if (description == NULL || description[0] == '\0')
+        return sStarterItemNoDescription;
+
+    return description;
 }
 
 static void GenerateStarterItemOptions(void)

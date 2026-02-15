@@ -513,8 +513,6 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         sub_8041888(1);
 
 #ifdef DEV
-        // DEV auto-protect disabled.
-        /*
         {
             Entity *leader = GetLeader();
             if (EntityIsValid(leader)) {
@@ -523,7 +521,6 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
                 leaderInfo->reflectClassStatus.turns = 255;
             }
         }
-        */
 #endif
 
         MGBA_Warnf("[Dungeon] Post-init: About to call sub_80848F0");
@@ -576,6 +573,14 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         InitDungeonMap(r6);
         MGBA_Warnf("[Dungeon] Post-init: About to call UpdateMinimap");
         UpdateMinimap();
+#ifdef DEV
+        if (!r6) {
+            Entity *leader = GetLeader();
+            if (EntityIsValid(leader)) {
+                HandleLuminousOrbAction(leader);
+            }
+        }
+#endif
         MGBA_Warnf("[Dungeon] Post-init: Setting dungeon variables");
         gDungeon->unkB8 = NULL;
         gDungeon->unk644.unk28 = 0;
@@ -1155,6 +1160,20 @@ void sub_8043FD0(void)
             }
         }
     }
+#ifdef DEV
+    for (level = 0; level < NUM_MONSTERS; level++) {
+        Pokemon *monStruct = &gRecruitedPokemonRef->pokemon[level];
+        if (PokemonExists(monStruct) && PokemonFlag2(monStruct)) {
+            // HP is 10 bits in save data, so 999 is the max persisted value.
+            monStruct->pokeHP = 999;
+            // Attack/defense stats are stored as u8 in team data, so 255 is the max.
+            monStruct->offense.att[0] = 255;
+            monStruct->offense.att[1] = 255;
+            monStruct->offense.def[0] = 255;
+            monStruct->offense.def[1] = 255;
+        }
+    }
+#endif
 }
 
 void EnforceMaxItemsAndMoney(void)

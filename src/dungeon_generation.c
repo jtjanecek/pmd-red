@@ -232,7 +232,7 @@ void GenerateFloor(void)
         }
     }
 
-    gDungeon->unk644.enemyDensity = abs(floorProps->enemyDensity);
+    gDungeon->unk644.enemyDensity = abs((s8)floorProps->enemyDensity);
     MGBA_Warnf("[FloorGen] Start: dungeon=%d floor=%d layout=%d tileset=%d fixedRoom=%d enemyDensity=%d roomDensity=%d",
                gDungeon->unk644.dungeonLocation.id,
                gDungeon->unk644.dungeonLocation.floor,
@@ -4304,6 +4304,10 @@ static void SpawnNonEnemies(FloorProperties *floorProps, bool8 isEmptyMonsterHou
             if (numItems <= 0) {
                 numItems = 1;
             }
+
+            if (numItems < 3) {
+                numItems = 3;
+            }
 		}
 
 		if (numItems != 0) {
@@ -4558,11 +4562,10 @@ static void SpawnEnemies(FloorProperties *floorProps, bool8 isEmptyMonsterHouse)
     s32 x, y;
     Dungeon *dungeon = gDungeon;
     s32 numEnemies, numMonsterHouseEnemies;
-    s32 enemyDensity = floorProps->enemyDensity;
+    s32 enemyDensity = (s8)floorProps->enemyDensity;
 
-    // BUG: Game assumes floorProps->enemyDensity is a signed byte, but in reality it's unsigned.
-    // Attempting to use a negative density will instead produce a very large positive density up to 255.
-    // This only matters for unused dungeons, as Deoxys has its own logic despite Meteor Cave having an effective enemy density of 255.
+    // FloorProperties stores enemyDensity as u8, but generation semantics treat it as signed:
+    // positive => random range, negative => exact count (abs value).
 	if (enemyDensity > 0) {
 		// Positive means value with variance
 		numEnemies = DungeonRandRange(enemyDensity / 2, enemyDensity);

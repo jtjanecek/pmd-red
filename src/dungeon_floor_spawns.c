@@ -28,6 +28,7 @@
 static bool8 TryGetSeedOverrideValue(s32 *seedOut);
 static void ApplySeedOverridesToCurrentFloor(void);
 static u8 GetSeededKecleonFaintChance(u32 difficulty);
+static u8 GetSeededEnemyDensityFallback(u32 difficulty, s32 floorNumber);
 static u8 RollSeededKecleonFaintChance(s32 seed, s32 dungeonId, u8 faintChance);
 
 static EWRAM_DATA s16 sSeededTrapPercentOverride = -1;
@@ -71,6 +72,32 @@ static u8 GetSeededKecleonFaintChance(u32 difficulty)
         default:
             return 10;
     }
+}
+
+static u8 GetSeededEnemyDensityFallback(u32 difficulty, s32 floorNumber)
+{
+    u8 base;
+
+    switch (difficulty) {
+        case DIFFICULTY_HARD:
+            base = 5;
+            break;
+        case DIFFICULTY_NIGHTMARE:
+            base = 6;
+            break;
+        case DIFFICULTY_NORMAL:
+        default:
+            base = 4;
+            break;
+    }
+
+    // Scale slightly deeper in the dungeon so late floors don't feel empty.
+    if (floorNumber >= 16)
+        base++;
+    if (floorNumber >= 28)
+        base++;
+
+    return base;
 }
 
 // Deterministically roll 0-99 using the personality seed and dungeon id.
@@ -186,6 +213,38 @@ static void ApplySeedOverridesToCurrentFloor(void)
                                               seed,
                                               gDungeon->unk644.dungeonLocation.id,
                                               gDungeon->unk644.dungeonLocation.floor);
+
+    // Some mapparam entries carry wrapped/invalid enemy density bytes (e.g. 255).
+    // Clamp those to a normal seeded baseline so floors don't over- or under-spawn.
+    if (!overrides.bossFight.enabled && gDungeon->floorProperties.enemyDensity > 32) {
+        u8 oldDensity = gDungeon->floorProperties.enemyDensity;
+        u8 oldItemDensity = gDungeon->floorProperties.itemDensity;
+        u32 difficulty = GetGameDifficultySetting();
+        u8 fallbackDensity;
+
+        if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+            difficulty = DIFFICULTY_NORMAL;
+
+        fallbackDensity = GetSeededEnemyDensityFallback(difficulty, gDungeon->unk644.dungeonLocation.floor);
+        gDungeon->floorProperties.enemyDensity = fallbackDensity;
+        MGBA_Warnf("[FloorProps] Enemy density overflow clamped: dungeon=%d floor=%d old=%d new=%d diff=%d",
+                   gDungeon->unk644.dungeonLocation.id,
+                   gDungeon->unk644.dungeonLocation.floor,
+                   oldDensity,
+                   fallbackDensity,
+                   difficulty);
+
+        // Keep item counts from collapsing on the same overflow floors where the
+        // normal +/-2 variation can otherwise bottom out at a single item.
+        if (gDungeon->floorProperties.itemDensity < 4) {
+            gDungeon->floorProperties.itemDensity = 4;
+            MGBA_Warnf("[FloorProps] Item density raised on overflow floor: dungeon=%d floor=%d old=%d new=%d",
+                       gDungeon->unk644.dungeonLocation.id,
+                       gDungeon->unk644.dungeonLocation.floor,
+                       oldItemDensity,
+                       gDungeon->floorProperties.itemDensity);
+        }
+    }
 
     // Seeded shop floor: bias the chosen floor to roll a shop using natural generation
     {

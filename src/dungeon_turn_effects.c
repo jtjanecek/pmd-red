@@ -481,7 +481,6 @@ void TickStatusAndHealthRegen(Entity *entity)
         return;
 
     if (entityInfo->reflectClassStatus.status != 0) {
-        /*
         #ifdef DEV
             // DEV: Don't decrement Protect status for the leader (permanent protect in dev mode)
             Entity *leader = GetLeader();
@@ -497,12 +496,6 @@ void TickStatusAndHealthRegen(Entity *entity)
                 EndReflectClassStatus(entity, entity);
             }
         #endif
-        */
-        // DEV auto-protect commented out; always decrement like non-DEV builds.
-        sub_80838EC(&entityInfo->reflectClassStatus.turns);
-        if (entityInfo->reflectClassStatus.turns == 0) {
-            EndReflectClassStatus(entity, entity);
-        }
     }
     if (!EntityIsValid(entity) || IsFloorOver())
         return;

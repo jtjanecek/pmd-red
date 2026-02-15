@@ -3725,15 +3725,15 @@ static bool8 TryAddBossRewardRecruit(void)
     s16 species;
     u32 scaledLevel;
 
-    if (GetFriendSum_808D480() >= MAX_RECRUITED_POKEMON)
-        return FALSE;
-
     species = SelectBossRewardRecruitSpecies();
     if (species <= MONSTER_NONE)
         return FALSE;
 
     location = gDungeon->unk644.dungeonLocation;
     CreateLevel1Pokemon(&recruit, species, NULL, 0, &location, NULL);
+
+    if ((recruit.flags & POKEMON_FLAG_SHINY) && GetRecruitAllSetting() == RECRUIT_ALL_NONE)
+        return FALSE;
 
     scaledLevel = (GetStrongestTeamLevel() * 80) / 100;
     if (scaledLevel < 1)

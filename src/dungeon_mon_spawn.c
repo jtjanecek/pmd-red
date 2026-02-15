@@ -48,7 +48,7 @@
 
 static bool8 RollShinySpawn(void)
 {
-    return DungeonRandInt(100) < SHINY_SPAWN_CHANCE_PERCENT;
+    return DungeonRandInt(SHINY_SPAWN_CHANCE_DENOM) < SHINY_SPAWN_CHANCE;
 }
 
 static s32 AdjustEnemyLevelForDifficulty(s32 level)

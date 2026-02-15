@@ -3,6 +3,7 @@
 #include "mgba_log.h"
 #include "pokemon.h"
 #include "constants/colors.h"
+#include "constants/friend_area.h"
 #include "constants/monster.h"
 #include "constants/tactic.h"
 #include "code_800D090.h"
@@ -39,7 +40,7 @@ struct unkStruct_8107654
 
 static bool8 RollShinyChance(void)
 {
-    return RandInt(100) < SHINY_SPAWN_CHANCE_PERCENT;
+    return RandInt(SHINY_SPAWN_CHANCE_DENOM) < SHINY_SPAWN_CHANCE;
 }
 
 // arm9.bin::0205C34C
@@ -124,7 +125,7 @@ void sub_808CE74(s16 _species, bool32 _isLeader, u8* name)
              pokemon.name[j] = name[j];
          }
      }
-     friendArea = sMonsterParameters[species].friendArea;
+     friendArea = GetFriendArea(species);
      for (i = 0; i < NUM_MONSTERS; i++) {
          if (!PokemonExists(&gRecruitedPokemonRef->pokemon[i])) {
              u8 speciesFriendArea = sub_80923D4(i);
@@ -251,10 +252,7 @@ Pokemon *TryAddPokemonToRecruited(Pokemon *pokemon)
 {
     s32 i;
     s32 species = pokemon->speciesNum;
-    u32 friendArea = sMonsterParameters[species].friendArea;
-
-    if (GetFriendSum_808D480() >= MAX_RECRUITED_POKEMON)
-        return NULL;
+    u32 friendArea = GetFriendArea(species);
 
     if (!gFriendAreas[friendArea]) {
         // Friend Areas are expected to be unlocked by default in this fork.
@@ -280,7 +278,7 @@ Pokemon *sub_808D278(s32 species)
 {
     s32 i;
     s16 species_s16 = (s16)species;
-    u32 friendArea = sMonsterParameters[species_s16].friendArea;
+    u32 friendArea = GetFriendArea(species_s16);
 
     if (!gFriendAreas[friendArea])
         return NULL;
@@ -842,8 +840,8 @@ u32 GetSize(s16 index)
 
 u8 GetFriendArea(s32 index)
 {
-    s16 index_s32 = index;
-    return sMonsterParameters[index_s32].friendArea;
+    (void)index;
+    return TRANSFORM_FOREST;
 }
 
 s32 GetBaseHP(s32 index)

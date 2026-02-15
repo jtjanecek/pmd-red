@@ -51,14 +51,6 @@ static const MenuItem gDungeonCountMenu[] = {
     { _("20"), MAX_DUNGEONS_20 },
     { NULL, -1 },
 };
-ALIGNED(4) static const u8 gRecruitLimitNotice[] = _(
-    "{CENTER_ALIGN}You will be limited to only\n"
-    "{CENTER_ALIGN}having 5 recruits at a time,\n"
-    "{CENTER_ALIGN}including the player.{EXTRA_MSG}"
-    "{CENTER_ALIGN}New Pokemon cannot be recruited\n"
-    "{CENTER_ALIGN}while you have 4 Pokemon in\n"
-    "{CENTER_ALIGN}Friend Areas."
-);
 ALIGNED(4) static const u8 gStarterPrompt[] = _("{CENTER_ALIGN}Select your character.");
 ALIGNED(4) static const u8 gStarterNickPrompt[] = STARTER_NICK_PROMPT;
 

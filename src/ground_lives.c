@@ -91,7 +91,7 @@ struct GroundLive
     struct UnkGroundSpriteStruct unk170;
 };
 
-#define UNK_3001B84_ARR_COUNT 0x6  // Allow a couple extra base NPCs (still far below original 0x18)
+#define UNK_3001B84_ARR_COUNT 0x8  // Keep memory savings vs 0x18, but allow all Friend Area slots (kinds 15-19) to spawn.
 
 struct GroundLives
 {

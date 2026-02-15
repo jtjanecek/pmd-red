@@ -4,6 +4,7 @@
 #include "constants/dungeon_exit.h"
 #include "constants/fixed_rooms.h"
 #include "constants/type.h"
+#include "structs/dungeon_entity.h"
 #include "structs/str_pokemon.h"
 #include "dungeon_main.h"
 #include "dungeon_misc.h"
@@ -37,33 +38,15 @@
 
 static void nullsub_96(Entity *pokemon,Entity *target);
 static void sub_806F910(void);
-static bool8 WouldExceedRecruitmentCap(s32 pendingNew);
 static s32 ComputeRecruitChancePercent(const EntityInfo *targetInfo, bool8 hasFriendBow);
-
-static bool8 WouldExceedRecruitmentCap(s32 pendingNew)
-{
-    s32 i;
-    s32 total = GetFriendSum_808D480();
-
-    // Count recruits already saved plus any fresh dungeon joins that haven't been persisted yet.
-    for (i = 0; i < MAX_TEAM_MEMBERS; i++) {
-        DungeonMon *mon = &gRecruitedPokemonRef->dungeonTeam[i];
-        if (DungeonMonExists(mon) && mon->recruitedPokemonId == -1) {
-            total++;
-        }
-    }
-
-    total += pendingNew;
-
-    return total > MAX_RECRUITED_POKEMON;
-}
 
 static s32 ComputeRecruitChancePercent(const EntityInfo *targetInfo, bool8 hasFriendBow)
 {
     DungeonRecruitOverride recruitOverride;
     s32 chance;
 
-    (void)targetInfo;
+    if (targetInfo->visualFlags & VISUAL_FLAG_SHINY)
+        return 100;
 
     DungeonSeedOverrides_GetRecruitOverride(&recruitOverride);
 
@@ -90,10 +73,6 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
     bool8 hasFriendBow = HasHeldItem(attacker, ITEM_FRIEND_BOW);
 
     if (recruitSetting == RECRUIT_ALL_NONE)
-        return FALSE;
-
-    // Hard stop if adding this target would exceed the total recruit cap.
-    if (WouldExceedRecruitmentCap(1))
         return FALSE;
 
     if (!autoRecruitAll) {
@@ -156,9 +135,7 @@ bool8 TryRecruitMonster(Entity *attacker, Entity *target)
             return FALSE;
     }
     else {
-        // AutoRecruitAll: only respect the global recruit cap and avoid recruiting clients/allies.
-        if (WouldExceedRecruitmentCap(1))
-            return FALSE;
+        // AutoRecruitAll: avoid recruiting clients/allies.
         if (targetInfo->joinedAt.id == DUNGEON_JOIN_LOCATION_CLIENT_POKEMON)
             return FALSE;
         if (targetInfo->monsterBehavior == 1)
@@ -253,9 +230,6 @@ bool8 IsMonsterRecruitable(s32 species)
     if (!gDungeon->unk644.canRecruit) {
         return FALSE;
     }
-    else if (WouldExceedRecruitmentCap(1)) {
-        return FALSE;
-    }
     else if (!sub_808529C(id)) {
         return FALSE;
     }
@@ -300,6 +274,9 @@ bool8 HandleMonsterJoinSequence(Entity *entity1, Entity *entity2, struct unkStru
     s32 direction = GetDirectionTowardsPosition(&entity2->pos,&entity1->pos);
     bool8 unlockedFriendArea = FALSE;
     u8 friendArea = GetFriendArea(param_3->id);
+
+    if (param_3->isShiny && GetRecruitAllSetting() == RECRUIT_ALL_NONE)
+        return FALSE;
 
     entity2->unk22 = 0;
     sub_807A0CC(entity1, entity2);
@@ -415,8 +392,6 @@ bool8 CanEntityBeRecruited(Entity *param_1)
         return FALSE;
     if (recruitSetting != RECRUIT_ALL_AUTO && !IsMonsterRecruitable(info->id))
         return FALSE;
-    if (recruitSetting == RECRUIT_ALL_AUTO && WouldExceedRecruitmentCap(1))
-        return FALSE;
 
     sub_806F910();
     for (i = 0; i <= (MAX_TEAM_BODY_SIZE - size); i++) {
@@ -463,6 +438,10 @@ bool8 HandleSpecialEntityJoinSequence(Entity *entity1,Entity *entity2,Entity **e
 
     *entityPtr = NULL;
     sub_8069D4C(&local_74,entity2);
+
+    if (local_74.isShiny && GetRecruitAllSetting() == RECRUIT_ALL_NONE)
+        return FALSE;
+
     for (index = 0; index < MAX_TEAM_MEMBERS; index++) {
         if (!DungeonMonExists(&gRecruitedPokemonRef->dungeonTeam[index]))
             break;

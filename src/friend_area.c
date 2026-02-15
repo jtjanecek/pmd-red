@@ -30,7 +30,9 @@ void InitializeFriendAreas(void)
     s32 i;
 
     for (i = 0; i < NUM_FRIEND_AREAS; i++)
-        gFriendAreas[i] = TRUE;
+        gFriendAreas[i] = FALSE;
+
+    gFriendAreas[TRANSFORM_FOREST] = TRUE;
 }
 
 u8 sub_80923D4(s32 target)
@@ -131,6 +133,11 @@ const u8 *GetFriendAreaDescription(u8 index)
 
 void UnlockFriendArea(u8 index)
 {
+    if (index != TRANSFORM_FOREST) {
+        MGBA_Warnf("[FA] blocked unlock id=%d", index);
+        return;
+    }
+
     gFriendAreas[index] = TRUE;
     MGBA_Warnf("[FA] unlock id=%d", index);
 }
@@ -257,6 +264,11 @@ u32 ReadSavedFriendAreas(u8 *r0, s32 size)
         else
             gFriendAreas[i] = FALSE;
     }
+
+    // In rogue mode, only Transform Forest is ever available.
+    for (i = 0; i < NUM_FRIEND_AREAS; i++)
+        gFriendAreas[i] = FALSE;
+    gFriendAreas[TRANSFORM_FOREST] = TRUE;
 
     FinishBitSerializer(&unk);
     return unk.count;

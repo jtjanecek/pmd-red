@@ -111,7 +111,6 @@ static void HandleLeaderSwapSelection(void);
 static void StartDifficultySelection(void);
 static void StartDungeonCountSelection(void);
 static void HandleDungeonCountSelection(void);
-static void HandleRecruitLimitNotice(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
 static void HandleTeamNameEntry(void);
@@ -301,9 +300,6 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_PLAYER_GENDER:
             SetPlayerGender();
-            break;
-        case PERSONALITY_RECRUIT_LIMIT_NOTICE:
-            HandleRecruitLimitNotice();
             break;
         case PERSONALITY_ADVANCE_TO_STARTER_SELECTION:
             AdvanceToStarterSelection();
@@ -692,17 +688,6 @@ static void SetPlayerGender(void)
     }
 
     sub_8099690(0);
-    CreateDialogueBoxAndPortrait(gRecruitLimitNotice, 0, 0, 0x301);
-    sPersonalityTestTracker->TestState = PERSONALITY_RECRUIT_LIMIT_NOTICE;
-}
-
-static void HandleRecruitLimitNotice(void)
-{
-    s32 temp;
-
-    if (sub_80144A4(&temp) != 0)
-        return;
-
     CreateDialogueBoxAndPortrait(gStarterPrompt, 0, 0, 0x301);
     sPersonalityTestTracker->TestState = PERSONALITY_ADVANCE_TO_STARTER_SELECTION;
 }

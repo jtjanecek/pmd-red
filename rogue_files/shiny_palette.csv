@@ -25,7 +25,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 22,22,MonsterNameFearow,Fearow,4,,,3,4,15,,,,12,13,14,5,2,6,7,,FairyForestKing
 23,23,MonsterNameEkans,Ekans,3,,,11,12,13,8,9,10,,,,,,,,14,FairyForestKing
 24,24,MonsterNameArbok,Arbok,2,,,5,6,7,,,,,,,8,9,10,,,FairyForestKing
-25,25,MonsterNamePikachu,Pikachu,4,,,,,,12,13,14,,,,,8,10,,,FairyForestKing
+25,25,MonsterNamePikachu,Pikachu,4,,,12,13,,12,13,14,,,,,8,9,,,FairyForestKing
 26,26,MonsterNameRaichu,Raichu,4,,,,,,,5,6,,,,,,12,13,,FairyForestKing
 27,27,MonsterNameSandshrew,Sandshrew,3,,,,6,7,11,13,14,5,,,,,,,,FairyForestKing
 28,28,MonsterNameSandslash,Sandslash,5,,,,,2,3,4,15,,,,5,5,6,7,,FairyForestKing
@@ -264,7 +264,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 261,236,MonsterNameTyrogue,Tyrogue,5,,,12,13,14,,9,,,,14,8,9,10,,,FairyForestKing
 262,237,MonsterNameHitmontop,Hitmontop,11,,,,,11,12,13,14,,,,9,10,9,15,,FairyForestKing
 263,238,MonsterNameSmoochum,Smoochum,11,,,,,,2,3,4,7,,,12,13,14,,,FairyForestKing
-264,239,MonsterNameElekid,Elekid,4,,,,,3,6,7,4,,,,,,,,,FairyForestKing
+264,239,MonsterNameElekid,Elekid,4,,,,,,6,3,4,,,,5,6,,,,FairyForestKing
 265,240,MonsterNameMagby,Magby,0,,,,,,,,,,,,2,3,4,,,FairyForestKing
 266,241,MonsterNameMiltank,Miltank,6,,,11,12,15,,,6,,6,,,,,,,FairyForestKing
 267,242,MonsterNameBlissey,Blissey,10,,,3,4,15,,,,,,,,,,,,FairyForestKing

@@ -45,8 +45,18 @@ ANIM_PRESETS = {
         "output_dir": "gen/shiny_attack_frames",
         "prefix": "attack",
     },
+    "damage": {
+        "anim_id": 2,
+        "output_dir": "gen/shiny_damage_frames",
+        "prefix": "damage",
+    },
+    "hit": {
+        "anim_id": 6,
+        "output_dir": "gen/shiny_hit_frames",
+        "prefix": "hit",
+    },
 }
-DEFAULT_ANIM_SETS = ["idle", "sleep", "attack"]
+DEFAULT_ANIM_SETS = ["idle", "sleep", "attack", "damage", "hit"]
 
 
 def normalize_header_label(value):
@@ -1571,7 +1581,7 @@ def main():
         action="append",
         dest="frames_anims",
         choices=DEFAULT_ANIM_SETS,
-        help="Animation preset to render (repeatable). Default: idle,sleep,attack.",
+        help="Animation preset to render (repeatable). Default: idle,sleep,attack,damage,hit.",
     )
     parser.add_argument(
         "--frames-frame-index",

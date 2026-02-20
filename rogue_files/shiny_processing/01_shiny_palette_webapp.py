@@ -345,6 +345,14 @@ class AppState:
                 "dir": os.path.join(base_dir, "shiny_attack_frames"),
                 "prefix": "attack",
             },
+            "damage": {
+                "dir": os.path.join(base_dir, "shiny_damage_frames"),
+                "prefix": "damage",
+            },
+            "hit": {
+                "dir": os.path.join(base_dir, "shiny_hit_frames"),
+                "prefix": "hit",
+            },
         }
         self.vanilla_palettes = load_vanilla_palettes(monster_data_path)
         self.dex_ids = load_monster_dex_ids(monster_data_path)
@@ -1083,6 +1091,30 @@ INDEX_HTML = """<!doctype html>
         </div>
       </div>
     </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Spell Attack (Before)</div>
+          <canvas id="preview-base-anim-damage" class="preview-anim" aria-label="Spell attack preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Spell Attack (After)</div>
+          <canvas id="preview-anim-damage" class="preview-anim" aria-label="Spell attack preview (after animation)"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Taking Hit (Before)</div>
+          <canvas id="preview-base-anim-hit" class="preview-anim" aria-label="Hit preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Taking Hit (After)</div>
+          <canvas id="preview-anim-hit" class="preview-anim" aria-label="Hit preview (after animation)"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="panel palette-panel" style="margin-top:16px;">
@@ -1145,6 +1177,10 @@ INDEX_HTML = """<!doctype html>
     const previewBaseAnimSleep = document.getElementById("preview-base-anim-sleep");
     const previewAnimAttack = document.getElementById("preview-anim-attack");
     const previewBaseAnimAttack = document.getElementById("preview-base-anim-attack");
+    const previewAnimDamage = document.getElementById("preview-anim-damage");
+    const previewBaseAnimDamage = document.getElementById("preview-base-anim-damage");
+    const previewAnimHit = document.getElementById("preview-anim-hit");
+    const previewBaseAnimHit = document.getElementById("preview-base-anim-hit");
     const statusEl = document.getElementById("status");
     const gridImg = document.getElementById("grid");
     const gridLabels = document.getElementById("grid-labels");
@@ -1198,6 +1234,26 @@ INDEX_HTML = """<!doctype html>
       attack: {
         canvas: previewAnimAttack,
         baseCanvas: previewBaseAnimAttack,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      damage: {
+        canvas: previewAnimDamage,
+        baseCanvas: previewBaseAnimDamage,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      hit: {
+        canvas: previewAnimHit,
+        baseCanvas: previewBaseAnimHit,
         state: null,
         baseState: null,
         url: null,
@@ -1360,6 +1416,18 @@ INDEX_HTML = """<!doctype html>
       }
       if (previewBaseAnimAttack) {
         previewBaseAnimAttack.style.display = canvasDisplay;
+      }
+      if (previewAnimDamage) {
+        previewAnimDamage.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimDamage) {
+        previewBaseAnimDamage.style.display = canvasDisplay;
+      }
+      if (previewAnimHit) {
+        previewAnimHit.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimHit) {
+        previewBaseAnimHit.style.display = canvasDisplay;
       }
       if (extraAnimSection) {
         extraAnimSection.style.display = enabled ? "flex" : "none";
@@ -1585,6 +1653,26 @@ INDEX_HTML = """<!doctype html>
         ),
         renderAnimationSet(
           "attack",
+          mon,
+          palette,
+          overrides,
+          basePalette,
+          overridesKey,
+          requestId,
+          false
+        ),
+        renderAnimationSet(
+          "damage",
+          mon,
+          palette,
+          overrides,
+          basePalette,
+          overridesKey,
+          requestId,
+          false
+        ),
+        renderAnimationSet(
+          "hit",
           mon,
           palette,
           overrides,

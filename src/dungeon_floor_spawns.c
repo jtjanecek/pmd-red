@@ -155,6 +155,7 @@ static void ApplySeedOverridesToCurrentFloor(void)
     DungeonSeedFloorOverrides overrides;
     s32 seed;
     s32 i;
+    u8 mapFixedRoomNumber;
 
     sSeededTrapPercentOverride = -1;
     sSeededKecleonFaintChance = 0;
@@ -176,7 +177,14 @@ static void ApplySeedOverridesToCurrentFloor(void)
                overrides.bossFight.bossSpecies);
 
     gDungeon->floorProperties.tileset = overrides.tileset;
-    gDungeon->floorProperties.fixedRoomNumber = 0;  // Disable boss rooms/cutscenes for randomized dungeons
+    mapFixedRoomNumber = gDungeon->floorProperties.fixedRoomNumber;
+    gDungeon->floorProperties.fixedRoomNumber = 0;  // Disable vanilla fixed rooms/cutscenes for seeded generation
+    if (!overrides.bossFight.enabled && mapFixedRoomNumber != 0) {
+        MGBA_Warnf("[FloorProps] Clearing vanilla fixed room: dungeon=%d floor=%d oldFixedRoom=%d",
+                   gDungeon->unk644.dungeonLocation.id,
+                   gDungeon->unk644.dungeonLocation.floor,
+                   mapFixedRoomNumber);
+    }
     if (overrides.bossFight.enabled && overrides.bossFight.applyWeather) {
         gDungeon->floorProperties.weather = overrides.bossFight.weather;
         MGBA_Warnf("[BossGen] Weather override applied: weather=%d", overrides.bossFight.weather);
@@ -364,6 +372,15 @@ static void ApplySeedOverridesToCurrentFloor(void)
             gDungeon->fileMonsterSpawns[i].randNum[1] = 0;
             i++;
         }
+
+        // Keep vanilla fixed-room floors from leaking into normal seeded floors.
+        if (gDungeon->floorProperties.fixedRoomNumber != 0) {
+            MGBA_Warnf("[FloorProps] Re-clearing fixed room after overrides: dungeon=%d floor=%d oldFixedRoom=%d",
+                       gDungeon->unk644.dungeonLocation.id,
+                       gDungeon->unk644.dungeonLocation.floor,
+                       gDungeon->floorProperties.fixedRoomNumber);
+            gDungeon->floorProperties.fixedRoomNumber = 0;
+        }
     }
 
 #ifdef DEV
@@ -463,8 +480,9 @@ void SetFloorItemMonsterSpawns(void)
     // Only our override system should set weather
     gDungeon->floorProperties.weather = WEATHER_CLEAR;
     ApplySeedOverridesToCurrentFloor();
-    MGBA_Warnf("[FloorInit] End: tileset=%d weather=%d bossEnabled=%d boss=%d enemyDensity=%d spawnsLoaded=%d",
+    MGBA_Warnf("[FloorInit] End: tileset=%d fixedRoom=%d weather=%d bossEnabled=%d boss=%d enemyDensity=%d spawnsLoaded=%d",
                gDungeon->floorProperties.tileset,
+               gDungeon->floorProperties.fixedRoomNumber,
                gDungeon->floorProperties.weather,
                sCurrentBossFight.enabled,
                sCurrentBossFight.bossSpecies,

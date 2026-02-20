@@ -360,7 +360,7 @@ u32 HandleTestTrackerState(void)
                 sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
 #ifdef DEV
                 // In DEV builds, always use this seed: 100
-                sPersonalityTestTracker->rngSeed = -6413;
+                sPersonalityTestTracker->rngSeed = -1797242665;
 #endif
                 sPersonalityTestTracker->seedChosen = TRUE;
             }

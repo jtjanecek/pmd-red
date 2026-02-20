@@ -134,6 +134,7 @@ static void PopulateWigglytuffShopFriendAreaInfoScreen(void)
 static void sub_8021A60(void)
 {
     s32 areaIndex;
+    const s32 maxEntries = ARRAY_COUNT(sWigglytuffShop2Work->friendAreaSpecies);
     s32 iVar6;
     s32 index;
     Pokemon *pokeStruct;
@@ -149,6 +150,9 @@ static void sub_8021A60(void)
         s32 index2 = (s16)index;
 
         if (sWigglytuffShop2Work->friendArea == GetFriendArea(index2) && index2 == GetBaseSpeciesNoUnown(index2)) {
+            if (sWigglytuffShop2Work->numPokemoninFriendArea >= maxEntries)
+                continue;
+
             iVar6 = sWigglytuffShop2Work->numPokemoninFriendArea;
             sWigglytuffShop2Work->friendAreaSpecies[iVar6] = index2;
             sWigglytuffShop2Work->numPokemoninFriendArea = iVar6 + 1;

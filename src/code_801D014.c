@@ -328,16 +328,7 @@ static void sub_801D4C0(void)
             loopMax++;
             sUnknown_203B250->unk68[loopMax].text = sTeam;
             sUnknown_203B250->unk68[loopMax].menuAction = 4;
-
             loopMax++;
-            if (sub_80023E4(2)) {
-                sUnknown_203B250->unk68[loopMax].text = sJobList;
-                sUnknown_203B250->unk68[loopMax].menuAction = 9;
-                if (HasNoAcceptedJobs())
-                    sUnknown_203B250->unkA8[loopMax] = 1;
-
-                loopMax++;
-            }
         }
 
         sUnknown_203B250->unk68[loopMax].text = sOthers;
@@ -362,10 +353,6 @@ static void sub_801D4C0(void)
             loopMax++;
         }
 
-        sUnknown_203B250->unk68[loopMax].text = gCommonInfo[0];
-        sUnknown_203B250->unk68[loopMax].menuAction = 8;
-
-        loopMax++;
         sUnknown_203B250->unk68[loopMax].text = gCommonExit[0];
         sUnknown_203B250->unk68[loopMax].menuAction = 10;
 

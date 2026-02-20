@@ -159,6 +159,7 @@ void SetRecruitAllSetting(u8 value)
 static u8 SanitizeMaxDungeonsSetting(u8 value)
 {
     switch (value) {
+        case MAX_DUNGEONS_5:
         case MAX_DUNGEONS_10:
         case MAX_DUNGEONS_15:
         case MAX_DUNGEONS_20:

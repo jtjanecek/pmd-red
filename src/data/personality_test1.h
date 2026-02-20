@@ -43,12 +43,13 @@ static const MenuItem gDifficultyMenu[] = {
 };
 ALIGNED(4) static const u8 gDungeonCountPrompt[] = _(
     "{CENTER_ALIGN}How many dungeons?\n"
+    "{CENTER_ALIGN}Recommended: 10\n"
     "{CENTER_ALIGN}Choose the length of this run."
 );
 static const MenuItem gDungeonCountMenu[] = {
+    { _("5"), MAX_DUNGEONS_5 },
     { _("10"), MAX_DUNGEONS_10 },
     { _("15"), MAX_DUNGEONS_15 },
-    { _("20"), MAX_DUNGEONS_20 },
     { NULL, -1 },
 };
 ALIGNED(4) static const u8 gStarterPrompt[] = _("{CENTER_ALIGN}Select your character.");

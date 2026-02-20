@@ -151,10 +151,6 @@ static void ApplyStarterHeldItem(void);
 UNUSED static void ApplySkipStartMinimal(void);
 // Skip-cutscene override is disabled for now; no postgame force.
 static void ApplySkipPostgameBootstrap(void);
-#ifdef DEV
-static s16 DevPickRandomMon(void);
-static s16 DevPickRandomPartnerDistinctFrom(s16 starter);
-#endif
 
 bool8 CreateTestTracker(void)
 {
@@ -166,38 +162,6 @@ bool8 CreateTestTracker(void)
     sub_8099690(1);
     return TRUE;
 }
-
-#ifdef DEV
-static s16 DevPickRandomMon(void)
-{
-    // Draw from the full starter/partner roster
-    return gPartners[RandInt(NUM_PARTNERS)];
-}
-
-static s16 DevPickRandomPartnerDistinctFrom(s16 starter)
-{
-    s16 selection;
-    s32 attempts;
-
-    // Try a bunch of random draws that avoid duplicating the starter
-    for (attempts = 0; attempts < 256; attempts++) {
-        selection = DevPickRandomMon();
-        if (selection != starter)
-            return selection;
-    }
-
-    // Deterministic fallback scan
-    for (attempts = 0; attempts < NUM_PARTNERS; attempts++) {
-        selection = gPartners[attempts];
-        if (selection != starter)
-            return selection;
-    }
-
-    // Worst case: allow a duplicate so we never return MONSTER_NONE
-    return DevPickRandomMon();
-}
-#endif
-
 
 static void InitializeTestStats(void)
 {
@@ -225,40 +189,12 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->chosenStarterItem = ITEM_NOTHING;
     sStarterItemPreviewIndex = -1;
     
-    // DEV: Skip personality quiz and set dev defaults
-    // To enable dev mode, compile with: make DEV=1
-    // This will skip the personality quiz and set:
-    // - Main: Random
-    // - Solo: Yes
-    // - Partner: Random (distinct from main when possible)
-    // - Recruitment: No Recruitable
-    // - Skip basic rescues: Yes
-    // - Skip Cutscenes: Yes
-    // - Difficulty: Normal
+    // DEV fast-skip path disabled so DEV=1 still runs through the full quiz flow.
+    // Keep the initial state at the seed prompt for all builds.
     #ifdef DEV
-    sPersonalityTestTracker->TestState = PERSONALITY_TEST_END; // 100
-    sPersonalityTestTracker->unk4.StarterID = DevPickRandomMon();
-    // sPersonalityTestTracker->unk4.StarterID = MONSTER_CHARIZARD;
-    sPersonalityTestTracker->unk4.PartnerID = DevPickRandomPartnerDistinctFrom(sPersonalityTestTracker->unk4.StarterID);
-    // sPersonalityTestTracker->unk4.PartnerID = MONSTER_METAGROSS;
-    CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.StarterName, sPersonalityTestTracker->unk4.StarterID);
-    CopyMonsterNameToBuffer(sPersonalityTestTracker->unk4.PartnerNick, sPersonalityTestTracker->unk4.PartnerID);
-    sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_NONE;
-    sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Yes
-    sPersonalityTestTracker->unk4.difficulty = DIFFICULTY_NORMAL;
-    sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_20;
-    sPersonalityTestTracker->unk4.enableLeaderSwap = 1;
-    SetRecruitAllSetting(RECRUIT_ALL_NONE);
-    SetSkipBasicRescuesSetting(1);
-    SetGameDifficultySetting(DIFFICULTY_NORMAL);
-    SetMaxDungeonsSetting(MAX_DUNGEONS_20);
-    SetEnableLeaderSwapSetting(1);
-    
-    // Level up team to 100 in dev mode
-    sub_8043FD0();
-    #else
-    sPersonalityTestTracker->TestState = PERSONALITY_SEED_PROMPT;
+    // sPersonalityTestTracker->TestState = PERSONALITY_TEST_END; // 100
     #endif
+    sPersonalityTestTracker->TestState = PERSONALITY_SEED_PROMPT;
 }
 
 u32 HandleTestTrackerState(void)
@@ -360,7 +296,7 @@ u32 HandleTestTrackerState(void)
                 sPersonalityTestTracker->rngSeed = GenerateRandomSeed();
 #ifdef DEV
                 // In DEV builds, always use this seed: 100
-                sPersonalityTestTracker->rngSeed = -1797242665;
+                //sPersonalityTestTracker->rngSeed = -1797242665;
 #endif
                 sPersonalityTestTracker->seedChosen = TRUE;
             }
@@ -421,7 +357,7 @@ static void HandleSeedSelection(void)
             s32 generatedSeed = GenerateRandomSeed();
 #ifdef DEV
             // In DEV builds, always use seed -6903 for consistent testing
-            generatedSeed = -6903;
+            //generatedSeed = -6903;
 #endif
             sPersonalityTestTracker->rngSeed = generatedSeed;
             sPersonalityTestTracker->unk4.customSeed = generatedSeed;
@@ -535,7 +471,7 @@ static void StartDifficultySelection(void)
 
 static void StartDungeonCountSelection(void)
 {
-    CreateMenuDialogueBoxAndPortrait(gDungeonCountPrompt, 0, 0, gDungeonCountMenu, 0, 3, 0, 0, 0x101);
+    CreateMenuDialogueBoxAndPortrait(gDungeonCountPrompt, 0, MAX_DUNGEONS_10, gDungeonCountMenu, 0, 3, 0, 0, 0x101);
     sPersonalityTestTracker->TestState = PERSONALITY_DUNGEON_COUNT_SELECTION;
 }
 
@@ -775,7 +711,7 @@ static void HandleDungeonCountSelection(void)
         return;
 
     if (selection < 0)
-        selection = MAX_DUNGEONS_20;
+        selection = MAX_DUNGEONS_10;
 
     SetMaxDungeonsSetting((u8)selection);
     sPersonalityTestTracker->unk4.maxDungeons = GetMaxDungeonsSetting();

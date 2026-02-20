@@ -26,5 +26,6 @@ bool8 DrawCredits(s32 creditsCategoryIndex, s32);
 s32 sub_8035574(void);
 void sub_803565C(void);
 void Credits1_SetCustomHeader(const u8 *text);
+void Credits1_SetCustomHeaderAtY(const u8 *text, s16 y);
 
 #endif // GUARD_CREDITS1_H

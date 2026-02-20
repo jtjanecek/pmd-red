@@ -111,6 +111,8 @@ static u32 xxx_script_related_8001334(u32 r0);
 static void MainLoops_RunFrameActions(u32 unused);
 static void PlayCreditsAndWait(void);
 static void BuildCreditsHeader(void);
+static void BuildCreditsDeveloperHeader(void);
+static u16 RunCreditsPageUntilAdvance(u32 maxFrames);
 
 extern bool8 sub_8096A08(u8 dungeon, Pokemon *pokemon);
 extern void sub_8096BD0(void);
@@ -1233,21 +1235,23 @@ static u32 xxx_script_related_8001334(u32 r0)
 // Minimal credits runner for roguelike flow: play once, then return to title loop.
 static void PlayCreditsAndWait(void)
 {
-    u32 frames = 0;
+    u16 pressed;
 
     BuildCreditsHeader();
     FadeOutAllMusic(0x10);
     ResetDialogueBox();
-    DrawCredits(0, 60);
-    while (sub_8035574() != 3) {
-        MainLoops_RunFrameActions(0);
-        frames++;
-        // Let the player or a timeout skip if the credits routine stalls.
-        if ((gRealInputs.pressed & (A_BUTTON | B_BUTTON | START_BUTTON)) != 0 || frames > 1800) {
-            break;
-        }
-    }
+    DrawCredits(0, 1800);
+    pressed = RunCreditsPageUntilAdvance(1800);
     sub_803565C();
+
+    if (pressed & A_BUTTON) {
+        BuildCreditsDeveloperHeader();
+        ResetDialogueBox();
+        DrawCredits(0, 1800);
+        RunCreditsPageUntilAdvance(1800);
+        sub_803565C();
+    }
+
     ResetDialogueBox();
     SetWindowBGColor();
 }
@@ -1289,6 +1293,31 @@ static void BuildCreditsHeader(void)
                   heroName,
                   maxDungeons);
     Credits1_SetCustomHeader(sCreditsHeaderBuffer);
+}
+
+static void BuildCreditsDeveloperHeader(void)
+{
+    sprintfStatic((char *)sCreditsHeaderBuffer,
+                  "DEVELOPERS AND TESTERS\nFourBolt\nFairyForestKing\nferb\nMystaldi\nFexCollects\nCain");
+    Credits1_SetCustomHeaderAtY(sCreditsHeaderBuffer, 0x20);
+}
+
+static u16 RunCreditsPageUntilAdvance(u32 maxFrames)
+{
+    u32 frames = 0;
+    u16 pressedMask;
+
+    while (sub_8035574() != 3) {
+        MainLoops_RunFrameActions(0);
+        pressedMask = gRealInputs.pressed & (A_BUTTON | B_BUTTON | START_BUTTON);
+        frames++;
+
+        if (pressedMask != 0 || frames > maxFrames) {
+            return pressedMask;
+        }
+    }
+
+    return 0;
 }
 
 // arm9.bin::0200CA1C

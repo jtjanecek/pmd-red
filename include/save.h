@@ -41,6 +41,7 @@ enum RecruitAllSetting
 
 enum MaxDungeonCountSetting
 {
+    MAX_DUNGEONS_5 = 5,
     MAX_DUNGEONS_10 = 10,
     MAX_DUNGEONS_15 = 15,
     MAX_DUNGEONS_20 = 20

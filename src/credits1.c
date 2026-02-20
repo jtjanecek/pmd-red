@@ -15,6 +15,7 @@ static EWRAM_DATA u8 sCustomHeaderText[192] = {0};
 static EWRAM_DATA bool8 sCustomHeaderActive = FALSE;
 static EWRAM_DATA const CreditsData *sCreditsTableOverride[27] = {0};
 #define CREDITS_TABLE_COUNT 27
+#define CUSTOM_CREDITS_HEADER_DEFAULT_Y 0x30
 
 static const WindowTemplate sDummyWinTemplate = WIN_TEMPLATE_DUMMY;
 static const WindowTemplate gUnknown_80E4A28 = {
@@ -99,6 +100,11 @@ extern const CreditsData* gCreditsTable[27];
 
 void Credits1_SetCustomHeader(const u8 *text)
 {
+    Credits1_SetCustomHeaderAtY(text, CUSTOM_CREDITS_HEADER_DEFAULT_Y);
+}
+
+void Credits1_SetCustomHeaderAtY(const u8 *text, s16 y)
+{
     s32 i;
 
     if (text == NULL) {
@@ -110,7 +116,7 @@ void Credits1_SetCustomHeader(const u8 *text)
     CopyStringtoBuffer(sCustomHeaderText, text);
     sCustomHeader.type = 1;
     sCustomHeader.x = 0;
-    sCustomHeader.y = 0x30;
+    sCustomHeader.y = y;
     sCustomHeader.text = sCustomHeaderText;
 
     for (i = 0; i < CREDITS_TABLE_COUNT; i++)

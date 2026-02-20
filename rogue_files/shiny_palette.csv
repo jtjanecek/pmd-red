@@ -137,13 +137,13 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 134,134,MonsterNameVaporeon,Vaporeon,7,,,,,,,,,,,,,,,,,FairyForestKing
 135,135,MonsterNameJolteon,Jolteon,3,,,,,,12,13,14,9,,,,,,10,,FairyForestKing
 136,136,MonsterNameFlareon,Flareon,4,,,,,,2,,,,,,,5,6,,,FairyForestKing
-137,137,MonsterNamePorygon,Porygon,5,,,,9,10,12,13,14,,,,,,,,,FairyForestKing
+137,137,MonsterNamePorygon,Porygon,5,,,,9,10,12,13,14,,,,,8,9,,,FairyForestKing
 138,138,MonsterNameOmanyte,Omanyte,4,,,,,,,,,,,,,,,,,FairyForestKing
 139,139,MonsterNameOmastar,Omastar,4,,,,,,,,,,,,,,,,,FairyForestKing
 140,140,MonsterNameKabuto,Kabuto,3,,,,,15,8,9,10,3,4,,,,,,,FairyForestKing
 141,141,MonsterNameKabutops,Kabutops,10,,,,15,,8,9,10,,,,5,6,7,5,,FairyForestKing
 142,142,MonsterNameAerodactyl,Aerodactyl,7,,,,,,,,,,8,9,,11,11,10,,FairyForestKing
-143,143,MonsterNameSnorlax,Snorlax,9,,,11,12,13,8,,,,,,5,6,7,,,FairyForestKing
+143,143,MonsterNameSnorlax,Snorlax,9,,,11,12,13,8,,9,,,,5,6,7,,,FairyForestKing
 144,144,MonsterNameArticuno,Articuno,7,,,,,,,,,2,3,4,1,,,,,FairyForestKing
 145,145,MonsterNameZapdos,Zapdos,4,,,11,15,15,12,13,14,,,,,8,9,,,FairyForestKing
 146,146,MonsterNameMoltres,Moltres,4,,,8,,15,8,9,10,,,,13,14,3,4,,FairyForestKing

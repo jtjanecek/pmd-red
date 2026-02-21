@@ -63,9 +63,9 @@ Rogue Rescue Team plays as a seeded roguelike run: during the personality quiz y
 - Auto leader swap system added, toggleable via R + B.
 
 # Developers and Testers
-FourBolt
-FairyForestKing
-ferb
-Mystaldi
-FexCollects
-Cain
+- FourBolt
+- FairyForestKing
+- ferb
+- Mystaldi
+- FexCollects
+- Cain

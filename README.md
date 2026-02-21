@@ -2,7 +2,7 @@
 Rogue Rescue Team is a ROM hack dedicated to making Pokemon Mystery Dungeon what it truly was meant to be: a Roguelike. This hack utilizes as many elements as possible in Red Rescue Team to make it a true Roguelike with strategy, decisions, randomization, and a huge amount of replayability. It is not a “pure” randomization hack, because that takes away from the immersion of the dungeons (for example, visuals will match the main type of a dungeon). The hack aims at reducing cheese (attract, silver wind, pass scarf) and utilizing all items present in the game to their max effect to bring out strategy in players’ runs. Play through 20 sequential themed dungeons with different bosses and enemies, each one getting more difficult than the last. This ROM hack is a dungeon-roguelike focused hack, not a story ROM hack.
 
 # Gameplay
-Rogue Rescue Team plays as a seeded roguelike run: during the personality quiz you pick a numeric seed, then charge into a 20-dungeon gauntlet that only ever reveals the next challenge. Your seed is the recipe for the run: it locks in the order, scales floor counts as you climb, and bakes in a consistent mix of tilesets, spawns, traps, weather, and item pools. On top of that, you can pick any hero/partner from the full roster, start with Friend Areas unlocked, and choose from Normal/Hard/Nightmare plus recruit presets to shape how brutal (or pure) the run feels. Share a seed to race friends through the exact same adventure, or roll a new one for a fresh, wildly different journey.
+Rogue Rescue Team plays as a seeded roguelike run: during the personality quiz you pick a numeric seed, then charge into a 10-dungeon gauntlet that only ever reveals the next challenge. Your seed is the recipe for the run: it locks in the order, scales floor counts as you climb, and bakes in a consistent mix of tilesets, spawns, traps, weather, and item pools. On top of that, you can pick any hero/partner from the full roster, start with Friend Areas unlocked, and choose from Normal/Hard/Nightmare plus recruit presets to shape how brutal (or pure) the run feels. Share a seed to race friends through the exact same adventure, or roll a new one for a fresh, wildly different journey.
 
 # Difficulty
 - Item carry limit at dungeon entry shrinks as difficulty rises (full pack → 10 → 5).
@@ -54,7 +54,7 @@ Rogue Rescue Team plays as a seeded roguelike run: during the personality quiz y
 - EXP gain increased by ~20% to reduce grinding.
 - Pokémon with unusually high EXP curves receive bonus EXP per defeat (e.g., Magikarp line, Ho-Oh, Unown, Milotic line).
 - Floor spawn logic weighted by total base stats; early floors favor weaker Pokémon.
-- Basic shiny system added (5% chance, fixed palettes).
+- Shiny system added, rare but guarenteed recruit.
 - Shiny structure reworked to allow body-part color modifications.
 - Munchlax and Decoy (glitch Pokémon) are playable with custom-designed movesets.
 - Shop buy and sell prices capped at 4000; overpriced items rebalanced. Banana price set to 50.

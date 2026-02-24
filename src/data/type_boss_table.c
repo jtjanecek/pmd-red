@@ -13,11 +13,6 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_NONE, MONSTER_NONE},
         },
         .moves = {
-            {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-            {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
-        },
-        .hasCustomMoves = {FALSE, FALSE},
-        .minionMoves = {
             {
                 {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
                 {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
@@ -25,11 +20,43 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {
                 {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
                 {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+            },
+        },
+        .hasCustomMoves = {
+            {FALSE, FALSE},
+            {FALSE, FALSE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                },
+                {
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                },
+            },
+            {
+                {
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                },
+                {
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                    {MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING, MOVE_NOTHING},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {FALSE, FALSE},
-            {FALSE, FALSE},
+            {
+                {FALSE, FALSE},
+                {FALSE, FALSE},
+            },
+            {
+                {FALSE, FALSE},
+                {FALSE, FALSE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
@@ -54,23 +81,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_TOGETIC, MONSTER_PORYGON2},
         },
         .moves = {
-            {MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_BARRIER, MOVE_SWIFT},
-            {MOVE_PSYCHIC, MOVE_REFLECT, MOVE_MEGA_PUNCH, MOVE_METRONOME},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_STRENGTH, MOVE_TAKE_DOWN, MOVE_SCARY_FACE, MOVE_PURSUIT},
-                {MOVE_SLASH, MOVE_STRENGTH, MOVE_FURY_SWIPES, MOVE_EARTHQUAKE},
+                {MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_SWIFT, MOVE_STRENGTH},
+                {MOVE_PSYCHIC, MOVE_MEGA_PUNCH, MOVE_THUNDERBOLT, MOVE_SWIFT},
             },
             {
-                {MOVE_METRONOME, MOVE_ANCIENTPOWER, MOVE_ENCORE, MOVE_SAFEGUARD},
-                {MOVE_TRI_ATTACK, MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_AGILITY},
+                {MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_BARRIER, MOVE_SWIFT},
+                {MOVE_PSYCHIC, MOVE_REFLECT, MOVE_MEGA_PUNCH, MOVE_METRONOME},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_STRENGTH, MOVE_TAKE_DOWN, MOVE_CRUNCH, MOVE_PSYCHIC},
+                    {MOVE_SLASH, MOVE_STRENGTH, MOVE_SLASH, MOVE_EARTHQUAKE},
+                },
+                {
+                    {MOVE_ANCIENTPOWER, MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_SWIFT},
+                    {MOVE_TRI_ATTACK, MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_THUNDERBOLT},
+                },
+            },
+            {
+                {
+                    {MOVE_STRENGTH, MOVE_TAKE_DOWN, MOVE_SCARY_FACE, MOVE_PURSUIT},
+                    {MOVE_SLASH, MOVE_STRENGTH, MOVE_FURY_SWIPES, MOVE_EARTHQUAKE},
+                },
+                {
+                    {MOVE_METRONOME, MOVE_ANCIENTPOWER, MOVE_ENCORE, MOVE_SAFEGUARD},
+                    {MOVE_TRI_ATTACK, MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_AGILITY},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
@@ -95,23 +149,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_FLAREON, MONSTER_FLAREON},
         },
         .moves = {
-            {MOVE_FLAMETHROWER, MOVE_WING_ATTACK, MOVE_AGILITY, MOVE_FIRE_SPIN},
-            {MOVE_FLAMETHROWER, MOVE_STOMP, MOVE_ROAR, MOVE_FIRE_SPIN},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_FLAMETHROWER, MOVE_WING_ATTACK, MOVE_SLASH, MOVE_SMOKESCREEN},
-                {MOVE_FLAMETHROWER, MOVE_SWIFT, MOVE_QUICK_ATTACK, MOVE_SMOKESCREEN},
+                {MOVE_FIRE_PUNCH, MOVE_WING_ATTACK, MOVE_FIRE_SPIN, MOVE_FIRE_BLAST},
+                {MOVE_FIRE_PUNCH, MOVE_STOMP, MOVE_FIRE_SPIN, MOVE_FIRE_BLAST},
             },
             {
-                {MOVE_FLAMETHROWER, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_SAND_ATTACK},
-                {MOVE_FLAMETHROWER, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_SAND_ATTACK},
+                {MOVE_FIRE_PUNCH, MOVE_WING_ATTACK, MOVE_AGILITY, MOVE_FIRE_SPIN},
+                {MOVE_FIRE_PUNCH, MOVE_STOMP, MOVE_ROAR, MOVE_FIRE_SPIN},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_FIRE_PUNCH, MOVE_WING_ATTACK, MOVE_SLASH, MOVE_FIRE_BLAST},
+                    {MOVE_FIRE_PUNCH, MOVE_SWIFT, MOVE_QUICK_ATTACK, MOVE_FIRE_BLAST},
+                },
+                {
+                    {MOVE_FIRE_PUNCH, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_FIRE_BLAST},
+                    {MOVE_FIRE_PUNCH, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_FIRE_BLAST},
+                },
+            },
+            {
+                {
+                    {MOVE_FIRE_PUNCH, MOVE_WING_ATTACK, MOVE_SLASH, MOVE_SMOKESCREEN},
+                    {MOVE_FIRE_PUNCH, MOVE_SWIFT, MOVE_QUICK_ATTACK, MOVE_SMOKESCREEN},
+                },
+                {
+                    {MOVE_FIRE_PUNCH, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_SAND_ATTACK},
+                    {MOVE_FIRE_PUNCH, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_SAND_ATTACK},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
@@ -136,23 +217,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_GOREBYSS, MONSTER_HUNTAIL},
         },
         .moves = {
-            {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_CALM_MIND, MOVE_MIRROR_COAT},
-            {MOVE_SURF, MOVE_ICE_BEAM, MOVE_CALM_MIND, MOVE_ANCIENTPOWER},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_ACID_ARMOR, MOVE_QUICK_ATTACK},
-                {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_ACID_ARMOR, MOVE_QUICK_ATTACK},
+                {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_CRUNCH, MOVE_HYDRO_PUMP},
+                {MOVE_SURF, MOVE_ICE_BEAM, MOVE_ANCIENTPOWER, MOVE_HYDRO_PUMP},
             },
             {
-                {MOVE_SURF, MOVE_PSYCHIC, MOVE_AGILITY, MOVE_AMNESIA},
-                {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_SCARY_FACE, MOVE_BITE},
+                {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_CALM_MIND, MOVE_CRUNCH},
+                {MOVE_SURF, MOVE_ICE_BEAM, MOVE_CALM_MIND, MOVE_ANCIENTPOWER},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_QUICK_ATTACK, MOVE_HYDRO_PUMP},
+                    {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_QUICK_ATTACK, MOVE_HYDRO_PUMP},
+                },
+                {
+                    {MOVE_SURF, MOVE_PSYCHIC, MOVE_HYDRO_PUMP, MOVE_WATER_PULSE},
+                    {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_BITE, MOVE_SURF},
+                },
+            },
+            {
+                {
+                    {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_ACID_ARMOR, MOVE_QUICK_ATTACK},
+                    {MOVE_SURF, MOVE_AURORA_BEAM, MOVE_ACID_ARMOR, MOVE_QUICK_ATTACK},
+                },
+                {
+                    {MOVE_SURF, MOVE_PSYCHIC, MOVE_AGILITY, MOVE_AMNESIA},
+                    {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_SCARY_FACE, MOVE_BITE},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
@@ -177,23 +285,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_MEGANIUM, MONSTER_SCEPTILE},
         },
         .moves = {
-            {MOVE_PSYCHIC, MOVE_FUTURE_SIGHT, MOVE_ANCIENTPOWER, MOVE_SOLARBEAM},
-            {MOVE_SOLARBEAM, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB, MOVE_EARTHQUAKE},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_RAZOR_LEAF, MOVE_GUST, MOVE_STUN_SPORE, MOVE_AERIAL_ACE},
-                {MOVE_PSYCHIC, MOVE_EGG_BOMB, MOVE_STUN_SPORE, MOVE_REFLECT},
+                {MOVE_PSYCHIC, MOVE_FUTURE_SIGHT, MOVE_ANCIENTPOWER, MOVE_SOLARBEAM},
+                {MOVE_SOLARBEAM, MOVE_SLUDGE_BOMB, MOVE_EARTHQUAKE, MOVE_LEAF_BLADE},
             },
             {
-                {MOVE_RAZOR_LEAF, MOVE_BODY_SLAM, MOVE_LIGHT_SCREEN, MOVE_POISONPOWDER},
-                {MOVE_LEAF_BLADE, MOVE_QUICK_ATTACK, MOVE_AGILITY, MOVE_PURSUIT},
+                {MOVE_PSYCHIC, MOVE_FUTURE_SIGHT, MOVE_ANCIENTPOWER, MOVE_SOLARBEAM},
+                {MOVE_SOLARBEAM, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB, MOVE_EARTHQUAKE},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_RAZOR_LEAF, MOVE_GUST, MOVE_AERIAL_ACE, MOVE_SOLARBEAM},
+                    {MOVE_PSYCHIC, MOVE_PSYCHIC, MOVE_SOLARBEAM, MOVE_LEAF_BLADE},
+                },
+                {
+                    {MOVE_RAZOR_LEAF, MOVE_BODY_SLAM, MOVE_SOLARBEAM, MOVE_LEAF_BLADE},
+                    {MOVE_LEAF_BLADE, MOVE_QUICK_ATTACK, MOVE_CRUNCH, MOVE_SOLARBEAM},
+                },
+            },
+            {
+                {
+                    {MOVE_RAZOR_LEAF, MOVE_GUST, MOVE_STUN_SPORE, MOVE_AERIAL_ACE},
+                    {MOVE_PSYCHIC, MOVE_EGG_BOMB, MOVE_STUN_SPORE, MOVE_REFLECT},
+                },
+                {
+                    {MOVE_RAZOR_LEAF, MOVE_BODY_SLAM, MOVE_LIGHT_SCREEN, MOVE_POISONPOWDER},
+                    {MOVE_LEAF_BLADE, MOVE_QUICK_ATTACK, MOVE_AGILITY, MOVE_PURSUIT},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
@@ -218,23 +353,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_JOLTEON, MONSTER_JOLTEON},
         },
         .moves = {
-            {MOVE_DRILL_PECK, MOVE_THUNDERBOLT, MOVE_THUNDER_WAVE, MOVE_AGILITY},
-            {MOVE_THUNDERBOLT, MOVE_SPARK, MOVE_BITE, MOVE_REFLECT},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_THUNDERBOLT, MOVE_QUICK_ATTACK, MOVE_THUNDER_WAVE, MOVE_IRON_TAIL},
-                {MOVE_SPARK, MOVE_BITE, MOVE_ROAR, MOVE_QUICK_ATTACK},
+                {MOVE_DRILL_PECK, MOVE_THUNDERBOLT, MOVE_SPARK, MOVE_IRON_TAIL},
+                {MOVE_THUNDERBOLT, MOVE_SPARK, MOVE_BITE, MOVE_DRILL_PECK},
             },
             {
-                {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_AGILITY, MOVE_PIN_MISSILE},
-                {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_AGILITY, MOVE_PIN_MISSILE},
+                {MOVE_DRILL_PECK, MOVE_THUNDERBOLT, MOVE_THUNDER_WAVE, MOVE_AGILITY},
+                {MOVE_THUNDERBOLT, MOVE_SPARK, MOVE_BITE, MOVE_REFLECT},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_THUNDERBOLT, MOVE_QUICK_ATTACK, MOVE_IRON_TAIL, MOVE_SPARK},
+                    {MOVE_SPARK, MOVE_BITE, MOVE_QUICK_ATTACK, MOVE_THUNDERBOLT},
+                },
+                {
+                    {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_FURY_CUTTER, MOVE_SPARK},
+                    {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_FURY_CUTTER, MOVE_SPARK},
+                },
+            },
+            {
+                {
+                    {MOVE_THUNDERBOLT, MOVE_QUICK_ATTACK, MOVE_THUNDER_WAVE, MOVE_IRON_TAIL},
+                    {MOVE_SPARK, MOVE_BITE, MOVE_ROAR, MOVE_QUICK_ATTACK},
+                },
+                {
+                    {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_AGILITY, MOVE_PIN_MISSILE},
+                    {MOVE_THUNDERBOLT, MOVE_DOUBLE_KICK, MOVE_AGILITY, MOVE_PIN_MISSILE},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
@@ -259,23 +421,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_GLALIE, MONSTER_WALREIN},
         },
         .moves = {
-            {MOVE_ICE_BEAM, MOVE_GUST, MOVE_AGILITY, MOVE_MIND_READER},
-            {MOVE_ICE_BEAM, MOVE_AMNESIA, MOVE_ICY_WIND, MOVE_EXPLOSION},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_AURORA_BEAM, MOVE_SURF, MOVE_ICE_BEAM, MOVE_ENCORE},
-                {MOVE_AURORA_BEAM, MOVE_PROTECT, MOVE_SPIKE_CANNON, MOVE_SUPERSONIC},
+                {MOVE_ICE_BEAM, MOVE_GUST, MOVE_AURORA_BEAM, MOVE_ICY_WIND},
+                {MOVE_ICE_BEAM, MOVE_ICY_WIND, MOVE_EXPLOSION, MOVE_AURORA_BEAM},
             },
             {
-                {MOVE_ICE_BEAM, MOVE_CRUNCH, MOVE_HEADBUTT, MOVE_BITE},
-                {MOVE_SURF, MOVE_BODY_SLAM, MOVE_ICE_BEAM, MOVE_ENCORE},
+                {MOVE_ICE_BEAM, MOVE_GUST, MOVE_AGILITY, MOVE_MIND_READER},
+                {MOVE_ICE_BEAM, MOVE_AMNESIA, MOVE_ICY_WIND, MOVE_EXPLOSION},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_AURORA_BEAM, MOVE_SURF, MOVE_ICE_BEAM, MOVE_ICY_WIND},
+                    {MOVE_AURORA_BEAM, MOVE_SPIKE_CANNON, MOVE_ICE_BEAM, MOVE_ICY_WIND},
+                },
+                {
+                    {MOVE_ICE_BEAM, MOVE_CRUNCH, MOVE_HEADBUTT, MOVE_BITE},
+                    {MOVE_SURF, MOVE_BODY_SLAM, MOVE_ICE_BEAM, MOVE_AURORA_BEAM},
+                },
+            },
+            {
+                {
+                    {MOVE_AURORA_BEAM, MOVE_SURF, MOVE_ICE_BEAM, MOVE_ENCORE},
+                    {MOVE_AURORA_BEAM, MOVE_PROTECT, MOVE_SPIKE_CANNON, MOVE_SUPERSONIC},
+                },
+                {
+                    {MOVE_ICE_BEAM, MOVE_CRUNCH, MOVE_HEADBUTT, MOVE_BITE},
+                    {MOVE_SURF, MOVE_BODY_SLAM, MOVE_ICE_BEAM, MOVE_ENCORE},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
@@ -300,23 +489,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_BRELOOM, MONSTER_HARIYAMA},
         },
         .moves = {
-            {MOVE_CROSS_CHOP, MOVE_VITAL_THROW, MOVE_ROCK_SLIDE, MOVE_BULK_UP},
-            {MOVE_HI_JUMP_KICK, MOVE_PSYCHIC, MOVE_DETECT, MOVE_ICE_PUNCH},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_HI_JUMP_KICK, MOVE_BRICK_BREAK, MOVE_BULK_UP, MOVE_FOCUS_ENERGY},
-                {MOVE_SKY_UPPERCUT, MOVE_THUNDERPUNCH, MOVE_ICE_PUNCH, MOVE_AGILITY},
+                {MOVE_CROSS_CHOP, MOVE_VITAL_THROW, MOVE_ROCK_SLIDE, MOVE_BRICK_BREAK},
+                {MOVE_HI_JUMP_KICK, MOVE_PSYCHIC, MOVE_ICE_PUNCH, MOVE_CROSS_CHOP},
             },
             {
-                {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_MEGA_PUNCH, MOVE_STUN_SPORE},
-                {MOVE_CROSS_CHOP, MOVE_BELLY_DRUM, MOVE_FAKE_OUT, MOVE_KNOCK_OFF},
+                {MOVE_CROSS_CHOP, MOVE_VITAL_THROW, MOVE_ROCK_SLIDE, MOVE_BULK_UP},
+                {MOVE_HI_JUMP_KICK, MOVE_PSYCHIC, MOVE_DETECT, MOVE_ICE_PUNCH},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_HI_JUMP_KICK, MOVE_BRICK_BREAK, MOVE_CROSS_CHOP, MOVE_VITAL_THROW},
+                    {MOVE_SKY_UPPERCUT, MOVE_THUNDERPUNCH, MOVE_ICE_PUNCH, MOVE_CROSS_CHOP},
+                },
+                {
+                    {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_MEGA_PUNCH, MOVE_CROSS_CHOP},
+                    {MOVE_CROSS_CHOP, MOVE_FAKE_OUT, MOVE_KNOCK_OFF, MOVE_BRICK_BREAK},
+                },
+            },
+            {
+                {
+                    {MOVE_HI_JUMP_KICK, MOVE_BRICK_BREAK, MOVE_BULK_UP, MOVE_FOCUS_ENERGY},
+                    {MOVE_SKY_UPPERCUT, MOVE_THUNDERPUNCH, MOVE_ICE_PUNCH, MOVE_AGILITY},
+                },
+                {
+                    {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_MEGA_PUNCH, MOVE_STUN_SPORE},
+                    {MOVE_CROSS_CHOP, MOVE_BELLY_DRUM, MOVE_FAKE_OUT, MOVE_KNOCK_OFF},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM},
@@ -341,23 +557,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SEVIPER, MONSTER_ARBOK},
         },
         .moves = {
-            {MOVE_SLUDGE_BOMB, MOVE_ACID_ARMOR, MOVE_MINIMIZE, MOVE_SHADOW_BALL},
-            {MOVE_SLUDGE_BOMB, MOVE_WING_ATTACK, MOVE_CONFUSE_RAY, MOVE_BITE},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_SLUDGE_BOMB, MOVE_EXPLOSION, MOVE_SMOKESCREEN, MOVE_HAZE},
-                {MOVE_SLUDGE_BOMB, MOVE_AMNESIA, MOVE_BODY_SLAM, MOVE_YAWN},
+                {MOVE_SLUDGE_BOMB, MOVE_SHADOW_BALL, MOVE_POISON_FANG, MOVE_BITE},
+                {MOVE_SLUDGE_BOMB, MOVE_WING_ATTACK, MOVE_BITE, MOVE_POISON_FANG},
             },
             {
-                {MOVE_POISON_FANG, MOVE_CRUNCH, MOVE_GLARE, MOVE_SCREECH},
-                {MOVE_ACID, MOVE_GLARE, MOVE_BITE, MOVE_WRAP},
+                {MOVE_SLUDGE_BOMB, MOVE_ACID_ARMOR, MOVE_MINIMIZE, MOVE_SHADOW_BALL},
+                {MOVE_SLUDGE_BOMB, MOVE_WING_ATTACK, MOVE_CONFUSE_RAY, MOVE_BITE},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_SLUDGE_BOMB, MOVE_EXPLOSION, MOVE_POISON_FANG, MOVE_SHADOW_BALL},
+                    {MOVE_SLUDGE_BOMB, MOVE_BODY_SLAM, MOVE_POISON_FANG, MOVE_SHADOW_BALL},
+                },
+                {
+                    {MOVE_POISON_FANG, MOVE_CRUNCH, MOVE_SLUDGE_BOMB, MOVE_SHADOW_BALL},
+                    {MOVE_ACID, MOVE_BITE, MOVE_WRAP, MOVE_SLUDGE_BOMB},
+                },
+            },
+            {
+                {
+                    {MOVE_SLUDGE_BOMB, MOVE_EXPLOSION, MOVE_SMOKESCREEN, MOVE_HAZE},
+                    {MOVE_SLUDGE_BOMB, MOVE_AMNESIA, MOVE_BODY_SLAM, MOVE_YAWN},
+                },
+                {
+                    {MOVE_POISON_FANG, MOVE_CRUNCH, MOVE_GLARE, MOVE_SCREECH},
+                    {MOVE_ACID, MOVE_GLARE, MOVE_BITE, MOVE_WRAP},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
@@ -382,23 +625,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SOLROCK, MONSTER_LUNATONE},
         },
         .moves = {
-            {MOVE_EARTHQUAKE, MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_BULK_UP},
-            {MOVE_ANCIENTPOWER, MOVE_PSYCHIC, MOVE_HYPER_BEAM, MOVE_REFLECT},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_EARTHQUAKE, MOVE_ROCK_BLAST, MOVE_SCARY_FACE, MOVE_PROTECT},
-                {MOVE_ROCK_SLIDE, MOVE_ROCK_THROW, MOVE_SCREECH, MOVE_BIND},
+                {MOVE_EARTHQUAKE, MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_ROCK_SLIDE},
+                {MOVE_ANCIENTPOWER, MOVE_PSYCHIC, MOVE_HYPER_BEAM, MOVE_EARTHQUAKE},
             },
             {
-                {MOVE_ROCK_SLIDE, MOVE_PSYCHIC, MOVE_LIGHT_SCREEN, MOVE_EXPLOSION},
-                {MOVE_PSYCHIC, MOVE_ROCK_THROW, MOVE_HYPNOSIS, MOVE_COSMIC_POWER},
+                {MOVE_EARTHQUAKE, MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_BULK_UP},
+                {MOVE_ANCIENTPOWER, MOVE_PSYCHIC, MOVE_HYPER_BEAM, MOVE_REFLECT},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_EARTHQUAKE, MOVE_ROCK_BLAST, MOVE_ROCK_SLIDE, MOVE_ANCIENTPOWER},
+                    {MOVE_ROCK_SLIDE, MOVE_ROCK_THROW, MOVE_BIND, MOVE_EARTHQUAKE},
+                },
+                {
+                    {MOVE_ROCK_SLIDE, MOVE_PSYCHIC, MOVE_EXPLOSION, MOVE_EARTHQUAKE},
+                    {MOVE_PSYCHIC, MOVE_ROCK_THROW, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE},
+                },
+            },
+            {
+                {
+                    {MOVE_EARTHQUAKE, MOVE_ROCK_BLAST, MOVE_SCARY_FACE, MOVE_PROTECT},
+                    {MOVE_ROCK_SLIDE, MOVE_ROCK_THROW, MOVE_SCREECH, MOVE_BIND},
+                },
+                {
+                    {MOVE_ROCK_SLIDE, MOVE_PSYCHIC, MOVE_LIGHT_SCREEN, MOVE_EXPLOSION},
+                    {MOVE_PSYCHIC, MOVE_ROCK_THROW, MOVE_HYPNOSIS, MOVE_COSMIC_POWER},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM},
@@ -423,23 +693,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_AERODACTYL, MONSTER_ALTARIA},
         },
         .moves = {
-            {MOVE_SACRED_FIRE, MOVE_GUST, MOVE_FLY, MOVE_FIRE_BLAST},
-            {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_HYPER_BEAM, MOVE_DRAGON_DANCE},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_WING_ATTACK, MOVE_QUICK_ATTACK, MOVE_AERIAL_ACE, MOVE_FOCUS_ENERGY},
-                {MOVE_WING_ATTACK, MOVE_SAND_ATTACK, MOVE_QUICK_ATTACK, MOVE_FEATHERDANCE},
+                {MOVE_SACRED_FIRE, MOVE_GUST, MOVE_FLY, MOVE_FIRE_BLAST},
+                {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_HYPER_BEAM, MOVE_WING_ATTACK},
             },
             {
-                {MOVE_ROCK_SLIDE, MOVE_WING_ATTACK, MOVE_AGILITY, MOVE_BITE},
-                {MOVE_DRAGONBREATH, MOVE_SING, MOVE_SAFEGUARD, MOVE_FLY},
+                {MOVE_SACRED_FIRE, MOVE_GUST, MOVE_FLY, MOVE_FIRE_BLAST},
+                {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_HYPER_BEAM, MOVE_DRAGON_DANCE},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_WING_ATTACK, MOVE_QUICK_ATTACK, MOVE_AERIAL_ACE, MOVE_DRAGON_CLAW},
+                    {MOVE_WING_ATTACK, MOVE_QUICK_ATTACK, MOVE_DRAGON_CLAW, MOVE_FLY},
+                },
+                {
+                    {MOVE_ROCK_SLIDE, MOVE_WING_ATTACK, MOVE_BITE, MOVE_DRAGON_CLAW},
+                    {MOVE_DRAGONBREATH, MOVE_FLY, MOVE_DRAGON_CLAW, MOVE_WING_ATTACK},
+                },
+            },
+            {
+                {
+                    {MOVE_WING_ATTACK, MOVE_QUICK_ATTACK, MOVE_AERIAL_ACE, MOVE_FOCUS_ENERGY},
+                    {MOVE_WING_ATTACK, MOVE_SAND_ATTACK, MOVE_QUICK_ATTACK, MOVE_FEATHERDANCE},
+                },
+                {
+                    {MOVE_ROCK_SLIDE, MOVE_WING_ATTACK, MOVE_AGILITY, MOVE_BITE},
+                    {MOVE_DRAGONBREATH, MOVE_SING, MOVE_SAFEGUARD, MOVE_FLY},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
@@ -464,23 +761,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_DEOXYS_ATTACK, MONSTER_DEOXYS_DEFENSE},
         },
         .moves = {
-            {MOVE_AEROBLAST, MOVE_HYDRO_PUMP, MOVE_PSYCHIC, MOVE_SAFEGUARD},
-            {MOVE_PSYCHIC, MOVE_COSMIC_POWER, MOVE_THUNDERBOLT, MOVE_ICE_BEAM},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_PSYCHIC, MOVE_CONFUSE_RAY, MOVE_FUTURE_SIGHT, MOVE_TELEPORT},
-                {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_ICE_BEAM},
+                {MOVE_AEROBLAST, MOVE_HYDRO_PUMP, MOVE_PSYCHIC, MOVE_PSYBEAM},
+                {MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_ICE_BEAM, MOVE_PSYBEAM},
             },
             {
-                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_SUPERPOWER},
-                {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_PROTECT},
+                {MOVE_AEROBLAST, MOVE_HYDRO_PUMP, MOVE_PSYCHIC, MOVE_SAFEGUARD},
+                {MOVE_PSYCHIC, MOVE_COSMIC_POWER, MOVE_THUNDERBOLT, MOVE_ICE_BEAM},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_PSYCHIC, MOVE_FUTURE_SIGHT, MOVE_PSYBEAM, MOVE_THUNDERBOLT},
+                    {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_ICE_BEAM},
+                },
+                {
+                    {MOVE_PSYCHIC, MOVE_CRUNCH, MOVE_SUPERPOWER, MOVE_PSYBEAM},
+                    {MOVE_PSYCHIC, MOVE_CRUNCH, MOVE_PSYBEAM, MOVE_FUTURE_SIGHT},
+                },
+            },
+            {
+                {
+                    {MOVE_PSYCHIC, MOVE_CONFUSE_RAY, MOVE_FUTURE_SIGHT, MOVE_TELEPORT},
+                    {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_ICE_BEAM},
+                },
+                {
+                    {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_SUPERPOWER},
+                    {MOVE_PSYCHIC, MOVE_PURSUIT, MOVE_COSMIC_POWER, MOVE_PROTECT},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_HIGH},
@@ -505,23 +829,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SCYTHER, MONSTER_SCYTHER},
         },
         .moves = {
-            {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_BULK_UP},
-            {MOVE_SILVER_WIND, MOVE_STEEL_WING, MOVE_DOUBLE_TEAM, MOVE_AERIAL_ACE},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_TWINEEDLE, MOVE_PIN_MISSILE, MOVE_FOCUS_ENERGY, MOVE_AGILITY},
-                {MOVE_SILVER_WIND, MOVE_CONFUSION, MOVE_SLEEP_POWDER, MOVE_WHIRLWIND},
+                {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_FURY_CUTTER},
+                {MOVE_FURY_CUTTER, MOVE_STEEL_WING, MOVE_AERIAL_ACE, MOVE_MEGAHORN},
             },
             {
-                {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_AGILITY, MOVE_SWORDS_DANCE},
-                {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_AGILITY, MOVE_SWORDS_DANCE},
+                {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_BULK_UP},
+                {MOVE_FURY_CUTTER, MOVE_STEEL_WING, MOVE_DOUBLE_TEAM, MOVE_AERIAL_ACE},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_TWINEEDLE, MOVE_FURY_CUTTER, MOVE_MEGAHORN, MOVE_FURY_CUTTER},
+                    {MOVE_FURY_CUTTER, MOVE_CONFUSION, MOVE_MEGAHORN, MOVE_BRICK_BREAK},
+                },
+                {
+                    {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_MEGAHORN, MOVE_FURY_CUTTER},
+                    {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_MEGAHORN, MOVE_FURY_CUTTER},
+                },
+            },
+            {
+                {
+                    {MOVE_TWINEEDLE, MOVE_PIN_MISSILE, MOVE_FOCUS_ENERGY, MOVE_AGILITY},
+                    {MOVE_FURY_CUTTER, MOVE_CONFUSION, MOVE_SLEEP_POWDER, MOVE_WHIRLWIND},
+                },
+                {
+                    {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_AGILITY, MOVE_SWORDS_DANCE},
+                    {MOVE_WING_ATTACK, MOVE_FURY_CUTTER, MOVE_AGILITY, MOVE_SWORDS_DANCE},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
@@ -546,23 +897,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_KABUTOPS, MONSTER_OMASTAR},
         },
         .moves = {
-            {MOVE_ROCK_SLIDE, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_CURSE},
-            {MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DRAGON_DANCE},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_ANCIENTPOWER, MOVE_RAZOR_LEAF, MOVE_CONFUSE_RAY, MOVE_AMNESIA},
-                {MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_FURY_CUTTER, MOVE_PROTECT},
+                {MOVE_ROCK_SLIDE, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_ANCIENTPOWER},
+                {MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_ANCIENTPOWER},
             },
             {
-                {MOVE_SLASH, MOVE_ANCIENTPOWER, MOVE_WATERFALL, MOVE_SAND_ATTACK},
-                {MOVE_SURF, MOVE_SPIKE_CANNON, MOVE_PROTECT, MOVE_BITE},
+                {MOVE_ROCK_SLIDE, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_CURSE},
+                {MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DRAGON_DANCE},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_ANCIENTPOWER, MOVE_RAZOR_LEAF, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE},
+                    {MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_FURY_CUTTER, MOVE_ROCK_SLIDE},
+                },
+                {
+                    {MOVE_SLASH, MOVE_ANCIENTPOWER, MOVE_WATERFALL, MOVE_ROCK_SLIDE},
+                    {MOVE_SURF, MOVE_SPIKE_CANNON, MOVE_BITE, MOVE_ROCK_SLIDE},
+                },
+            },
+            {
+                {
+                    {MOVE_ANCIENTPOWER, MOVE_RAZOR_LEAF, MOVE_CONFUSE_RAY, MOVE_AMNESIA},
+                    {MOVE_ANCIENTPOWER, MOVE_SLASH, MOVE_FURY_CUTTER, MOVE_PROTECT},
+                },
+                {
+                    {MOVE_SLASH, MOVE_ANCIENTPOWER, MOVE_WATERFALL, MOVE_SAND_ATTACK},
+                    {MOVE_SURF, MOVE_SPIKE_CANNON, MOVE_PROTECT, MOVE_BITE},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},
@@ -587,23 +965,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SABLEYE, MONSTER_MISDREAVUS},
         },
         .moves = {
-            {MOVE_SHADOW_BALL, MOVE_HYPNOSIS, MOVE_DREAM_EATER, MOVE_THUNDERBOLT},
-            {MOVE_SHADOW_PUNCH, MOVE_WILL_O_WISP, MOVE_EARTHQUAKE, MOVE_PROTECT},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_SHADOW_BALL, MOVE_WILL_O_WISP, MOVE_KNOCK_OFF, MOVE_SCREECH},
-                {MOVE_SHADOW_BALL, MOVE_FURY_CUTTER, MOVE_SWORDS_DANCE, MOVE_AGILITY},
+                {MOVE_SHADOW_BALL, MOVE_DREAM_EATER, MOVE_THUNDERBOLT, MOVE_SHADOW_PUNCH},
+                {MOVE_SHADOW_PUNCH, MOVE_EARTHQUAKE, MOVE_SHADOW_BALL, MOVE_THUNDERBOLT},
             },
             {
-                {MOVE_SHADOW_BALL, MOVE_FAINT_ATTACK, MOVE_NIGHT_SHADE, MOVE_CONFUSE_RAY},
-                {MOVE_SHADOW_BALL, MOVE_PSYBEAM, MOVE_CONFUSE_RAY, MOVE_MEAN_LOOK},
+                {MOVE_SHADOW_BALL, MOVE_HYPNOSIS, MOVE_DREAM_EATER, MOVE_THUNDERBOLT},
+                {MOVE_SHADOW_PUNCH, MOVE_WILL_O_WISP, MOVE_EARTHQUAKE, MOVE_PROTECT},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_SHADOW_PUNCH, MOVE_THUNDERBOLT},
+                    {MOVE_SHADOW_BALL, MOVE_FURY_CUTTER, MOVE_SHADOW_PUNCH, MOVE_THUNDERBOLT},
+                },
+                {
+                    {MOVE_SHADOW_BALL, MOVE_FAINT_ATTACK, MOVE_SHADOW_BALL, MOVE_SHADOW_PUNCH},
+                    {MOVE_SHADOW_BALL, MOVE_PSYBEAM, MOVE_SHADOW_PUNCH, MOVE_THUNDERBOLT},
+                },
+            },
+            {
+                {
+                    {MOVE_SHADOW_BALL, MOVE_WILL_O_WISP, MOVE_KNOCK_OFF, MOVE_SCREECH},
+                    {MOVE_SHADOW_BALL, MOVE_FURY_CUTTER, MOVE_SWORDS_DANCE, MOVE_AGILITY},
+                },
+                {
+                    {MOVE_SHADOW_BALL, MOVE_FAINT_ATTACK, MOVE_NIGHT_SHADE, MOVE_CONFUSE_RAY},
+                    {MOVE_SHADOW_BALL, MOVE_PSYBEAM, MOVE_CONFUSE_RAY, MOVE_MEAN_LOOK},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_LOW, STAT_TIER_MEDIUM},
@@ -628,23 +1033,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_SALAMENCE, MONSTER_FLYGON},
         },
         .moves = {
-            {MOVE_MIST_BALL, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_ICE_BEAM},
-            {MOVE_LUSTER_PURGE, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_THUNDERBOLT},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_WING_ATTACK, MOVE_THUNDER_WAVE, MOVE_DRAGON_CLAW, MOVE_AGILITY},
-                {MOVE_HYDRO_PUMP, MOVE_TWISTER, MOVE_AGILITY, MOVE_ICE_BEAM},
+                {MOVE_MIST_BALL, MOVE_DRAGONBREATH, MOVE_ICE_BEAM, MOVE_LUSTER_PURGE},
+                {MOVE_LUSTER_PURGE, MOVE_DRAGONBREATH, MOVE_THUNDERBOLT, MOVE_MIST_BALL},
             },
             {
-                {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_FLY, MOVE_DRAGON_DANCE},
-                {MOVE_EARTHQUAKE, MOVE_DRAGONBREATH, MOVE_SANDSTORM, MOVE_CRUNCH},
+                {MOVE_MIST_BALL, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_ICE_BEAM},
+                {MOVE_LUSTER_PURGE, MOVE_DRAGONBREATH, MOVE_CALM_MIND, MOVE_THUNDERBOLT},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_WING_ATTACK, MOVE_DRAGON_CLAW, MOVE_MIST_BALL, MOVE_LUSTER_PURGE},
+                    {MOVE_HYDRO_PUMP, MOVE_TWISTER, MOVE_ICE_BEAM, MOVE_MIST_BALL},
+                },
+                {
+                    {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_FLY, MOVE_MIST_BALL},
+                    {MOVE_EARTHQUAKE, MOVE_DRAGONBREATH, MOVE_CRUNCH, MOVE_MIST_BALL},
+                },
+            },
+            {
+                {
+                    {MOVE_WING_ATTACK, MOVE_THUNDER_WAVE, MOVE_DRAGON_CLAW, MOVE_AGILITY},
+                    {MOVE_HYDRO_PUMP, MOVE_TWISTER, MOVE_AGILITY, MOVE_ICE_BEAM},
+                },
+                {
+                    {MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_FLY, MOVE_DRAGON_DANCE},
+                    {MOVE_EARTHQUAKE, MOVE_DRAGONBREATH, MOVE_SANDSTORM, MOVE_CRUNCH},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_HIGH},
@@ -669,23 +1101,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_CRAWDAUNT, MONSTER_SHARPEDO},
         },
         .moves = {
-            {MOVE_BITE, MOVE_SLASH, MOVE_SWORDS_DANCE, MOVE_QUICK_ATTACK},
-            {MOVE_RAZOR_LEAF, MOVE_NATURE_POWER, MOVE_EXTRASENSORY, MOVE_FAKE_OUT},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_NIGHT_SHADE, MOVE_CONFUSE_RAY},
-                {MOVE_BITE, MOVE_CRUNCH, MOVE_HOWL, MOVE_SAND_ATTACK},
+                {MOVE_BITE, MOVE_SLASH, MOVE_QUICK_ATTACK, MOVE_CRUNCH},
+                {MOVE_RAZOR_LEAF, MOVE_NATURE_POWER, MOVE_EXTRASENSORY, MOVE_FAKE_OUT},
             },
             {
-                {MOVE_CRABHAMMER, MOVE_CRUNCH, MOVE_SWORDS_DANCE, MOVE_PROTECT},
-                {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_SCREECH, MOVE_AGILITY},
+                {MOVE_BITE, MOVE_SLASH, MOVE_SWORDS_DANCE, MOVE_QUICK_ATTACK},
+                {MOVE_RAZOR_LEAF, MOVE_NATURE_POWER, MOVE_EXTRASENSORY, MOVE_FAKE_OUT},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_SHADOW_BALL, MOVE_CRUNCH},
+                    {MOVE_BITE, MOVE_CRUNCH, MOVE_SLASH, MOVE_SHADOW_BALL},
+                },
+                {
+                    {MOVE_CRABHAMMER, MOVE_CRUNCH, MOVE_BITE, MOVE_SLASH},
+                    {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_BITE, MOVE_SLASH},
+                },
+            },
+            {
+                {
+                    {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_NIGHT_SHADE, MOVE_CONFUSE_RAY},
+                    {MOVE_BITE, MOVE_CRUNCH, MOVE_HOWL, MOVE_SAND_ATTACK},
+                },
+                {
+                    {MOVE_CRABHAMMER, MOVE_CRUNCH, MOVE_SWORDS_DANCE, MOVE_PROTECT},
+                    {MOVE_CRUNCH, MOVE_WATER_PULSE, MOVE_SCREECH, MOVE_AGILITY},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_HIGH, STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW},
@@ -710,23 +1169,50 @@ const TypeBossPool gTypeBossTable[NUM_TYPES] = {
             {MONSTER_METAGROSS, MONSTER_STEELIX},
         },
         .moves = {
-            {MOVE_METAL_CLAW, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_CURSE},
-            {MOVE_PSYCHIC, MOVE_SWIFT, MOVE_DOOM_DESIRE, MOVE_DOUBLE_EDGE},
-        },
-        .hasCustomMoves = {TRUE, TRUE},
-        .minionMoves = {
             {
-                {MOVE_THUNDERBOLT, MOVE_SUPERSONIC, MOVE_LOCK_ON, MOVE_ZAP_CANNON},
-                {MOVE_STEEL_WING, MOVE_AGILITY, MOVE_SAND_ATTACK, MOVE_SWIFT},
+                {MOVE_METAL_CLAW, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_METEOR_MASH},
+                {MOVE_PSYCHIC, MOVE_SWIFT, MOVE_DOOM_DESIRE, MOVE_DOUBLE_EDGE},
             },
             {
-                {MOVE_METEOR_MASH, MOVE_PSYCHIC, MOVE_AGILITY, MOVE_EARTHQUAKE},
-                {MOVE_IRON_TAIL, MOVE_ROCK_SLIDE, MOVE_SANDSTORM, MOVE_SCREECH},
+                {MOVE_METAL_CLAW, MOVE_SUPERPOWER, MOVE_EXPLOSION, MOVE_CURSE},
+                {MOVE_PSYCHIC, MOVE_SWIFT, MOVE_DOOM_DESIRE, MOVE_DOUBLE_EDGE},
+            },
+        },
+        .hasCustomMoves = {
+            {TRUE, TRUE},
+            {TRUE, TRUE},
+        },
+        .minionMoves = {
+            {
+                {
+                    {MOVE_THUNDERBOLT, MOVE_ZAP_CANNON, MOVE_METAL_CLAW, MOVE_SUPERPOWER},
+                    {MOVE_STEEL_WING, MOVE_SWIFT, MOVE_METAL_CLAW, MOVE_SUPERPOWER},
+                },
+                {
+                    {MOVE_METEOR_MASH, MOVE_PSYCHIC, MOVE_EARTHQUAKE, MOVE_METAL_CLAW},
+                    {MOVE_IRON_TAIL, MOVE_ROCK_SLIDE, MOVE_METAL_CLAW, MOVE_SUPERPOWER},
+                },
+            },
+            {
+                {
+                    {MOVE_THUNDERBOLT, MOVE_SUPERSONIC, MOVE_LOCK_ON, MOVE_ZAP_CANNON},
+                    {MOVE_STEEL_WING, MOVE_AGILITY, MOVE_SAND_ATTACK, MOVE_SWIFT},
+                },
+                {
+                    {MOVE_METEOR_MASH, MOVE_PSYCHIC, MOVE_AGILITY, MOVE_EARTHQUAKE},
+                    {MOVE_IRON_TAIL, MOVE_ROCK_SLIDE, MOVE_SANDSTORM, MOVE_SCREECH},
+                },
             },
         },
         .minionHasCustomMoves = {
-            {TRUE, TRUE},
-            {TRUE, TRUE},
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
+            {
+                {TRUE, TRUE},
+                {TRUE, TRUE},
+            },
         },
         .bossStatTiers = {
             {STAT_TIER_MEDIUM, STAT_TIER_LOW, STAT_TIER_LOW, STAT_TIER_HIGH, STAT_TIER_HIGH},

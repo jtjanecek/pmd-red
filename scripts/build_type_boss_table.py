@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate the type boss table from docs/type_bosses.csv.
+Generate the type boss table from rogue_files/type_bosses.csv.
 """
 
 from __future__ import annotations
@@ -79,10 +79,14 @@ class BossRow:
     weather: str | None
     chances: Dict[str, int]  # difficulty -> scaled probability
     minions: List[str]
-    boss_moves: List[str]
-    boss_has_custom_moves: bool
-    minion_moves: List[List[str]]
-    minion_has_custom_moves: List[bool]
+    boss_moves_nightmare: List[str]
+    boss_has_custom_moves_nightmare: bool
+    boss_moves_non_nightmare: List[str]
+    boss_has_custom_moves_non_nightmare: bool
+    minion_moves_nightmare: List[List[str]]
+    minion_has_custom_moves_nightmare: List[bool]
+    minion_moves_non_nightmare: List[List[str]]
+    minion_has_custom_moves_non_nightmare: List[bool]
     boss_stat_tiers: List[str]
     minion_stat_tiers: List[List[str]]
 
@@ -124,6 +128,72 @@ VALID_MOVES = set(load_move_constants(MOVE_HEADER_PATH))
 MOVE_OVERRIDES: Dict[str, str] = {
     "NONE": "MOVE_NOTHING",
     "NOTHING": "MOVE_NOTHING",
+}
+
+NON_NIGHTMARE_STATUS_MOVES = {
+    "MOVE_ACID_ARMOR",
+    "MOVE_AGILITY",
+    "MOVE_AMNESIA",
+    "MOVE_BARRIER",
+    "MOVE_BELLY_DRUM",
+    "MOVE_BULK_UP",
+    "MOVE_CALM_MIND",
+    "MOVE_CONFUSE_RAY",
+    "MOVE_COSMIC_POWER",
+    "MOVE_CURSE",
+    "MOVE_DETECT",
+    "MOVE_DOUBLE_TEAM",
+    "MOVE_DRAGON_DANCE",
+    "MOVE_EGG_BOMB",
+    "MOVE_ENCORE",
+    "MOVE_FEATHERDANCE",
+    "MOVE_FOCUS_ENERGY",
+    "MOVE_GLARE",
+    "MOVE_HAZE",
+    "MOVE_HEAL_BELL",
+    "MOVE_HOWL",
+    "MOVE_HYPNOSIS",
+    "MOVE_LEECH_SEED",
+    "MOVE_LIGHT_SCREEN",
+    "MOVE_LOCK_ON",
+    "MOVE_MEAN_LOOK",
+    "MOVE_MEMENTO",
+    "MOVE_METRONOME",
+    "MOVE_MIND_READER",
+    "MOVE_MINIMIZE",
+    "MOVE_MORNING_SUN",
+    "MOVE_MIRROR_COAT",
+    "MOVE_NIGHT_SHADE",
+    "MOVE_POISONPOWDER",
+    "MOVE_PIN_MISSILE",
+    "MOVE_PROTECT",
+    "MOVE_PURSUIT",
+    "MOVE_RECOVER",
+    "MOVE_REFLECT",
+    "MOVE_REST",
+    "MOVE_ROAR",
+    "MOVE_SAFEGUARD",
+    "MOVE_SAND_ATTACK",
+    "MOVE_SANDSTORM",
+    "MOVE_SCARY_FACE",
+    "MOVE_SCREECH",
+    "MOVE_SILVER_WIND",
+    "MOVE_SING",
+    "MOVE_SLEEP_POWDER",
+    "MOVE_SMOKESCREEN",
+    "MOVE_STUN_SPORE",
+    "MOVE_SUPERSONIC",
+    "MOVE_SYNTHESIS",
+    "MOVE_SWORDS_DANCE",
+    "MOVE_TELEPORT",
+    "MOVE_THUNDER_WAVE",
+    "MOVE_TRANSFORM",
+    "MOVE_FLAMETHROWER",
+    "MOVE_FURY_SWIPES",
+    "MOVE_WHIRLWIND",
+    "MOVE_WILL_O_WISP",
+    "MOVE_WISH",
+    "MOVE_YAWN",
 }
 
 STAT_TIER_MAP: Dict[str, str] = {
@@ -193,6 +263,16 @@ def parse_move(raw: str, field_name: str, default_move: str = "MOVE_NOTHING") ->
     return mapped
 
 
+def parse_non_nightmare_move(raw: str, field_name: str) -> str:
+    move = parse_move(raw, field_name)
+    if move in NON_NIGHTMARE_STATUS_MOVES:
+        raise SystemExit(
+            f"Status move '{raw}' is not allowed in '{field_name}'. "
+            "Non-nightmare move columns must contain offensive moves only."
+        )
+    return move
+
+
 def parse_stat_tier(raw: str, field_name: str) -> str:
     key = normalize_key(raw)
     if not key:
@@ -220,11 +300,17 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                 parse_species(row.get("Minion1", ""), "Minion1"),
                 parse_species(row.get("Minion2", ""), "Minion2"),
             ]
-            boss_moves = [
+            boss_moves_nightmare = [
                 parse_move(row.get("BossMove1", ""), "BossMove1"),
                 parse_move(row.get("BossMove2", ""), "BossMove2"),
                 parse_move(row.get("BossMove3", ""), "BossMove3"),
                 parse_move(row.get("BossMove4", ""), "BossMove4"),
+            ]
+            boss_moves_non_nightmare = [
+                parse_non_nightmare_move(row.get("BossMove1NonNightmare", ""), "BossMove1NonNightmare"),
+                parse_non_nightmare_move(row.get("BossMove2NonNightmare", ""), "BossMove2NonNightmare"),
+                parse_non_nightmare_move(row.get("BossMove3NonNightmare", ""), "BossMove3NonNightmare"),
+                parse_non_nightmare_move(row.get("BossMove4NonNightmare", ""), "BossMove4NonNightmare"),
             ]
             boss_stat_tiers = [
                 "STAT_TIER_MEDIUM",
@@ -247,17 +333,29 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                 parse_stat_tier(row.get("Minion2Def", ""), "Minion2Def"),
                 parse_stat_tier(row.get("Minion2SpDef", ""), "Minion2SpDef"),
             ]
-            minion1_moves = [
+            minion1_moves_nightmare = [
                 parse_move(row.get("Minion1Move1", ""), "Minion1Move1"),
                 parse_move(row.get("Minion1Move2", ""), "Minion1Move2"),
                 parse_move(row.get("Minion1Move3", ""), "Minion1Move3"),
                 parse_move(row.get("Minion1Move4", ""), "Minion1Move4"),
             ]
-            minion2_moves = [
+            minion2_moves_nightmare = [
                 parse_move(row.get("Minion2Move1", ""), "Minion2Move1"),
                 parse_move(row.get("Minion2Move2", ""), "Minion2Move2"),
                 parse_move(row.get("Minion2Move3", ""), "Minion2Move3"),
                 parse_move(row.get("Minion2Move4", ""), "Minion2Move4"),
+            ]
+            minion1_moves_non_nightmare = [
+                parse_non_nightmare_move(row.get("Minion1Move1NonNightmare", ""), "Minion1Move1NonNightmare"),
+                parse_non_nightmare_move(row.get("Minion1Move2NonNightmare", ""), "Minion1Move2NonNightmare"),
+                parse_non_nightmare_move(row.get("Minion1Move3NonNightmare", ""), "Minion1Move3NonNightmare"),
+                parse_non_nightmare_move(row.get("Minion1Move4NonNightmare", ""), "Minion1Move4NonNightmare"),
+            ]
+            minion2_moves_non_nightmare = [
+                parse_non_nightmare_move(row.get("Minion2Move1NonNightmare", ""), "Minion2Move1NonNightmare"),
+                parse_non_nightmare_move(row.get("Minion2Move2NonNightmare", ""), "Minion2Move2NonNightmare"),
+                parse_non_nightmare_move(row.get("Minion2Move3NonNightmare", ""), "Minion2Move3NonNightmare"),
+                parse_non_nightmare_move(row.get("Minion2Move4NonNightmare", ""), "Minion2Move4NonNightmare"),
             ]
             species = parse_species(row.get("Pokemon", ""), "Pokemon")
 
@@ -277,12 +375,19 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
                     weather=weather,
                     chances=chances,
                     minions=minions,
-                    boss_moves=boss_moves,
-                    boss_has_custom_moves=any(move != "MOVE_NOTHING" for move in boss_moves),
-                    minion_moves=[minion1_moves, minion2_moves],
-                    minion_has_custom_moves=[
-                        any(move != "MOVE_NOTHING" for move in minion1_moves),
-                        any(move != "MOVE_NOTHING" for move in minion2_moves),
+                    boss_moves_nightmare=boss_moves_nightmare,
+                    boss_has_custom_moves_nightmare=any(move != "MOVE_NOTHING" for move in boss_moves_nightmare),
+                    boss_moves_non_nightmare=boss_moves_non_nightmare,
+                    boss_has_custom_moves_non_nightmare=any(move != "MOVE_NOTHING" for move in boss_moves_non_nightmare),
+                    minion_moves_nightmare=[minion1_moves_nightmare, minion2_moves_nightmare],
+                    minion_has_custom_moves_nightmare=[
+                        any(move != "MOVE_NOTHING" for move in minion1_moves_nightmare),
+                        any(move != "MOVE_NOTHING" for move in minion2_moves_nightmare),
+                    ],
+                    minion_moves_non_nightmare=[minion1_moves_non_nightmare, minion2_moves_non_nightmare],
+                    minion_has_custom_moves_non_nightmare=[
+                        any(move != "MOVE_NOTHING" for move in minion1_moves_non_nightmare),
+                        any(move != "MOVE_NOTHING" for move in minion2_moves_non_nightmare),
                     ],
                     boss_stat_tiers=boss_stat_tiers,
                     minion_stat_tiers=[minion1_stat_tiers, minion2_stat_tiers],
@@ -296,7 +401,7 @@ def parse_csv(path: pathlib.Path) -> Dict[str, List[BossRow]]:
         if count != MAX_BOSSES_PER_TYPE:
             raise SystemExit(
                 f"Type {type_name} has {count} bosses; expected {MAX_BOSSES_PER_TYPE}. "
-                f"Check docs/type_bosses.csv."
+                f"Check rogue_files/type_bosses.csv."
             )
 
     return pools
@@ -333,48 +438,73 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
                 handle.write(f"            {{{', '.join(minions)}}},\n")
             handle.write("        },\n")
             handle.write("        .moves = {\n")
-            for idx in range(MAX_BOSSES_PER_TYPE):
-                if idx < len(rows):
-                    moves = list(rows[idx].boss_moves)
-                else:
-                    moves = []
-                while len(moves) < MAX_MOVES_PER_BOSS:
-                    moves.append("MOVE_NOTHING")
-                handle.write(f"            {{{', '.join(moves)}}},\n")
-            handle.write("        },\n")
-            has_custom_moves = []
-            for idx in range(MAX_BOSSES_PER_TYPE):
-                if idx < len(rows):
-                    has_custom_moves.append("TRUE" if rows[idx].boss_has_custom_moves else "FALSE")
-                else:
-                    has_custom_moves.append("FALSE")
-            handle.write(f"        .hasCustomMoves = {{{', '.join(has_custom_moves)}}},\n")
-            handle.write("        .minionMoves = {\n")
-            for idx in range(MAX_BOSSES_PER_TYPE):
-                if idx < len(rows):
-                    minion_moves = list(rows[idx].minion_moves)
-                else:
-                    minion_moves = []
-                while len(minion_moves) < MINIONS_PER_BOSS:
-                    minion_moves.append([])
+            for variant in ("non_nightmare", "nightmare"):
                 handle.write("            {\n")
-                for minion_idx in range(MINIONS_PER_BOSS):
-                    moves = list(minion_moves[minion_idx])
+                for idx in range(MAX_BOSSES_PER_TYPE):
+                    if idx < len(rows):
+                        if variant == "nightmare":
+                            moves = list(rows[idx].boss_moves_nightmare)
+                        else:
+                            moves = list(rows[idx].boss_moves_non_nightmare)
+                    else:
+                        moves = []
                     while len(moves) < MAX_MOVES_PER_BOSS:
                         moves.append("MOVE_NOTHING")
                     handle.write(f"                {{{', '.join(moves)}}},\n")
                 handle.write("            },\n")
             handle.write("        },\n")
+            handle.write("        .hasCustomMoves = {\n")
+            for variant in ("non_nightmare", "nightmare"):
+                has_custom_moves = []
+                for idx in range(MAX_BOSSES_PER_TYPE):
+                    if idx < len(rows):
+                        if variant == "nightmare":
+                            flag = rows[idx].boss_has_custom_moves_nightmare
+                        else:
+                            flag = rows[idx].boss_has_custom_moves_non_nightmare
+                        has_custom_moves.append("TRUE" if flag else "FALSE")
+                    else:
+                        has_custom_moves.append("FALSE")
+                handle.write(f"            {{{', '.join(has_custom_moves)}}},\n")
+            handle.write("        },\n")
+            handle.write("        .minionMoves = {\n")
+            for variant in ("non_nightmare", "nightmare"):
+                handle.write("            {\n")
+                for idx in range(MAX_BOSSES_PER_TYPE):
+                    if idx < len(rows):
+                        if variant == "nightmare":
+                            minion_moves = list(rows[idx].minion_moves_nightmare)
+                        else:
+                            minion_moves = list(rows[idx].minion_moves_non_nightmare)
+                    else:
+                        minion_moves = []
+                    while len(minion_moves) < MINIONS_PER_BOSS:
+                        minion_moves.append([])
+                    handle.write("                {\n")
+                    for minion_idx in range(MINIONS_PER_BOSS):
+                        moves = list(minion_moves[minion_idx])
+                        while len(moves) < MAX_MOVES_PER_BOSS:
+                            moves.append("MOVE_NOTHING")
+                        handle.write(f"                    {{{', '.join(moves)}}},\n")
+                    handle.write("                },\n")
+                handle.write("            },\n")
+            handle.write("        },\n")
             handle.write("        .minionHasCustomMoves = {\n")
-            for idx in range(MAX_BOSSES_PER_TYPE):
-                if idx < len(rows):
-                    flags = list(rows[idx].minion_has_custom_moves)
-                else:
-                    flags = []
-                while len(flags) < MINIONS_PER_BOSS:
-                    flags.append(False)
-                flag_str = ", ".join("TRUE" if flag else "FALSE" for flag in flags)
-                handle.write(f"            {{{flag_str}}},\n")
+            for variant in ("non_nightmare", "nightmare"):
+                handle.write("            {\n")
+                for idx in range(MAX_BOSSES_PER_TYPE):
+                    if idx < len(rows):
+                        if variant == "nightmare":
+                            flags = list(rows[idx].minion_has_custom_moves_nightmare)
+                        else:
+                            flags = list(rows[idx].minion_has_custom_moves_non_nightmare)
+                    else:
+                        flags = []
+                    while len(flags) < MINIONS_PER_BOSS:
+                        flags.append(False)
+                    flag_str = ", ".join("TRUE" if flag else "FALSE" for flag in flags)
+                    handle.write(f"                {{{flag_str}}},\n")
+                handle.write("            },\n")
             handle.write("        },\n")
             handle.write("        .bossStatTiers = {\n")
             for idx in range(MAX_BOSSES_PER_TYPE):
@@ -444,7 +574,7 @@ def write_c_file(path: pathlib.Path, pools: Dict[str, List[BossRow]]) -> None:
 
 def main(argv: List[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("csv", type=pathlib.Path, help="Path to docs/type_bosses.csv")
+    parser.add_argument("csv", type=pathlib.Path, help="Path to rogue_files/type_bosses.csv")
     parser.add_argument("out", type=pathlib.Path, help="Output C file path")
     args = parser.parse_args(argv)
 

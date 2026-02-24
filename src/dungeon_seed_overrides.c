@@ -2786,10 +2786,24 @@ static bool8 GetTypeBossMinions(s16 bossSpecies, s16 *minionsOut, u8 *minionCoun
     return FALSE;
 }
 
+static u8 GetTypeBossMovesetVariantForDifficulty(void)
+{
+    u32 difficulty = GetGameDifficultySetting();
+
+    if (difficulty >= NUM_DIFFICULTY_SETTINGS)
+        difficulty = DIFFICULTY_NORMAL;
+
+    if (difficulty == DIFFICULTY_NIGHTMARE)
+        return TYPE_MOVESET_NIGHTMARE;
+
+    return TYPE_MOVESET_NON_NIGHTMARE;
+}
+
 static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut)
 {
     s32 i, j, k;
     u16 localMoves[MAX_MON_MOVES];
+    u8 preferredVariant = GetTypeBossMovesetVariantForDifficulty();
 
     if (movesOut == NULL)
         return FALSE;
@@ -2809,13 +2823,22 @@ static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut)
             poolCount = TYPE_SELECTION_MAX_BOSSES_PER_TYPE;
 
         for (j = 0; j < poolCount; j++) {
+            u8 selectedVariant = preferredVariant;
+
             if (pool->species[j] != bossSpecies)
                 continue;
-            if (!pool->hasCustomMoves[j])
-                return FALSE;
+            if (!pool->hasCustomMoves[selectedVariant][j]) {
+                if (selectedVariant != TYPE_MOVESET_NIGHTMARE
+                    && pool->hasCustomMoves[TYPE_MOVESET_NIGHTMARE][j]) {
+                    selectedVariant = TYPE_MOVESET_NIGHTMARE;
+                }
+                else {
+                    return FALSE;
+                }
+            }
 
             for (k = 0; k < MAX_MON_MOVES; k++) {
-                localMoves[k] = pool->moves[j][k];
+                localMoves[k] = pool->moves[selectedVariant][j][k];
             }
 
             for (k = 0; k < MAX_MON_MOVES; k++) {
@@ -2831,6 +2854,7 @@ static bool8 GetTypeBossMoves(s16 bossSpecies, u16 *movesOut)
 static bool8 GetTypeBossMinionMoves(s16 bossSpecies, u16 minionMovesOut[][MAX_MON_MOVES], bool8 *minionHasCustomMovesOut)
 {
     s32 i, j, k;
+    u8 preferredVariant = GetTypeBossMovesetVariantForDifficulty();
 
     if (bossSpecies <= MONSTER_NONE || bossSpecies >= MONSTER_MAX)
         return FALSE;
@@ -2858,9 +2882,17 @@ static bool8 GetTypeBossMinionMoves(s16 bossSpecies, u16 minionMovesOut[][MAX_MO
             for (k = 0; k < TYPE_SELECTION_MINIONS_PER_BOSS; k++) {
                 s32 idx = k;
                 s32 moveIdx;
-                minionHasCustomMovesOut[idx] = pool->minionHasCustomMoves[j][k];
+                u8 selectedVariant = preferredVariant;
+
+                if (!pool->minionHasCustomMoves[selectedVariant][j][k]
+                    && selectedVariant != TYPE_MOVESET_NIGHTMARE
+                    && pool->minionHasCustomMoves[TYPE_MOVESET_NIGHTMARE][j][k]) {
+                    selectedVariant = TYPE_MOVESET_NIGHTMARE;
+                }
+
+                minionHasCustomMovesOut[idx] = pool->minionHasCustomMoves[selectedVariant][j][k];
                 for (moveIdx = 0; moveIdx < MAX_MON_MOVES; moveIdx++) {
-                    minionMovesOut[idx][moveIdx] = pool->minionMoves[j][k][moveIdx];
+                    minionMovesOut[idx][moveIdx] = pool->minionMoves[selectedVariant][j][k][moveIdx];
                 }
             }
 

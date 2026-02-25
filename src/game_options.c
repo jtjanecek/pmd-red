@@ -26,7 +26,7 @@ void InitializeGameOptions(bool8 initializeGender)
     }
     gGameOptionsRef->controls = CONTROLS_GBA;
     gGameOptionsRef->touchScreen = 0;
-    gGameOptionsRef->dungeonSpeed = DUNGEON_SPEED_SLOW;
+    gGameOptionsRef->dungeonSpeed = DUNGEON_SPEED_FAST;
     gGameOptionsRef->FarOffPals = FAROFFPALS_LOCK;
     gGameOptionsRef->damageTurn = TRUE;
     gGameOptionsRef->gridEnable = TRUE;

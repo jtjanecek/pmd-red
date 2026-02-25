@@ -63,6 +63,9 @@
 #define SEEDED_FLOOR_WEATHER_CHANCE_PERCENT 20
 #define SEEDED_SHOP_RARE_CHANCE_PERCENT 20
 #define SEEDED_FLOOR_RARE_CHANCE_PERCENT 5
+// Global weight multiplier for seeded item pool picks.
+// Increase this to make Max Elixirs appear more often across all pool-driven spawns.
+#define SEEDED_MAX_ELIXIR_WEIGHT_MULTIPLIER 8
 
 #define BOSS_SECONDARY_LOOT_LEFT ITEM_ORAN_BERRY
 #define BOSS_SECONDARY_LOOT_RIGHT ITEM_MAX_ELIXIR
@@ -512,6 +515,7 @@ UNUSED static bool8 CopyFirstTokenFromBaseName(u8 dungeonId, char *buffer, s32 b
 UNUSED static s32 GetSelectedTypeForDisplay(void);
 static s16 GetSeededBossHP(u8 dungeonId);
 static void SeedBossRewardLoot(BossFightConfig *bossFight, s32 seed, u8 dungeonId);
+static s32 GetSeededItemSelectionWeight(u16 itemId);
 
 void DungeonSeedOverrides_GenerateFloorConfig(s32 seed, u8 dungeonId, s32 floorId, DungeonSeedFloorOverrides *result)
 {
@@ -694,29 +698,35 @@ bool8 DungeonSeedOverrides_IsEnabled(s32 *seedOut)
 static bool8 SelectShoppableItemFromPool(const RogueItemPool *pool, u8 *itemIdOut)
 {
     s32 i;
-    s32 shoppableCount = 0;
+    s32 totalWeight = 0;
     s32 pick;
 
     if (pool == NULL || pool->items == NULL || pool->count == 0 || itemIdOut == NULL)
         return FALSE;
 
     for (i = 0; i < pool->count; i++) {
-        if (IsShoppableItem(pool->items[i]))
-            shoppableCount++;
+        if (IsShoppableItem(pool->items[i])) {
+            totalWeight += GetSeededItemSelectionWeight(pool->items[i]);
+        }
     }
 
-    if (shoppableCount == 0)
+    if (totalWeight <= 0)
         return FALSE;
 
-    pick = DungeonRandInt(shoppableCount);
+    pick = DungeonRandInt(totalWeight);
     for (i = 0; i < pool->count; i++) {
-        if (!IsShoppableItem(pool->items[i]))
+        s32 weight;
+
+        if (!IsShoppableItem(pool->items[i])) {
             continue;
-        if (pick == 0) {
+        }
+
+        weight = GetSeededItemSelectionWeight(pool->items[i]);
+        if (pick < weight) {
             *itemIdOut = (u8)pool->items[i];
             return TRUE;
         }
-        pick--;
+        pick -= weight;
     }
 
     return FALSE;
@@ -1124,6 +1134,9 @@ static void ResetSeededItemState(void)
 static u16 SelectItemFromPool(RogueItemPoolId poolId, DungeonSeedRng *rng)
 {
     const RogueItemPool *pool;
+    s32 i;
+    s32 totalWeight = 0;
+    s32 pick;
 
     if (poolId < 0 || poolId >= ROGUE_ITEM_POOL_COUNT)
         return ITEM_NOTHING;
@@ -1132,9 +1145,34 @@ static u16 SelectItemFromPool(RogueItemPoolId poolId, DungeonSeedRng *rng)
     if (pool->items == NULL || pool->count == 0)
         return ITEM_NOTHING;
 
+    for (i = 0; i < pool->count; i++) {
+        totalWeight += GetSeededItemSelectionWeight(pool->items[i]);
+    }
+
+    if (totalWeight <= 0)
+        return ITEM_NOTHING;
+
     if (rng != NULL)
-        return pool->items[DungeonSeedRng_NextRange(rng, 0, pool->count)];
-    return pool->items[DungeonRandInt(pool->count)];
+        pick = DungeonSeedRng_NextRange(rng, 0, totalWeight);
+    else
+        pick = DungeonRandInt(totalWeight);
+
+    for (i = 0; i < pool->count; i++) {
+        s32 weight = GetSeededItemSelectionWeight(pool->items[i]);
+
+        if (pick < weight)
+            return pool->items[i];
+        pick -= weight;
+    }
+
+    return pool->items[pool->count - 1];
+}
+
+static s32 GetSeededItemSelectionWeight(u16 itemId)
+{
+    if (itemId == ITEM_MAX_ELIXIR)
+        return SEEDED_MAX_ELIXIR_WEIGHT_MULTIPLIER;
+    return 1;
 }
 
 static void InitSeededItemState(s32 seed, u8 dungeonId, s32 floorId, bool8 isForcedKecleonFloor)

@@ -17,6 +17,7 @@ struct PersonalityStruct_203B404
 };
 
 void CreatePartnerSelectionMenu(s16 starterID);
+void CreateVanillaPartnerSelectionMenu(s16 starterID);
 void CreateStarterSelectionMenu(void);
 u16 HandlePartnerSelectionInput(void);
 

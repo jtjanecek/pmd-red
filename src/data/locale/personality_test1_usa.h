@@ -747,6 +747,14 @@
 
 #define GENDER_Q (_("Are you a boy or a girl?"))
 
+#define STARTER_FLOW_SELECTION_Q (_( \
+    "Would you like to pick your player\n" \
+    "(any Pokemon), or use the personality\n" \
+    "quiz?"))
+
+#define STARTER_FLOW_SELECTION_A0 (_("Pick my player."))
+#define STARTER_FLOW_SELECTION_A1 (_("Personality quiz."))
+
 #define GENDER_A0 (_("Boy."))
 #define GENDER_A1 (_("Girl."))
 

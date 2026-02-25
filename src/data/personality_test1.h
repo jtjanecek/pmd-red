@@ -743,6 +743,15 @@ static const u8 gNatureQuestionTable[NUM_QUIZ_QUESTIONS + 1] = {
 
 
 
+ALIGNED(4) static const u8 gStarterFlowSelectionText[] = STARTER_FLOW_SELECTION_Q;
+UNUSED ALIGNED(4) static const u8 *const gStarterFlowSelectionTextPtr[] = { gStarterFlowSelectionText };
+
+static const MenuItem gStarterFlowSelectionMenu[] = {
+    { STARTER_FLOW_SELECTION_A0, 0 },
+    { STARTER_FLOW_SELECTION_A1, 1 },
+    { NULL, -1 },
+};
+
 ALIGNED(4) static const u8 sGender0[] = GENDER_Q;
 UNUSED ALIGNED(4) static const u8* const gGenderTextPtr[] = { sGender0 };
 

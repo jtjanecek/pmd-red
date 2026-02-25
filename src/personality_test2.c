@@ -17,11 +17,14 @@
 #include "constants/monster.h"
 
 EWRAM_INIT struct PersonalityStruct_203B404 *gUnknown_203B404 = {NULL};
+static EWRAM_INIT bool8 sUseVanillaPartnerPool = {FALSE};
+static EWRAM_INIT bool8 sIncludeRandomChoice = {TRUE};
 
 #include "data/personality_test2.h"
 
 static s32 GetValidPartners(void);
 static s32 GetGlobalIndex(s32 localIndex);
+static s32 GetPartnerIndexFromGlobalIndex(s32 globalIndex);
 static void nullsub_135(void);
 static void PersonalityTest_DisplayPartnerSprite(void);
 static void RedrawPartnerSelectionMenu(void);
@@ -31,15 +34,17 @@ static void ScrollSelectionMenu(MenuInputStruct *menuInput, bool8 moveRight);
 
 static void sub_803CEAC(void);
 static void sub_803CECC(void);
-static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter);
+static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter, bool8 useVanillaPartnerPool);
 
-static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter)
+static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter, bool8 useVanillaPartnerPool)
 {
     s32 starterID_s32;
     starterID_s32 = starterID; // force an asr shift.. does lsr without it
 
     sub_803CEAC();
     gUnknown_203B404->selectingStarter = selectingStarter;
+    sUseVanillaPartnerPool = useVanillaPartnerPool;
+    sIncludeRandomChoice = selectingStarter || !useVanillaPartnerPool;
     gUnknown_203B404->StarterID = starterID_s32;
     gUnknown_203B404->s18.m.menuWinId = 0;
     gUnknown_203B404->s18.m.menuWindow = &gUnknown_203B404->s18.m.windows.id[0];
@@ -64,12 +69,17 @@ static void CreateSelectionMenuInternal(s16 starterID, bool8 selectingStarter)
 
 void CreatePartnerSelectionMenu(s16 starterID)
 {
-    CreateSelectionMenuInternal(starterID, FALSE);
+    CreateSelectionMenuInternal(starterID, FALSE, FALSE);
+}
+
+void CreateVanillaPartnerSelectionMenu(s16 starterID)
+{
+    CreateSelectionMenuInternal(starterID, FALSE, TRUE);
 }
 
 void CreateStarterSelectionMenu(void)
 {
-    CreateSelectionMenuInternal(MONSTER_NONE, TRUE);
+    CreateSelectionMenuInternal(MONSTER_NONE, TRUE, FALSE);
 }
 
 u16 HandlePartnerSelectionInput(void)
@@ -92,10 +102,15 @@ u16 HandlePartnerSelectionInput(void)
     keyPress = GetKeyPress(&gUnknown_203B404->s18.m.input);
     if (keyPress == INPUT_A_BUTTON) {
         s32 globalIndex = GetGlobalIndex(gUnknown_203B404->s18.m.input.menuIndex);
+        s32 partnerIndex;
+
         PlayMenuSoundEffect(MENU_SFX_ACCEPT);
-        if (globalIndex == 0)
+
+        if (sIncludeRandomChoice && globalIndex == 0)
             return ChooseRandomPartner();
-        return gUnknown_203B404->PartnerArray[globalIndex - 1];
+
+        partnerIndex = GetPartnerIndexFromGlobalIndex(globalIndex);
+        return gUnknown_203B404->PartnerArray[partnerIndex];
     }
 
     if (gUnknown_203B404->unk16 != 0) {
@@ -121,6 +136,8 @@ void sub_803CE6C(void)
     ResetUnusedInputStruct();
     ShowWindows(&gUnknown_203B404->s18.m.windows, TRUE, TRUE);
     gUnknown_203B404->selectingStarter = FALSE;
+    sUseVanillaPartnerPool = FALSE;
+    sIncludeRandomChoice = TRUE;
     sub_803CECC();
 }
 
@@ -160,12 +177,18 @@ static void RedrawPartnerSelectionMenu(void)
 
     monCounter = 0;
     while (monCounter < gUnknown_203B404->s18.m.input.currPageEntries) {
+        s32 globalIndex;
+        s32 partnerIndex;
+
         yCoord = GetMenuEntryYCoord(&gUnknown_203B404->s18.m.input, monCounter);
-        if (GetGlobalIndex(monCounter) == 0) {
+        globalIndex = GetGlobalIndex(monCounter);
+
+        if (sIncludeRandomChoice && globalIndex == 0) {
             PrintStringOnWindow(8, yCoord, gMenuRandomSelectionText, gUnknown_203B404->s18.m.menuWinId, 0);
         }
         else {
-            monName = GetMonSpecies(gUnknown_203B404->PartnerArray[GetGlobalIndex(monCounter) - 1]);
+            partnerIndex = GetPartnerIndexFromGlobalIndex(globalIndex);
+            monName = GetMonSpecies(gUnknown_203B404->PartnerArray[partnerIndex]);
             PrintStringOnWindow(8, yCoord, monName, gUnknown_203B404->s18.m.menuWinId, 0);
         }
         monCounter++;
@@ -181,13 +204,36 @@ static void PersonalityTest_DisplayPartnerSprite(void)
 
 static s32 GetValidPartners(void)
 {
+    s32 PlayerType[2];
+    s32 currentPartnerTypes[2];
+    s32 CurrentPartnerID;
     s32 i;
     s32 ValidPartnerCounter;
 
     if (gUnknown_203B404->selectingStarter) {
         for (i = 0; i < NUM_PARTNERS; i++)
             gUnknown_203B404->PartnerArray[i] = gPartners[i];
-        return NUM_PARTNERS + 1;
+        return NUM_PARTNERS + sIncludeRandomChoice;
+    }
+
+    if (sUseVanillaPartnerPool) {
+        PlayerType[0] = GetPokemonType(gUnknown_203B404->StarterID, 0);
+        PlayerType[1] = GetPokemonType(gUnknown_203B404->StarterID, 1);
+
+        ValidPartnerCounter = 0;
+        for (i = 0; i < ARRAY_COUNT(gVanillaPartners); i++) {
+            CurrentPartnerID = gVanillaPartners[i];
+            currentPartnerTypes[0] = GetPokemonType(CurrentPartnerID, 0);
+            currentPartnerTypes[1] = GetPokemonType(CurrentPartnerID, 1);
+
+            if ((currentPartnerTypes[0] == TYPE_NONE || (currentPartnerTypes[0] != PlayerType[0] && currentPartnerTypes[0] != PlayerType[1]))
+            && ((currentPartnerTypes[1] == TYPE_NONE || (currentPartnerTypes[1] != PlayerType[0] && currentPartnerTypes[1] != PlayerType[1])))) {
+                gUnknown_203B404->PartnerArray[ValidPartnerCounter] = CurrentPartnerID;
+                ValidPartnerCounter++;
+            }
+        }
+
+        return ValidPartnerCounter + sIncludeRandomChoice;
     }
 
     ValidPartnerCounter = 0;
@@ -197,7 +243,7 @@ static s32 GetValidPartners(void)
         ValidPartnerCounter++;
     }
 
-    return ValidPartnerCounter + 1;
+    return ValidPartnerCounter + sIncludeRandomChoice;
 }
 
 static s32 GetGlobalIndex(s32 localIndex)
@@ -206,10 +252,15 @@ static s32 GetGlobalIndex(s32 localIndex)
     return input->currPage * input->entriesPerPage + localIndex;
 }
 
+static s32 GetPartnerIndexFromGlobalIndex(s32 globalIndex)
+{
+    return globalIndex - sIncludeRandomChoice;
+}
+
 static s16 ChooseRandomPartner(void)
 {
     s16 selection;
-    s32 availableCount = gUnknown_203B404->s18.m.input.totalEntriesCount - 1;
+    s32 availableCount = gUnknown_203B404->s18.m.input.totalEntriesCount - sIncludeRandomChoice;
 
     if (availableCount <= 0)
         return MONSTER_NONE;

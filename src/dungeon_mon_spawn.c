@@ -490,7 +490,7 @@ void SpawnWildMonsOnFloor(void)
                 monSpawnInfo.unk10 = 0;
                 monSpawnInfo.pos.x = x;
                 monSpawnInfo.pos.y = y;
-                if (r6 || sub_806AA0C(monSpawnInfo.species, TRUE)) {
+                if (r6 || monSpawnInfo.species == MONSTER_MUNCHLAX || sub_806AA0C(monSpawnInfo.species, TRUE)) {
                     if (SpawnWildMon(&monSpawnInfo, FALSE)) {
                         r8 = FALSE;
                     }

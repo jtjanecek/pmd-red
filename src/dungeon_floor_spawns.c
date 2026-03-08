@@ -11,6 +11,7 @@
 #include "cpu.h"
 #include "def_filearchives.h"
 #include "dungeon_info.h"
+#include "dungeon_misc.h"
 #include "dungeon_random.h"
 #include "file_system.h"
 #include "game_options.h"
@@ -19,7 +20,22 @@
 #include "text_1.h"
 #include "text_3.h"
 #include "dungeon_config.h"
+#include "munchlax_spawn.h"
 #include "structs/dungeon_mapparam.h"
+
+static bool8 RollMunchlaxSpawnChance(void)
+{
+    if (gDungeon->unk644.stoleFromKecleon) {
+        return FALSE;
+    }
+    if (MUNCHLAX_SPAWN_CHANCE <= 0) {
+        return FALSE;
+    }
+    if (MUNCHLAX_SPAWN_CHANCE >= MUNCHLAX_SPAWN_CHANCE_DENOM) {
+        return TRUE;
+    }
+    return DungeonRandInt(MUNCHLAX_SPAWN_CHANCE_DENOM) < MUNCHLAX_SPAWN_CHANCE;
+}
 
 void sub_803D4AC(void)
 {
@@ -187,6 +203,13 @@ s16 GetRandomFloorMonsterId(s32 arrId)
     s32 i;
     s32 rand = DungeonRandInt(10000);
 
+    if (arrId == 0 && RollMunchlaxSpawnChance()) {
+        LoadPokemonSprite(MONSTER_MUNCHLAX, FALSE);
+        if (GetSpriteData(MONSTER_MUNCHLAX) != NULL) {
+            return MONSTER_MUNCHLAX;
+        }
+    }
+
     for (i = 0; i < gDungeon->currFloorMonsterSpawnsCount; i++) {
         if (gDungeon->monsterSpawns[i].randNum[arrId] != 0 && gDungeon->monsterSpawns[i].randNum[arrId] >= rand) {
             return ExtractSpeciesIndex(&gDungeon->monsterSpawns[i]);
@@ -205,6 +228,10 @@ s32 GetSpawnedMonsterLevel(s32 species)
 {
     s32 i;
     s32 speciesId = SpeciesId(species);
+
+    if (speciesId == SpeciesId(MONSTER_MUNCHLAX)) {
+        return MUNCHLAX_SPAWN_LEVEL;
+    }
 
     for (i = 0; i < gDungeon->currFloorMonsterSpawnsCount; i++) {
         if (ExtractSpeciesIndex(&gDungeon->monsterSpawns[i]) == speciesId)

@@ -32,7 +32,7 @@ const u8 gMonsterShinyPalette[MONSTER_MAX] = {
     12, 5, 12, 11, 8, 5, 7, 0, 7, 9, 0, 3, 3, 12, 12, 5,
     5, 8, 3, 11, 11, 5, 5, 7, 7, 7, 7, 3, 2, 12, 4, 10,
     3, 10, 11, 11, 11, 8, 0, 12, 5, 10, 7, 5, 5, 5, 3, 9,
-    9, 3, 3, 3, 0, 11, 0, 5,
+    9, 3, 3, 3, 12, 11, 0, 5,
 };
 
 const bool8 gMonsterShinyIndexRemapActive[MONSTER_MAX] = {

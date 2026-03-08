@@ -175,8 +175,17 @@ SHINY_PALETTE_CSV := rogue_files/shiny_palette.csv
 SHINY_PALETTE_TABLE_SRC := src/data/shiny_palette_table.c
 SHINY_PALETTE_TABLE_GENERATOR := rogue_files/shiny_processing/00_gen_shiny_palette_table.py
 
-$(SHINY_PALETTE_TABLE_SRC): $(SHINY_PALETTE_CSV) $(SHINY_PALETTE_TABLE_GENERATOR)
-	$(PYTHON) $(SHINY_PALETTE_TABLE_GENERATOR) --mode table --input $(SHINY_PALETTE_CSV) --output $(SHINY_PALETTE_TABLE_SRC)
+.PHONY: FORCE_SHINY_PALETTE_TABLE
+FORCE_SHINY_PALETTE_TABLE:
+
+$(SHINY_PALETTE_TABLE_SRC): FORCE_SHINY_PALETTE_TABLE $(SHINY_PALETTE_CSV) $(SHINY_PALETTE_TABLE_GENERATOR)
+	@tmp="$@.tmp"; \
+	$(PYTHON) $(SHINY_PALETTE_TABLE_GENERATOR) --mode table --input $(SHINY_PALETTE_CSV) --output "$$tmp"; \
+	if [ ! -f "$@" ] || ! cmp -s "$$tmp" "$@"; then \
+		mv "$$tmp" "$@"; \
+	else \
+		rm -f "$$tmp"; \
+	fi
 
 # Special configurations required for lib files
 ifeq ($(MODERN),0)

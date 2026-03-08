@@ -34,10 +34,7 @@ void sub_80A7428(struct UnkGroundSpriteStruct *ptr, s32 a1_, s32 monsterId_, s32
     }
     if (a3 & GROUND_LIVE_FLAG_SHINY) {
         u8 shinyPalette = GetMonsterShinyPalette(monsterId);
-
-        if (shinyPalette != 0) {
-            spStruct.unk2 = shinyPalette;
-        }
+        spStruct.unk2 = shinyPalette;
     }
     spStruct.axmain = (axmain *) file->data;
     sub_80A67CC(ptr, &spStruct, a3);

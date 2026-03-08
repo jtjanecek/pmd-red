@@ -283,11 +283,8 @@ void UpdateMonsterSprite(Entity *entity)
         if (entInfo->visualFlags & VISUAL_FLAG_SHINY) {
             s16 shinySpecies = decoySprite ? MONSTER_DECOY : entInfo->apparentID;
             u8 shinyPalette = GetMonsterShinyPalette(shinySpecies);
+            overworldPal = shinyPalette;
             indexRemap = GetMonsterShinyIndexRemap(shinySpecies);
-
-            if (shinyPalette != 0) {
-                overworldPal = shinyPalette;
-            }
         }
 
         if (entity->unk22 == 0) {

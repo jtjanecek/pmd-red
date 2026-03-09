@@ -213,7 +213,7 @@ void ReadExclusivePokemon(DataSerializer *r0)
         bool8 b;
         ReadBits(r0, &b, 1);
         do; while(0); // do/while needed for matching - jiang
-        gExclusiveMonPtr->exclusives[i] = (b & 1) != 0;
+        gExclusiveMonPtr->exclusives[i] = ((b & 1) != 0) || gExclusivePokemon[i].in_rrt;
     }
 
     FlushTempCutsceneFlags();

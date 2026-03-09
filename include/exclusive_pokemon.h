@@ -39,6 +39,13 @@ typedef struct ExclusivePokemonData
     .in_brt = TRUE,             \
 }
 
+#define BOTH_EXCLUSIVE(species) \
+{                               \
+    .poke_id = species,         \
+    .in_rrt = TRUE,             \
+    .in_brt = TRUE,             \
+}
+
 extern ExclusivePokemonData *gExclusiveMonPtr;
 
 void LoadExclusivePokemon(void);

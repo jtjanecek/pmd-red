@@ -13,6 +13,7 @@ struct unkStruct_203B304
     u32 fallbackState;
     u8 mailboxIndex;
     u8 mailIndex;
+    u8 baseMenuPage;
     unkStruct_802C39C unkC;
     u32 menuAction1;
     u32 menuAction2;
@@ -36,6 +37,7 @@ enum MailBoxStates
     PKMN_NEWS_MENU,
     PKMN_NEWS_MENU_1,
     DISPLAY_SEL_PKMN_NEWS,
+    BASE_SELECT_MENU,
 };
 
 void SetMailboxState(u32);

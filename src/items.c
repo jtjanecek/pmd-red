@@ -126,6 +126,11 @@ void InitializeMoneyItems(void)
 
     gTeamInventoryRef->teamMoney = 0;
     gTeamInventoryRef->teamSavings = 0;
+
+#ifdef DEV
+    for (i = 1; i < STORAGE_SIZE; i++)
+        gTeamInventoryRef->teamStorage[i] = 999;
+#endif
 }
 
 // arm9.bin::02060FE4

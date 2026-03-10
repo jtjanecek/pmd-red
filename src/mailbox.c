@@ -1,11 +1,15 @@
 #include "global.h"
 #include "globaldata.h"
 #include "structs/menu.h"
+#include "constants/ground_map.h"
 #include "music_util.h"
 #include "code_802DE84.h"
 #include "code_803B050.h"
 #include "code_80958E8.h"
 #include "common_strings.h"
+#include "event_flag.h"
+#include "ground_main.h"
+#include "ground_place.h"
 #include "input.h"
 #include "mailbox.h"
 #include "memory.h"
@@ -63,10 +67,63 @@ const WindowTemplate gUnknown_80E02CC =
 const u8 gMailboxCheckMail[] = "Check Mail";
 const u8 gMailboxJobList[] = "Job List";
 const u8 gMailboxPKMNNews[] = "PKMN News";
+const u8 gMailboxChangeBase[] = "Change Base";
+const u8 gMailboxBasePrev[] = "Prev";
+const u8 gMailboxBaseNext[] = "Next";
+const u8 gMailboxBasePikachu[] = "Pikachu";
+const u8 gMailboxBaseMeowth[] = "Meowth";
+const u8 gMailboxBaseEevee[] = "Eevee";
+const u8 gMailboxBaseSkitty[] = "Skitty";
+const u8 gMailboxBaseSquirtle[] = "Squirtle";
+const u8 gMailboxBaseTotodile[] = "Totodile";
+const u8 gMailboxBaseMudkip[] = "Mudkip";
+const u8 gMailboxBasePsyduck[] = "Psyduck";
+const u8 gMailboxBaseCharmander[] = "Charmander";
+const u8 gMailboxBaseTorchic[] = "Torchic";
+const u8 gMailboxBaseCyndaquil[] = "Cyndaquil";
+const u8 gMailboxBaseCubone[] = "Cubone";
+const u8 gMailboxBaseMachop[] = "Machop";
+const u8 gMailboxBaseBulbasaur[] = "Bulbasaur";
+const u8 gMailboxBaseChikorita[] = "Chikorita";
+const u8 gMailboxBaseTreecko[] = "Treecko";
 const u8 gMailActionStore[] = "Store";
 const u8 gMailActionRead[] = "Read";
 const u8 gMailAccepted[] = "Accepted";
 const u8 gUnknown_80E0324[] = "/";
+
+#define MAILBOX_ACTION_CHECK_MAIL 2
+#define MAILBOX_ACTION_JOB_LIST 3
+#define MAILBOX_ACTION_PKMN_NEWS 4
+#define MAILBOX_ACTION_CHANGE_BASE 9
+#define MAILBOX_ACTION_BASE_SELECT_FIRST 100
+#define MAILBOX_ACTION_BASE_SELECT_LAST 115
+#define MAILBOX_ACTION_BASE_PREV 116
+#define MAILBOX_ACTION_BASE_NEXT 117
+#define BASE_CHOICES_PER_PAGE 4
+
+typedef struct MailboxBaseChoice {
+    const u8 *name;
+    u8 baseKind;
+} MailboxBaseChoice;
+
+static const MailboxBaseChoice sMailboxBaseChoices[] = {
+    {gMailboxBasePikachu, 0},
+    {gMailboxBaseMeowth, 1},
+    {gMailboxBaseEevee, 2},
+    {gMailboxBaseSkitty, 3},
+    {gMailboxBaseSquirtle, 4},
+    {gMailboxBaseTotodile, 5},
+    {gMailboxBaseMudkip, 6},
+    {gMailboxBasePsyduck, 7},
+    {gMailboxBaseCharmander, 8},
+    {gMailboxBaseTorchic, 9},
+    {gMailboxBaseCyndaquil, 10},
+    {gMailboxBaseCubone, 11},
+    {gMailboxBaseMachop, 12},
+    {gMailboxBaseBulbasaur, 13},
+    {gMailboxBaseChikorita, 14},
+    {gMailboxBaseTreecko, 15},
+};
 
 void sub_802E578(void);
 void HandleMailActionMenu(void);
@@ -78,15 +135,19 @@ void sub_802E73C(void);
 void sub_802E758(void);
 void sub_802E774(void);
 void sub_802E7D0(void);
+void HandleBaseSelectMenu(void);
 void CreateMailboxMenu(void);
 void CreateMailActionMenu(void);
+void CreateBaseSelectMenu(void);
 void CreateMailAcceptedStatusBox(u32);
+bool8 CanChangeBaseFromMailbox(void);
 
 u8 sub_802DFB0(void)
 {
     gUnknown_203B304 = MemoryAlloc(sizeof(struct unkStruct_203B304), MEMALLOC_GROUP_8);
     gUnknown_203B304->menuAction1 = 0;
     gUnknown_203B304->menuAction2 = 0;
+    gUnknown_203B304->baseMenuPage = 0;
     SetMailboxState(INITIALIZE_MAILBOX);
     return 1;
 }
@@ -123,6 +184,9 @@ u32 sub_802DFD8(void)
             break;
         case DISPLAY_SEL_PKMN_NEWS:
             sub_802E7D0();
+            break;
+        case BASE_SELECT_MENU:
+            HandleBaseSelectMenu();
             break;
         case MAILBOX_EXIT:
         default:
@@ -162,6 +226,15 @@ void sub_802E0A0(void)
             gUnknown_203B304->unk10C.id[2] = gUnknown_80E029C;
             sub_8012CAC(&gUnknown_203B304->unk10C.id[2], gUnknown_203B304->menuItems);
             break;
+        case BASE_SELECT_MENU:
+            for(index = 0; index < 4; index++)
+            {
+                gUnknown_203B304->unk10C.id[index] = gUnknown_80E0284;
+            }
+            CreateBaseSelectMenu();
+            gUnknown_203B304->unk10C.id[2] = gUnknown_80E029C;
+            sub_8012CAC(&gUnknown_203B304->unk10C.id[2], gUnknown_203B304->menuItems);
+            break;
         case MAIL_ACTION_MENU:
             CreateMailActionMenu();
             gUnknown_203B304->unk10C.id[2] = gUnknown_80E02B4;
@@ -185,6 +258,9 @@ void sub_802E1AC(void)
     switch(gUnknown_203B304->state)
     {
         case MAIN_MAILBOX_MENU:
+            sub_8012D60(&gUnknown_203B304->unk6C, gUnknown_203B304->menuItems, 0, gUnknown_203B304->unkFC, gUnknown_203B304->menuAction1, 2);
+            break;
+        case BASE_SELECT_MENU:
             sub_8012D60(&gUnknown_203B304->unk6C, gUnknown_203B304->menuItems, 0, gUnknown_203B304->unkFC, gUnknown_203B304->menuAction1, 2);
             break;
         case MAIL_MENU:
@@ -223,6 +299,60 @@ void sub_802E1AC(void)
     }
 }
 
+bool8 CanChangeBaseFromMailbox(void)
+{
+    if (GetScriptVarValue(NULL, GROUND_PLACE) != GROUND_PLACE_TEAM_BASE)
+        return FALSE;
+
+    return GetScriptVarArrayValue(NULL, EVENT_B01P01, 2) != 0;
+}
+
+void CreateBaseSelectMenu(void)
+{
+    s32 i;
+    s32 loopMax = 0;
+    s32 startIndex;
+    s32 endIndex;
+    s32 pageCount = (ARRAY_COUNT(sMailboxBaseChoices) + BASE_CHOICES_PER_PAGE - 1) / BASE_CHOICES_PER_PAGE;
+
+    if (gUnknown_203B304->baseMenuPage >= pageCount)
+        gUnknown_203B304->baseMenuPage = 0;
+
+    startIndex = gUnknown_203B304->baseMenuPage * BASE_CHOICES_PER_PAGE;
+    endIndex = startIndex + BASE_CHOICES_PER_PAGE;
+    if (endIndex > ARRAY_COUNT(sMailboxBaseChoices))
+        endIndex = ARRAY_COUNT(sMailboxBaseChoices);
+
+    MemoryFill16(gUnknown_203B304->unkFC, 0, sizeof(gUnknown_203B304->unkFC));
+
+    for (i = startIndex; i < endIndex; i++) {
+        gUnknown_203B304->menuItems[loopMax].text = sMailboxBaseChoices[i].name;
+        gUnknown_203B304->menuItems[loopMax].menuAction = MAILBOX_ACTION_BASE_SELECT_FIRST + i;
+        loopMax++;
+    }
+
+    if (gUnknown_203B304->baseMenuPage > 0) {
+        gUnknown_203B304->menuItems[loopMax].text = gMailboxBasePrev;
+        gUnknown_203B304->menuItems[loopMax].menuAction = MAILBOX_ACTION_BASE_PREV;
+        loopMax++;
+    }
+
+    if (gUnknown_203B304->baseMenuPage + 1 < pageCount) {
+        gUnknown_203B304->menuItems[loopMax].text = gMailboxBaseNext;
+        gUnknown_203B304->menuItems[loopMax].menuAction = MAILBOX_ACTION_BASE_NEXT;
+        loopMax++;
+    }
+
+    gUnknown_203B304->menuItems[loopMax].text = gCommonCancel[0];
+    gUnknown_203B304->menuItems[loopMax].menuAction = 1;
+    loopMax++;
+
+    gUnknown_203B304->menuItems[loopMax].text = NULL;
+    gUnknown_203B304->menuItems[loopMax].menuAction = 1;
+
+    gUnknown_203B304->menuAction1 = gUnknown_203B304->menuItems[0].menuAction;
+}
+
 void CreateMailboxMenu(void)
 {
     s32 index;
@@ -231,14 +361,14 @@ void CreateMailboxMenu(void)
     loopMax = 0;
     MemoryFill16(gUnknown_203B304->unkFC,0,sizeof(gUnknown_203B304->unkFC));
     gUnknown_203B304->menuItems[0].text = gMailboxCheckMail;
-    gUnknown_203B304->menuItems[0].menuAction = 2;
+    gUnknown_203B304->menuItems[0].menuAction = MAILBOX_ACTION_CHECK_MAIL;
     if ((HasNoMailinMailbox())) {
         gUnknown_203B304->unkFC[0] = 1;
     }
     loopMax += 1;
 
     gUnknown_203B304->menuItems[loopMax].text = gMailboxJobList;
-    gUnknown_203B304->menuItems[loopMax].menuAction = 3;
+    gUnknown_203B304->menuItems[loopMax].menuAction = MAILBOX_ACTION_JOB_LIST;
     if(HasNoAcceptedJobs())
     {
         gUnknown_203B304->unkFC[loopMax] = 1;
@@ -246,12 +376,18 @@ void CreateMailboxMenu(void)
     loopMax += 1;
 
     gUnknown_203B304->menuItems[loopMax].text = gMailboxPKMNNews;
-    gUnknown_203B304->menuItems[loopMax].menuAction = 4;
+    gUnknown_203B304->menuItems[loopMax].menuAction = MAILBOX_ACTION_PKMN_NEWS;
     if(HasNoPKMNNews())
     {
         gUnknown_203B304->unkFC[loopMax] = 1;
     }
     loopMax += 1;
+
+    if (CanChangeBaseFromMailbox()) {
+        gUnknown_203B304->menuItems[loopMax].text = gMailboxChangeBase;
+        gUnknown_203B304->menuItems[loopMax].menuAction = MAILBOX_ACTION_CHANGE_BASE;
+        loopMax += 1;
+    }
 
     gUnknown_203B304->menuItems[loopMax].text = NULL;
     gUnknown_203B304->menuItems[loopMax].menuAction = 1;
@@ -330,30 +466,73 @@ void HandleMailboxMenu(void)
     switch(menuAction)
     {
         // Check Mail
-        case 2:
+        case MAILBOX_ACTION_CHECK_MAIL:
             if(!HasNoMailinMailbox())
                 SetMailboxState(MAIL_MENU);
             else
                 sub_8012EA4(&gUnknown_203B304->unk6C, 1);
             break;
         // Job List
-        case 3:
+        case MAILBOX_ACTION_JOB_LIST:
             if(!HasNoAcceptedJobs())
                 SetMailboxState(JOB_LIST_MENU);
             else
                 sub_8012EA4(&gUnknown_203B304->unk6C, 1);
             break;
-        case 4:
+        case MAILBOX_ACTION_PKMN_NEWS:
             if(!HasNoPKMNNews())
                 SetMailboxState(PKMN_NEWS_MENU);
             else
                 sub_8012EA4(&gUnknown_203B304->unk6C, 1);
+            break;
+        case MAILBOX_ACTION_CHANGE_BASE:
+            gUnknown_203B304->baseMenuPage = 0;
+            SetMailboxState(BASE_SELECT_MENU);
             break;
         case 8:
             SetMailboxState(2);
             break;
         case 1:
             SetMailboxState(MAILBOX_EXIT);
+            break;
+    }
+}
+
+void HandleBaseSelectMenu(void)
+{
+    s32 menuAction = 0;
+
+    if (!sub_8012FD8(&gUnknown_203B304->unk6C)) {
+        sub_8013114(&gUnknown_203B304->unk6C, &menuAction);
+        if (menuAction != 1)
+            gUnknown_203B304->menuAction1 = menuAction;
+    }
+
+    switch (menuAction) {
+        case 1:
+            SetMailboxState(MAIN_MAILBOX_MENU);
+            break;
+        case MAILBOX_ACTION_BASE_PREV:
+            if (gUnknown_203B304->baseMenuPage > 0)
+                gUnknown_203B304->baseMenuPage--;
+            SetMailboxState(BASE_SELECT_MENU);
+            break;
+        case MAILBOX_ACTION_BASE_NEXT:
+            gUnknown_203B304->baseMenuPage++;
+            SetMailboxState(BASE_SELECT_MENU);
+            break;
+        default:
+            if (menuAction >= MAILBOX_ACTION_BASE_SELECT_FIRST && menuAction <= MAILBOX_ACTION_BASE_SELECT_LAST) {
+                s32 baseIndex = menuAction - MAILBOX_ACTION_BASE_SELECT_FIRST;
+                if (baseIndex >= 0 && baseIndex < ARRAY_COUNT(sMailboxBaseChoices)) {
+                    PlayMenuSoundEffect(MENU_SFX_ACCEPT);
+                    SetScriptVarValue(NULL, BASE_KIND, sMailboxBaseChoices[baseIndex].baseKind);
+                    SetScriptVarValue(NULL, GROUND_ENTER, MAP_TEAM_BASE);
+                    SetScriptVarValue(NULL, GROUND_GETOUT, MAP_TEAM_BASE);
+                    GroundMainGroundRequest(MAP_TEAM_BASE, 0, -1);
+                    SetMailboxState(MAILBOX_EXIT);
+                }
+            }
             break;
     }
 }
@@ -538,4 +717,3 @@ void CreateMailAcceptedStatusBox(u32 r0)
     PrintNumOnWindow(0x23, 0xD, MAX_ACCEPTED_JOBS, 2, 7, r0);
     sub_80073E0(r0);
 }
-

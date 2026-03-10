@@ -71,6 +71,17 @@ static void nullsub_30(void);
 static void nullsub_31(void);
 static void nullsub_32(void);
 static void PrintFuncFileLine(u8 *buf, const DebugLocation *loc, const u8 *prefix);
+static void MgbaWarnf(const char *fmt, ...);
+static void MgbaLog(const char *msg);
+static void MgbaCopyToLogBuf(const char *s);
+
+#define MGBA_PRINTADDR_NEWLINE ((volatile u32 *)0x4FFFA10)
+#define REG_MGBA_LOG_ENABLE (*(volatile u16 *)0x04FFF780)
+#define REG_MGBA_LOG_FLAGS (*(volatile u16 *)0x04FFF700)
+#define REG_MGBA_LOG_STRING ((volatile char *)0x04FFF600)
+#define MGBA_FLAG_COMMIT 0x0100
+#define MGBA_LOG_WARN 2
+#define MGBA_ENABLE_MAGIC 0xC0DE
 
 // arm9.bin::0201888C
 void NDS_DebugInit(void)
@@ -190,7 +201,7 @@ static void nullsub_28(void)
 // arm9.bin::02018970
 bool8 ScriptLoggingEnabled(bool8 unused)
 {
-    return FALSE;
+    return TRUE;
 }
 
 #if (GAME_VERSION == VERSION_RED)
@@ -213,9 +224,16 @@ UNUSED static void UnusedHang(void)
 // arm9.bin::02018964
 void Log(u8 num, const u8 *text, ...)
 {
+    char buf[256];
     va_list vArgv;
+    (void)num;
+
     va_start(vArgv, text);
+    vsprintf(buf, (const char *)text, vArgv);
     va_end(vArgv);
+
+    MgbaWarnf("%s", buf);
+    MgbaLog(buf);
 }
 
 #if (GAME_VERSION == VERSION_RED)
@@ -242,6 +260,33 @@ static void nullsub_31()
 
 static void nullsub_32()
 {
+}
+
+static void MgbaCopyToLogBuf(const char *s)
+{
+    s32 i;
+    for (i = 0; i < 255 && s[i] != '\0'; i++)
+        REG_MGBA_LOG_STRING[i] = s[i];
+    REG_MGBA_LOG_STRING[i] = '\0';
+}
+
+static void MgbaWarnf(const char *fmt, ...)
+{
+    char sBuf[256];
+    va_list args;
+
+    va_start(args, fmt);
+    vsprintf(sBuf, fmt, args);
+    va_end(args);
+
+    REG_MGBA_LOG_ENABLE = MGBA_ENABLE_MAGIC;
+    MgbaCopyToLogBuf(sBuf);
+    REG_MGBA_LOG_FLAGS = (u16)(MGBA_LOG_WARN | MGBA_FLAG_COMMIT);
+}
+
+static void MgbaLog(const char *msg)
+{
+    *MGBA_PRINTADDR_NEWLINE = (u32)msg;
 }
 
 static void FatalErrorHang()

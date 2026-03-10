@@ -212,7 +212,7 @@ static bool8 IsMonsterRecruitableInternal(s32 species, bool8 bypassStoryRestrict
     else if (!bypassStoryRestrictions && id == MONSTER_LATIAS) {
         return FALSE;
     }
-    else if (!bypassStoryRestrictions && id == MONSTER_LATIOS) {
+    else if (id == MONSTER_LATIOS) {
         return FALSE;
     }
     else if (id == MONSTER_DEOXYS_ATTACK) {

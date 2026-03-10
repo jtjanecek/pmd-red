@@ -976,7 +976,7 @@ void sub_8001064(void)
     }
 
     if (sTeamBasicInfo_203B040.StarterID != MONSTER_NONE
-        && !GetScriptVarArrayValue(NULL, EVENT_B01P01, 2)) {
+        && ScriptVarScenarioBefore(SCENARIO_SUB1, 31, 0)) {
         psVar2 = &sBaseKindTable[0];
         while (psVar2->species != MONSTER_NONE && sTeamBasicInfo_203B040.StarterID != psVar2->species) {
             psVar2++;

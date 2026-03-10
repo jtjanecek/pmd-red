@@ -3661,6 +3661,9 @@ static s32 sub_80A14E8(Action *action, u8 idx, u32 r2, s32 r3)
                 Pokemon latiosMon;
 
                 ConvertStoryMonToPokemon(&latiosMon, &latiosData);
+                if (GetCutsceneFlag(CUTSCENE_FLAG_LATIOS_SHINY)) {
+                    latiosMon.flags |= POKEMON_FLAG_SHINY;
+                }
                 recruitPtr = TryAddPokemonToRecruited(&latiosMon);
                 if (recruitPtr == NULL)
                     return 1;
@@ -3695,6 +3698,9 @@ static s32 sub_80A14E8(Action *action, u8 idx, u32 r2, s32 r3)
                 Pokemon latiasMon;
 
                 ConvertStoryMonToPokemon(&latiasMon, &latiasData);
+                if (GetCutsceneFlag(CUTSCENE_FLAG_LATIAS_SHINY)) {
+                    latiasMon.flags |= POKEMON_FLAG_SHINY;
+                }
                 recruitPtr = TryAddPokemonToRecruited(&latiasMon);
                 if (recruitPtr == NULL)
                     return 1;

@@ -7,6 +7,7 @@
 #include "ground_main.h"
 #include "memory.h"
 #include "event_flag.h"
+#include "exclusive_pokemon.h"
 #include "pokemon.h"
 #include "friend_area.h"
 #include "random.h"
@@ -787,9 +788,15 @@ static s32 GroundLives_Add(s32 id_, const GroundLivesData *ptr, s32 group_, s32 
     }
 
     {
+        bool8 forceShiny = FALSE;
         Pokemon *monPtr = sub_80A8D54(livesPtr->unk2);
 
-        if (monPtr != NULL && (monPtr->flags & POKEMON_FLAG_SHINY)) {
+        if ((species == MONSTER_LATIOS && GetCutsceneFlag(CUTSCENE_FLAG_LATIOS_SHINY))
+            || (species == MONSTER_LATIAS && GetCutsceneFlag(CUTSCENE_FLAG_LATIAS_SHINY))) {
+            forceShiny = TRUE;
+        }
+
+        if ((monPtr != NULL && (monPtr->flags & POKEMON_FLAG_SHINY)) || forceShiny) {
             livesPtr->flags |= GROUND_LIVE_FLAG_SHINY;
         }
         else {

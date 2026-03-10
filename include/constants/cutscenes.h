@@ -108,6 +108,9 @@ enum CutsceneFlagID
     CUTSCENE_FLAG_FROSTY_FOREST_INTRUDED,
     CUTSCENE_FLAG_MEDICHAM_COMPLETE,
     CUTSCENE_FLAG_HOWLING_FOREST_COMPLETE,
+    // Persistent shiny state for the Eon duo.
+    CUTSCENE_FLAG_LATIOS_SHINY,
+    CUTSCENE_FLAG_LATIAS_SHINY,
     // Written to when entering a Regi room.
     // If the Regi was recruited before, this is set to TRUE.
     // Otherwise, this is set to FALSE.

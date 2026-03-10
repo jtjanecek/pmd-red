@@ -304,7 +304,7 @@ bool8 CanChangeBaseFromMailbox(void)
     if (GetScriptVarValue(NULL, GROUND_PLACE) != GROUND_PLACE_TEAM_BASE)
         return FALSE;
 
-    return GetScriptVarArrayValue(NULL, EVENT_B01P01, 2) != 0;
+    return !ScriptVarScenarioBefore(SCENARIO_SUB1, 31, 0);
 }
 
 void CreateBaseSelectMenu(void)

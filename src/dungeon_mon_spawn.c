@@ -42,11 +42,34 @@
 #include "dungeon_8041AD0.h"
 #include "dungeon_cutscene.h"
 #include "dungeon_action_execution.h"
+#include "exclusive_pokemon.h"
 #include "shiny.h"
 
 static bool8 RollShinySpawn(void)
 {
     return DungeonRandInt(SHINY_SPAWN_CHANCE_DENOM) < SHINY_SPAWN_CHANCE;
+}
+
+static bool8 IsForcedPersistentShiny(s16 species)
+{
+    s16 baseSpecies = GetBaseSpecies(species);
+
+    if (baseSpecies == MONSTER_LATIOS) {
+        return GetCutsceneFlag(CUTSCENE_FLAG_LATIOS_SHINY);
+    }
+    if (baseSpecies == MONSTER_LATIAS) {
+        return GetCutsceneFlag(CUTSCENE_FLAG_LATIAS_SHINY);
+    }
+
+    return FALSE;
+}
+
+static void StorePersistentShinyRoll(s16 species, bool8 isShiny)
+{
+    if (GetBaseSpecies(species) == MONSTER_LATIOS && isShiny) {
+        SetCutsceneFlag(CUTSCENE_FLAG_LATIOS_SHINY);
+        SetCutsceneFlag(CUTSCENE_FLAG_LATIAS_SHINY);
+    }
 }
 
 static s32 CalcSpeciesHPAtLevel(s32 species, s32 level);
@@ -523,13 +546,22 @@ Entity* SpawnWildMon(struct MonSpawnInfo *monSpawnInfo, bool8 a1)
     sub_806AED8(&entityInfo->moves, &entityInfo->maxHPStat, entityInfo->atk, entityInfo->def, entityInfo->id, entityInfo->level);
     entityInfo->HP = entityInfo->maxHPStat;
     entityInfo->moveRandomly = monSpawnInfo->unk4;
-    if (RollShinySpawn()) {
-        bool8 showRareFloorMessage = (gDungeon->fixedRoomNumber == FIXED_ROOM_NONE || gDungeon->fixedRoomNumber > LAST_FLOORWIDE_FIXED_ROOM);
-        entityInfo->visualFlags |= VISUAL_FLAG_SHINY;
-        if (showRareFloorMessage) {
-            sub_8083E28();
-            DisplayDungeonMessage_Async(NULL, gText_ThisFloorYouSenseSomethingRare, TRUE);
-            DisplayDungeonLoggableMessageFalse_Async(GetLeader(), gText_ThisFloorYouSenseSomethingRare);
+    {
+        bool8 isShiny = RollShinySpawn();
+
+        if (!isShiny && IsForcedPersistentShiny(entityInfo->id)) {
+            isShiny = TRUE;
+        }
+        StorePersistentShinyRoll(entityInfo->id, isShiny);
+
+        if (isShiny) {
+            bool8 showRareFloorMessage = (gDungeon->fixedRoomNumber == FIXED_ROOM_NONE || gDungeon->fixedRoomNumber > LAST_FLOORWIDE_FIXED_ROOM);
+            entityInfo->visualFlags |= VISUAL_FLAG_SHINY;
+            if (showRareFloorMessage) {
+                sub_8083E28();
+                DisplayDungeonMessage_Async(NULL, gText_ThisFloorYouSenseSomethingRare, TRUE);
+                DisplayDungeonLoggableMessageFalse_Async(GetLeader(), gText_ThisFloorYouSenseSomethingRare);
+            }
         }
     }
     if (!monSpawnInfo->unk2 && !a1 && !monSpawnInfo->unk10) {

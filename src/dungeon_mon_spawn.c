@@ -793,7 +793,7 @@ static void InitEntityFromSpawnInfo(bool8 a0, Entity *entity, struct MonSpawnInf
     if (!a0) {
         entInfo->level = AdjustEnemyLevelForDifficulty(entInfo->level);
     }
-    if (monSpawnInfo->species == MONSTER_KECLEON && entInfo->shopkeeper == SHOPKEEPER_MODE_SHOPKEEPER) {
+    if (!a0 && monSpawnInfo->species == MONSTER_KECLEON) {
         entInfo->level = 90;
     }
 

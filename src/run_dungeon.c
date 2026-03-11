@@ -513,14 +513,7 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
         sub_8041888(1);
 
 #ifdef DEV
-        {
-            Entity *leader = GetLeader();
-            if (EntityIsValid(leader)) {
-                EntityInfo *leaderInfo = GetEntInfo(leader);
-                leaderInfo->reflectClassStatus.status = STATUS_PROTECT;
-                leaderInfo->reflectClassStatus.turns = 255;
-            }
-        }
+        // DEV override disabled: do not auto-apply Protect on floor init.
 #endif
 
         MGBA_Warnf("[Dungeon] Post-init: About to call sub_80848F0");

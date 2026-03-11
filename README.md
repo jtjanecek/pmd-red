@@ -1,5 +1,8 @@
 # Download BPS Patch file here
-https://github.com/jtjanecek/rogue-rescue-team/releases/tag/v1.0.0
+https://github.com/jtjanecek/rogue-rescue-team/releases/tag/rogue-v1.1.0
+
+# Forked from Original Disassembly under pret
+https://github.com/pret/pmd-red
 
 # Rogue Rescue Team
 Rogue Rescue Team is a ROM hack dedicated to making Pokemon Mystery Dungeon what it truly was meant to be: a Roguelike. This hack utilizes as many elements as possible in Red Rescue Team to make it a true Roguelike with strategy, decisions, randomization, and a huge amount of replayability. It is not a “pure” randomization hack, because that takes away from the immersion of the dungeons (for example, visuals will match the main type of a dungeon). The hack aims at reducing cheese (attract, silver wind, pass scarf) and utilizing all items present in the game to their max effect to bring out strategy in players’ runs. Play through 10 sequential themed dungeons with different bosses and enemies, each one getting more difficult than the last. This ROM hack is a dungeon-roguelike focused hack, not a story ROM hack.

@@ -536,23 +536,13 @@ void RunDungeon_Async(DungeonSetupStruct *setupPtr)
             sub_806AB2C();
         }
 
-        // CRITICAL FIX: Move leader entity to new spawn position before rendering
-        // Fixed rooms set playerSpawn, but the leader entity hasn't been moved yet
-        // This causes crashes in rendering code that assumes valid entity positions
-        MGBA_Warnf("[Dungeon] Post-init: Repositioning leader to spawn point");
-        {
+        // Keep restored quicksave coordinates intact; only sync to playerSpawn on fresh floor entry.
+        if (!r6) {
             Entity *leader = GetLeader();
-            MGBA_Warnf("[Dungeon] Leader entity: ptr=%p valid=%d", leader, EntityIsValid(leader));
-            if (EntityIsValid(leader)) {
-                MGBA_Warnf("[Dungeon] Moving leader from (%d,%d) to (%d,%d)",
-                           leader->pos.x, leader->pos.y,
-                           gDungeon->playerSpawn.x, gDungeon->playerSpawn.y);
-                leader->pos.x = gDungeon->playerSpawn.x;
-                leader->pos.y = gDungeon->playerSpawn.y;
-                leader->pixelPos.x = X_POS_TO_PIXELPOS(leader->pos.x);
-                leader->pixelPos.y = Y_POS_TO_PIXELPOS(leader->pos.y);
-            } else {
-                MGBA_Warnf("[Dungeon] Leader not valid, cannot reposition!");
+            if (EntityIsValid(leader)
+                && (leader->pos.x != gDungeon->playerSpawn.x || leader->pos.y != gDungeon->playerSpawn.y)) {
+                sub_80694C0(leader, gDungeon->playerSpawn.x, gDungeon->playerSpawn.y, 1);
+                UpdateEntityPixelPos(leader, NULL);
             }
         }
 

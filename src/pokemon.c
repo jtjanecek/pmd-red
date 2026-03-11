@@ -31,6 +31,18 @@ static EWRAM_DATA LevelData sLevelCurrentData[0x64] = {0}; // TODO: Add MAX_LEVE
 
 EWRAM_INIT RecruitedMon *gRecruitedPokemonRef = {NULL}; // B=020EAF94
 
+static s16 GetStatGrowthSpecies(s32 species_)
+{
+    s16 species = SpeciesId(species_);
+    if (species == MONSTER_MUNCHLAX) {
+        return MONSTER_WAILMER;
+    }
+    if (species == MONSTER_DECOY) {
+        return MONSTER_CATERPIE;
+    }
+    return species;
+}
+
 struct unkStruct_8107654
 {
     s16 species;
@@ -819,8 +831,8 @@ u8 GetFriendArea(s32 index)
 
 s32 GetBaseHP(s32 index)
 {
-    s16 index_s32 = index;
-    return sMonsterParameters[index_s32].baseHP;
+    s16 species = GetStatGrowthSpecies(index);
+    return sMonsterParameters[species].baseHP;
 }
 
 bool8 MonsterIDCanThrowItems(s16 index)
@@ -841,14 +853,14 @@ s32 GetPokemonEvolveFrom(s32 index)
 
 s32 GetBaseOffensiveStat(s32 index, u32 r1)
 {
-    s16 index_s16 = index;
-    return sMonsterParameters[index_s16].baseAtkSpAtk[r1];
+    s16 species = GetStatGrowthSpecies(index);
+    return sMonsterParameters[species].baseAtkSpAtk[r1];
 }
 
 s32 GetBaseDefensiveStat(s32 index, u32 r1)
 {
-    s16 index_s16 = index;
-    return sMonsterParameters[index_s16].baseDefSpDef[r1];
+    s16 species = GetStatGrowthSpecies(index);
+    return sMonsterParameters[species].baseDefSpDef[r1];
 }
 
 // arm9.bin::0205AE2C
@@ -1063,7 +1075,7 @@ void sub_808DFDC(s32 a1, DungeonMon* a2)
 void GetLvlUpEntry(LevelData* a1, s32 _id, s32 level)
 {
   u8 buffer[12];
-  s32 id = SpeciesId(_id);
+  s32 id = GetStatGrowthSpecies(_id);
 
   if (sLevelCurrentPokeId != id)
   {

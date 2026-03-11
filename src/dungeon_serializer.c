@@ -738,6 +738,7 @@ void ReadDungeonState(u8 *buffer, u32 bufLen)
     ReadDungeonFloor(&seri);
     ReadDungeonVisibility(&seri);
     ReadDungeonMusic(&seri);
+    gDungeon->unk644.unk4C = 0; //KECLEON INFINITE MONEY GLITCH FIX: The game erroneously re-adds the total value of the items you're planning to sell in Kecleon's shop in ReadDungeonItems, which makes Kecleon give the player money whenever the player leaves the shop.
     ReadDungeonItems(&seri);
     ReadDungeonTraps(&seri);
     ReadDungeonMonsters(&seri);

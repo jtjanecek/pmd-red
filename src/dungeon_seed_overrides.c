@@ -3775,7 +3775,7 @@ static s16 SelectBossRewardRecruitSpecies(void)
 
         if (species <= MONSTER_NONE || species >= MONSTER_MAX)
             continue;
-        if (species == MONSTER_DECOY || species == MONSTER_STATUE)
+        if (species == MONSTER_STATUE || species == MONSTER_RAYQUAZA_CUTSCENE)
             continue;
         if (IS_CASTFORM_FORM_MONSTER(species) || IS_DEOXYS_FORM_MONSTER(species))
             continue;

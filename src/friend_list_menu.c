@@ -107,7 +107,7 @@ enum FriendListMenuActions {
     FRIEND_LIST_MENU_CHECK_IQ = 5,
     FRIEND_LIST_MENU_MOVES,
     FRIEND_LIST_MENU_VISIT,
-    // 8
+    FRIEND_LIST_MENU_RENAME,
     FRIEND_LIST_MENU_STANDBY = 9,
     FRIEND_LIST_MENU_GIVE = 0xA,
     FRIEND_LIST_MENU_TAKE,
@@ -351,12 +351,6 @@ static void sub_8025728(void)
         }
         loopMax += 1;
     }
-    if ((pokeStruct->speciesNum == 0x13d) &&
-        (IsPokemonRenamed(pokeStruct))) {
-        gUnknown_203B2B4->unkC8[loopMax].text = sName;
-        gUnknown_203B2B4->unkC8[loopMax].menuAction = 8;
-        loopMax += 1;
-    }
     gUnknown_203B2B4->unkC8[loopMax].text = sSummary;
     gUnknown_203B2B4->unkC8[loopMax].menuAction = FRIEND_LIST_MENU_SUMMARY;
     loopMax += 1;
@@ -366,6 +360,11 @@ static void sub_8025728(void)
     gUnknown_203B2B4->unkC8[loopMax].text = sCheckIQ;
     gUnknown_203B2B4->unkC8[loopMax].menuAction = FRIEND_LIST_MENU_CHECK_IQ;
     loopMax += 1;
+    if (gUnknown_203B2B4->unk0 != 0) {
+        gUnknown_203B2B4->unkC8[loopMax].text = sRename;
+        gUnknown_203B2B4->unkC8[loopMax].menuAction = FRIEND_LIST_MENU_RENAME;
+        loopMax += 1;
+    }
     gUnknown_203B2B4->unkC8[loopMax].text = NULL;
     gUnknown_203B2B4->unkC8[loopMax].menuAction = FRIEND_LIST_MENU_NULL;
 
@@ -491,7 +490,7 @@ static void sub_8025A84(void)
         case FRIEND_LIST_MENU_MOVES:
             SetFriendListMenuState(FRIEND_LIST_MENU_STATE_MOVES);
             break;
-        case 8:
+        case FRIEND_LIST_MENU_RENAME:
             SetFriendListMenuState(0x12);
             break;
         case FRIEND_LIST_MENU_SUMMARY:

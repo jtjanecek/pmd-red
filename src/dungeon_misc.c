@@ -1308,28 +1308,72 @@ struct UnkTalkFileStruct
     const u8 *strings[4];
 };
 
-void sub_806A3D4(u8 *dst, s32 _a1, s32 id, bool32 _a3)
+static const u8 *const sDefaultDungeonTalk[4] = {
+    _("$m0:  Let's keep going."),
+    _("$m0:  I should be careful."),
+    _("$m0:  I need some help..."),
+    _("$m0:  I leveled up!"),
+};
+
+static bool8 IsPartnerTalkPlaceholder(const u8 *str)
+{
+    static const u8 sPartnerPlaceholder[] = "__partner_";
+    s32 i;
+
+    if (str == NULL) {
+        return FALSE;
+    }
+
+    for (; *str != '\0'; str++) {
+        for (i = 0; sPartnerPlaceholder[i] != '\0'; i++) {
+            if (str[i] != sPartnerPlaceholder[i]) {
+                break;
+            }
+        }
+        if (sPartnerPlaceholder[i] == '\0') {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+static void LoadTalkString(u8 *dst, s32 species, s32 id, bool8 usePartnerTalk)
 {
     u8 fileName[12];
     OpenedFile *file;
-    s32 a1 = (s16) (_a1);
-    bool8 a3 = _a3;
     s32 mod;
     struct UnkTalkFileStruct *strPtr;
 
-    if (a3) {
-        sprintf(fileName, "talkp%d", (s16) (a1 / 10));
+    if (usePartnerTalk) {
+        sprintf(fileName, "talkp%d", (s16)(species / 10));
     }
     else {
-        sprintf(fileName, "talk%d", (s16) (a1 / 10));
+        sprintf(fileName, "talk%d", (s16)(species / 10));
     }
 
     file = OpenFileAndGetFileDataPtr(fileName, &gDungeonFileArchive);
 
-    mod = (s16)(a1 % 10);
+    mod = (s16)(species % 10);
     strPtr = ((struct UnkTalkFileStruct *)(file->data));
     strcpy(dst, strPtr[mod].strings[id]);
     CloseFile(file);
+}
+
+void sub_806A3D4(u8 *dst, s32 _a1, s32 id, bool32 _a3)
+{
+    s32 a1 = (s16)(_a1);
+    bool8 a3 = _a3;
+
+    if ((a1 == MONSTER_MUNCHLAX || a1 == MONSTER_DECOY) && id >= 0 && id < ARRAY_COUNT(sDefaultDungeonTalk)) {
+        strcpy(dst, sDefaultDungeonTalk[id]);
+        return;
+    }
+
+    LoadTalkString(dst, a1, id, a3);
+    if (a3 && IsPartnerTalkPlaceholder(dst)) {
+        LoadTalkString(dst, a1, id, FALSE);
+    }
 }
 
 bool8 sub_806A458(Entity *pokemon)

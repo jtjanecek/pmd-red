@@ -482,11 +482,11 @@ static const ax_pose sWeavilePose120[] = {
 	AX_POSE_TERMINATOR
 };
 static const ax_pose sWeavilePose121[] = {
-	AX_POSE(15, OAM1(241, ST_OAM_H_RECTANGLE, 1), OAM2(240, ST_OAM_SIZE_2, FLIP(0, 0), 0, 0), OAM3(0, 3, 7)),
+	AX_POSE(15, OAM1(241, ST_OAM_SQUARE    , 1), OAM2(240, ST_OAM_SIZE_2, FLIP(0, 0), 0, 0), OAM3(0, 3, 7)),
 	AX_POSE_TERMINATOR
 };
 static const ax_pose sWeavilePose122[] = {
-	AX_POSE(16, OAM1(241, ST_OAM_H_RECTANGLE, 1), OAM2(240, ST_OAM_SIZE_2, FLIP(0, 0), 0, 0), OAM3(0, 3, 7)),
+	AX_POSE(16, OAM1(241, ST_OAM_SQUARE    , 1), OAM2(240, ST_OAM_SIZE_2, FLIP(0, 0), 0, 0), OAM3(0, 3, 7)),
 	AX_POSE_TERMINATOR
 };
 static const ax_pose sWeavilePose123[] = {

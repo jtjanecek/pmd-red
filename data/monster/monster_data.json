@@ -19994,6 +19994,58 @@
     ]
   },
   {
+    "name": "MonsterNameWeavile",
+    "category": "MonsterCategorySharpClaw",
+    "overworldPalette": 2,
+    "bodySize": 1,
+    "movementSpeed": 1,
+    "types": [
+      "TYPE_DARK",
+      "TYPE_ICE"
+    ],
+    "friendArea": "DARKNESS_RIDGE",
+    "abilities": [
+      "ABILITY_INNER_FOCUS",
+      "ABILITY_KEEN_EYE"
+    ],
+    "shadowSize": 1,
+    "regenSpeed": 100,
+    "canMove": true,
+    "chanceAsleep": 8,
+    "baseHP": 35,
+    "expYield": 84,
+    "baseAtkSpAtk": [
+      14,
+      10
+    ],
+    "baseDefSpDef": [
+      8,
+      10
+    ],
+    "weight": 204,
+    "size": 52,
+    "unk30": 10,
+    "unk31": 10,
+    "unk32": 24,
+    "canThrowItems": true,
+    "preEvolution": {
+      "evolveFrom": "MONSTER_SNEASEL",
+      "evolveType": "EVOLVE_TYPE_ITEM"
+    },
+    "evolutionRequirements": {
+      "mainRequirement": "ITEM_MOON_STONE"
+    },
+    "dexInternal": [
+      388,
+      420
+    ],
+    "recruitRate": -999,
+    "alphabetParent": [
+      319,
+      242
+    ]
+  },
+  {
     "name": "MonsterNameDecoy",
     "category": "MonsterCategorySlacker",
     "overworldPalette": 3,
@@ -20027,8 +20079,8 @@
     "unk32": 24,
     "canThrowItems": true,
     "dexInternal": [
-      388,
-      420
+      389,
+      421
     ],
     "recruitRate": 10,
     "alphabetParent": [

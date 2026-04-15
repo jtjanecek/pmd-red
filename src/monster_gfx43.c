@@ -5,3 +5,4 @@
 #include "data/ax/decoy.h"
 #include "data/ax/statue.h"
 #include "data/ax/rayquazacutscene.h"
+#include "data/ax/weavile.h"

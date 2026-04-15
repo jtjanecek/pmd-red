@@ -425,6 +425,7 @@ extern const SiroArchive gAxDeoxysAttack;
 extern const SiroArchive gAxDeoxysDefense;
 extern const SiroArchive gAxDeoxysSpeed;
 extern const SiroArchive gAxMunchlax;
+extern const SiroArchive gAxWeavile;
 extern const SiroArchive gAxDecoy;
 extern const SiroArchive gAxStatue;
 extern const SiroArchive gAxRayquazaCutscene;

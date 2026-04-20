@@ -2,6 +2,7 @@
 #include "structs/rgb.h"
 
 // These correspond to the 'overworldPalette' field in the monster data. Only slots 0-12 are actually used, slot 13 seems to be a placeholder.
+// Slot 13 repurposed for Lucario and Riolu's palette, whose colors don't fit anywhere else
 const RGB gAxMonsPalette[] = {
     INCBIN_RGB("graphics/ax/pal/0.pmdpal",
                "graphics/ax/pal/1.pmdpal",

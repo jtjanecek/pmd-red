@@ -274,6 +274,9 @@ static void sub_807218C(Entity *pokemon)
             if(gDungeon->unk644.unk18 == 0)
                 r3 = 1;
         }
+        if (r1 >= 0x1A6) { //new mons
+            r1 = 0x001;
+        }
         sub_806A3D4(buffer, r1, 3, r3);
     }
     else

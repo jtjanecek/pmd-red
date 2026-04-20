@@ -1,7 +1,7 @@
 #ifndef GUARD_MONSTER_FILES_TABLE_H
 #define GUARD_MONSTER_FILES_TABLE_H
 
-#define MONSTER_FILES_COUNT 498
+#define MONSTER_FILES_COUNT 504
 
 #include "structs/str_file_system.h"
 

@@ -5937,6 +5937,13 @@
     "unk31": 10,
     "unk32": 24,
     "canThrowItems": true,
+    "preEvolution": {
+      "evolveFrom": "MONSTER_MIMEJR",
+      "evolveType": "EVOLVE_TYPE_LEVEL"
+    },
+    "evolutionRequirements": {
+      "mainRequirement": 18
+    },
     "dexInternal": [
       122,
       122
@@ -8956,6 +8963,13 @@
     "unk31": 10,
     "unk32": 24,
     "canThrowItems": true,
+    "preEvolution": {
+      "evolveFrom": "MONSTER_BONSLY",
+      "evolveType": "EVOLVE_TYPE_LEVEL"
+    },
+    "evolutionRequirements": {
+      "mainRequirement": 17
+    },
     "dexInternal": [
       185,
       185
@@ -20043,6 +20057,282 @@
     "alphabetParent": [
       407,
       415
+    ]
+  },
+  {
+    "name": "MonsterNameRiolu",
+    "category": "MonsterCategoryMeditate",
+    "overworldPalette": 5,
+    "bodySize": 1,
+    "movementSpeed": 1,
+    "types": [
+      "TYPE_FIGHTING"
+    ],
+    "friendArea": "MT_DEEPGREEN",
+    "abilities": [
+      "ABILITY_INNER_FOCUS"
+    ],
+    "shadowSize": 1,
+    "regenSpeed": 100,
+    "canMove": true,
+    "chanceAsleep": 8,
+    "baseHP": 20,
+    "expYield": 18,
+    "baseAtkSpAtk": [
+      3,
+      4
+    ],
+    "baseDefSpDef": [
+      2,
+      2
+    ],
+    "weight": 179,
+    "size": 29,
+    "unk30": 10,
+    "unk31": 10,
+    "unk32": 24,
+    "canThrowItems": true,
+    "dexInternal": [
+      388,
+      420
+    ],
+    "recruitRate": 105,
+    "alphabetParent": [
+      65,
+      104
+    ]
+  },
+  {
+    "name": "MonsterNameLucario",
+    "category": "MonsterCategoryMeditate",
+    "overworldPalette": 5,
+    "bodySize": 1,
+    "movementSpeed": 1,
+    "types": [
+      "TYPE_FIGHTING",
+      "TYPE_STEEL"
+    ],
+    "friendArea": "MT_DEEPGREEN",
+    "abilities": [
+      "ABILITY_INNER_FOCUS"
+    ],
+    "shadowSize": 1,
+    "regenSpeed": 100,
+    "canMove": true,
+    "chanceAsleep": 8,
+    "baseHP": 40,
+    "expYield": 50,
+    "baseAtkSpAtk": [
+      15,
+      15
+    ],
+    "baseDefSpDef": [
+      15,
+      15
+    ],
+    "weight": 230,
+    "size": 39,
+    "unk30": 10,
+    "unk31": 10,
+    "unk32": 24,
+    "canThrowItems": true,
+    "preEvolution": {
+      "evolveFrom": "MONSTER_RIOLU",
+      "evolveType": "EVOLVE_TYPE_LEVEL"
+    },
+    "evolutionRequirements": {
+      "mainRequirement": 40
+    },
+    "dexInternal": [
+      389,
+      421
+    ],
+    "recruitRate": -999,
+    "alphabetParent": [
+      198,
+      105
+    ]
+  },
+  {
+    "name": "MonsterNameBonsly",
+    "category": "MonsterCategoryImitation",
+    "overworldPalette": 8,
+    "bodySize": 1,
+    "movementSpeed": 1,
+    "types": [
+      "TYPE_ROCK"
+    ],
+    "friendArea": "OVERGROWN_FOREST",
+    "abilities": [
+      "ABILITY_STURDY",
+      "ABILITY_ROCK_HEAD"
+    ],
+    "shadowSize": 1,
+    "regenSpeed": 100,
+    "canMove": true,
+    "chanceAsleep": 100,
+    "baseHP": 23,
+    "expYield": 48,
+    "baseAtkSpAtk": [
+      11,
+      12
+    ],
+    "baseDefSpDef": [
+      4,
+      4
+    ],
+    "weight": 153,
+    "size": 28,
+    "unk30": 10,
+    "unk31": 10,
+    "unk32": 24,
+    "canThrowItems": true,
+    "dexInternal": [
+      390,
+      422
+    ],
+    "recruitRate": 164,
+    "alphabetParent": [
+      335,
+      185
+    ]
+  },
+  {
+    "name": "MonsterNameMimeJr",
+    "category": "MonsterCategoryBarrier",
+    "overworldPalette": 11,
+    "bodySize": 1,
+    "movementSpeed": 1,
+    "types": [
+      "TYPE_PSYCHIC"
+    ],
+    "friendArea": "DECREPIT_LAB",
+    "abilities": [
+      "ABILITY_SOUNDPROOF"
+    ],
+    "shadowSize": 1,
+    "regenSpeed": 100,
+    "canMove": true,
+    "chanceAsleep": 8,
+    "baseHP": 11,
+    "expYield": 160,
+    "baseAtkSpAtk": [
+      3,
+      3
+    ],
+    "baseDefSpDef": [
+      4,
+      4
+    ],
+    "weight": 153,
+    "size": 30,
+    "unk30": 10,
+    "unk31": 10,
+    "unk32": 24,
+    "canThrowItems": true,
+    "dexInternal": [
+      391,
+      423
+    ],
+    "recruitRate": 132,
+    "alphabetParent": [
+      217,
+      122
+    ]
+  },
+  {
+    "name": "MonsterNameJoltik",
+    "category": "MonsterCategoryStringSpit",
+    "overworldPalette": 0,
+    "bodySize": 1,
+    "movementSpeed": 1,
+    "types": [
+      "TYPE_BUG",
+      "TYPE_ELECTRIC"
+    ],
+    "friendArea": "SKY_BLUE_PLAINS",
+    "abilities": [
+      "ABILITY_COMPOUNDEYES"
+    ],
+    "shadowSize": 1,
+    "regenSpeed": 100,
+    "canMove": true,
+    "chanceAsleep": 8,
+    "baseHP": 10,
+    "expYield": 15,
+    "baseAtkSpAtk": [
+      3,
+      3
+    ],
+    "baseDefSpDef": [
+      4,
+      3
+    ],
+    "weight": 153,
+    "size": 16,
+    "unk30": 10,
+    "unk31": 10,
+    "unk32": 24,
+    "canThrowItems": true,
+    "dexInternal": [
+      392,
+      424
+    ],
+    "recruitRate": 156,
+    "alphabetParent": [
+      148,
+      39
+    ]
+  },
+  {
+    "name": "MonsterNameGalvantula",
+    "category": "MonsterCategoryLongLeg",
+    "overworldPalette": 2,
+    "bodySize": 1,
+    "movementSpeed": 1,
+    "types": [
+      "TYPE_BUG",
+      "TYPE_ELECTRIC"
+    ],
+    "friendArea": "SKY_BLUE_PLAINS",
+    "abilities": [
+      "ABILITY_COMPOUNDEYES"
+    ],
+    "shadowSize": 1,
+    "regenSpeed": 100,
+    "canMove": true,
+    "chanceAsleep": 8,
+    "baseHP": 22,
+    "expYield": 26,
+    "baseAtkSpAtk": [
+      17,
+      18
+    ],
+    "baseDefSpDef": [
+      6,
+      6
+    ],
+    "weight": 153,
+    "size": 16,
+    "unk30": 10,
+    "unk31": 10,
+    "unk32": 24,
+    "canThrowItems": true,
+    "preEvolution": {
+      "evolveFrom": "MONSTER_JOLTIK",
+      "evolveType": "EVOLVE_TYPE_LEVEL"
+    },
+    "evolutionRequirements": {
+      "mainRequirement": 36
+    },
+    "dexInternal": [
+      393,
+      425
+    ],
+    "recruitRate": -999,
+    "alphabetParent": [
+      148,
+      39
     ]
   },
   {

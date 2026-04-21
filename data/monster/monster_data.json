@@ -20061,7 +20061,7 @@
   },
   {
     "name": "MonsterNameRiolu",
-    "category": "MonsterCategoryMeditate",
+    "category": "MonsterCategoryEmanation",
     "overworldPalette": 5,
     "bodySize": 1,
     "movementSpeed": 1,
@@ -20093,8 +20093,8 @@
     "unk32": 24,
     "canThrowItems": true,
     "dexInternal": [
-      388,
-      420
+      389,
+      421
     ],
     "recruitRate": 105,
     "alphabetParent": [
@@ -20104,7 +20104,7 @@
   },
   {
     "name": "MonsterNameLucario",
-    "category": "MonsterCategoryMeditate",
+    "category": "MonsterCategoryAura",
     "overworldPalette": 5,
     "bodySize": 1,
     "movementSpeed": 1,
@@ -20144,8 +20144,8 @@
       "mainRequirement": 40
     },
     "dexInternal": [
-      389,
-      421
+      390,
+      422
     ],
     "recruitRate": -999,
     "alphabetParent": [
@@ -20155,7 +20155,7 @@
   },
   {
     "name": "MonsterNameBonsly",
-    "category": "MonsterCategoryImitation",
+    "category": "MonsterCategoryBonsai",
     "overworldPalette": 8,
     "bodySize": 1,
     "movementSpeed": 1,
@@ -20188,8 +20188,8 @@
     "unk32": 24,
     "canThrowItems": true,
     "dexInternal": [
-      390,
-      422
+      391,
+      423
     ],
     "recruitRate": 164,
     "alphabetParent": [
@@ -20199,7 +20199,7 @@
   },
   {
     "name": "MonsterNameMimeJr",
-    "category": "MonsterCategoryBarrier",
+    "category": "MonsterCategoryMime",
     "overworldPalette": 11,
     "bodySize": 1,
     "movementSpeed": 1,
@@ -20231,8 +20231,8 @@
     "unk32": 24,
     "canThrowItems": true,
     "dexInternal": [
-      391,
-      423
+      392,
+      424
     ],
     "recruitRate": 132,
     "alphabetParent": [
@@ -20242,7 +20242,7 @@
   },
   {
     "name": "MonsterNameJoltik",
-    "category": "MonsterCategoryStringSpit",
+    "category": "MonsterCategoryAttaching",
     "overworldPalette": 0,
     "bodySize": 1,
     "movementSpeed": 1,
@@ -20275,8 +20275,8 @@
     "unk32": 24,
     "canThrowItems": true,
     "dexInternal": [
-      392,
-      424
+      393,
+      425
     ],
     "recruitRate": 156,
     "alphabetParent": [
@@ -20286,7 +20286,7 @@
   },
   {
     "name": "MonsterNameGalvantula",
-    "category": "MonsterCategoryLongLeg",
+    "category": "MonsterCategoryEleSpider",
     "overworldPalette": 2,
     "bodySize": 1,
     "movementSpeed": 1,
@@ -20326,8 +20326,8 @@
       "mainRequirement": 36
     },
     "dexInternal": [
-      393,
-      425
+      394,
+      426
     ],
     "recruitRate": -999,
     "alphabetParent": [
@@ -20369,8 +20369,8 @@
     "unk32": 24,
     "canThrowItems": true,
     "dexInternal": [
-      389,
-      421
+      395,
+      427
     ],
     "recruitRate": 10,
     "alphabetParent": [
@@ -20413,8 +20413,8 @@
     "unk32": 24,
     "canThrowItems": false,
     "dexInternal": [
-      389,
-      421
+      396,
+      428
     ],
     "recruitRate": 7,
     "alphabetParent": [
@@ -20459,8 +20459,8 @@
     "unk32": 24,
     "canThrowItems": true,
     "dexInternal": [
-      384,
-      422
+      397,
+      429
     ],
     "recruitRate": 0,
     "alphabetParent": [

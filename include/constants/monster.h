@@ -437,6 +437,7 @@
 #define NUM_RECRUITABLE_MONSTERS 413  // Matches total friend area capacity slots
 #define NUM_MONSTERS NUM_RECRUITABLE_MONSTERS  // Legacy alias for recruitable storage slots
 #define NUM_PARTNERS 395  // Actual size of gPartners array (with Munchlax, Decoy, and Deoxys Normal, minus Unown/Castform forms), added gen 4 onwards mons
+#define NUM_CLASSIC_PARTNERS 388  // Size of partners array with Classic mode restrictions
 #define MONSTER_MAX (MONSTER_RAYQUAZA_CUTSCENE + 1)
 
 #define IS_CASTFORM_FORM_MONSTER(id)((id == MONSTER_CASTFORM_SNOWY || id == MONSTER_CASTFORM_SUNNY || id == MONSTER_CASTFORM_RAINY))

@@ -5,9 +5,9 @@ gMaxLines = 0;
 
 MEMORY
 {
-    EWRAM (rwx) : ORIGIN = 0x2000000, LENGTH = 263K
+    EWRAM (rwx) : ORIGIN = 0x2000000, LENGTH = 256K
     IWRAM (rwx) : ORIGIN = 0x3000000, LENGTH = 32K
-    ROM    (rx) : ORIGIN = 0x8000000, LENGTH = 34M
+    ROM    (rx) : ORIGIN = 0x8000000, LENGTH = 32M
 }
 
 SECTIONS {
@@ -1870,12 +1870,6 @@ SECTIONS {
 		sound/songs/seq_938.o(.rodata);
 		sound/songs/seq_939.o(.rodata);
     } > ROM =0
-
-	unk_data_9FBD5D0 :
-    ALIGN(4)
-	{
-		data/unk_9fbd5d0.o(.rodata);
-	} > ROM =0
 
     /* DWARF 2 sections */
     .debug_aranges  0 : { *(.debug_aranges) }

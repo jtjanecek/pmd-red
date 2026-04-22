@@ -42,6 +42,8 @@ extern void sub_8043FD0(void);
 
 // Partner roster used by starter/partner selection menus
 extern const s16 gPartners[NUM_PARTNERS];
+// Partner roster used by Classic mode starter/partner selection menus
+extern const s16 gClassicPartners[NUM_CLASSIC_PARTNERS];
 
 enum
 {
@@ -55,6 +57,7 @@ enum
     PERSONALITY_LEADER_SWAP_SELECTION,
     PERSONALITY_DIFFICULTY_SELECTION,
     PERSONALITY_DUNGEON_COUNT_SELECTION,
+    PERSONALITY_SPAWN_SELECTION,
     PERSONALITY_PLAYER_GENDER,
     PERSONALITY_RECRUIT_LIMIT_NOTICE,
     PERSONALITY_ADVANCE_TO_STARTER_SELECTION,
@@ -111,6 +114,7 @@ static void HandleLeaderSwapSelection(void);
 static void StartDifficultySelection(void);
 static void StartDungeonCountSelection(void);
 static void HandleDungeonCountSelection(void);
+static void StartSpawnSelection(void);
 static void NicknamePartner(void);
 static void PromptTeamName(void);
 static void HandleTeamNameEntry(void);
@@ -135,6 +139,7 @@ static bool32 TryStoreCustomSeed(void);
 static bool32 ParseSeedString(const u8 *text, s32 *seedOut);
 static void CleanupNamingScreen(void);
 static void HandleDifficultySelection(void);
+static void HandleSpawnSelection(void);
 static void StartStarterItemSelection(void);
 static void HandleStarterItemPrompt(void);
 static void HandleStarterItemSelection(void);
@@ -177,8 +182,10 @@ static void InitializeTestStats(void)
     sPersonalityTestTracker->unk4.skipBasicRescues = 1; // Always skip basic rescues
     sPersonalityTestTracker->unk4.recruitAll = RECRUIT_ALL_ALL; // Default to All Recruitable
     sPersonalityTestTracker->unk4.maxDungeons = MAX_DUNGEONS_10;
+    sPersonalityTestTracker->unk4.spawns = SPAWN_NATDEX;
     sPersonalityTestTracker->unk4.enableLeaderSwap = 1;
     SetGameDifficultySetting(DIFFICULTY_NORMAL);
+    SetGameSpawnSetting(SPAWN_NATDEX);
     SetSkipBasicRescuesSetting(1);
     SetMaxDungeonsSetting(MAX_DUNGEONS_10);
     SetEnableLeaderSwapSetting(1);
@@ -227,6 +234,9 @@ u32 HandleTestTrackerState(void)
             break;
         case PERSONALITY_LEADER_SWAP_SELECTION:
             HandleLeaderSwapSelection();
+            break;
+        case PERSONALITY_SPAWN_SELECTION:
+            HandleSpawnSelection();
             break;
         case PERSONALITY_DIFFICULTY_SELECTION:
             HandleDifficultySelection();
@@ -469,6 +479,12 @@ static void StartDifficultySelection(void)
     sPersonalityTestTracker->TestState = PERSONALITY_DIFFICULTY_SELECTION;
 }
 
+static void StartSpawnSelection(void)
+{
+    CreateMenuDialogueBoxAndPortrait(gSpawnPrompt, 0, 0, gSpawnMenu, 0, 3, 0, 0, 0x101);
+    sPersonalityTestTracker->TestState = PERSONALITY_SPAWN_SELECTION;
+}
+
 static void StartDungeonCountSelection(void)
 {
     CreateMenuDialogueBoxAndPortrait(gDungeonCountPrompt, 0, MAX_DUNGEONS_10, gDungeonCountMenu, 0, 3, 0, 0, 0x101);
@@ -688,6 +704,21 @@ static void HandleLeaderSwapSelection(void)
     StartDifficultySelection();
 }
 
+static void HandleSpawnSelection(void)
+{
+    s32 selection;
+
+    if (sub_80144A4(&selection) != 0)
+        return;
+
+    if (selection < 0 || selection >= NUM_SPAWN_SETTINGS)
+        selection = SPAWN_NATDEX;
+
+    sPersonalityTestTracker->unk4.spawns = selection;
+    SetGameDifficultySetting(selection);
+    StartDungeonCountSelection();
+}
+
 static void HandleDifficultySelection(void)
 {
     s32 selection;
@@ -700,7 +731,7 @@ static void HandleDifficultySelection(void)
 
     sPersonalityTestTracker->unk4.difficulty = selection;
     SetGameDifficultySetting(selection);
-    StartDungeonCountSelection();
+    StartSpawnSelection();
 }
 
 static void HandleDungeonCountSelection(void)

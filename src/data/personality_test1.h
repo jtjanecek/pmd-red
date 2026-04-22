@@ -52,6 +52,17 @@ static const MenuItem gDungeonCountMenu[] = {
     { _("15"), MAX_DUNGEONS_15 },
     { NULL, -1 },
 };
+ALIGNED(4) static const u8 gSpawnPrompt[] = _(
+    "{CENTER_ALIGN}Which Pokemon pool to use?\n"
+    "{CENTER_ALIGN}NatDex: Includes extra gen 4+ PKMN.\n"
+    "{CENTER_ALIGN}Classic: Only gen 1-3 + Munchlax."
+);
+static const MenuItem gSpawnMenu[] = {
+    { _("NatDex"), SPAWN_NATDEX },
+    { _("Classic"), SPAWN_CLASSIC },
+    { NULL, -1 },
+};
+
 ALIGNED(4) static const u8 gStarterPrompt[] = _("{CENTER_ALIGN}Select your character.");
 ALIGNED(4) static const u8 gStarterNickPrompt[] = STARTER_NICK_PROMPT;
 

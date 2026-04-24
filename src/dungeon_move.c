@@ -349,8 +349,10 @@ void UseMoveAgainstTargets(Entity **targetsArray, Entity *attacker, Move *move, 
                     case MOVE_EXTREMESPEED:
                     case MOVE_SKY_UPPERCUT:
                     case MOVE_SWIFT:
+                    case MOVE_AURA_SPHERE:
                     case MOVE_TACKLE:
                     case MOVE_WATERFALL:
+                    case MOVE_DARK_PULSE:
                     case MOVE_SLAM:
                     case MOVE_BULLET_SEED:
                     case MOVE_EGG_BOMB:
@@ -365,6 +367,7 @@ void UseMoveAgainstTargets(Entity **targetsArray, Entity *attacker, Move *move, 
                     case MOVE_VINE_WHIP:
                     case MOVE_SHOCK_WAVE:
                     case MOVE_QUICK_ATTACK:
+                    case MOVE_SUCKER_PUNCH:
                     case MOVE_SPIKE_CANNON:
                     case MOVE_DRAGON_CLAW:
                     case MOVE_DRILL_PECK:
@@ -474,6 +477,7 @@ void UseMoveAgainstTargets(Entity **targetsArray, Entity *attacker, Move *move, 
                         moveHadEffect = PoisonStingMoveAction(attacker, currTarget, move, itemId);
                         break;
                     case MOVE_PSYCHIC:
+                    case MOVE_BUG_BUZZ:
                         moveHadEffect = sub_8058C98(attacker, currTarget, move, gStatIndexSpecial, itemId);
                         break;
                     case MOVE_ACID:
@@ -626,11 +630,13 @@ void UseMoveAgainstTargets(Entity **targetsArray, Entity *attacker, Move *move, 
                         moveHadEffect = ZapCannonMoveAction(attacker, currTarget, move, itemId);
                         break;
                     case MOVE_SUPERPOWER:
+                    case MOVE_CLOSE_COMBAT:
                         moveHadEffect = SuperpowerMoveAction(attacker, currTarget, move, itemId);
                         break;
                     case MOVE_ROCK_TOMB:
                     case MOVE_ICY_WIND:
                     case MOVE_MUD_SHOT:
+                    case MOVE_ELECTROWEB:
                         moveHadEffect = RockTombMoveAction(attacker, currTarget, move, itemId);
                         break;
                     case MOVE_DYNAMICPUNCH:

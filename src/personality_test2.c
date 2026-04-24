@@ -14,6 +14,8 @@
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
+#include "save.h"
+#include "constants/spawn.h"
 
 EWRAM_INIT struct PersonalityStruct_203B404 *gUnknown_203B404 = {NULL};
 
@@ -187,17 +189,33 @@ static s32 GetValidPartners(void)
     s32 i;
     s32 ValidPartnerCounter;
 
-    if (gUnknown_203B404->selectingStarter) {
-        for (i = 0; i < NUM_PARTNERS; i++)
-            gUnknown_203B404->PartnerArray[i] = gPartners[i];
-        return NUM_PARTNERS + 1;
+    if (GetGameSpawnSetting() == SPAWN_CLASSIC) {
+        if (gUnknown_203B404->selectingStarter) {
+            for (i = 0; i < NUM_CLASSIC_PARTNERS; i++)
+                gUnknown_203B404->PartnerArray[i] = gClassicPartners[i];
+            return NUM_CLASSIC_PARTNERS + 1;
+        }
+
+        ValidPartnerCounter = 0;
+
+        for (i = 0; i < NUM_CLASSIC_PARTNERS; i++) {
+            gUnknown_203B404->PartnerArray[ValidPartnerCounter] = gClassicPartners[i];
+            ValidPartnerCounter++;
+        }
     }
+    else {
+        if (gUnknown_203B404->selectingStarter) {
+            for (i = 0; i < NUM_PARTNERS; i++)
+                gUnknown_203B404->PartnerArray[i] = gPartners[i];
+            return NUM_PARTNERS + 1;
+        }
 
-    ValidPartnerCounter = 0;
+        ValidPartnerCounter = 0;
 
-    for (i = 0; i < NUM_PARTNERS; i++) {
-        gUnknown_203B404->PartnerArray[ValidPartnerCounter] = gPartners[i];
-        ValidPartnerCounter++;
+        for (i = 0; i < NUM_PARTNERS; i++) {
+            gUnknown_203B404->PartnerArray[ValidPartnerCounter] = gPartners[i];
+            ValidPartnerCounter++;
+        }
     }
 
     return ValidPartnerCounter + 1;

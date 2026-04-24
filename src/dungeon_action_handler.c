@@ -670,7 +670,19 @@ static void sub_8067558(Entity *entity, Entity *targetEntity, s32 a2)
                 r2 = 0;
             }
 
-            sub_806A3D4(txt, speciesId,  r2, r6);
+
+            //Handler for the extra added mons
+            if (speciesId == MONSTER_RIOLU || speciesId == MONSTER_LUCARIO) {
+                sub_806A3D4(txt, MONSTER_MEDITITE, r2, r6);
+            }else if (speciesId == MONSTER_BONSLY) {
+                sub_806A3D4(txt, MONSTER_SUDOWOODO, r2, r6);
+            }else if (speciesId == MONSTER_MIMEJR) {
+            sub_806A3D4(txt, MONSTER_MR_MIME, r2, r6);
+            }else if (speciesId == MONSTER_JOLTIK || speciesId == MONSTER_GALVANTULA) {
+                sub_806A3D4(txt, MONSTER_SPINARAK, r2, r6);
+            } else {
+                sub_806A3D4(txt, speciesId, r2, r6);
+            }
             DisplayDungeonMessage(NULL, txt, TRUE);
         }
     }

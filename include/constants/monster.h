@@ -423,13 +423,21 @@
 #define MONSTER_DEOXYS_DEFENSE 418
 #define MONSTER_DEOXYS_SPEED 419
 #define MONSTER_MUNCHLAX 420
-#define MONSTER_DECOY 421
-#define MONSTER_STATUE 422
-#define MONSTER_RAYQUAZA_CUTSCENE 423
+#define MONSTER_WEAVILE 421
+#define MONSTER_RIOLU 422
+#define MONSTER_LUCARIO 423
+#define MONSTER_BONSLY 424
+#define MONSTER_MIMEJR 425
+#define MONSTER_JOLTIK 426
+#define MONSTER_GALVANTULA 427
+#define MONSTER_DECOY 428
+#define MONSTER_STATUE 429
+#define MONSTER_RAYQUAZA_CUTSCENE 430
 
 #define NUM_RECRUITABLE_MONSTERS 413  // Matches total friend area capacity slots
 #define NUM_MONSTERS NUM_RECRUITABLE_MONSTERS  // Legacy alias for recruitable storage slots
-#define NUM_PARTNERS 388  // Actual size of gPartners array (with Munchlax, Decoy, and Deoxys Normal, minus Unown/Castform forms)
+#define NUM_PARTNERS 395  // Actual size of gPartners array (with Munchlax, Decoy, and Deoxys Normal, minus Unown/Castform forms), added gen 4 onwards mons
+#define NUM_CLASSIC_PARTNERS 388  // Size of partners array with Classic mode restrictions
 #define MONSTER_MAX (MONSTER_RAYQUAZA_CUTSCENE + 1)
 
 #define IS_CASTFORM_FORM_MONSTER(id)((id == MONSTER_CASTFORM_SNOWY || id == MONSTER_CASTFORM_SUNNY || id == MONSTER_CASTFORM_RAINY))

@@ -1,6 +1,6 @@
 species_id,species_name,exp_to_100,growth_rate,total_hp,total_att,total_sp_att,total_def,total_sp_def
 420,Munchlax,114728,Erratic,73,45,48,17,17
-421,Decoy,114728,Erratic,73,45,48,17,17
+422,Decoy,114728,Erratic,73,45,48,17,17
 21,Spearow,1736500,Fluctuating,126,73,81,49,49
 22,Fearow,1736500,Fluctuating,108,68,73,43,42
 18,Pidgeot,1800000,Fluctuating,113,94,94,53,43
@@ -145,6 +145,7 @@ species_id,species_name,exp_to_100,growth_rate,total_hp,total_att,total_sp_att,t
 365,Whiscash,2276600,Fluctuating,140,79,82,39,38
 119,Seaking,2280000,Fluctuating,94,109,90,77,49
 240,Sneasel,2280000,Fluctuating,130,122,116,76,58
+421,Weavile,2452922,Fluctuating,165,123,109,110,109
 246,Piloswine,2280000,Fluctuating,105,67,77,34,34
 305,Ralts,2280000,Fluctuating,89,75,85,43,42
 306,Kirlia,2280000,Fluctuating,93,86,92,54,52

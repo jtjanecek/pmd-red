@@ -3,6 +3,7 @@
 #include "save.h"
 #include "music_util.h"
 #include "constants/difficulty.h"
+#include "constants/spawn.h"
 #include "string_format.h"
 #include "adventure_info.h"
 #include "event_flag.h"
@@ -125,6 +126,23 @@ void SetGameDifficultySetting(u32 value)
 {
     if (value >= NUM_DIFFICULTY_SETTINGS)
         value = DIFFICULTY_NORMAL;
+    gUnknown_202DE2C = value;
+    if (gUnknown_203B184 != NULL)
+        gUnknown_203B184->difficulty = value;
+}
+
+
+u32 GetGameSpawnSetting(void)
+{
+    if (gUnknown_202DE2C >= NUM_SPAWN_SETTINGS)
+        gUnknown_202DE2C = SPAWN_NATDEX;
+    return gUnknown_202DE2C;
+}
+
+void SetGameSpawnSetting(u32 value)
+{
+    if (value >= NUM_SPAWN_SETTINGS)
+        value = SPAWN_NATDEX;
     gUnknown_202DE2C = value;
     if (gUnknown_203B184 != NULL)
         gUnknown_203B184->difficulty = value;

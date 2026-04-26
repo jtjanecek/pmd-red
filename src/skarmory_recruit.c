@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "pokemon.h"
 #include "save.h"
+#include "constants/spawn.h"
 
 typedef struct SkarmoryRecruitState {
     SkarmoryRecruitSaveData data;
@@ -148,11 +149,15 @@ static u32 MixSeeds(u32 dungeonNumber, s32 personalitySeed)
 
 static bool8 IsEligibleSpecies(s16 species)
 {
+    u32 spawn = GetGameSpawnSetting();
+
     if (species <= 0 || species > NUM_RECRUITABLE_MONSTERS)
         return FALSE;
     if (IS_CASTFORM_FORM_MONSTER(species) || IS_DEOXYS_FORM_MONSTER(species))
         return FALSE;
     if (species == MONSTER_DECOY || species == MONSTER_STATUE)
+        return FALSE;
+    if (species >= MONSTER_WEAVILE && spawn == SPAWN_CLASSIC)
         return FALSE;
     if (!IsExclusivePokemonUnlocked(species))
         return FALSE;

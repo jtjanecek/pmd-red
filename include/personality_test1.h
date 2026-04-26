@@ -3,6 +3,7 @@
 
 #include "constants/personality_test.h"
 #include "constants/difficulty.h"
+#include "constants/spawn.h"
 #include "constants/global.h"
 #include "structs/menu.h"
 
@@ -27,10 +28,11 @@ typedef struct TeamBasicInfo
     /* 0x30 */ u8 TeamName[TEAM_NAME_LENGTH + 1];
     /* 0x3C */ s32 customSeed;
     /* 0x40 */ u8 difficulty;
-    /* 0x41 */ u8 skipBasicRescues;
-    /* 0x42 */ u8 recruitAll;
-    /* 0x43 */ u8 maxDungeons;
-    /* 0x44 */ u8 enableLeaderSwap;
+    /* 0x41 */ u8 spawns;
+    /* 0x42 */ u8 skipBasicRescues;
+    /* 0x43 */ u8 recruitAll;
+    /* 0x44 */ u8 maxDungeons;
+    /* 0x45 */ u8 enableLeaderSwap;
 } TeamBasicInfo;
 
 typedef TeamBasicInfo PersonalityRelated;

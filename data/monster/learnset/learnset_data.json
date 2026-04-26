@@ -29382,6 +29382,93 @@
         ]
     },
     {
+        "pokemon": "Weavile",
+        "levelUpMoves": [
+            {
+                "move": "MOVE_TAUNT",
+                "level": 1
+            },
+            {
+                "move": "MOVE_LEER",
+                "level": 1
+            },
+            {
+                "move": "MOVE_SCRATCH",
+                "level": 1
+            },
+            {
+                "move": "MOVE_QUICK_ATTACK",
+                "level": 1
+            },
+            {
+                "move": "MOVE_SCREECH",
+                "level": 15
+            },
+            {
+                "move": "MOVE_FAINT_ATTACK",
+                "level": 22
+            },
+            {
+                "move": "MOVE_FURY_SWIPES",
+                "level": 29
+            },
+            {
+                "move": "MOVE_AGILITY",
+                "level": 36
+            },
+            {
+                "move": "MOVE_ICY_WIND",
+                "level": 43
+            },
+            {
+                "move": "MOVE_SLASH",
+                "level": 50
+            },
+            {
+                "move": "MOVE_BEAT_UP",
+                "level": 57
+            },
+            {
+                "move": "MOVE_METAL_CLAW",
+                "level": 64
+            }
+        ],
+        "HMTMMoves": [
+            "MOVE_IRON_TAIL",
+            "MOVE_DIG",
+            "MOVE_RAIN_DANCE",
+            "MOVE_HAIL",
+            "MOVE_CUT",
+            "MOVE_TORMENT",
+            "MOVE_ROCK_SMASH",
+            "MOVE_RETURN",
+            "MOVE_STRENGTH",
+            "MOVE_DOUBLE_TEAM",
+            "MOVE_FACADE",
+            "MOVE_BRICK_BREAK",
+            "MOVE_FOCUS_PUNCH",
+            "MOVE_SHADOW_BALL",
+            "MOVE_TAUNT",
+            "MOVE_AERIAL_ACE",
+            "MOVE_TOXIC",
+            "MOVE_THIEF",
+            "MOVE_SURF",
+            "MOVE_SUNNY_DAY",
+            "MOVE_REST",
+            "MOVE_SECRET_POWER",
+            "MOVE_BLIZZARD",
+            "MOVE_PROTECT",
+            "MOVE_CALM_MIND",
+            "MOVE_HIDDEN_POWER",
+            "MOVE_ATTRACT",
+            "MOVE_FRUSTRATION",
+            "MOVE_SNATCH",
+            "MOVE_ICE_BEAM",
+            "MOVE_WIDE_SLASH",
+            "MOVE_VACUUM_CUT"
+        ]
+    },
+    {
         "pokemon": "Decoy",
         "levelUpMoves": [
             {

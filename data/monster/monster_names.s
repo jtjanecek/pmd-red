@@ -1,3 +1,63 @@
+.global MonsterNameGalvantula
+MonsterNameGalvantula:
+.string "Galvantula\0"
+.align 2,0
+
+.global MonsterNameJoltik
+MonsterNameJoltik:
+.string "Joltik\0"
+.align 2,0
+
+.global MonsterNameMimeJr
+MonsterNameMimeJr:
+.string "Mime Jr.\0"
+.align 2,0
+
+.global MonsterNameBonsly
+MonsterNameBonsly:
+.string "Bonsly\0"
+.align 2,0
+
+.global MonsterNameLucario
+MonsterNameLucario:
+.string "Lucario\0"
+.align 2,0
+
+.global MonsterNameRiolu
+MonsterNameRiolu:
+.string "Riolu\0"
+.align 2,0
+
+.global MonsterCategoryEleSpider
+MonsterCategoryEleSpider:
+.string "EleSpider\0"
+.align 2,0
+
+.global MonsterCategoryAttaching
+MonsterCategoryAttaching:
+.string "Attaching\0"
+.align 2,0
+
+.global MonsterCategoryMime
+MonsterCategoryMime:
+.string "Mime\0"
+.align 2,0
+
+.global MonsterCategoryBonsai
+MonsterCategoryBonsai:
+.string "Bonsai\0"
+.align 2,0
+
+.global MonsterCategoryAura
+MonsterCategoryAura:
+.string "Aura\0"
+.align 2,0
+
+.global MonsterCategoryEmanation
+MonsterCategoryEmanation:
+.string "Emanation\0"
+.align 2,0
+
 .global MonsterNameWeavile
 MonsterNameWeavile:
 .string "Weavile\0"

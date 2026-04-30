@@ -368,6 +368,12 @@ int get_move_id(string move_macro) {
         move_macro_ids["MOVE_VOLT_TACKLE"] = 0x162;
         move_macro_ids["MOVE_WIDE_SLASH"] = 0x168;
         move_macro_ids["MOVE_VACUUM_CUT"] = 0x18A;
+        move_macro_ids["MOVE_SUCKER_PUNCH"] = 0x19D;
+        move_macro_ids["MOVE_ELECTROWEB"] = 0x19E;
+        move_macro_ids["MOVE_DARK_PULSE"] = 0x19F;
+        move_macro_ids["MOVE_CLOSE_COMBAT"] = 0x19A;
+        move_macro_ids["MOVE_AURA_SPHERE"] = 0x19B;
+        move_macro_ids["MOVE_BUG_BUZZ"] = 0x19C;
     }
     if (move_macro_ids.count(move_macro))
     {

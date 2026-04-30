@@ -1,5 +1,5 @@
 # Download BPS Patch file here
-https://github.com/jtjanecek/rogue-rescue-team/releases/tag/v1.1.1
+https://github.com/jtjanecek/rogue-rescue-team/releases/tag/v2.0.0
 
 # Forked from Original Disassembly under pret
 https://github.com/pret/pmd-red
@@ -25,6 +25,7 @@ Rogue Rescue Team plays as a seeded roguelike run: during the personality quiz y
 
 # Features
 - Three difficulty modes: Normal, Hard, Nightmare. Difficulty dynamically affects recruitment rates, boss strength, item limits, visibility, trap density, weather usage, shop behavior, and dungeon variance.
+- NatDex and Classic modes that let you play with gen 4+ Pokémon or just the Rescue Team original roster.
 - All Friend Areas unlocked from the start.
 - Start each run by selecting one item from five randomized options.
 - Play as any Pokémon with any partner from the beginning, including legendaries.
@@ -62,7 +63,9 @@ Rogue Rescue Team plays as a seeded roguelike run: during the personality quiz y
 - Floor spawn logic weighted by total base stats; early floors favor weaker Pokémon.
 - Shiny system added, rare but guarenteed recruit.
 - Shiny structure reworked to allow body-part color modifications.
+- Bonsly, Mime Jr., Riolu, Lucario, Weavile, Joltik and Galvantula are added to the game and fully playable.
 - Munchlax and Decoy (glitch Pokémon) are playable with custom-designed movesets.
+- New moves: Dark Pulse, Close Combat, Bug Buzz, Electroweb and Aura Sphere.
 - Shop buy and sell prices capped at 4000; overpriced items rebalanced. Banana price set to 50.
 - Friend Area entry bug fixed.
 - Autopilot system added, toggleable via R + A.
@@ -70,6 +73,7 @@ Rogue Rescue Team plays as a seeded roguelike run: during the personality quiz y
 
 # Developers and Testers
 - FourBolt
+- Dr. Plasmadrid
 - FairyForestKing
 - ferb
 - Mystaldi

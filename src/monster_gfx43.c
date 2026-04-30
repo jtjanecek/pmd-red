@@ -4,4 +4,10 @@
 
 #include "data/ax/decoy.h"
 #include "data/ax/statue.h"
-#include "data/ax/rayquazacutscene.h"
+#include "data/ax/weavile.h"
+#include "data/ax/riolu.h"
+#include "data/ax/lucario.h"
+#include "data/ax/bonsly.h"
+#include "data/ax/mimejr.h"
+#include "data/ax/joltik.h"
+#include "data/ax/galvantula.h"

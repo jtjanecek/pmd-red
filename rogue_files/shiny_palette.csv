@@ -421,6 +421,13 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 418,,MonsterNameDeoxys,,3,,,5,11,12,13,14,15,,10,,9,,,6,,Mystaldi
 419,,MonsterNameDeoxys,,3,,,5,11,12,13,14,15,,10,,9,,,6,,Mystaldi
 420,,MonsterNameMunchlax,,0,,,,,13,8,9,10,6,7,,,,,,,FairyForestKing
-421,,MonsterNameDecoy,,11,,,,,,,,,,,,,,,,,FairyForestKing
-422,,MonsterNameStatue,,,,,,,,,,,,,,,,,,,
-423,,MonsterNameRayquaza,,5,,,5,6,7,,,,2,3,4,,,,,,FairyForestKing
+421,,MonsterNameWeavile,Weavile,4,,,,,,,,,,,,5,6,7,,,FairyForestKing
+422,,MonsterNameRiolu,Riolu,0,,,,,,,,,5,6,7,,,,,,FairyForestKing
+423,,MonsterNameLucario,Lucario,0,,,,,,,,,5,6,7,,,,,,FairyForestKing
+424,,MonsterNameBonsly,Bonsly,3,,,11,12,13,,,,,14,9,2,3,,4,,FairyForestKing
+425,,MonsterNameMimeJr,Mime Jr.,10,,,,,,,,,5,6,7,8,9,3,4,,FairyForestKing
+426,,MonsterNameJoltik,Joltik,8,,,,,,,,,12,13,14,,,14,15,,FairyForestKing
+427,,MonsterNameGalvantula,Galvantula,8,,,,,,,,,12,13,14,,,14,15,,FairyForestKing
+428,,MonsterNameDecoy,,11,,,,,,,,,,,,,,,,,FairyForestKing
+429,,MonsterNameStatue,,,,,,,,,,,,,,,,,,,
+430,,MonsterNameRayquaza,,5,,,5,6,7,,,,2,3,4,,,,,,FairyForestKing

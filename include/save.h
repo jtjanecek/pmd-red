@@ -114,6 +114,8 @@ s32 sub_8011C34(void);
 void sub_8011C40(s32 in);
 u32 GetGameDifficultySetting(void);
 void SetGameDifficultySetting(u32 in);
+u32 GetGameSpawnSetting(void);
+void SetGameSpawnSetting(u32 in);
 u8 GetSkipBasicRescuesSetting(void);
 void SetSkipBasicRescuesSetting(u8 in);
 u8 GetRecruitAllSetting(void);

@@ -1,3 +1,33 @@
+.global MoveNameBugBuzz
+MoveNameBugBuzz:
+.string "Bug Buzz\0"
+.align 2,0
+
+.global MoveNameElectroweb
+MoveNameElectroweb:
+.string "Electroweb\0"
+.align 2,0
+
+.global MoveNameSuckerPunch
+MoveNameSuckerPunch:
+.string "Sucker Punch\0"
+.align 2,0
+
+.global MoveNameDarkPulse
+MoveNameDarkPulse:
+.string "Dark Pulse\0"
+.align 2,0
+
+.global MoveNameCloseCombat
+MoveNameCloseCombat:
+.string "Close Combat\0"
+.align 2,0
+
+.global MoveNameAuraSphere
+MoveNameAuraSphere:
+.string "Aura Sphere\0"
+.align 2,0
+
 .global MoveNamePierce
 MoveNamePierce:
 .string "Pierce\0"

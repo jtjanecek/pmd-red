@@ -7,6 +7,7 @@
 #include "constants/bg_music.h"
 #include "constants/item.h"
 #include "constants/difficulty.h"
+#include "constants/spawn.h"
 #include "constants/trap.h"
 #include "constants/move_id.h"
 #include "constants/weather.h"
@@ -1445,6 +1446,7 @@ static bool8 IsBossSpecies(s16 species)
 static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask)
 {
     s32 i;
+    u32 spawn = GetGameSpawnSetting();
 
     if (typeMask == 0)
         return FALSE;
@@ -1458,6 +1460,9 @@ static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask)
     // Decoy/statue are placeholder actors and should never be wild spawns
     if (species == MONSTER_DECOY || species == MONSTER_STATUE)
         return FALSE;
+    // Gen 4+ mons can't spawn if Classic mode is activated
+    if (species >= MONSTER_WEAVILE && spawn == SPAWN_CLASSIC)
+        return FALSE;
 
     for (i = 0; i < 2; i++) {
         u8 type = GetPokemonType(species, (u32)i);
@@ -1467,7 +1472,7 @@ static bool8 SpeciesMatchesTypeMask(s16 species, u32 typeMask)
     return FALSE;
 }
 
-static s32 BuildSpawnCandidates(u32 typeMask, s16 *out, s32 outCapacity, bool8 restrictLowBst)
+static s32 BuildSpawnCandidates(u32 typeMask, s16* out, s32 outCapacity, bool8 restrictLowBst)
 {
     s32 count = 0;
     s32 species;
@@ -3763,6 +3768,7 @@ static s16 SelectBossRewardRecruitSpecies(void)
     s32 seed = sub_8011C34();
     u8 dungeonId = gDungeon->unk644.dungeonLocation.id;
     s32 attempts;
+    u32 spawn = GetGameSpawnSetting();
 
     if (seed < 0) {
         if (!DungeonSeedOverrides_IsEnabled(&seed))
@@ -3776,6 +3782,8 @@ static s16 SelectBossRewardRecruitSpecies(void)
         if (species <= MONSTER_NONE || species >= MONSTER_MAX)
             continue;
         if (species == MONSTER_STATUE || species == MONSTER_RAYQUAZA_CUTSCENE)
+            continue;
+        if (species >= MONSTER_WEAVILE && spawn == SPAWN_CLASSIC)
             continue;
         if (IS_CASTFORM_FORM_MONSTER(species) || IS_DEOXYS_FORM_MONSTER(species))
             continue;

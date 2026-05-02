@@ -38,8 +38,29 @@ static s16 GetStatGrowthSpecies(s32 species_)
     if (species == MONSTER_MUNCHLAX) {
         return MONSTER_WAILMER;
     }
+    if (species == MONSTER_WEAVILE) {
+        return MONSTER_CHARIZARD;
+    }
     if (species == MONSTER_DECOY) {
         return MONSTER_CATERPIE;
+    }
+    if (species == MONSTER_RIOLU) {
+        return MONSTER_CUBONE;
+    }
+    if (species == MONSTER_LUCARIO) {
+        return MONSTER_MAROWAK;
+    }
+    if (species == MONSTER_BONSLY) {
+        return MONSTER_IGGLYBUFF;
+    }
+    if (species == MONSTER_MIMEJR) {
+        return MONSTER_CLEFFA;
+    }
+    if (species == MONSTER_JOLTIK) {
+        return MONSTER_JIGGLYPUFF;
+    }
+    if (species == MONSTER_GALVANTULA) {
+        return MONSTER_WIGGLYTUFF;
     }
     return species;
 }

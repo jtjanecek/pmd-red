@@ -330,6 +330,30 @@ class AppState:
         self.frames_dir = frames_dir
         self.grid_dir = os.path.join(os.path.dirname(frames_dir), "shiny_idle_grids")
         self.cache = {}
+        self.anim_cache = {}
+        base_dir = os.path.dirname(frames_dir)
+        self.anim_sets = {
+            "idle": {
+                "dir": frames_dir,
+                "prefix": "idle",
+            },
+            "sleep": {
+                "dir": os.path.join(base_dir, "shiny_sleep_frames"),
+                "prefix": "sleep",
+            },
+            "attack": {
+                "dir": os.path.join(base_dir, "shiny_attack_frames"),
+                "prefix": "attack",
+            },
+            "damage": {
+                "dir": os.path.join(base_dir, "shiny_damage_frames"),
+                "prefix": "damage",
+            },
+            "hit": {
+                "dir": os.path.join(base_dir, "shiny_hit_frames"),
+                "prefix": "hit",
+            },
+        }
         self.vanilla_palettes = load_vanilla_palettes(monster_data_path)
         self.dex_ids = load_monster_dex_ids(monster_data_path)
         self.sprite_root = os.path.join(os.path.dirname(__file__), "shiny-download")
@@ -351,21 +375,30 @@ class AppState:
             if os.path.isdir(os.path.join(self.frames_dir, name))
         )
 
-    def load_frames(self, mon, palette_idx):
-        key = (mon, palette_idx)
+    def _get_anim_set(self, anim):
+        key = (anim or "idle").lower()
+        anim_set = self.anim_sets.get(key)
+        if anim_set is None:
+            raise ValueError(f"Unknown animation set: {anim}")
+        return key, anim_set
+
+    def load_frames(self, mon, palette_idx, anim="idle"):
+        anim_key, anim_set = self._get_anim_set(anim)
+        key = (anim_key, mon, palette_idx)
         cached = self.cache.get(key)
         if cached is not None:
             return cached
 
         palette_dir = f"palette_{palette_idx:02d}"
-        mon_dir = os.path.join(self.frames_dir, mon, palette_dir)
+        mon_dir = os.path.join(anim_set["dir"], mon, palette_dir)
         if not os.path.isdir(mon_dir):
-            raise FileNotFoundError(f"Missing {mon}/{palette_dir} in shiny_idle_frames.")
+            raise FileNotFoundError(f"Missing {mon}/{palette_dir} in {anim_set['dir']}.")
 
         images = {}
         base_palette = None
+        prefix = anim_set["prefix"]
         for direction in DIRECTION_NAMES:
-            path = os.path.join(mon_dir, f"idle_{direction}.png")
+            path = os.path.join(mon_dir, f"{prefix}_{direction}.png")
             if not os.path.isfile(path):
                 continue
             width, height, pixels, palette = decode_png_indexed(path)
@@ -374,10 +407,73 @@ class AppState:
             images[direction] = (width, height, pixels)
 
         if not images or base_palette is None:
-            raise FileNotFoundError(f"No idle frames found for {mon}/{palette_dir}.")
+            raise FileNotFoundError(
+                f"No {prefix} frames found for {mon}/{palette_dir}."
+            )
 
         payload = (images, base_palette)
         self.cache[key] = payload
+        return payload
+
+    def load_animation_frames(self, mon, palette_idx, anim="idle"):
+        anim_key, anim_set = self._get_anim_set(anim)
+        key = (anim_key, mon, palette_idx)
+        cached = self.anim_cache.get(key)
+        if cached is not None:
+            return cached
+
+        palette_dir = os.path.join(
+            anim_set["dir"], mon, f"palette_{palette_idx:02d}"
+        )
+        if not os.path.isdir(palette_dir):
+            raise FileNotFoundError(
+                f"Missing {mon}/palette_{palette_idx:02d} in {anim_set['dir']}."
+            )
+
+        frames_by_dir = {}
+        base_palette = None
+        prefix = anim_set["prefix"]
+        for direction in DIRECTION_NAMES:
+            pattern = re.compile(
+                rf"^{re.escape(prefix)}_{re.escape(direction)}_frame(\d+)\.png$"
+            )
+            frame_files = []
+            try:
+                filenames = os.listdir(palette_dir)
+            except OSError:
+                filenames = []
+            for name in filenames:
+                match = pattern.match(name)
+                if not match:
+                    continue
+                frame_idx = int(match.group(1))
+                frame_files.append((frame_idx, name))
+            frame_files.sort(key=lambda item: item[0])
+
+            frames = []
+            if frame_files:
+                for _, name in frame_files:
+                    path = os.path.join(palette_dir, name)
+                    width, height, pixels, palette = decode_png_indexed(path)
+                    if base_palette is None:
+                        base_palette = palette
+                    frames.append((width, height, pixels))
+            else:
+                path = os.path.join(palette_dir, f"{prefix}_{direction}.png")
+                if os.path.isfile(path):
+                    width, height, pixels, palette = decode_png_indexed(path)
+                    if base_palette is None:
+                        base_palette = palette
+                    frames.append((width, height, pixels))
+            frames_by_dir[direction] = frames
+
+        if base_palette is None:
+            raise FileNotFoundError(
+                f"No {prefix} frames found for {mon}/palette_{palette_idx:02d}."
+            )
+
+        payload = (frames_by_dir, base_palette)
+        self.anim_cache[key] = payload
         return payload
 
     def list_palettes(self, mon):
@@ -424,6 +520,53 @@ class AppState:
             place_image(canvas, grid_w, grid_h, (width, height, rgba), x0, y0)
 
         return write_png_rgba_bytes(grid_w, grid_h, canvas)
+
+    def render_grid_animation(self, mon, palette_idx, overrides, anim="idle"):
+        frames_by_dir, base_palette = self.load_animation_frames(
+            mon, palette_idx, anim=anim
+        )
+        available_frames = [
+            len(frames) for frames in frames_by_dir.values() if frames
+        ]
+        if not available_frames:
+            raise FileNotFoundError(f"No idle frames found for {mon}/{palette_idx:02d}.")
+        frame_count = max(available_frames)
+
+        max_w = 1
+        max_h = 1
+        for frames in frames_by_dir.values():
+            for width, height, _ in frames:
+                max_w = max(max_w, width)
+                max_h = max(max_h, height)
+
+        padding = 4
+        cell_w = max_w + padding
+        grid_w = (cell_w * len(DIRECTION_NAMES)) - padding
+        grid_h = max_h
+        sheet_h = grid_h * frame_count
+        canvas = bytearray(grid_w * sheet_h * 4)
+
+        bg_row = bytes((240, 240, 240, 255)) * grid_w
+        for frame_idx in range(frame_count):
+            base_offset = frame_idx * grid_h * grid_w * 4
+            for y in range(grid_h):
+                row_start = base_offset + (y * grid_w * 4)
+                canvas[row_start:row_start + (grid_w * 4)] = bg_row
+
+        for frame_idx in range(frame_count):
+            for col, direction in enumerate(DIRECTION_NAMES):
+                frames = frames_by_dir.get(direction) or []
+                if not frames:
+                    continue
+                frame = frames[frame_idx] if frame_idx < len(frames) else frames[-1]
+                width, height, pixels = frame
+                remapped = apply_overrides(pixels, overrides)
+                rgba = indexed_to_rgba(width, height, remapped, base_palette)
+                x0 = col * cell_w + (max_w - width) // 2
+                y0 = frame_idx * grid_h + (max_h - height) // 2
+                place_image(canvas, grid_w, sheet_h, (width, height, rgba), x0, y0)
+
+        return write_png_rgba_bytes(grid_w, sheet_h, canvas), frame_count, grid_w, grid_h
 
     def read_grid_png(self, mon):
         filename = f"{mon}.png"
@@ -622,6 +765,12 @@ INDEX_HTML = """<!doctype html>
       justify-content: center;
       align-items: center;
     }
+    .extra-anim-section {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 12px;
+    }
     .preview-stack {
       display: flex;
       flex-direction: column;
@@ -813,6 +962,10 @@ INDEX_HTML = """<!doctype html>
     #preview-base {
       image-rendering: pixelated;
     }
+    .preview-anim {
+      image-rendering: pixelated;
+      display: none;
+    }
     #overrides {
       display: grid;
       grid-template-columns: repeat(16, minmax(40px, 1fr));
@@ -866,6 +1019,12 @@ INDEX_HTML = """<!doctype html>
         Pause Emerald
       </label>
     </div>
+    <div>
+      <label for="play-animation">
+        <input type="checkbox" id="play-animation" />
+        Play animation
+      </label>
+    </div>
   </div>
 
   <div class="panel sprite-panel">
@@ -894,10 +1053,66 @@ INDEX_HTML = """<!doctype html>
       <div class="preview-row">
         <div class="preview-label">Before</div>
         <img id="preview-base" alt="Preview (before)" />
+        <canvas id="preview-base-anim" class="preview-anim" aria-label="Preview (before animation)"></canvas>
       </div>
       <div class="preview-row">
         <div class="preview-label">After</div>
         <img id="preview" alt="Preview (after)" />
+        <canvas id="preview-anim" class="preview-anim" aria-label="Preview (after animation)"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="extra-anim-section" class="extra-anim-section">
+    <div class="panel" style="margin-bottom:0;">
+      <strong>Extra Animations</strong>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Sleep (Before)</div>
+          <canvas id="preview-base-anim-sleep" class="preview-anim" aria-label="Sleep preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Sleep (After)</div>
+          <canvas id="preview-anim-sleep" class="preview-anim" aria-label="Sleep preview (after animation)"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Attack (Before)</div>
+          <canvas id="preview-base-anim-attack" class="preview-anim" aria-label="Attack preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Attack (After)</div>
+          <canvas id="preview-anim-attack" class="preview-anim" aria-label="Attack preview (after animation)"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Spell Attack (Before)</div>
+          <canvas id="preview-base-anim-damage" class="preview-anim" aria-label="Spell attack preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Spell Attack (After)</div>
+          <canvas id="preview-anim-damage" class="preview-anim" aria-label="Spell attack preview (after animation)"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-stack">
+        <div class="preview-row">
+          <div class="preview-label">Taking Hit (Before)</div>
+          <canvas id="preview-base-anim-hit" class="preview-anim" aria-label="Hit preview (before animation)"></canvas>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label">Taking Hit (After)</div>
+          <canvas id="preview-anim-hit" class="preview-anim" aria-label="Hit preview (after animation)"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -951,9 +1166,21 @@ INDEX_HTML = """<!doctype html>
     const scaleSelect = document.getElementById("scale");
     const gridScaleSelect = document.getElementById("grid-scale");
     const pauseEmerald = document.getElementById("pause-emerald");
+    const playAnimation = document.getElementById("play-animation");
     const overridesWrap = document.getElementById("overrides");
     const preview = document.getElementById("preview");
     const previewBase = document.getElementById("preview-base");
+    const previewAnim = document.getElementById("preview-anim");
+    const previewBaseAnim = document.getElementById("preview-base-anim");
+    const extraAnimSection = document.getElementById("extra-anim-section");
+    const previewAnimSleep = document.getElementById("preview-anim-sleep");
+    const previewBaseAnimSleep = document.getElementById("preview-base-anim-sleep");
+    const previewAnimAttack = document.getElementById("preview-anim-attack");
+    const previewBaseAnimAttack = document.getElementById("preview-base-anim-attack");
+    const previewAnimDamage = document.getElementById("preview-anim-damage");
+    const previewBaseAnimDamage = document.getElementById("preview-base-anim-damage");
+    const previewAnimHit = document.getElementById("preview-anim-hit");
+    const previewBaseAnimHit = document.getElementById("preview-base-anim-hit");
     const statusEl = document.getElementById("status");
     const gridImg = document.getElementById("grid");
     const gridLabels = document.getElementById("grid-labels");
@@ -974,12 +1201,67 @@ INDEX_HTML = """<!doctype html>
     let debounceTimer = null;
     let currentUrl = null;
     let baseUrl = null;
+    let animTimer = null;
+    let animFrame = 0;
+    let animRequestId = 0;
     let lastPaletteMon = null;
     let lastPaletteIdx = null;
     let lastAllPalettesMon = null;
     let lastBaseMon = null;
     let lastBasePalette = null;
     let vanillaPalette = null;
+    const animPreviews = {
+      idle: {
+        canvas: previewAnim,
+        baseCanvas: previewBaseAnim,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      sleep: {
+        canvas: previewAnimSleep,
+        baseCanvas: previewBaseAnimSleep,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      attack: {
+        canvas: previewAnimAttack,
+        baseCanvas: previewBaseAnimAttack,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      damage: {
+        canvas: previewAnimDamage,
+        baseCanvas: previewBaseAnimDamage,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+      hit: {
+        canvas: previewAnimHit,
+        baseCanvas: previewBaseAnimHit,
+        state: null,
+        baseState: null,
+        url: null,
+        baseUrl: null,
+        key: null,
+        baseKey: null,
+      },
+    };
     const INDEX_DEBUG_COLORS = [
       "#000000",
       "#e74c3c",
@@ -1115,6 +1397,296 @@ INDEX_HTML = """<!doctype html>
         img.style.width = (img.naturalWidth * scale) + "px";
         img.style.height = (img.naturalHeight * scale) + "px";
       });
+    }
+
+    function setAnimationVisibility(enabled) {
+      preview.style.display = enabled ? "none" : "block";
+      previewBase.style.display = enabled ? "none" : "block";
+      const canvasDisplay = enabled ? "block" : "none";
+      previewAnim.style.display = canvasDisplay;
+      previewBaseAnim.style.display = canvasDisplay;
+      if (previewAnimSleep) {
+        previewAnimSleep.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimSleep) {
+        previewBaseAnimSleep.style.display = canvasDisplay;
+      }
+      if (previewAnimAttack) {
+        previewAnimAttack.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimAttack) {
+        previewBaseAnimAttack.style.display = canvasDisplay;
+      }
+      if (previewAnimDamage) {
+        previewAnimDamage.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimDamage) {
+        previewBaseAnimDamage.style.display = canvasDisplay;
+      }
+      if (previewAnimHit) {
+        previewAnimHit.style.display = canvasDisplay;
+      }
+      if (previewBaseAnimHit) {
+        previewBaseAnimHit.style.display = canvasDisplay;
+      }
+      if (extraAnimSection) {
+        extraAnimSection.style.display = enabled ? "flex" : "none";
+      }
+    }
+
+    function stopAnimation() {
+      if (animTimer) {
+        clearInterval(animTimer);
+        animTimer = null;
+      }
+    }
+
+    function resetAnimationPreviews() {
+      Object.values(animPreviews).forEach((previewState) => {
+        previewState.key = null;
+        previewState.baseKey = null;
+        previewState.state = null;
+        previewState.baseState = null;
+        if (previewState.url) {
+          URL.revokeObjectURL(previewState.url);
+          previewState.url = null;
+        }
+        if (previewState.baseUrl) {
+          URL.revokeObjectURL(previewState.baseUrl);
+          previewState.baseUrl = null;
+        }
+      });
+    }
+
+    function buildOverridesParam(overrides) {
+      return overrides.map((value) => (value === null ? "" : String(value))).join(",");
+    }
+
+    async function fetchAnimationSheet(mon, palette, overrides, animType) {
+      const params = new URLSearchParams();
+      params.set("mon", mon);
+      params.set("palette", palette.toString());
+      params.set("overrides", buildOverridesParam(overrides));
+      params.set("anim", animType);
+      params.set("v", Date.now().toString());
+      const response = await fetch(`/api/anim?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      const frameCount = Number(response.headers.get("x-frame-count") || "1");
+      const frameWidth = Number(response.headers.get("x-frame-width") || "0");
+      const frameHeight = Number(response.headers.get("x-frame-height") || "0");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+      return {
+        img,
+        url,
+        frameCount: Math.max(1, frameCount),
+        frameWidth: Math.max(1, frameWidth),
+        frameHeight: Math.max(1, frameHeight),
+      };
+    }
+
+    function drawAnimationFrame() {
+      const scale = Number(scaleSelect.value);
+      function drawSheet(canvas, state, frameIndex) {
+        if (!canvas || !state) {
+          return;
+        }
+        const ctx = canvas.getContext("2d");
+        const frameCount = state.frameCount || 1;
+        const idx = frameCount > 0 ? frameIndex % frameCount : 0;
+        const dw = state.frameWidth * scale;
+        const dh = state.frameHeight * scale;
+        canvas.width = dw;
+        canvas.height = dh;
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, dw, dh);
+        ctx.drawImage(
+          state.img,
+          0,
+          idx * state.frameHeight,
+          state.frameWidth,
+          state.frameHeight,
+          0,
+          0,
+          dw,
+          dh
+        );
+      }
+
+      Object.values(animPreviews).forEach((previewState) => {
+        const maxFrames = Math.max(
+          previewState.state ? previewState.state.frameCount : 1,
+          previewState.baseState ? previewState.baseState.frameCount : 1
+        );
+        const frameIndex = maxFrames > 0 ? animFrame % maxFrames : 0;
+        drawSheet(previewState.baseCanvas, previewState.baseState, frameIndex);
+        drawSheet(previewState.canvas, previewState.state, frameIndex);
+      });
+    }
+
+    function startAnimationLoop() {
+      stopAnimation();
+      const hasAny = Object.values(animPreviews).some(
+        (previewState) => previewState.state || previewState.baseState
+      );
+      if (!hasAny) {
+        return;
+      }
+      animFrame = 0;
+      drawAnimationFrame();
+      animTimer = setInterval(() => {
+        animFrame += 1;
+        drawAnimationFrame();
+      }, 400);
+    }
+
+    async function renderAnimationSet(
+      animType,
+      mon,
+      palette,
+      overrides,
+      basePalette,
+      overridesKey,
+      requestId,
+      strict
+    ) {
+      const previewState = animPreviews[animType];
+      if (!previewState) {
+        return;
+      }
+      const nextKey = `${animType}|${mon}|${palette}|${overridesKey}`;
+      const nextBaseKey = `${animType}|${mon}|${basePalette}`;
+
+      if (nextKey !== previewState.key) {
+        previewState.key = nextKey;
+        previewState.state = null;
+        if (previewState.url) {
+          URL.revokeObjectURL(previewState.url);
+          previewState.url = null;
+        }
+        try {
+          const state = await fetchAnimationSheet(mon, palette, overrides, animType);
+          if (requestId !== animRequestId) {
+            return;
+          }
+          previewState.state = state;
+          previewState.url = state.url;
+        } catch (err) {
+          if (strict) {
+            throw err;
+          }
+          return;
+        }
+      }
+
+      if (nextBaseKey !== previewState.baseKey) {
+        previewState.baseKey = nextBaseKey;
+        previewState.baseState = null;
+        if (previewState.baseUrl) {
+          URL.revokeObjectURL(previewState.baseUrl);
+          previewState.baseUrl = null;
+        }
+        try {
+          const baseState = await fetchAnimationSheet(
+            mon,
+            basePalette,
+            Array(16).fill(null),
+            animType
+          );
+          if (requestId !== animRequestId) {
+            return;
+          }
+          previewState.baseState = baseState;
+          previewState.baseUrl = baseState.url;
+        } catch (err) {
+          if (strict) {
+            throw err;
+          }
+        }
+      }
+    }
+
+    async function renderAnimationPreview(mon, palette, overrides) {
+      stopAnimation();
+      setAnimationVisibility(true);
+      Object.values(animPreviews).forEach((previewState) => {
+        if (!previewState.canvas || !previewState.baseCanvas) {
+          return;
+        }
+        previewState.canvas.width = 1;
+        previewState.canvas.height = 1;
+        previewState.baseCanvas.width = 1;
+        previewState.baseCanvas.height = 1;
+      });
+      const basePalette = vanillaPalette ?? 0;
+      const overridesKey = buildOverridesParam(overrides);
+      const requestId = ++animRequestId;
+
+      await renderAnimationSet(
+        "idle",
+        mon,
+        palette,
+        overrides,
+        basePalette,
+        overridesKey,
+        requestId,
+        true
+      );
+      await Promise.all([
+        renderAnimationSet(
+          "sleep",
+          mon,
+          palette,
+          overrides,
+          basePalette,
+          overridesKey,
+          requestId,
+          false
+        ),
+        renderAnimationSet(
+          "attack",
+          mon,
+          palette,
+          overrides,
+          basePalette,
+          overridesKey,
+          requestId,
+          false
+        ),
+        renderAnimationSet(
+          "damage",
+          mon,
+          palette,
+          overrides,
+          basePalette,
+          overridesKey,
+          requestId,
+          false
+        ),
+        renderAnimationSet(
+          "hit",
+          mon,
+          palette,
+          overrides,
+          basePalette,
+          overridesKey,
+          requestId,
+          false
+        ),
+      ]);
+
+      if (requestId !== animRequestId) {
+        return;
+      }
+      startAnimationLoop();
     }
 
     function updateDexSprites(mon) {
@@ -1268,6 +1840,9 @@ INDEX_HTML = """<!doctype html>
     }
 
     async function renderBasePreview(mon) {
+      if (playAnimation && playAnimation.checked) {
+        return;
+      }
       const palette = vanillaPalette ?? 0;
       if (mon === lastBaseMon && palette === lastBasePalette) {
         return;
@@ -1303,6 +1878,14 @@ INDEX_HTML = """<!doctype html>
 
     async function handlePokemonChange() {
       const mon = pokemonSelect.value;
+      animRequestId += 1;
+      resetAnimationPreviews();
+      stopAnimation();
+      if (playAnimation && playAnimation.checked) {
+        setAnimationVisibility(true);
+      } else {
+        setAnimationVisibility(false);
+      }
       resetOverrides();
       updateDexSprites(mon);
       vanillaPalette = null;
@@ -1311,7 +1894,9 @@ INDEX_HTML = """<!doctype html>
       if (vanillaPalette !== null && vanillaPalette !== undefined) {
         paletteSelect.value = vanillaPalette.toString();
       }
-      renderBasePreview(mon);
+      if (!(playAnimation && playAnimation.checked)) {
+        renderBasePreview(mon);
+      }
       lastAllPalettesMon = mon;
       lastPaletteMon = null;
       lastPaletteIdx = null;
@@ -1347,6 +1932,10 @@ INDEX_HTML = """<!doctype html>
       const mon = pokemonSelect.value;
       const palette = Number(paletteSelect.value);
       const overrides = getOverrides();
+      const animate = playAnimation && playAnimation.checked;
+      if (!animate) {
+        animRequestId += 1;
+      }
       if (mon !== lastPaletteMon || palette !== lastPaletteIdx) {
         updatePalettePreview(mon, palette);
         lastPaletteMon = mon;
@@ -1356,30 +1945,43 @@ INDEX_HTML = """<!doctype html>
         updateAllPalettes(mon);
         lastAllPalettesMon = mon;
       }
-      const payload = { mon, palette, overrides };
-      setStatus("Rendering...");
-      const response = await fetch("/api/render", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        setStatus(text || "Render failed");
-        return;
+      if (animate) {
+        stopAnimation();
+        setStatus("Rendering animation...");
+        try {
+          await renderAnimationPreview(mon, palette, overrides);
+          setStatus("");
+        } catch (err) {
+          setStatus(err ? String(err) : "Animation failed");
+        }
+      } else {
+        setAnimationVisibility(false);
+        stopAnimation();
+        const payload = { mon, palette, overrides };
+        setStatus("Rendering...");
+        const response = await fetch("/api/render", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+          const text = await response.text();
+          setStatus(text || "Render failed");
+          return;
+        }
+        const blob = await response.blob();
+        if (currentUrl) {
+          URL.revokeObjectURL(currentUrl);
+        }
+        currentUrl = URL.createObjectURL(blob);
+        preview.onload = () => {
+          const scale = Number(scaleSelect.value);
+          preview.style.width = (preview.naturalWidth * scale) + "px";
+          preview.style.height = (preview.naturalHeight * scale) + "px";
+          setStatus("");
+        };
+        preview.src = currentUrl;
       }
-      const blob = await response.blob();
-      if (currentUrl) {
-        URL.revokeObjectURL(currentUrl);
-      }
-      currentUrl = URL.createObjectURL(blob);
-      preview.onload = () => {
-        const scale = Number(scaleSelect.value);
-        preview.style.width = (preview.naturalWidth * scale) + "px";
-        preview.style.height = (preview.naturalHeight * scale) + "px";
-        setStatus("");
-      };
-      preview.src = currentUrl;
 
       const indexUrl =
         `/api/index_map?mon=${encodeURIComponent(mon)}&palette=${palette}&v=${Date.now()}`;
@@ -1445,6 +2047,7 @@ INDEX_HTML = """<!doctype html>
       pauseEmerald.addEventListener("change", () => {
         updateDexSprites(pokemonSelect.value);
       });
+      playAnimation.addEventListener("change", scheduleRender);
       if (mons.length > 0) {
         pokemonSelect.value = mons[0];
       }
@@ -1461,10 +2064,37 @@ INDEX_HTML = """<!doctype html>
 
 
 class Handler(BaseHTTPRequestHandler):
-    def _send(self, status, content_type, data):
+    @staticmethod
+    def _parse_overrides_param(params):
+        overrides = []
+        raw = params.get("overrides", [""])[0]
+        if raw:
+            parts = raw.split(",")
+            for i in range(16):
+                try:
+                    value = parts[i]
+                except IndexError:
+                    value = ""
+                if value == "":
+                    overrides.append(None)
+                else:
+                    try:
+                        num = int(value, 10)
+                    except ValueError:
+                        overrides.append(None)
+                    else:
+                        overrides.append(max(0, min(15, num)))
+        else:
+            overrides = [None] * 16
+        return overrides
+
+    def _send(self, status, content_type, data, extra_headers=None):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
+        if extra_headers:
+            for key, value in extra_headers.items():
+                self.send_header(key, value)
         self.end_headers()
         self.wfile.write(data)
 
@@ -1521,32 +2151,39 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError:
                 self._send(400, "text/plain; charset=utf-8", b"Invalid palette.")
                 return
-            overrides = []
-            raw = params.get("overrides", [""])[0]
-            if raw:
-                parts = raw.split(",")
-                for i in range(16):
-                    try:
-                        value = parts[i]
-                    except IndexError:
-                        value = ""
-                    if value == "":
-                        overrides.append(None)
-                    else:
-                        try:
-                            num = int(value, 10)
-                        except ValueError:
-                            overrides.append(None)
-                        else:
-                            overrides.append(max(0, min(15, num)))
-            else:
-                overrides = [None] * 16
+            overrides = self._parse_overrides_param(params)
             try:
                 png = self.server.app_state.render_grid(mon, palette, overrides)
             except Exception as exc:
                 self._send(400, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
                 return
             self._send(200, "image/png", png)
+            return
+        if parsed.path == "/api/anim":
+            params = parse_qs(parsed.query)
+            try:
+                mon = params.get("mon", [""])[0]
+                palette = int(params.get("palette", ["0"])[0])
+            except ValueError:
+                self._send(400, "text/plain; charset=utf-8", b"Invalid palette.")
+                return
+            anim = params.get("anim", ["idle"])[0]
+            overrides = self._parse_overrides_param(params)
+            try:
+                png, frame_count, frame_w, frame_h = (
+                    self.server.app_state.render_grid_animation(
+                        mon, palette, overrides, anim=anim
+                    )
+                )
+            except Exception as exc:
+                self._send(400, "text/plain; charset=utf-8", str(exc).encode("utf-8"))
+                return
+            headers = {
+                "X-Frame-Count": str(frame_count),
+                "X-Frame-Width": str(frame_w),
+                "X-Frame-Height": str(frame_h),
+            }
+            self._send(200, "image/png", png, extra_headers=headers)
             return
         if parsed.path == "/api/index_map":
             params = parse_qs(parsed.query)

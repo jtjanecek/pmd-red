@@ -274,7 +274,7 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 271,246,MonsterNameLarvitar,Larvitar,10,,,,,,,,,,,,8,9,10,15,,FairyForestKing
 272,247,MonsterNamePupitar,Pupitar,7,,,,,,,,,,,,,,,,,FairyForestKing
 273,248,MonsterNameTyranitar,Tyranitar,4,,,8,9,10,8,9,10,,,,,,,,,FairyForestKing
-274,249,MonsterNameLugia,Lugia,11,,,11,12,1,11,12,,,,,,,,9,,FairyForestKing
+274,249,MonsterNameLugia,Lugia,11,,,11,12,9,11,12,,,,,,,,9,,FairyForestKing
 275,250,MonsterNameHoOh,Ho-oh,6,,,6,7,,8,9,10,12,13,14,8,9,10,10,,FairyForestKing
 276,251,MonsterNameCelebi,Celebi,10,,,,,,8,9,10,,,,,2,3,4,,FairyForestKing
 277,252,MonsterNameTreecko,Treecko,12,,,8,8,10,,,,,8,9,5,6,7,15,,FairyForestKing
@@ -305,9 +305,9 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 302,277,MonsterNameSwellow,Swellow,12,,,,,,3,8,9,5,6,7,3,4,,7,,FairyForestKing
 303,278,MonsterNameWingull,Wingull,10,,,13,14,15,,,,,,,5,5,6,7,,FairyForestKing
 304,279,MonsterNamePelipper,Pelipper,10,,,13,14,15,,,,,,,5,5,6,7,,FairyForestKing
-305,280,MonsterNameRalts,Ralts,5,,,,,,12,13,,,,,,,,,,FairyForestKing
-306,281,MonsterNameKirlia,Kirlia,5,,,,,,11,12,13,,,,,,,,,FairyForestKing
-307,282,MonsterNameGardevoir,Gardevoir,5,,,,,,11,12,13,,,,,,,,,FairyForestKing
+305,280,MonsterNameRalts,Ralts,5,,,,,,12,13,14,,,,,,,,,FairyForestKing
+306,281,MonsterNameKirlia,Kirlia,5,,,,,,12,13,14,,,,,,,,,FairyForestKing
+307,282,MonsterNameGardevoir,Gardevoir,5,,,,,,12,13,14,,,,,,,,,FairyForestKing
 308,283,MonsterNameSurskit,Surskit,6,,,,,,6,,,11,12,13,,,,10,,FairyForestKing
 309,284,MonsterNameMasquerain,Masquerain,3,,,8,9,10,9,11,12,,,,,,,,13,FairyForestKing
 310,285,MonsterNameShroomish,Shroomish,11,,,,,,,,,2,3,4,,,,,,FairyForestKing
@@ -421,13 +421,13 @@ ID,Number,CodeName,Name,Shiny Palette,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
 418,,MonsterNameDeoxys,,3,,,5,11,12,13,14,15,,10,,9,,,6,,Mystaldi
 419,,MonsterNameDeoxys,,3,,,5,11,12,13,14,15,,10,,9,,,6,,Mystaldi
 420,,MonsterNameMunchlax,,0,,,,,13,8,9,10,6,7,,,,,,,FairyForestKing
-421,,MonsterNameWeavile,Weavile,4,,,,,,,,,,,,5,6,7,,,FairyForestKing
-422,,MonsterNameRiolu,Riolu,0,,,,,,,,,5,6,7,,,,,,FairyForestKing
-423,,MonsterNameLucario,Lucario,0,,,,,,,,,5,6,7,,,,,,FairyForestKing
-424,,MonsterNameBonsly,Bonsly,3,,,11,12,13,,,,,14,9,2,3,,4,,FairyForestKing
-425,,MonsterNameMimeJr,Mime Jr.,10,,,,,,,,,5,6,7,8,9,3,4,,FairyForestKing
-426,,MonsterNameJoltik,Joltik,8,,,,,,,,,12,13,14,,,14,15,,FairyForestKing
-427,,MonsterNameGalvantula,Galvantula,8,,,,,,,,,12,13,14,,,14,15,,FairyForestKing
+421,,MonsterNameWeavile,Weavile,4,,,,,,,,,,,,5,6,4,4,,FairyForestKing
+422,,MonsterNameRiolu,Riolu,2,,,9,10,14,11,12,,5,6,7,9,10,15,15,,FairyForestKing
+423,,MonsterNameLucario,Lucario,12,,,,13,14,,11,,,9,10,5,6,7,15,,FairyForestKing
+424,,MonsterNameBonsly,Bonsly,11,,,,,,8,9,,,,,,,,,,Dr Plasmadrid
+425,,MonsterNameMimeJr,Mime Jr.,10,,,,,,8,9,10,2,11,12,,,3,4,,FairyForestKing
+426,,MonsterNameJoltik,Joltik,2,,,,,,,,,,2,3,,,,,,FairyForestKing
+427,,MonsterNameGalvantula,Galvantula,7,,,,,12,,,,2,,3,,1,,13,,FairyForestKing
 428,,MonsterNameDecoy,,11,,,,,,,,,,,,,,,,,FairyForestKing
 429,,MonsterNameStatue,,,,,,,,,,,,,,,,,,,
 430,,MonsterNameRayquaza,,5,,,5,6,7,,,,2,3,4,,,,,,FairyForestKing

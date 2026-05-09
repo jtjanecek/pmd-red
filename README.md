@@ -1,5 +1,5 @@
 # Download BPS Patch file here
-https://github.com/jtjanecek/rogue-rescue-team/releases/tag/v2.0.0
+https://github.com/jtjanecek/rogue-rescue-team/releases/tag/v2.0.1
 
 # Forked from Original Disassembly under pret
 https://github.com/pret/pmd-red

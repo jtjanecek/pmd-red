@@ -370,10 +370,13 @@ bool8 HandleMonsterJoinSequence(Entity *entity1, Entity *entity2, struct unkStru
             PlaySound(0xce);
             DisplayDungeonMessage(0,gText_Pokemon0GainedAccessToFriendArea,1);
         }
-        if (param_3->id == MONSTER_MEW) {
-            gDungeon->unk4 = 1;
-            gDungeon->unk11 = 3;
-        }
+        // Disabled: the Buried Relic "befriended Mew!" scripted dungeon exit.
+        // Mew now joins as a normal recruit instead of ending the run.
+        // Original behavior:
+        //     if (param_3->id == MONSTER_MEW) {
+        //         gDungeon->unk4 = 1;
+        //         gDungeon->unk11 = 3;
+        //     }
     }
 
     return TRUE;

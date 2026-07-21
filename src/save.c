@@ -42,12 +42,14 @@ struct unk_struct
     u8 enableLeaderSwap;
     TypeSelectionSaveData typeSelection;
     GengarHintSaveData gengarHints;
-    u8 padding[1874];
+    u8 spawn; // carved from padding; keeps struct size (0x800) unchanged
+    u8 padding[1873];
     SkarmoryRecruitSaveData skarmoryRecruit;
 };
 
 EWRAM_DATA s32 gUnknown_202DE28 = {0};
 EWRAM_DATA u32 gUnknown_202DE2C = {DIFFICULTY_NORMAL};
+EWRAM_DATA u8 gSpawnSetting = {SPAWN_NATDEX};
 EWRAM_DATA u8 gSkipBasicRescuesSetting = {0};
 EWRAM_DATA u8 gRecruitAllSetting = {0};
 EWRAM_DATA u8 gMaxDungeonsSetting = {MAX_DUNGEONS_20};
@@ -134,18 +136,16 @@ void SetGameDifficultySetting(u32 value)
 
 u32 GetGameSpawnSetting(void)
 {
-    if (gUnknown_202DE2C >= NUM_SPAWN_SETTINGS)
-        gUnknown_202DE2C = SPAWN_NATDEX;
-    return gUnknown_202DE2C;
+    if (gSpawnSetting >= NUM_SPAWN_SETTINGS)
+        gSpawnSetting = SPAWN_NATDEX;
+    return gSpawnSetting;
 }
 
 void SetGameSpawnSetting(u32 value)
 {
     if (value >= NUM_SPAWN_SETTINGS)
         value = SPAWN_NATDEX;
-    gUnknown_202DE2C = value;
-    if (gUnknown_203B184 != NULL)
-        gUnknown_203B184->difficulty = value;
+    gSpawnSetting = value;
 }
 
 u8 GetSkipBasicRescuesSetting(void)
@@ -350,6 +350,7 @@ u32 ReadSaveFromPak(u32 *a)
             sub_8011C40(playerSave->unk418);
             SetRNGSeed(playerSave->RngState);
         SetGameDifficultySetting(playerSave->difficulty);
+        SetGameSpawnSetting(playerSave->spawn);
         SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
         SetRecruitAllSetting(playerSave->recruitAll);
         SetMaxDungeonsSetting(playerSave->maxDungeons);
@@ -364,6 +365,7 @@ u32 ReadSaveFromPak(u32 *a)
         gUnknown_203B184->difficulty = playerSave->difficulty;
         gUnknown_203B184->RngState = playerSave->RngState;
         SetGameDifficultySetting(playerSave->difficulty);
+        SetGameSpawnSetting(playerSave->spawn);
         SetSkipBasicRescuesSetting(playerSave->skipBasicRescues);
         SetRecruitAllSetting(playerSave->recruitAll);
         SetMaxDungeonsSetting(playerSave->maxDungeons);
@@ -460,6 +462,7 @@ u32 sub_8011FA8(void)
         if (temp3 == 0xF1207) {
             sub_8011C40(r5->customSeed);
             SetGameDifficultySetting(r5->difficulty);
+            SetGameSpawnSetting(r5->spawn);
             SetSkipBasicRescuesSetting(r5->skipBasicRescues);
             SetRecruitAllSetting(r5->recruitAll);
             SetMaxDungeonsSetting(r5->maxDungeons);
@@ -507,6 +510,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->unk418 = sub_8011C34();
     playerSave->RngState = GetRNGState();
     playerSave->difficulty = GetGameDifficultySetting();
+    playerSave->spawn = GetGameSpawnSetting();
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
     playerSave->maxDungeons = GetMaxDungeonsSetting();
@@ -519,6 +523,7 @@ u32 WriteSavetoPak(s32 *param_1, u32 param_2)
     playerSave->unk41C = gUnknown_203B184->unk054;
     playerSave->unk418 = gUnknown_203B184->unk050;
     playerSave->difficulty = GetGameDifficultySetting();
+    playerSave->spawn = GetGameSpawnSetting();
     playerSave->RngState = gUnknown_203B184->RngState;
     playerSave->skipBasicRescues = GetSkipBasicRescuesSetting();
     playerSave->recruitAll = GetRecruitAllSetting();
@@ -584,6 +589,7 @@ u32 sub_80121E0(u32 r0)
     r4->checksum = 0x5071412;
     r4->customSeed = sub_8011C34();
     r4->difficulty = GetGameDifficultySetting();
+    r4->spawn = GetGameSpawnSetting();
     r4->skipBasicRescues = GetSkipBasicRescuesSetting();
     r4->recruitAll = GetRecruitAllSetting();
     r4->maxDungeons = GetMaxDungeonsSetting();

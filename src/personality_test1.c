@@ -312,6 +312,7 @@ u32 HandleTestTrackerState(void)
             }
             sPersonalityTestTracker->unk4.customSeed = sPersonalityTestTracker->rngSeed;
             SetGameDifficultySetting(sPersonalityTestTracker->unk4.difficulty);
+            SetGameSpawnSetting(sPersonalityTestTracker->unk4.spawns);
             SetMaxDungeonsSetting(sPersonalityTestTracker->unk4.maxDungeons);
             SetEnableLeaderSwapSetting(sPersonalityTestTracker->unk4.enableLeaderSwap);
             sub_8011C40(sPersonalityTestTracker->rngSeed);
@@ -715,7 +716,7 @@ static void HandleSpawnSelection(void)
         selection = SPAWN_NATDEX;
 
     sPersonalityTestTracker->unk4.spawns = selection;
-    SetGameDifficultySetting(selection);
+    SetGameSpawnSetting(selection);
     StartDungeonCountSelection();
 }
 

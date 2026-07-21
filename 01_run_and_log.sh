@@ -12,8 +12,8 @@ sleep 3
 echo
 
 gba() {
-    "$HOME/Documents/pmd/mGBA.app/Contents/MacOS/mGBA" \
-        -d "$HOME/Documents/pmd/pmd-red/pmd_red.gba" "$@"
+    "$HOME/Documents/mGBA/mGBA.app/Contents/MacOS/mGBA" \
+        -d "$HOME/Documents/rogue-rescue-team/pmd_red.gba" "$@"
 }
 
 # Append WARN lines under the date header

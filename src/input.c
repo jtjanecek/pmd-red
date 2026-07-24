@@ -9,9 +9,9 @@
 #define JUNK_INIT 0x4A14C1
 #define JUNK_UPDATE 0x54A1C41
 #define MENU_SOFT_RESET_COMBO (A_BUTTON | B_BUTTON | START_BUTTON | SELECT_BUTTON)
-#define SOFT_RESET_SEQUENCE_TIMEOUT 30
-#define SOFT_RESET_RELEASE_GRACE 1
-#define SOFT_RESET_DEBUG_LOG 0
+// Frames all four combo buttons must be held *simultaneously* to trigger.
+#define SOFT_RESET_CONFIRM_FRAMES 4
+#define SOFT_RESET_DEBUG_LOG 1
 #define KEY_TEST_LOG 1
 
 EWRAM_DATA Inputs gRealInputs = {0}; // R=20255F0 | B=20F5CC0
@@ -24,17 +24,9 @@ static EWRAM_DATA InputTimers sInputTimers = {0}; // R=2025668 | B=020F5C8C
 #if KEY_TEST_LOG
 static EWRAM_DATA u16 sKeyTestPrevRaw = {0};
 #endif
-static EWRAM_DATA u16 sSoftResetHoldMask = {0};
-static EWRAM_DATA u8 sSoftResetSequenceTimer = {0};
-static EWRAM_DATA u8 sSoftResetReleaseFrames = {0};
 static EWRAM_DATA u8 sSoftResetConfirmFrames = {0};
 #if SOFT_RESET_DEBUG_LOG
-static EWRAM_DATA u16 sSoftResetLogPrevHeld = {0};
-static EWRAM_DATA u16 sSoftResetLogPrevPressed = {0};
-static EWRAM_DATA u16 sSoftResetLogPrevMask = {0};
 static EWRAM_DATA u16 sSoftResetLogPrevRawCombo = {0};
-static EWRAM_DATA u8 sSoftResetLogPrevTimer = {0};
-static EWRAM_DATA u8 sSoftResetLogPrevReleaseFrames = {0};
 static EWRAM_DATA u8 sSoftResetLogPrevConfirmFrames = {0};
 #endif
 
@@ -43,36 +35,35 @@ static void PerformSoftReset(void)
 #if SOFT_RESET_DEBUG_LOG
     Log(0, "[SR] trigger");
 #endif
-    asm volatile("mov r0, #0xff\n\t"
-                 "swi 0x1\n\t"
-                 "mov r0, #0\n\t"
-                 "swi 0x0");
-    AgbMain();
+    // Mirror the libagbsyscall SoftReset wrapper (kept inline to avoid pulling
+    // SoftReset.o into the link): disable interrupts, restore SP to USER_STACK
+    // (0x03007F00, inside the 0x200-byte IWRAM tail that RegisterRamReset
+    // preserves), then RegisterRamReset(RESET_ALL) + BIOS SoftReset. The BIOS
+    // never returns from swi 0x00, so the loop below is only a safety net.
+    asm volatile(
+        "ldr r0, =0x04000208\n\t" // REG_IME
+        "movs r1, #0\n\t"
+        "strb r1, [r0]\n\t"
+        "ldr r0, =0x03007F00\n\t" // USER_STACK
+        "mov sp, r0\n\t"
+        "movs r0, #0xFF\n\t"      // RESET_ALL
+        "swi 0x01\n\t"            // RegisterRamReset
+        "swi 0x00\n\t"           // SoftReset
+        ::: "r0", "r1", "memory");
     while (TRUE) {}
 }
 
 #if SOFT_RESET_DEBUG_LOG
-static void SoftResetDebugLogState(u16 held, u16 pressed, u16 rawCombo, u16 mask, u8 timer, u8 releaseFrames, u8 confirmFrames)
+static void SoftResetDebugLogState(u16 rawCombo, u8 confirmFrames)
 {
-    if (held == sSoftResetLogPrevHeld
-        && pressed == sSoftResetLogPrevPressed
-        && rawCombo == sSoftResetLogPrevRawCombo
-        && mask == sSoftResetLogPrevMask
-        && timer == sSoftResetLogPrevTimer
-        && releaseFrames == sSoftResetLogPrevReleaseFrames
+    if (rawCombo == sSoftResetLogPrevRawCombo
         && confirmFrames == sSoftResetLogPrevConfirmFrames)
         return;
 
-    sSoftResetLogPrevHeld = held;
-    sSoftResetLogPrevPressed = pressed;
     sSoftResetLogPrevRawCombo = rawCombo;
-    sSoftResetLogPrevMask = mask;
-    sSoftResetLogPrevTimer = timer;
-    sSoftResetLogPrevReleaseFrames = releaseFrames;
     sSoftResetLogPrevConfirmFrames = confirmFrames;
 
-    Log(0, "[SR] raw=%03x c=%03x held=%03x pr=%03x mask=%03x t=%d r=%d f=%d",
-        gRawKeyInput, rawCombo, held, pressed, mask, timer, releaseFrames, confirmFrames);
+    Log(0, "[SR] raw=%03x c=%03x f=%d", gRawKeyInput, rawCombo, confirmFrames);
 }
 #endif
 
@@ -114,17 +105,9 @@ void InitInput(void)
 #if KEY_TEST_LOG
     sKeyTestPrevRaw = 0xFFFF;
 #endif
-    sSoftResetHoldMask = 0;
-    sSoftResetSequenceTimer = 0;
-    sSoftResetReleaseFrames = 0;
     sSoftResetConfirmFrames = 0;
 #if SOFT_RESET_DEBUG_LOG
-    sSoftResetLogPrevHeld = 0xFFFF;
-    sSoftResetLogPrevPressed = 0xFFFF;
     sSoftResetLogPrevRawCombo = 0xFFFF;
-    sSoftResetLogPrevMask = 0xFFFF;
-    sSoftResetLogPrevTimer = 0xFF;
-    sSoftResetLogPrevReleaseFrames = 0xFF;
     sSoftResetLogPrevConfirmFrames = 0xFF;
 #endif
 }
@@ -303,51 +286,11 @@ void UpdateInput(void)
 
     {
         u16 comboBits = gRawKeyInput & MENU_SOFT_RESET_COMBO;
-        u16 comboPressedBits = sCurrentInputs.pressed & MENU_SOFT_RESET_COMBO;
-        u16 prevHoldMask = sSoftResetHoldMask;
-        u16 newPressedBits;
 
-        if (prevHoldMask == 0) {
-            sSoftResetReleaseFrames = 0;
-            // Start a combo attempt only on freshly-pressed combo buttons.
-            if (comboPressedBits != 0) {
-                sSoftResetHoldMask = comboBits | comboPressedBits;
-                sSoftResetSequenceTimer = SOFT_RESET_SEQUENCE_TIMEOUT;
-            }
-        }
-        else {
-            // Track currently held combo bits during an active attempt.
-            sSoftResetHoldMask |= comboBits;
-
-            newPressedBits = comboPressedBits & ~prevHoldMask;
-            if (newPressedBits != 0) {
-                sSoftResetHoldMask |= newPressedBits;
-                // Refresh window only when progress is made.
-                sSoftResetSequenceTimer = SOFT_RESET_SEQUENCE_TIMEOUT;
-                sSoftResetReleaseFrames = 0;
-            }
-            else {
-                if (comboBits == 0) {
-                    if (sSoftResetReleaseFrames < 255)
-                        sSoftResetReleaseFrames++;
-                }
-                else {
-                    sSoftResetReleaseFrames = 0;
-                }
-
-                if (sSoftResetReleaseFrames >= SOFT_RESET_RELEASE_GRACE) {
-                    sSoftResetHoldMask = 0;
-                    sSoftResetSequenceTimer = 0;
-                }
-                else if (sSoftResetSequenceTimer != 0) {
-                    sSoftResetSequenceTimer--;
-                }
-                else {
-                    sSoftResetHoldMask = 0;
-                }
-            }
-        }
-
+        // Only a true simultaneous hold of all four buttons counts. Requiring
+        // several consecutive frames rejects transient glitches and prevents
+        // rolling button sequences (e.g. running with B, mashing A) from ever
+        // accumulating into a reset.
         if (comboBits == MENU_SOFT_RESET_COMBO) {
             if (sSoftResetConfirmFrames < 255)
                 sSoftResetConfirmFrames++;
@@ -357,17 +300,12 @@ void UpdateInput(void)
         }
 
 #if SOFT_RESET_DEBUG_LOG
-        if (comboBits || sSoftResetSequenceTimer || sSoftResetHoldMask) {
-            SoftResetDebugLogState(sCurrentInputs.held, sCurrentInputs.pressed, comboBits, sSoftResetHoldMask, sSoftResetSequenceTimer, sSoftResetReleaseFrames, sSoftResetConfirmFrames);
-        }
+        if (comboBits || sSoftResetConfirmFrames)
+            SoftResetDebugLogState(comboBits, sSoftResetConfirmFrames);
 #endif
 
-        // ABSS-only trigger: either true simultaneous hold for 2 frames, or all
-        // four bits collected within the active input window.
-        if (sSoftResetConfirmFrames >= 2
-            || ((sSoftResetHoldMask & MENU_SOFT_RESET_COMBO) == MENU_SOFT_RESET_COMBO)) {
+        if (sSoftResetConfirmFrames >= SOFT_RESET_CONFIRM_FRAMES)
             PerformSoftReset();
-        }
     }
 
     sUnusedScrambledInputJunk[0] *= sCurrentInputs.held | JUNK_UPDATE;

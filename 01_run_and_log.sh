@@ -1,7 +1,7 @@
 #!/bin/bash
 
 rm -f -- execution.log
-#rm -f -- *.sav
+rm -f -- *.sav
 
 # Write date header at top of log
 echo "Log created on: $(date)" > execution.log

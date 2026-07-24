@@ -74,6 +74,21 @@ static EWRAM_DATA bool8 gAnyScriptLocked = FALSE;
 static ALIGNED(4) EWRAM_DATA bool8 gScriptLocks[SCRIPT_LOCKS_ARR_COUNT + 7] = { FALSE };
 static ALIGNED(4) EWRAM_DATA bool8 gScriptLockConds[SCRIPT_LOCKS_ARR_COUNT + 7] = { FALSE };
 static EWRAM_DATA u32 gUnlockBranchLabels[SCRIPT_LOCKS_ARR_COUNT + 1] = { 0 };
+// ---- Latch unheard cues briefly to fix the wake-up handshake race (fugitive/statue wake). ----
+// An E4/ALERT_CUE (GroundScriptLockJumpZero) is edge-triggered: GroundScript_Unlock notifies it
+// once and drops it the same frame. When one script fires its opening cue a few frames before
+// the counterpart script reaches the matching WAIT (a startup phase race — e.g. the Lapis Cave
+// wake scene, where the leader cues ~9 frames before the partner is ready), the wakeup is lost
+// and the whole handshake deadlocks, so the partner never wakes. Keep an unheard non-conditional
+// cue "pending" for a short bounded window so a slightly-late WAIT still catches it. A healthy
+// in-phase handshake consumes every cue the same frame (never latches), so the window only ever
+// affects genuinely-unheard startup cues; the cue is still dropped afterward and cleared per
+// scene, so it cannot linger as a stale wakeup. Set to 0 to restore the original behavior.
+#define LATCHED_CUE_FIX 1
+#define LATCHED_CUE_FRAMES 30 // ~3x the observed ~9-frame startup desync
+#if LATCHED_CUE_FIX
+static ALIGNED(4) EWRAM_DATA u8 sPendingCueFrames[SCRIPT_LOCKS_ARR_COUNT + 7] = { 0 };
+#endif
 static EWRAM_DATA MenuItem gChoices[9] = { 0 };
 static EWRAM_DATA u8 sPokeNameBuffer[POKEMON_NAME_LENGTH + 2] = { 0 };
 static EWRAM_DATA u32 gUnknown_2039DA4 = 0;
@@ -144,6 +159,9 @@ void sub_809D4B0(void)
         gScriptLocks[i] = FALSE;
         gScriptLockConds[i] = FALSE;
         gUnlockBranchLabels[i] = 0;
+#if LATCHED_CUE_FIX
+        sPendingCueFrames[i] = 0; // [CUEFIX] don't carry pending cues across scenes
+#endif
     }
 }
 
@@ -4163,7 +4181,27 @@ void GroundScript_Unlock(void)
                }
             }
             else {
+#if LATCHED_CUE_FIX
+               if (cond) {
+                   // A script heard the cue this frame — consume it as usual.
+                   gScriptLocks[index] = FALSE;
+                   sPendingCueFrames[index] = 0;
+               }
+               else {
+                   // No listener yet. Keep the cue pending for a few frames so a
+                   // WAIT posted slightly later still catches it (fixes the race),
+                   // then drop it (original behavior) if still unheard.
+                   if (sPendingCueFrames[index] == 0)
+                       sPendingCueFrames[index] = LATCHED_CUE_FRAMES;
+                   else if (--sPendingCueFrames[index] == 0)
+                       gScriptLocks[index] = FALSE;
+
+                   if (gScriptLocks[index])
+                       gAnyScriptLocked = TRUE; // keep the unlock loop retrying next frame
+               }
+#else
                gScriptLocks[index] = FALSE;
+#endif
             }
         }
     }

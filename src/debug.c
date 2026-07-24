@@ -224,8 +224,16 @@ UNUSED static void UnusedHang(void)
 // arm9.bin::02018964
 void Log(u8 num, const u8 *text, ...)
 {
+    char buf[256];
+    va_list vArgv;
     (void)num;
-    (void)text;
+
+    va_start(vArgv, text);
+    vsprintf(buf, (const char *)text, vArgv);
+    va_end(vArgv);
+
+    MgbaWarnf("%s", buf);
+    MgbaLog(buf);
 }
 
 #if (GAME_VERSION == VERSION_RED)

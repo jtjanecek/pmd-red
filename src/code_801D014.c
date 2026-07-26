@@ -29,8 +29,6 @@
 #include "personality_test1.h"
 #include "rescue_team_info.h"
 #include "save.h"
-#include "save_write.h"
-#include "gba/syscall.h" // SoftReset, RESET_ALL
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
@@ -55,6 +53,10 @@ static EWRAM_INIT u32 sFriendListActiveHeartbeat = {0};
 
 static EWRAM_INIT u8 sChangeSeedBuffer[CHANGE_SEED_BUFFER_SIZE] = {0};
 
+// Active game-session struct; its unk050 holds the seed that gets written to SRAM
+// during in-game saves (see WriteSavetoPak in save.c), so we must update it too.
+extern struct UnkStruct_203B184 *gUnknown_203B184;
+
 #include "data/code_801D014.h"
 
 static void LoadTeamRankBadge(u32, u32, u32);
@@ -63,6 +65,7 @@ static void HandleChangeSeedInput(void);
 static void HandleChangeSeedSaving(void);
 static bool8 ParseChangeSeed(const u8 *text, s32 *seedOut);
 static void CommitChangeSeed(s32 seed);
+static void PerformChangeSeedSoftReset(void);
 
 static void sub_801D208(u32 newState);
 static void sub_801D220(void);
@@ -340,7 +343,7 @@ static void sub_801D3A8(void)
             NamingScreen_Init(NAMING_SCREEN_NUMERIC, sChangeSeedBuffer);
             break;
         case CHANGE_SEED_STATE_SAVING:
-            PrepareSavePakWrite(MONSTER_NONE);
+            // Save + reset happens in HandleChangeSeedSaving; nothing to draw.
             break;
     }
 }
@@ -678,8 +681,12 @@ static bool8 ParseChangeSeed(const u8 *text, s32 *seedOut)
     return TRUE;
 }
 
-// Apply the new seed both to the live global and to the persisted team info so
-// it survives the save and the DungeonSeedOverrides recovery path.
+// Apply the new seed everywhere it needs to live:
+//  - sub_8011C40: the live global the current session reads at dungeon-gen time.
+//  - TeamBasicInfo.customSeed: the DungeonSeedOverrides recovery fallback.
+//  - gUnknown_203B184->unk050: the in-session copy that WriteSavetoPak actually
+//    writes to SRAM while a game is loaded (without this the save keeps the old
+//    seed and Continue would restore it).
 static void CommitChangeSeed(s32 seed)
 {
     TeamBasicInfo info;
@@ -688,6 +695,9 @@ static void CommitChangeSeed(s32 seed)
     ReadTeamBasicInfo(&info);
     info.customSeed = seed;
     WriteTeamBasicInfo(&info);
+
+    if (gUnknown_203B184 != NULL)
+        gUnknown_203B184->unk050 = (u32)seed;
 }
 
 // Drive the numeric keypad: 0 keep waiting, 2 cancel (back to the top menu),
@@ -718,15 +728,40 @@ static void HandleChangeSeedInput(void)
     }
 }
 
-// Drive the save UI to completion, then soft reset to the title screen so the
-// run resumes from Continue with the new seed applied.
+// Persist the save and soft reset to the title screen so the run resumes from
+// Continue with the new seed applied. We write SRAM directly with WriteSavetoPak
+// rather than the interactive PrepareSavePakWrite/WriteSavePak dialogue flow:
+// that flow blocks on a "Save Completed!" message acknowledgement which does not
+// advance in every overworld context (e.g. outside the base), so the reset was
+// never reached there. The direct write always completes, then we reset.
 static void HandleChangeSeedSaving(void)
 {
-    if (WriteSavePak())
-        return;
+    s32 sector = 0;
 
-    FinishWriteSavePak();
-    SoftReset(RESET_ALL);
+    sub_80140DC(); // stop BGM / show saving icon, matching the normal save path
+    WriteSavetoPak(&sector, sub_8011C1C());
+    PerformChangeSeedSoftReset();
+}
+
+// Hardware-correct soft reset, mirroring the manual reset combo (see input.c on
+// the shiny branch). A plain BIOS SoftReset (swi 0x00) can jump back into EWRAM
+// and just reload the ground scene; RegisterRamReset(RESET_ALL) first clears RAM
+// so the boot goes cleanly through the title/main menu. We disable interrupts
+// and restore SP to USER_STACK (0x03007F00, inside the 0x200-byte IWRAM tail
+// RegisterRamReset preserves) before the reset. swi 0x00 never returns.
+static void PerformChangeSeedSoftReset(void)
+{
+    asm volatile(
+        "ldr r0, =0x04000208\n\t" // REG_IME
+        "movs r1, #0\n\t"
+        "strb r1, [r0]\n\t"
+        "ldr r0, =0x03007F00\n\t" // USER_STACK
+        "mov sp, r0\n\t"
+        "movs r0, #0xFF\n\t"      // RESET_ALL
+        "swi 0x01\n\t"            // RegisterRamReset
+        "swi 0x00\n\t"           // SoftReset
+        ::: "r0", "r1", "memory");
+    while (TRUE) {}
 }
 
 static void sub_801D894(void)

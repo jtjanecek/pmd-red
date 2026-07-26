@@ -57,6 +57,7 @@ ALIGNED(4) static const u8 sItems[] = _("Items");
 ALIGNED(4) static const u8 sTeam[] = _("Team");
 ALIGNED(4) static const u8 sJobList[] = _("Job List");
 ALIGNED(4) static const u8 sOthers[] = _("Others");
+ALIGNED(4) static const u8 sChangeSeed[] = _("Change Seed");
 ALIGNED(4) static const u8 sTripleQuestionMark[] = _("？？？");
 ALIGNED(4) static const u8 sFmtPointsCyan[] = _("%s {COLOR CYAN}%d{RESET} Pts.");
 ALIGNED(4) static const u8 sFmtMoneyCyan[] = _("Money: {COLOR CYAN}%d{RESET} {POKE}");

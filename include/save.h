@@ -64,7 +64,8 @@ struct UnkStruct_sub_8011DAC
     u8 enableLeaderSwap;
     u32 savedRecruitedPokemon;
     u32 unk428;
-    u8 fill42C[0x4];
+    u8 spawn; // carved from fill42C; keeps struct layout/size unchanged
+    u8 fill42D[0x3];
     u32 savedTeamInventory;
     u32 savedRescueTeamInfo;
     u32 savedFriendAreas;

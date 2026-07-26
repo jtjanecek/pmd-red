@@ -6578,9 +6578,9 @@ static const u8 sFixedRoom1_Tiles[] = {
     // Row 5: Middle walls
     2,   6,   6,   6,   6,   6,   6,   6,   2,
     // Row 6: Water edges (moat row)
-    10,  10,  10,  10,  10,  10,  10,  10,  10,
+    2,  2,  2,  2,  2,  2,  2,  2,  2,
     // Row 7: Minion spawn area (for BACK formation) + stairs anchor (shifted left 1 tile)
-    10,  60,  60,   4,  60,  60,  60,  60,  10,
+    2,  60,  60,   4,  60,  60,  60,  60,  2,
     // Row 8: Boss spawn in main area (moved down 1 row)
     60,  60,  60,  60,  17,  60,  60,  60,  60,
     60,  60,  60,  60,  60,  60,  60,  60,  60,
@@ -6588,8 +6588,8 @@ static const u8 sFixedRoom1_Tiles[] = {
     60,  60,  60,  60,  60,  60,  60,  60,  60,
     // Row 12-16: Bottom area with walls
     2,   2,  60,  60,  60,  60,  60,   2,   2,
-    2,   2,   2,  10,  10,  10,   2,   2,   2,
-    2,   2,   2,  10,  10,  10,   2,   2,   2,
+    2,   2,   2,  2,  2,  2,   2,   2,   2,
+    2,   2,   2,  2,  2,  2,   2,   2,   2,
     2,   2,   2,   6,   6,   6,   2,   2,   2,
     2,   2,   2,   6,   6,   6,   2,   2,   2
 };
@@ -7068,6 +7068,20 @@ static void LoadCustomFixedRoom(u8 roomId, bool8 spawnEntities)
         }
     }
 
+    // Seal everything outside the room footprint with impassable walls so that
+    // wall-crossers (Ghost types, Mobile Scarf, etc.) can't phase out of the
+    // arena. ResetFloor leaves surrounding tiles as plain (ghost-passable)
+    // walls, so without this the boss/minions or the player could escape.
+    // Mirrors the border-fill done by the vanilla LoadFixedRoomLayout.
+    for (y = 0; y < DUNGEON_MAX_SIZE_Y; y++) {
+        for (x = 0; x < DUNGEON_MAX_SIZE_X; x++) {
+            if (x < offsetX || x >= offsetX + width ||
+                y < offsetY || y >= offsetY + height) {
+                GetTileMut(x, y)->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
+            }
+        }
+    }
+
     MGBA_Warnf("[CustomRoom] Done loading room");
     MGBA_Warnf("[CustomRoom] Final positions - Player: (%d, %d), Stairs: (%d, %d)",
                gDungeon->playerSpawn.x, gDungeon->playerSpawn.y,
@@ -7260,13 +7274,27 @@ void GenerateBossArena(BossFightConfig *config)
                 // Check if this is a perimeter tile (wall) or interior (floor)
                 if (x == ARENA_START_X || x == ARENA_START_X + sBossArenaWidth - 1 ||
                     y == ARENA_START_Y || y == ARENA_START_Y + sBossArenaHeight - 1) {
-                    // Perimeter - create wall
+                    // Perimeter - create wall. Must be flagged impassable, otherwise
+                    // wall-crossers (Ghost types, Mobile Scarf) phase straight through it.
+                    tile->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
                     SetTerrainType(tile, TERRAIN_TYPE_WALL);
                     tile->room = 0;  // Arena room
                 } else {
                     // Interior - create normal walkable floor
+                    tile->terrainFlags &= ~TERRAIN_TYPE_IMPASSABLE_WALL;
                     SetTerrainType(tile, TERRAIN_TYPE_NORMAL);
                     tile->room = 0;  // Arena room
+                }
+            }
+        }
+
+        // Seal everything outside the arena so wall-crossers can't roam the rest
+        // of the floor: ResetFloor leaves those tiles as plain (passable) walls.
+        for (y = 0; y < DUNGEON_MAX_SIZE_Y; y++) {
+            for (x = 0; x < DUNGEON_MAX_SIZE_X; x++) {
+                if (x < ARENA_START_X || x >= ARENA_START_X + sBossArenaWidth ||
+                    y < ARENA_START_Y || y >= ARENA_START_Y + sBossArenaHeight) {
+                    GetTileMut(x, y)->terrainFlags |= TERRAIN_TYPE_IMPASSABLE_WALL;
                 }
             }
         }

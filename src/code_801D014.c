@@ -20,11 +20,17 @@
 #include "ground_map.h"
 #include "input.h"
 #include "iq_skill_menu.h"
+#include "main_loops.h"
 #include "memory.h"
 #include "menu_input.h"
+#include "naming_screen.h"
 #include "options_menu1.h"
 #include "party_list_menu.h"
+#include "personality_test1.h"
 #include "rescue_team_info.h"
+#include "save.h"
+#include "save_write.h"
+#include "gba/syscall.h" // SoftReset, RESET_ALL
 #include "string_format.h"
 #include "text_1.h"
 #include "text_2.h"
@@ -38,9 +44,25 @@ static EWRAM_INIT u32 sUnknown_203B254 = {0};
 static EWRAM_INIT u32 sFriendListMovesHeartbeat = {0};
 static EWRAM_INIT u32 sFriendListActiveHeartbeat = {0};
 
+// "Change Seed" menu: numeric keypad seed entry, then save + return to title.
+#define CHANGE_SEED_MENU_ACTION   13
+#define CHANGE_SEED_STATE_INPUT   13
+#define CHANGE_SEED_STATE_SAVING  14
+#define NAMING_SCREEN_NUMERIC     6
+#define CHANGE_SEED_BUFFER_SIZE   12
+#define CHANGE_SEED_INT32_MAX     2147483647
+#define CHANGE_SEED_INT32_MIN     (-2147483647 - 1)
+
+static EWRAM_INIT u8 sChangeSeedBuffer[CHANGE_SEED_BUFFER_SIZE] = {0};
+
 #include "data/code_801D014.h"
 
 static void LoadTeamRankBadge(u32, u32, u32);
+
+static void HandleChangeSeedInput(void);
+static void HandleChangeSeedSaving(void);
+static bool8 ParseChangeSeed(const u8 *text, s32 *seedOut);
+static void CommitChangeSeed(s32 seed);
 
 static void sub_801D208(u32 newState);
 static void sub_801D220(void);
@@ -153,6 +175,12 @@ u32 sub_801D0DC(void)
             break;
         case 12:
             sub_801D878();
+            break;
+        case CHANGE_SEED_STATE_INPUT:
+            HandleChangeSeedInput();
+            break;
+        case CHANGE_SEED_STATE_SAVING:
+            HandleChangeSeedSaving();
             break;
         default:
             MGBA_Warnf("[code_801D014] sub_801D0DC: unknown state, returning 3");
@@ -307,6 +335,13 @@ static void sub_801D3A8(void)
         case 12:
             sub_801DCC4();
             break;
+        case CHANGE_SEED_STATE_INPUT:
+            MemoryFill8(sChangeSeedBuffer, 0, CHANGE_SEED_BUFFER_SIZE);
+            NamingScreen_Init(NAMING_SCREEN_NUMERIC, sChangeSeedBuffer);
+            break;
+        case CHANGE_SEED_STATE_SAVING:
+            PrepareSavePakWrite(MONSTER_NONE);
+            break;
     }
 }
 
@@ -333,6 +368,10 @@ static void sub_801D4C0(void)
 
         sUnknown_203B250->unk68[loopMax].text = sOthers;
         sUnknown_203B250->unk68[loopMax].menuAction = 11;
+        loopMax++;
+
+        sUnknown_203B250->unk68[loopMax].text = sChangeSeed;
+        sUnknown_203B250->unk68[loopMax].menuAction = CHANGE_SEED_MENU_ACTION;
         loopMax++;
     }
     else {
@@ -422,6 +461,9 @@ static void sub_801D680(void)
             break;
         case 11:
             sub_801D208(12);
+            break;
+        case CHANGE_SEED_MENU_ACTION:
+            sub_801D208(CHANGE_SEED_STATE_INPUT);
             break;
         case 1:
             sub_801D208(2);
@@ -581,6 +623,110 @@ static void sub_801D878(void)
             sub_801D208(1);
             break;
     }
+}
+
+// Parse the numeric-keypad string into a signed 32-bit seed.
+// Mirrors ParseSeedString() from the personality quiz: optional leading '-',
+// decimal digits only, range-checked to int32, and -1 (the "no seed" sentinel)
+// is rejected.
+static bool8 ParseChangeSeed(const u8 *text, s32 *seedOut)
+{
+    const u8 *ptr = text;
+    bool8 negative = FALSE;
+    s64 value = 0;
+    s32 digitCount = 0;
+
+    while (*ptr == ' ')
+        ptr++;
+
+    if (*ptr == '\0')
+        return FALSE;
+
+    if (*ptr == '-') {
+        negative = TRUE;
+        ptr++;
+        if (*ptr == '\0')
+            return FALSE;
+    }
+
+    while (*ptr != '\0') {
+        if (*ptr < '0' || *ptr > '9')
+            return FALSE;
+
+        value = value * 10 + (*ptr - '0');
+        digitCount++;
+        if (!negative && value > CHANGE_SEED_INT32_MAX)
+            return FALSE;
+        if (negative && value > (s64)CHANGE_SEED_INT32_MAX + 1)
+            return FALSE;
+        ptr++;
+    }
+
+    if (digitCount > 10)
+        return FALSE;
+
+    if (negative)
+        value = -value;
+
+    if (value < CHANGE_SEED_INT32_MIN || value > CHANGE_SEED_INT32_MAX)
+        return FALSE;
+
+    if (value == -1)
+        return FALSE;
+
+    *seedOut = (s32)value;
+    return TRUE;
+}
+
+// Apply the new seed both to the live global and to the persisted team info so
+// it survives the save and the DungeonSeedOverrides recovery path.
+static void CommitChangeSeed(s32 seed)
+{
+    TeamBasicInfo info;
+
+    sub_8011C40(seed);
+    ReadTeamBasicInfo(&info);
+    info.customSeed = seed;
+    WriteTeamBasicInfo(&info);
+}
+
+// Drive the numeric keypad: 0 keep waiting, 2 cancel (back to the top menu),
+// 3 confirm. On a valid confirm, commit the seed and move to the save state; on
+// an invalid value the keypad stays open so the player can correct it.
+static void HandleChangeSeedInput(void)
+{
+    s32 seed;
+
+    switch (NamingScreen_HandleInput()) {
+        case 0:
+            break;
+        case 2:
+            NamingScreen_Free();
+            ResetUnusedInputStruct();
+            ShowWindows(NULL, TRUE, TRUE);
+            sub_801D208(1);
+            break;
+        case 3:
+            if (ParseChangeSeed(sChangeSeedBuffer, &seed)) {
+                NamingScreen_Free();
+                ResetUnusedInputStruct();
+                ShowWindows(NULL, TRUE, TRUE);
+                CommitChangeSeed(seed);
+                sub_801D208(CHANGE_SEED_STATE_SAVING);
+            }
+            break;
+    }
+}
+
+// Drive the save UI to completion, then soft reset to the title screen so the
+// run resumes from Continue with the new seed applied.
+static void HandleChangeSeedSaving(void)
+{
+    if (WriteSavePak())
+        return;
+
+    FinishWriteSavePak();
+    SoftReset(RESET_ALL);
 }
 
 static void sub_801D894(void)

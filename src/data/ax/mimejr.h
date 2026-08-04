@@ -2127,112 +2127,112 @@ static const ax_anim sMimeJrAnims_13_8[] = {
 	AX_ANIM_TERMINATOR
 };
 
-static const u8 sMimeJrGfx1[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_1.4bpp");
+static const u8 sMimeJrGfx1[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_1.4bpp");
 static const ax_sprite sMimeJrSprites1[] = {
 	{sMimeJrGfx1, ARRAY_COUNT(sMimeJrGfx1)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx2[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_2.4bpp");
+static const u8 sMimeJrGfx2[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_2.4bpp");
 static const ax_sprite sMimeJrSprites2[] = {
 	{sMimeJrGfx2, ARRAY_COUNT(sMimeJrGfx2)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx3[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_3.4bpp");
+static const u8 sMimeJrGfx3[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_3.4bpp");
 static const ax_sprite sMimeJrSprites3[] = {
 	{sMimeJrGfx3, ARRAY_COUNT(sMimeJrGfx3)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx4[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_4.4bpp");
+static const u8 sMimeJrGfx4[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_4.4bpp");
 static const ax_sprite sMimeJrSprites4[] = {
 	{sMimeJrGfx4, ARRAY_COUNT(sMimeJrGfx4)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx5[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_5.4bpp");
+static const u8 sMimeJrGfx5[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_5.4bpp");
 static const ax_sprite sMimeJrSprites5[] = {
 	{sMimeJrGfx5, ARRAY_COUNT(sMimeJrGfx5)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx6[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_6.4bpp");
+static const u8 sMimeJrGfx6[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_6.4bpp");
 static const ax_sprite sMimeJrSprites6[] = {
 	{sMimeJrGfx6, ARRAY_COUNT(sMimeJrGfx6)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx7[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_7.4bpp");
+static const u8 sMimeJrGfx7[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_7.4bpp");
 static const ax_sprite sMimeJrSprites7[] = {
 	{sMimeJrGfx7, ARRAY_COUNT(sMimeJrGfx7)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx8[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_8.4bpp");
+static const u8 sMimeJrGfx8[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_8.4bpp");
 static const ax_sprite sMimeJrSprites8[] = {
 	{sMimeJrGfx8, ARRAY_COUNT(sMimeJrGfx8)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx9[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_9.4bpp");
+static const u8 sMimeJrGfx9[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_9.4bpp");
 static const ax_sprite sMimeJrSprites9[] = {
 	{sMimeJrGfx9, ARRAY_COUNT(sMimeJrGfx9)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx10[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_10.4bpp");
+static const u8 sMimeJrGfx10[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_10.4bpp");
 static const ax_sprite sMimeJrSprites10[] = {
 	{sMimeJrGfx10, ARRAY_COUNT(sMimeJrGfx10)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx11[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_11.4bpp");
+static const u8 sMimeJrGfx11[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_11.4bpp");
 static const ax_sprite sMimeJrSprites11[] = {
 	{sMimeJrGfx11, ARRAY_COUNT(sMimeJrGfx11)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx12[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_12.4bpp");
+static const u8 sMimeJrGfx12[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_12.4bpp");
 static const ax_sprite sMimeJrSprites12[] = {
 	{sMimeJrGfx12, ARRAY_COUNT(sMimeJrGfx12)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx13[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_13.4bpp");
+static const u8 sMimeJrGfx13[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_13.4bpp");
 static const ax_sprite sMimeJrSprites13[] = {
 	{sMimeJrGfx13, ARRAY_COUNT(sMimeJrGfx13)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx14[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_14.4bpp");
+static const u8 sMimeJrGfx14[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_14.4bpp");
 static const ax_sprite sMimeJrSprites14[] = {
 	{sMimeJrGfx14, ARRAY_COUNT(sMimeJrGfx14)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx15[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_15.4bpp");
+static const u8 sMimeJrGfx15[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_15.4bpp");
 static const ax_sprite sMimeJrSprites15[] = {
 	{sMimeJrGfx15, ARRAY_COUNT(sMimeJrGfx15)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx16[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_16.4bpp");
+static const u8 sMimeJrGfx16[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_16.4bpp");
 static const ax_sprite sMimeJrSprites16[] = {
 	{sMimeJrGfx16, ARRAY_COUNT(sMimeJrGfx16)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx17[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_17.4bpp");
+static const u8 sMimeJrGfx17[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_17.4bpp");
 static const ax_sprite sMimeJrSprites17[] = {
 	{sMimeJrGfx17, ARRAY_COUNT(sMimeJrGfx17)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx18[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_18.4bpp");
+static const u8 sMimeJrGfx18[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_18.4bpp");
 static const ax_sprite sMimeJrSprites18[] = {
 	{sMimeJrGfx18, ARRAY_COUNT(sMimeJrGfx18)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx19[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_19.4bpp");
+static const u8 sMimeJrGfx19[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_19.4bpp");
 static const ax_sprite sMimeJrSprites19[] = {
 	{sMimeJrGfx19, ARRAY_COUNT(sMimeJrGfx19)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx20[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_20.4bpp");
+static const u8 sMimeJrGfx20[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_20.4bpp");
 static const ax_sprite sMimeJrSprites20[] = {
 	{sMimeJrGfx20, ARRAY_COUNT(sMimeJrGfx20)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx21[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_21.4bpp");
+static const u8 sMimeJrGfx21[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_21.4bpp");
 static const ax_sprite sMimeJrSprites21[] = {
 	{sMimeJrGfx21, ARRAY_COUNT(sMimeJrGfx21)},
 	{NULL, 0}
 };
-static const u8 sMimeJrGfx22[] = INCBIN_U8("graphics/ax/mon/MimeJr/sprite_22.4bpp");
+static const u8 sMimeJrGfx22[] = INCBIN_U8("graphics/ax/mon/mimejr/sprite_22.4bpp");
 static const ax_sprite sMimeJrSprites22[] = {
 	{sMimeJrGfx22, ARRAY_COUNT(sMimeJrGfx22)},
 	{NULL, 0}

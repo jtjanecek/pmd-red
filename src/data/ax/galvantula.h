@@ -2127,112 +2127,112 @@ static const ax_anim sGalvantulaAnims_13_8[] = {
 	AX_ANIM_TERMINATOR
 };
 
-static const u8 sGalvantulaGfx1[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_1.4bpp");
+static const u8 sGalvantulaGfx1[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_1.4bpp");
 static const ax_sprite sGalvantulaSprites1[] = {
 	{sGalvantulaGfx1, ARRAY_COUNT(sGalvantulaGfx1)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx2[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_2.4bpp");
+static const u8 sGalvantulaGfx2[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_2.4bpp");
 static const ax_sprite sGalvantulaSprites2[] = {
 	{sGalvantulaGfx2, ARRAY_COUNT(sGalvantulaGfx2)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx3[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_3.4bpp");
+static const u8 sGalvantulaGfx3[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_3.4bpp");
 static const ax_sprite sGalvantulaSprites3[] = {
 	{sGalvantulaGfx3, ARRAY_COUNT(sGalvantulaGfx3)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx4[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_4.4bpp");
+static const u8 sGalvantulaGfx4[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_4.4bpp");
 static const ax_sprite sGalvantulaSprites4[] = {
 	{sGalvantulaGfx4, ARRAY_COUNT(sGalvantulaGfx4)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx5[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_5.4bpp");
+static const u8 sGalvantulaGfx5[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_5.4bpp");
 static const ax_sprite sGalvantulaSprites5[] = {
 	{sGalvantulaGfx5, ARRAY_COUNT(sGalvantulaGfx5)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx6[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_6.4bpp");
+static const u8 sGalvantulaGfx6[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_6.4bpp");
 static const ax_sprite sGalvantulaSprites6[] = {
 	{sGalvantulaGfx6, ARRAY_COUNT(sGalvantulaGfx6)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx7[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_7.4bpp");
+static const u8 sGalvantulaGfx7[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_7.4bpp");
 static const ax_sprite sGalvantulaSprites7[] = {
 	{sGalvantulaGfx7, ARRAY_COUNT(sGalvantulaGfx7)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx8[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_8.4bpp");
+static const u8 sGalvantulaGfx8[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_8.4bpp");
 static const ax_sprite sGalvantulaSprites8[] = {
 	{sGalvantulaGfx8, ARRAY_COUNT(sGalvantulaGfx8)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx9[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_9.4bpp");
+static const u8 sGalvantulaGfx9[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_9.4bpp");
 static const ax_sprite sGalvantulaSprites9[] = {
 	{sGalvantulaGfx9, ARRAY_COUNT(sGalvantulaGfx9)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx10[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_10.4bpp");
+static const u8 sGalvantulaGfx10[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_10.4bpp");
 static const ax_sprite sGalvantulaSprites10[] = {
 	{sGalvantulaGfx10, ARRAY_COUNT(sGalvantulaGfx10)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx11[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_11.4bpp");
+static const u8 sGalvantulaGfx11[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_11.4bpp");
 static const ax_sprite sGalvantulaSprites11[] = {
 	{sGalvantulaGfx11, ARRAY_COUNT(sGalvantulaGfx11)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx12[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_12.4bpp");
+static const u8 sGalvantulaGfx12[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_12.4bpp");
 static const ax_sprite sGalvantulaSprites12[] = {
 	{sGalvantulaGfx12, ARRAY_COUNT(sGalvantulaGfx12)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx13[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_13.4bpp");
+static const u8 sGalvantulaGfx13[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_13.4bpp");
 static const ax_sprite sGalvantulaSprites13[] = {
 	{sGalvantulaGfx13, ARRAY_COUNT(sGalvantulaGfx13)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx14[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_14.4bpp");
+static const u8 sGalvantulaGfx14[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_14.4bpp");
 static const ax_sprite sGalvantulaSprites14[] = {
 	{sGalvantulaGfx14, ARRAY_COUNT(sGalvantulaGfx14)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx15[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_15.4bpp");
+static const u8 sGalvantulaGfx15[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_15.4bpp");
 static const ax_sprite sGalvantulaSprites15[] = {
 	{sGalvantulaGfx15, ARRAY_COUNT(sGalvantulaGfx15)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx16[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_16.4bpp");
+static const u8 sGalvantulaGfx16[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_16.4bpp");
 static const ax_sprite sGalvantulaSprites16[] = {
 	{sGalvantulaGfx16, ARRAY_COUNT(sGalvantulaGfx16)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx17[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_17.4bpp");
+static const u8 sGalvantulaGfx17[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_17.4bpp");
 static const ax_sprite sGalvantulaSprites17[] = {
 	{sGalvantulaGfx17, ARRAY_COUNT(sGalvantulaGfx17)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx18[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_18.4bpp");
+static const u8 sGalvantulaGfx18[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_18.4bpp");
 static const ax_sprite sGalvantulaSprites18[] = {
 	{sGalvantulaGfx18, ARRAY_COUNT(sGalvantulaGfx18)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx19[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_19.4bpp");
+static const u8 sGalvantulaGfx19[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_19.4bpp");
 static const ax_sprite sGalvantulaSprites19[] = {
 	{sGalvantulaGfx19, ARRAY_COUNT(sGalvantulaGfx19)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx20[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_20.4bpp");
+static const u8 sGalvantulaGfx20[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_20.4bpp");
 static const ax_sprite sGalvantulaSprites20[] = {
 	{sGalvantulaGfx20, ARRAY_COUNT(sGalvantulaGfx20)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx21[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_21.4bpp");
+static const u8 sGalvantulaGfx21[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_21.4bpp");
 static const ax_sprite sGalvantulaSprites21[] = {
 	{sGalvantulaGfx21, ARRAY_COUNT(sGalvantulaGfx21)},
 	{NULL, 0}
 };
-static const u8 sGalvantulaGfx22[] = INCBIN_U8("graphics/ax/mon/Galvantula/sprite_22.4bpp");
+static const u8 sGalvantulaGfx22[] = INCBIN_U8("graphics/ax/mon/galvantula/sprite_22.4bpp");
 static const ax_sprite sGalvantulaSprites22[] = {
 	{sGalvantulaGfx22, ARRAY_COUNT(sGalvantulaGfx22)},
 	{NULL, 0}

@@ -2127,112 +2127,112 @@ static const ax_anim sWeavileAnims_13_8[] = {
 	AX_ANIM_TERMINATOR
 };
 
-static const u8 sWeavileGfx1[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_1.4bpp");
+static const u8 sWeavileGfx1[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_1.4bpp");
 static const ax_sprite sWeavileSprites1[] = {
 	{sWeavileGfx1, ARRAY_COUNT(sWeavileGfx1)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx2[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_2.4bpp");
+static const u8 sWeavileGfx2[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_2.4bpp");
 static const ax_sprite sWeavileSprites2[] = {
 	{sWeavileGfx2, ARRAY_COUNT(sWeavileGfx2)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx3[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_3.4bpp");
+static const u8 sWeavileGfx3[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_3.4bpp");
 static const ax_sprite sWeavileSprites3[] = {
 	{sWeavileGfx3, ARRAY_COUNT(sWeavileGfx3)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx4[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_4.4bpp");
+static const u8 sWeavileGfx4[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_4.4bpp");
 static const ax_sprite sWeavileSprites4[] = {
 	{sWeavileGfx4, ARRAY_COUNT(sWeavileGfx4)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx5[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_5.4bpp");
+static const u8 sWeavileGfx5[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_5.4bpp");
 static const ax_sprite sWeavileSprites5[] = {
 	{sWeavileGfx5, ARRAY_COUNT(sWeavileGfx5)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx6[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_6.4bpp");
+static const u8 sWeavileGfx6[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_6.4bpp");
 static const ax_sprite sWeavileSprites6[] = {
 	{sWeavileGfx6, ARRAY_COUNT(sWeavileGfx6)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx7[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_7.4bpp");
+static const u8 sWeavileGfx7[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_7.4bpp");
 static const ax_sprite sWeavileSprites7[] = {
 	{sWeavileGfx7, ARRAY_COUNT(sWeavileGfx7)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx8[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_8.4bpp");
+static const u8 sWeavileGfx8[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_8.4bpp");
 static const ax_sprite sWeavileSprites8[] = {
 	{sWeavileGfx8, ARRAY_COUNT(sWeavileGfx8)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx9[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_9.4bpp");
+static const u8 sWeavileGfx9[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_9.4bpp");
 static const ax_sprite sWeavileSprites9[] = {
 	{sWeavileGfx9, ARRAY_COUNT(sWeavileGfx9)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx10[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_10.4bpp");
+static const u8 sWeavileGfx10[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_10.4bpp");
 static const ax_sprite sWeavileSprites10[] = {
 	{sWeavileGfx10, ARRAY_COUNT(sWeavileGfx10)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx11[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_11.4bpp");
+static const u8 sWeavileGfx11[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_11.4bpp");
 static const ax_sprite sWeavileSprites11[] = {
 	{sWeavileGfx11, ARRAY_COUNT(sWeavileGfx11)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx12[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_12.4bpp");
+static const u8 sWeavileGfx12[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_12.4bpp");
 static const ax_sprite sWeavileSprites12[] = {
 	{sWeavileGfx12, ARRAY_COUNT(sWeavileGfx12)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx13[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_13.4bpp");
+static const u8 sWeavileGfx13[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_13.4bpp");
 static const ax_sprite sWeavileSprites13[] = {
 	{sWeavileGfx13, ARRAY_COUNT(sWeavileGfx13)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx14[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_14.4bpp");
+static const u8 sWeavileGfx14[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_14.4bpp");
 static const ax_sprite sWeavileSprites14[] = {
 	{sWeavileGfx14, ARRAY_COUNT(sWeavileGfx14)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx15[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_15.4bpp");
+static const u8 sWeavileGfx15[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_15.4bpp");
 static const ax_sprite sWeavileSprites15[] = {
 	{sWeavileGfx15, ARRAY_COUNT(sWeavileGfx15)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx16[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_16.4bpp");
+static const u8 sWeavileGfx16[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_16.4bpp");
 static const ax_sprite sWeavileSprites16[] = {
 	{sWeavileGfx16, ARRAY_COUNT(sWeavileGfx16)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx17[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_17.4bpp");
+static const u8 sWeavileGfx17[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_17.4bpp");
 static const ax_sprite sWeavileSprites17[] = {
 	{sWeavileGfx17, ARRAY_COUNT(sWeavileGfx17)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx18[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_18.4bpp");
+static const u8 sWeavileGfx18[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_18.4bpp");
 static const ax_sprite sWeavileSprites18[] = {
 	{sWeavileGfx18, ARRAY_COUNT(sWeavileGfx18)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx19[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_19.4bpp");
+static const u8 sWeavileGfx19[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_19.4bpp");
 static const ax_sprite sWeavileSprites19[] = {
 	{sWeavileGfx19, ARRAY_COUNT(sWeavileGfx19)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx20[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_20.4bpp");
+static const u8 sWeavileGfx20[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_20.4bpp");
 static const ax_sprite sWeavileSprites20[] = {
 	{sWeavileGfx20, ARRAY_COUNT(sWeavileGfx20)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx21[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_21.4bpp");
+static const u8 sWeavileGfx21[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_21.4bpp");
 static const ax_sprite sWeavileSprites21[] = {
 	{sWeavileGfx21, ARRAY_COUNT(sWeavileGfx21)},
 	{NULL, 0}
 };
-static const u8 sWeavileGfx22[] = INCBIN_U8("graphics/ax/mon/Weavile/sprite_22.4bpp");
+static const u8 sWeavileGfx22[] = INCBIN_U8("graphics/ax/mon/weavile/sprite_22.4bpp");
 static const ax_sprite sWeavileSprites22[] = {
 	{sWeavileGfx22, ARRAY_COUNT(sWeavileGfx22)},
 	{NULL, 0}

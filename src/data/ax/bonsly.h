@@ -2127,112 +2127,112 @@ static const ax_anim sBonslyAnims_13_8[] = {
 	AX_ANIM_TERMINATOR
 };
 
-static const u8 sBonslyGfx1[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_1.4bpp");
+static const u8 sBonslyGfx1[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_1.4bpp");
 static const ax_sprite sBonslySprites1[] = {
 	{sBonslyGfx1, ARRAY_COUNT(sBonslyGfx1)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx2[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_2.4bpp");
+static const u8 sBonslyGfx2[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_2.4bpp");
 static const ax_sprite sBonslySprites2[] = {
 	{sBonslyGfx2, ARRAY_COUNT(sBonslyGfx2)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx3[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_3.4bpp");
+static const u8 sBonslyGfx3[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_3.4bpp");
 static const ax_sprite sBonslySprites3[] = {
 	{sBonslyGfx3, ARRAY_COUNT(sBonslyGfx3)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx4[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_4.4bpp");
+static const u8 sBonslyGfx4[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_4.4bpp");
 static const ax_sprite sBonslySprites4[] = {
 	{sBonslyGfx4, ARRAY_COUNT(sBonslyGfx4)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx5[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_5.4bpp");
+static const u8 sBonslyGfx5[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_5.4bpp");
 static const ax_sprite sBonslySprites5[] = {
 	{sBonslyGfx5, ARRAY_COUNT(sBonslyGfx5)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx6[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_6.4bpp");
+static const u8 sBonslyGfx6[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_6.4bpp");
 static const ax_sprite sBonslySprites6[] = {
 	{sBonslyGfx6, ARRAY_COUNT(sBonslyGfx6)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx7[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_7.4bpp");
+static const u8 sBonslyGfx7[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_7.4bpp");
 static const ax_sprite sBonslySprites7[] = {
 	{sBonslyGfx7, ARRAY_COUNT(sBonslyGfx7)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx8[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_8.4bpp");
+static const u8 sBonslyGfx8[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_8.4bpp");
 static const ax_sprite sBonslySprites8[] = {
 	{sBonslyGfx8, ARRAY_COUNT(sBonslyGfx8)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx9[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_9.4bpp");
+static const u8 sBonslyGfx9[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_9.4bpp");
 static const ax_sprite sBonslySprites9[] = {
 	{sBonslyGfx9, ARRAY_COUNT(sBonslyGfx9)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx10[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_10.4bpp");
+static const u8 sBonslyGfx10[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_10.4bpp");
 static const ax_sprite sBonslySprites10[] = {
 	{sBonslyGfx10, ARRAY_COUNT(sBonslyGfx10)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx11[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_11.4bpp");
+static const u8 sBonslyGfx11[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_11.4bpp");
 static const ax_sprite sBonslySprites11[] = {
 	{sBonslyGfx11, ARRAY_COUNT(sBonslyGfx11)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx12[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_12.4bpp");
+static const u8 sBonslyGfx12[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_12.4bpp");
 static const ax_sprite sBonslySprites12[] = {
 	{sBonslyGfx12, ARRAY_COUNT(sBonslyGfx12)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx13[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_13.4bpp");
+static const u8 sBonslyGfx13[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_13.4bpp");
 static const ax_sprite sBonslySprites13[] = {
 	{sBonslyGfx13, ARRAY_COUNT(sBonslyGfx13)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx14[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_14.4bpp");
+static const u8 sBonslyGfx14[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_14.4bpp");
 static const ax_sprite sBonslySprites14[] = {
 	{sBonslyGfx14, ARRAY_COUNT(sBonslyGfx14)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx15[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_15.4bpp");
+static const u8 sBonslyGfx15[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_15.4bpp");
 static const ax_sprite sBonslySprites15[] = {
 	{sBonslyGfx15, ARRAY_COUNT(sBonslyGfx15)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx16[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_16.4bpp");
+static const u8 sBonslyGfx16[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_16.4bpp");
 static const ax_sprite sBonslySprites16[] = {
 	{sBonslyGfx16, ARRAY_COUNT(sBonslyGfx16)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx17[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_17.4bpp");
+static const u8 sBonslyGfx17[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_17.4bpp");
 static const ax_sprite sBonslySprites17[] = {
 	{sBonslyGfx17, ARRAY_COUNT(sBonslyGfx17)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx18[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_18.4bpp");
+static const u8 sBonslyGfx18[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_18.4bpp");
 static const ax_sprite sBonslySprites18[] = {
 	{sBonslyGfx18, ARRAY_COUNT(sBonslyGfx18)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx19[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_19.4bpp");
+static const u8 sBonslyGfx19[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_19.4bpp");
 static const ax_sprite sBonslySprites19[] = {
 	{sBonslyGfx19, ARRAY_COUNT(sBonslyGfx19)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx20[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_20.4bpp");
+static const u8 sBonslyGfx20[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_20.4bpp");
 static const ax_sprite sBonslySprites20[] = {
 	{sBonslyGfx20, ARRAY_COUNT(sBonslyGfx20)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx21[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_21.4bpp");
+static const u8 sBonslyGfx21[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_21.4bpp");
 static const ax_sprite sBonslySprites21[] = {
 	{sBonslyGfx21, ARRAY_COUNT(sBonslyGfx21)},
 	{NULL, 0}
 };
-static const u8 sBonslyGfx22[] = INCBIN_U8("graphics/ax/mon/Bonsly/sprite_22.4bpp");
+static const u8 sBonslyGfx22[] = INCBIN_U8("graphics/ax/mon/bonsly/sprite_22.4bpp");
 static const ax_sprite sBonslySprites22[] = {
 	{sBonslyGfx22, ARRAY_COUNT(sBonslyGfx22)},
 	{NULL, 0}

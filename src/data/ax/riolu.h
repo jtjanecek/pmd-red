@@ -2127,112 +2127,112 @@ static const ax_anim sRioluAnims_13_8[] = {
 	AX_ANIM_TERMINATOR
 };
 
-static const u8 sRioluGfx1[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_1.4bpp");
+static const u8 sRioluGfx1[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_1.4bpp");
 static const ax_sprite sRioluSprites1[] = {
 	{sRioluGfx1, ARRAY_COUNT(sRioluGfx1)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx2[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_2.4bpp");
+static const u8 sRioluGfx2[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_2.4bpp");
 static const ax_sprite sRioluSprites2[] = {
 	{sRioluGfx2, ARRAY_COUNT(sRioluGfx2)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx3[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_3.4bpp");
+static const u8 sRioluGfx3[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_3.4bpp");
 static const ax_sprite sRioluSprites3[] = {
 	{sRioluGfx3, ARRAY_COUNT(sRioluGfx3)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx4[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_4.4bpp");
+static const u8 sRioluGfx4[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_4.4bpp");
 static const ax_sprite sRioluSprites4[] = {
 	{sRioluGfx4, ARRAY_COUNT(sRioluGfx4)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx5[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_5.4bpp");
+static const u8 sRioluGfx5[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_5.4bpp");
 static const ax_sprite sRioluSprites5[] = {
 	{sRioluGfx5, ARRAY_COUNT(sRioluGfx5)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx6[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_6.4bpp");
+static const u8 sRioluGfx6[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_6.4bpp");
 static const ax_sprite sRioluSprites6[] = {
 	{sRioluGfx6, ARRAY_COUNT(sRioluGfx6)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx7[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_7.4bpp");
+static const u8 sRioluGfx7[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_7.4bpp");
 static const ax_sprite sRioluSprites7[] = {
 	{sRioluGfx7, ARRAY_COUNT(sRioluGfx7)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx8[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_8.4bpp");
+static const u8 sRioluGfx8[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_8.4bpp");
 static const ax_sprite sRioluSprites8[] = {
 	{sRioluGfx8, ARRAY_COUNT(sRioluGfx8)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx9[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_9.4bpp");
+static const u8 sRioluGfx9[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_9.4bpp");
 static const ax_sprite sRioluSprites9[] = {
 	{sRioluGfx9, ARRAY_COUNT(sRioluGfx9)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx10[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_10.4bpp");
+static const u8 sRioluGfx10[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_10.4bpp");
 static const ax_sprite sRioluSprites10[] = {
 	{sRioluGfx10, ARRAY_COUNT(sRioluGfx10)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx11[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_11.4bpp");
+static const u8 sRioluGfx11[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_11.4bpp");
 static const ax_sprite sRioluSprites11[] = {
 	{sRioluGfx11, ARRAY_COUNT(sRioluGfx11)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx12[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_12.4bpp");
+static const u8 sRioluGfx12[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_12.4bpp");
 static const ax_sprite sRioluSprites12[] = {
 	{sRioluGfx12, ARRAY_COUNT(sRioluGfx12)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx13[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_13.4bpp");
+static const u8 sRioluGfx13[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_13.4bpp");
 static const ax_sprite sRioluSprites13[] = {
 	{sRioluGfx13, ARRAY_COUNT(sRioluGfx13)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx14[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_14.4bpp");
+static const u8 sRioluGfx14[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_14.4bpp");
 static const ax_sprite sRioluSprites14[] = {
 	{sRioluGfx14, ARRAY_COUNT(sRioluGfx14)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx15[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_15.4bpp");
+static const u8 sRioluGfx15[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_15.4bpp");
 static const ax_sprite sRioluSprites15[] = {
 	{sRioluGfx15, ARRAY_COUNT(sRioluGfx15)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx16[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_16.4bpp");
+static const u8 sRioluGfx16[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_16.4bpp");
 static const ax_sprite sRioluSprites16[] = {
 	{sRioluGfx16, ARRAY_COUNT(sRioluGfx16)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx17[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_17.4bpp");
+static const u8 sRioluGfx17[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_17.4bpp");
 static const ax_sprite sRioluSprites17[] = {
 	{sRioluGfx17, ARRAY_COUNT(sRioluGfx17)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx18[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_18.4bpp");
+static const u8 sRioluGfx18[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_18.4bpp");
 static const ax_sprite sRioluSprites18[] = {
 	{sRioluGfx18, ARRAY_COUNT(sRioluGfx18)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx19[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_19.4bpp");
+static const u8 sRioluGfx19[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_19.4bpp");
 static const ax_sprite sRioluSprites19[] = {
 	{sRioluGfx19, ARRAY_COUNT(sRioluGfx19)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx20[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_20.4bpp");
+static const u8 sRioluGfx20[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_20.4bpp");
 static const ax_sprite sRioluSprites20[] = {
 	{sRioluGfx20, ARRAY_COUNT(sRioluGfx20)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx21[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_21.4bpp");
+static const u8 sRioluGfx21[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_21.4bpp");
 static const ax_sprite sRioluSprites21[] = {
 	{sRioluGfx21, ARRAY_COUNT(sRioluGfx21)},
 	{NULL, 0}
 };
-static const u8 sRioluGfx22[] = INCBIN_U8("graphics/ax/mon/Riolu/sprite_22.4bpp");
+static const u8 sRioluGfx22[] = INCBIN_U8("graphics/ax/mon/riolu/sprite_22.4bpp");
 static const ax_sprite sRioluSprites22[] = {
 	{sRioluGfx22, ARRAY_COUNT(sRioluGfx22)},
 	{NULL, 0}

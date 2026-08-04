@@ -2127,112 +2127,112 @@ static const ax_anim sLucarioAnims_13_8[] = {
 	AX_ANIM_TERMINATOR
 };
 
-static const u8 sLucarioGfx1[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_1.4bpp");
+static const u8 sLucarioGfx1[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_1.4bpp");
 static const ax_sprite sLucarioSprites1[] = {
 	{sLucarioGfx1, ARRAY_COUNT(sLucarioGfx1)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx2[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_2.4bpp");
+static const u8 sLucarioGfx2[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_2.4bpp");
 static const ax_sprite sLucarioSprites2[] = {
 	{sLucarioGfx2, ARRAY_COUNT(sLucarioGfx2)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx3[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_3.4bpp");
+static const u8 sLucarioGfx3[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_3.4bpp");
 static const ax_sprite sLucarioSprites3[] = {
 	{sLucarioGfx3, ARRAY_COUNT(sLucarioGfx3)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx4[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_4.4bpp");
+static const u8 sLucarioGfx4[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_4.4bpp");
 static const ax_sprite sLucarioSprites4[] = {
 	{sLucarioGfx4, ARRAY_COUNT(sLucarioGfx4)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx5[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_5.4bpp");
+static const u8 sLucarioGfx5[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_5.4bpp");
 static const ax_sprite sLucarioSprites5[] = {
 	{sLucarioGfx5, ARRAY_COUNT(sLucarioGfx5)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx6[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_6.4bpp");
+static const u8 sLucarioGfx6[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_6.4bpp");
 static const ax_sprite sLucarioSprites6[] = {
 	{sLucarioGfx6, ARRAY_COUNT(sLucarioGfx6)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx7[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_7.4bpp");
+static const u8 sLucarioGfx7[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_7.4bpp");
 static const ax_sprite sLucarioSprites7[] = {
 	{sLucarioGfx7, ARRAY_COUNT(sLucarioGfx7)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx8[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_8.4bpp");
+static const u8 sLucarioGfx8[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_8.4bpp");
 static const ax_sprite sLucarioSprites8[] = {
 	{sLucarioGfx8, ARRAY_COUNT(sLucarioGfx8)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx9[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_9.4bpp");
+static const u8 sLucarioGfx9[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_9.4bpp");
 static const ax_sprite sLucarioSprites9[] = {
 	{sLucarioGfx9, ARRAY_COUNT(sLucarioGfx9)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx10[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_10.4bpp");
+static const u8 sLucarioGfx10[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_10.4bpp");
 static const ax_sprite sLucarioSprites10[] = {
 	{sLucarioGfx10, ARRAY_COUNT(sLucarioGfx10)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx11[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_11.4bpp");
+static const u8 sLucarioGfx11[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_11.4bpp");
 static const ax_sprite sLucarioSprites11[] = {
 	{sLucarioGfx11, ARRAY_COUNT(sLucarioGfx11)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx12[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_12.4bpp");
+static const u8 sLucarioGfx12[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_12.4bpp");
 static const ax_sprite sLucarioSprites12[] = {
 	{sLucarioGfx12, ARRAY_COUNT(sLucarioGfx12)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx13[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_13.4bpp");
+static const u8 sLucarioGfx13[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_13.4bpp");
 static const ax_sprite sLucarioSprites13[] = {
 	{sLucarioGfx13, ARRAY_COUNT(sLucarioGfx13)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx14[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_14.4bpp");
+static const u8 sLucarioGfx14[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_14.4bpp");
 static const ax_sprite sLucarioSprites14[] = {
 	{sLucarioGfx14, ARRAY_COUNT(sLucarioGfx14)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx15[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_15.4bpp");
+static const u8 sLucarioGfx15[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_15.4bpp");
 static const ax_sprite sLucarioSprites15[] = {
 	{sLucarioGfx15, ARRAY_COUNT(sLucarioGfx15)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx16[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_16.4bpp");
+static const u8 sLucarioGfx16[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_16.4bpp");
 static const ax_sprite sLucarioSprites16[] = {
 	{sLucarioGfx16, ARRAY_COUNT(sLucarioGfx16)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx17[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_17.4bpp");
+static const u8 sLucarioGfx17[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_17.4bpp");
 static const ax_sprite sLucarioSprites17[] = {
 	{sLucarioGfx17, ARRAY_COUNT(sLucarioGfx17)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx18[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_18.4bpp");
+static const u8 sLucarioGfx18[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_18.4bpp");
 static const ax_sprite sLucarioSprites18[] = {
 	{sLucarioGfx18, ARRAY_COUNT(sLucarioGfx18)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx19[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_19.4bpp");
+static const u8 sLucarioGfx19[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_19.4bpp");
 static const ax_sprite sLucarioSprites19[] = {
 	{sLucarioGfx19, ARRAY_COUNT(sLucarioGfx19)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx20[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_20.4bpp");
+static const u8 sLucarioGfx20[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_20.4bpp");
 static const ax_sprite sLucarioSprites20[] = {
 	{sLucarioGfx20, ARRAY_COUNT(sLucarioGfx20)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx21[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_21.4bpp");
+static const u8 sLucarioGfx21[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_21.4bpp");
 static const ax_sprite sLucarioSprites21[] = {
 	{sLucarioGfx21, ARRAY_COUNT(sLucarioGfx21)},
 	{NULL, 0}
 };
-static const u8 sLucarioGfx22[] = INCBIN_U8("graphics/ax/mon/Lucario/sprite_22.4bpp");
+static const u8 sLucarioGfx22[] = INCBIN_U8("graphics/ax/mon/lucario/sprite_22.4bpp");
 static const ax_sprite sLucarioSprites22[] = {
 	{sLucarioGfx22, ARRAY_COUNT(sLucarioGfx22)},
 	{NULL, 0}

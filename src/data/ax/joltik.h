@@ -2127,112 +2127,112 @@ static const ax_anim sJoltikAnims_13_8[] = {
 	AX_ANIM_TERMINATOR
 };
 
-static const u8 sJoltikGfx1[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_1.4bpp");
+static const u8 sJoltikGfx1[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_1.4bpp");
 static const ax_sprite sJoltikSprites1[] = {
 	{sJoltikGfx1, ARRAY_COUNT(sJoltikGfx1)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx2[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_2.4bpp");
+static const u8 sJoltikGfx2[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_2.4bpp");
 static const ax_sprite sJoltikSprites2[] = {
 	{sJoltikGfx2, ARRAY_COUNT(sJoltikGfx2)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx3[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_3.4bpp");
+static const u8 sJoltikGfx3[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_3.4bpp");
 static const ax_sprite sJoltikSprites3[] = {
 	{sJoltikGfx3, ARRAY_COUNT(sJoltikGfx3)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx4[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_4.4bpp");
+static const u8 sJoltikGfx4[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_4.4bpp");
 static const ax_sprite sJoltikSprites4[] = {
 	{sJoltikGfx4, ARRAY_COUNT(sJoltikGfx4)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx5[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_5.4bpp");
+static const u8 sJoltikGfx5[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_5.4bpp");
 static const ax_sprite sJoltikSprites5[] = {
 	{sJoltikGfx5, ARRAY_COUNT(sJoltikGfx5)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx6[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_6.4bpp");
+static const u8 sJoltikGfx6[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_6.4bpp");
 static const ax_sprite sJoltikSprites6[] = {
 	{sJoltikGfx6, ARRAY_COUNT(sJoltikGfx6)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx7[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_7.4bpp");
+static const u8 sJoltikGfx7[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_7.4bpp");
 static const ax_sprite sJoltikSprites7[] = {
 	{sJoltikGfx7, ARRAY_COUNT(sJoltikGfx7)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx8[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_8.4bpp");
+static const u8 sJoltikGfx8[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_8.4bpp");
 static const ax_sprite sJoltikSprites8[] = {
 	{sJoltikGfx8, ARRAY_COUNT(sJoltikGfx8)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx9[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_9.4bpp");
+static const u8 sJoltikGfx9[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_9.4bpp");
 static const ax_sprite sJoltikSprites9[] = {
 	{sJoltikGfx9, ARRAY_COUNT(sJoltikGfx9)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx10[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_10.4bpp");
+static const u8 sJoltikGfx10[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_10.4bpp");
 static const ax_sprite sJoltikSprites10[] = {
 	{sJoltikGfx10, ARRAY_COUNT(sJoltikGfx10)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx11[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_11.4bpp");
+static const u8 sJoltikGfx11[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_11.4bpp");
 static const ax_sprite sJoltikSprites11[] = {
 	{sJoltikGfx11, ARRAY_COUNT(sJoltikGfx11)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx12[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_12.4bpp");
+static const u8 sJoltikGfx12[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_12.4bpp");
 static const ax_sprite sJoltikSprites12[] = {
 	{sJoltikGfx12, ARRAY_COUNT(sJoltikGfx12)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx13[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_13.4bpp");
+static const u8 sJoltikGfx13[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_13.4bpp");
 static const ax_sprite sJoltikSprites13[] = {
 	{sJoltikGfx13, ARRAY_COUNT(sJoltikGfx13)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx14[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_14.4bpp");
+static const u8 sJoltikGfx14[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_14.4bpp");
 static const ax_sprite sJoltikSprites14[] = {
 	{sJoltikGfx14, ARRAY_COUNT(sJoltikGfx14)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx15[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_15.4bpp");
+static const u8 sJoltikGfx15[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_15.4bpp");
 static const ax_sprite sJoltikSprites15[] = {
 	{sJoltikGfx15, ARRAY_COUNT(sJoltikGfx15)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx16[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_16.4bpp");
+static const u8 sJoltikGfx16[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_16.4bpp");
 static const ax_sprite sJoltikSprites16[] = {
 	{sJoltikGfx16, ARRAY_COUNT(sJoltikGfx16)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx17[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_17.4bpp");
+static const u8 sJoltikGfx17[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_17.4bpp");
 static const ax_sprite sJoltikSprites17[] = {
 	{sJoltikGfx17, ARRAY_COUNT(sJoltikGfx17)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx18[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_18.4bpp");
+static const u8 sJoltikGfx18[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_18.4bpp");
 static const ax_sprite sJoltikSprites18[] = {
 	{sJoltikGfx18, ARRAY_COUNT(sJoltikGfx18)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx19[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_19.4bpp");
+static const u8 sJoltikGfx19[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_19.4bpp");
 static const ax_sprite sJoltikSprites19[] = {
 	{sJoltikGfx19, ARRAY_COUNT(sJoltikGfx19)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx20[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_20.4bpp");
+static const u8 sJoltikGfx20[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_20.4bpp");
 static const ax_sprite sJoltikSprites20[] = {
 	{sJoltikGfx20, ARRAY_COUNT(sJoltikGfx20)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx21[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_21.4bpp");
+static const u8 sJoltikGfx21[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_21.4bpp");
 static const ax_sprite sJoltikSprites21[] = {
 	{sJoltikGfx21, ARRAY_COUNT(sJoltikGfx21)},
 	{NULL, 0}
 };
-static const u8 sJoltikGfx22[] = INCBIN_U8("graphics/ax/mon/Joltik/sprite_22.4bpp");
+static const u8 sJoltikGfx22[] = INCBIN_U8("graphics/ax/mon/joltik/sprite_22.4bpp");
 static const ax_sprite sJoltikSprites22[] = {
 	{sJoltikGfx22, ARRAY_COUNT(sJoltikGfx22)},
 	{NULL, 0}
